@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fody dla wariantu jednego exe (/p:DsoSingleExe=true; bez tej właściwości Fody nie jest dołączany i ten plik nic nie robi).
+  Costura osadza biblioteki programu jako zasoby DSOptimizer.exe i ładuje je z nich przy starcie:
+  - DisableCompression="true" – zasoby nieskompresowane, czytelne dla skanerów antywirusowych (decyzja projektowa, spec Etapu 5, sekcja 5),
+  - IncludeDebugSymbols="false" – bez plików .pdb w exe (wydanie nie zawiera symboli),
+  - ExcludeAssemblies="Costura" – bez Costura.dll (biblioteka czasu kompilacji; exe się do niej nie odwołuje, kod ładujący
+    Costura wstrzykuje bezpośrednio do exe).
+  GenerateXsd="false" – Fody nie dopisuje FodyWeavers.xsd do katalogu projektu.
+-->
+<Weavers GenerateXsd="false">
+  <Costura DisableCompression="true" IncludeDebugSymbols="false" ExcludeAssemblies="Costura" />
+</Weavers>

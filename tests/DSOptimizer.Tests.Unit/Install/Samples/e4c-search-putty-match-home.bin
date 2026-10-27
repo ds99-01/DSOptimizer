@@ -1,0 +1,12 @@
+Name                            Id                                       Version    Match
+----------------------------------------------------------------------------------------------------------
+PuTTY                           PuTTY.PuTTY                              0.85.0.0   
+Avash                           AdrienCros.Avash                         0.13.2     Tag: putty
+NETworkManager                  BornToBeRoot.NETworkManager              2026.7.7.0 Tag: putty
+Hostpad                         Hostpad.Hostpad                          1.0.5      Tag: putty
+SuperPuTTY                      JimRadford.SuperPuTTY                    1.5.0.0    Tag: putty
+PortX                           NetSarangComputer.PortX                  2.3.0      Tag: putty
+PuTTY CAC                       NoMoreFood.PuTTY-CAC                     0.85.2.0   Tag: putty
+MTPuTTY                         TTYPlus.MTPuTTY                          1.8.5      Tag: putty
+Input Typer for Command Palette CoreyHayward.InputTyperforCommandPalette 0.0.2.0    
+anySCP                          macnev2013.anySCP                        0.11.1     Tag: putty-alternative

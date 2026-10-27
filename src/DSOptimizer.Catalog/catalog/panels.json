@@ -1,0 +1,188 @@
+[
+  {
+    "id": "panels.visual-effects",
+    "aliases": [ "tool_vis" ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Efekty wizualne (Opcje wydajności)",
+    "summary": "Otwiera okno Opcje wydajności, w którym sam włączysz lub wyłączysz animacje, cienie i inne efekty.",
+    "description": "Otwiera panel systemowy Windows: klasyczne okno „Opcje wydajności” (polecenie: SystemPropertiesPerformance.exe). Pozycja sama niczego nie ustawia – efekty wybierasz w otwartym oknie. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "SystemPropertiesPerformance.exe", "arguments": "" }
+  },
+  {
+    "id": "panels.power-options",
+    "aliases": [ "tool_pow" ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Opcje zasilania",
+    "summary": "Otwiera okno Opcje zasilania, w którym wybierzesz plan zasilania i zmienisz jego ustawienia.",
+    "description": "Otwiera panel systemowy Windows: klasyczne okno „Opcje zasilania” (polecenie: control.exe /name Microsoft.PowerOptions). Pozycja nie tworzy ani nie zmienia planów zasilania – plan wybierasz sam w oknie. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "control.exe", "arguments": "/name Microsoft.PowerOptions" }
+  },
+  {
+    "id": "panels.network-connections",
+    "aliases": [ "tool_network" ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Połączenia sieciowe",
+    "summary": "Otwiera listę kart sieciowych, w której sam zmienisz ich ustawienia, np. adres IP albo serwery DNS.",
+    "description": "Otwiera panel systemowy Windows: klasyczne okno „Połączenia sieciowe” (polecenie: control.exe netconnections). Pozycja niczego nie zmienia – ustawienia kart (np. IPv6, adres IP, DNS) zmieniasz sam w oknie. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "control.exe", "arguments": "netconnections" }
+  },
+  {
+    "id": "panels.computer-management",
+    "aliases": [ ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Zarządzanie komputerem",
+    "summary": "Otwiera Zarządzanie komputerem: dyski, usługi, Menedżer urządzeń i dzienniki zdarzeń.",
+    "description": "Otwiera panel systemowy Windows: konsolę MMC „Zarządzanie komputerem” (compmgmt.msc, uruchamiane przez mmc.exe). Pozycja tylko otwiera konsolę i sama niczego nie zmienia.",
+    "risk": "safe",
+    "scope": "machine",
+    "warnings": [
+      "Konsola działa z uprawnieniami administratora – DSOptimizer nie cofa zmian zrobionych w niej (usługi, dyski)."
+    ],
+    "launch": { "file": "compmgmt.msc", "arguments": "" }
+  },
+  {
+    "id": "panels.control-panel",
+    "aliases": [ ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Panel sterowania",
+    "summary": "Otwiera klasyczny Panel sterowania.",
+    "description": "Otwiera panel systemowy Windows: klasyczne okno „Panel sterowania” (polecenie: control.exe). DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "control.exe", "arguments": "" }
+  },
+  {
+    "id": "panels.mouse",
+    "aliases": [ ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Właściwości: Mysz",
+    "summary": "Otwiera ustawienia myszy: przyciski, kółko, wygląd i prędkość wskaźnika.",
+    "description": "Otwiera panel systemowy Windows: klasyczne okno „Właściwości: Mysz” (polecenie: control.exe /name Microsoft.Mouse). DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "control.exe", "arguments": "/name Microsoft.Mouse" }
+  },
+  {
+    "id": "panels.devices-printers",
+    "aliases": [ ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Urządzenia i drukarki",
+    "summary": "Otwiera okno Urządzenia i drukarki z podłączonymi drukarkami i innymi urządzeniami.",
+    "description": "Otwiera panel systemowy Windows: okno „Urządzenia i drukarki” w Eksploratorze plików (polecenie: explorer.exe shell:::{A8A91A66-3A7D-4424-8D24-04E180695C7A}). Przed startem sprawdza, czy w bieżącej sesji działa Eksplorator tego samego konta; bez niego kończy się błędem i niczego nie uruchamia, bo podniesiony Eksplorator zostałby osobnym procesem z uprawnieniami administratora. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "warnings": [
+      "Wymaga Eksploratora zalogowanego konta – gdy DSOptimizer działa na innym koncie administratora, pozycja kończy się błędem."
+    ],
+    "launch": { "file": "shell:::{A8A91A66-3A7D-4424-8D24-04E180695C7A}", "arguments": "" }
+  },
+  {
+    "id": "panels.programs-features",
+    "aliases": [ ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Programy i funkcje",
+    "summary": "Otwiera listę zainstalowanych programów, z której sam je odinstalujesz.",
+    "description": "Otwiera panel systemowy Windows: klasyczne okno „Programy i funkcje” (polecenie: control.exe /name Microsoft.ProgramsAndFeatures). Pozycja niczego nie odinstalowuje – robisz to sam w oknie. DSOptimizer nie przywróci programu odinstalowanego w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "control.exe", "arguments": "/name Microsoft.ProgramsAndFeatures" }
+  },
+  {
+    "id": "panels.region",
+    "aliases": [ ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Region",
+    "summary": "Otwiera ustawienia regionu: format daty, godziny i liczb.",
+    "description": "Otwiera panel systemowy Windows: klasyczne okno „Region” (polecenie: control.exe /name Microsoft.RegionAndLanguage). DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "control.exe", "arguments": "/name Microsoft.RegionAndLanguage" }
+  },
+  {
+    "id": "panels.security-maintenance",
+    "aliases": [ ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Zabezpieczenia i konserwacja",
+    "summary": "Otwiera okno Zabezpieczenia i konserwacja z komunikatami Windows o problemach.",
+    "description": "Otwiera panel systemowy Windows: klasyczne okno „Zabezpieczenia i konserwacja” (polecenie: control.exe wscui.cpl). DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "control.exe", "arguments": "wscui.cpl" }
+  },
+  {
+    "id": "panels.sound",
+    "aliases": [ ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Dźwięk",
+    "summary": "Otwiera klasyczne okno Dźwięk z urządzeniami odtwarzania i nagrywania.",
+    "description": "Otwiera panel systemowy Windows: klasyczne okno „Dźwięk” (polecenie: control.exe /name Microsoft.Sound). DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "control.exe", "arguments": "/name Microsoft.Sound" }
+  },
+  {
+    "id": "panels.system-properties",
+    "aliases": [ ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Właściwości systemu",
+    "summary": "Otwiera Właściwości systemu: nazwa komputera, grupa robocza i domena.",
+    "description": "Otwiera panel systemowy Windows: klasyczne okno „Właściwości systemu” (polecenie: control.exe sysdm.cpl). Okno startuje na karcie „Nazwa komputera” – to wniosek z nazwy uruchamianego procesu (SystemPropertiesComputerName.exe). Gdy okno Właściwości systemu (na dowolnej karcie) jest już otwarte, kolejne uruchomienie może tylko je przywołać. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "control.exe", "arguments": "sysdm.cpl" }
+  },
+  {
+    "id": "panels.date-time",
+    "aliases": [ ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Data i godzina",
+    "summary": "Otwiera okno Data i godzina: strefa czasowa i synchronizacja zegara.",
+    "description": "Otwiera panel systemowy Windows: klasyczne okno „Data i godzina” (polecenie: control.exe /name Microsoft.DateAndTime). DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "control.exe", "arguments": "/name Microsoft.DateAndTime" }
+  },
+  {
+    "id": "panels.firewall",
+    "aliases": [ ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Zapora Windows Defender",
+    "summary": "Otwiera ustawienia Zapory Windows Defender: włączanie zapory i dostęp programów do sieci.",
+    "description": "Otwiera panel systemowy Windows: klasyczne okno „Zapora Windows Defender” (polecenie: control.exe /name Microsoft.WindowsFirewall). Pozycja nie zmienia reguł zapory. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "control.exe", "arguments": "/name Microsoft.WindowsFirewall" }
+  },
+  {
+    "id": "panels.system-restore",
+    "aliases": [ ],
+    "category": "panels",
+    "kind": "panel",
+    "title": "Przywracanie systemu",
+    "summary": "Otwiera kreator Przywracania systemu, w którym sam wybierasz punkt przywracania.",
+    "description": "Otwiera panel systemowy Windows: kreator „Przywracanie systemu” (polecenie: rstrui.exe). Samo otwarcie kreatora uruchamia też usługę wbengine.exe (Block Level Backup Engine). Kreator otwiera się także przy wyłączonej ochronie systemu i bez punktów przywracania – wtedy nie ma do czego wrócić. Przywrócenie systemu uruchamiasz sam w kreatorze; DSOptimizer go nie cofa.",
+    "risk": "safe",
+    "scope": "machine",
+    "launch": { "file": "rstrui.exe", "arguments": "" }
+  }
+]

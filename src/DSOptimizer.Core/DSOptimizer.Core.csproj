@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>DSOptimizer.Core</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\THIRD_PARTY_NOTICES.md" LogicalName="DSOptimizer.Core.THIRD_PARTY_NOTICES.md" />
+  </ItemGroup>
+</Project>

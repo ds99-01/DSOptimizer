@@ -1,0 +1,22 @@
+{
+  "entries": [
+    {
+      "id": "install.dso-test-msi",
+      "wingetId": "Dso.TestMsi",
+      "title": "DSO Test MSI",
+      "summary": "Program testowy przypadków VM: MSI bez plików budowany w VM przez New-DsoTestMsi.ps1.",
+      "category": "tools",
+      "match": { "displayName": "DSO Test MSI" },
+      "source": "https://github.com/ds99-01"
+    },
+    {
+      "id": "install.dso-test-absent",
+      "wingetId": "Dso.TestAbsent",
+      "title": "DSO Test Absent",
+      "summary": "Pozycja testowa przypadków VM, której nigdy nie instalujemy (status „nie zainstalowana”).",
+      "category": "tools",
+      "match": { "displayName": "DSO Test Absent" },
+      "source": "https://github.com/ds99-01"
+    }
+  ]
+}

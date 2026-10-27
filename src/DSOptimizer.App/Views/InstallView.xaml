@@ -1,0 +1,384 @@
+<UserControl x:Class="DSOptimizer.App.Views.InstallView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:DSOptimizer.App.ViewModels"
+             xmlns:views="clr-namespace:DSOptimizer.App.Views"
+             xmlns:install="clr-namespace:DSOptimizer.Core.Install;assembly=DSOptimizer.Core">
+  <!-- Strona „Instalacja” (render Tasku 1 Etapu 4c, wariant A – ruling R5; poprawki po przeklikaniu 2026-10-25): nagłówek
+       z „Odśwież”, jedno pole wyszukiwania (każdy znak filtruje listę; Enter albo „Szukaj też w winget” dokłada wyniki winget),
+       po lewej kategorie z licznikami – „Wszystkie”, „Zaznaczone”, potem kategorie listy – po prawej płaska lista: wiersze jak na
+       stronie „Aplikacje” (pole wyboru | tytuł, identyfikator winget drobnym drukiem, opis | status „Zainstalowana”) przeplecione
+       liniami (nagłówki sekcji „Z listy (N)”/„W winget (N)” i kategorii, notatki, komunikat winget) i własny pasek serii
+       „Zainstaluj (N)” (obramowanie „L” jak pasek kategorii) z linkiem „Zaznaczono N …” do „Zaznaczone”. Winget nie działa =
+       komunikat z „Przejdź do: Napraw winget” nad listą (filtr działa, RustDesk z GitHuba dalej do zaznaczenia); błąd odczytu listy
+       = komunikat zamiast listy. Bez kart, ramek i teł do wyróżniania; teksty z InstallText. -->
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+    <!-- Kategoria (wariant A): nazwa i licznik; wybrana półgruba na delikatnym tle, pozostałe drugorzędne (jak menu strony) -->
+    <Style x:Key="CategoryItem" TargetType="ListBoxItem">
+      <Setter Property="FocusVisualStyle" Value="{StaticResource BrandFocusVisual}" />
+      <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ListBoxItem">
+            <Border x:Name="Face" Background="Transparent" CornerRadius="3" Margin="0,0,0,1" MinHeight="30">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="CategoryName" Margin="10,0,0,0" FontSize="13.5" FontWeight="Normal" VerticalAlignment="Center" TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding Name}" />
+                <TextBlock Grid.Column="1" Margin="8,0,10,0" FontSize="12.5" VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding CountText}" />
+              </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Face" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+              </Trigger>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="Face" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                <Setter TargetName="CategoryName" Property="FontWeight" Value="SemiBold" />
+                <Setter TargetName="CategoryName" Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="CategoryListBox" TargetType="ListBox">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="ItemContainerStyle" Value="{StaticResource CategoryItem}" />
+      <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ListBox">
+            <ScrollViewer Focusable="False" CanContentScroll="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+              <!-- Odstęp na pasek przewijania WPF-UI, który rysuje się nad treścią -->
+              <ItemsPresenter Margin="0,0,12,0" />
+            </ScrollViewer>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Wiersz aplikacji: pole wyboru (do zaznaczenia) albo nic | tytuł z identyfikatorem winget, opis, ostrzeżenie pozycji, notatka
+         (Id skrócone) | status „Zainstalowana”. Krawędź w kolorze akcentu = zaznaczona do instalacji (jak na stronie „Aplikacje”, ruling R6).
+         Szablon domyślny dla typu (lista ma też linie InstallListLine – osobny szablon niżej). -->
+    <DataTemplate DataType="{x:Type vm:InstallRowViewModel}">
+      <Border x:Name="SeriesEdge" BorderThickness="3,0,0,0" BorderBrush="Transparent">
+        <Grid Margin="9,10,0,10">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="32" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <CheckBox Style="{StaticResource BrandCheckBox}" IsChecked="{Binding IsSelected, Mode=TwoWay}" AutomationProperties.Name="{Binding Title}"
+                    Visibility="{Binding IsSelectable, Converter={StaticResource BoolToVisibility}}" />
+          <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <WrapPanel>
+              <TextBlock Style="{StaticResource ItemTitleText}" Margin="0,0,10,0" TextWrapping="Wrap" TextTrimming="None" Text="{Binding Title}" />
+              <TextBlock Style="{StaticResource SubText}" FontSize="11.5" Margin="0,2,0,0" VerticalAlignment="Center" TextWrapping="Wrap" TextTrimming="None"
+                         Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding SourceLabel}"
+                         Visibility="{Binding HasSourceLabel, Converter={StaticResource BoolToVisibility}}" />
+            </WrapPanel>
+            <TextBlock Style="{StaticResource SubText}" Margin="0,2,0,0" TextWrapping="Wrap" TextTrimming="None" Text="{Binding Summary}"
+                       Visibility="{Binding HasSummary, Converter={StaticResource BoolToVisibility}}" />
+            <Grid Margin="0,4,0,0" Visibility="{Binding HasWarning, Converter={StaticResource BoolToVisibility}}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <views:BrandIcon Kind="Warning" Size="14" Margin="0,1,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"
+                               Foreground="{DynamicResource SystemFillColorCautionBrush}" />
+              <TextBlock Grid.Column="1" Style="{StaticResource SubText}" TextWrapping="Wrap" TextTrimming="None" Text="{Binding Warning}" />
+            </Grid>
+            <TextBlock Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" TextTrimming="None" Text="{Binding Note}"
+                       Visibility="{Binding HasNote, Converter={StaticResource BoolToVisibility}}" />
+          </StackPanel>
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="12,3,4,0" VerticalAlignment="Top"
+                      Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVisibility}}">
+            <Path Data="M1.5,6 L4.5,9 L10.5,2.5" Stroke="{DynamicResource TextFillColorSecondaryBrush}" StrokeThickness="1.5"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="12" Height="11" Margin="0,3,6,0" VerticalAlignment="Top" />
+            <TextBlock Style="{StaticResource SubText}" Text="{x:Static install:InstallText.InstalledStatus}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+      <DataTemplate.Triggers>
+        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+          <Setter TargetName="SeriesEdge" Property="BorderBrush" Value="{DynamicResource BrandAccentBrush}" />
+        </DataTrigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Linia listy (InstallListLine), cztery odmiany:
+         Header – nazwa (i liczba) + cienka linia, jak dotąd nagłówek kategorii w „Wszystkie” (D1); tak samo sekcje „Z listy (N)” i
+         „W winget (N)”; odstęp 16 nad każdym poza pierwszym. SubHeader – kategoria w sekcji „Z listy”: drobny półgruby tekst z liczbą,
+         bez linii. Note – zdanie drobnym drukiem (SubText). Message – komunikat winget (BodyText), trójkąt tylko przy ostrzeżeniu. -->
+    <DataTemplate DataType="{x:Type vm:InstallListLine}">
+      <Grid x:Name="Line" Margin="0,16,0,0">
+        <StackPanel x:Name="HeaderPart" Visibility="Collapsed">
+          <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+            <TextBlock Style="{StaticResource SectionHeaderText}" Text="{Binding Text}" />
+            <TextBlock Style="{StaticResource SubText}" Margin="8,0,0,1" VerticalAlignment="Bottom" Text="{Binding CountText}"
+                       Visibility="{Binding HasCount, Converter={StaticResource BoolToVisibility}}" />
+          </StackPanel>
+          <Border Height="1" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+        </StackPanel>
+        <StackPanel x:Name="SubHeaderPart" Orientation="Horizontal" Margin="0,0,0,2" Visibility="Collapsed">
+          <TextBlock Style="{StaticResource SubText}" FontWeight="SemiBold" Text="{Binding Text}" />
+          <TextBlock Style="{StaticResource SubText}" Margin="8,0,0,0" Text="{Binding CountText}"
+                     Visibility="{Binding HasCount, Converter={StaticResource BoolToVisibility}}" />
+        </StackPanel>
+        <TextBlock x:Name="NotePart" Style="{StaticResource SubText}" TextWrapping="Wrap" TextTrimming="None" Text="{Binding Text}" Visibility="Collapsed" />
+        <Grid x:Name="MessagePart" Visibility="Collapsed">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <views:BrandIcon Kind="Warning" Size="16" Margin="0,1,10,0" VerticalAlignment="Top" HorizontalAlignment="Left"
+                           Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                           Visibility="{Binding IsWarning, Converter={StaticResource BoolToVisibility}}" />
+          <TextBlock Grid.Column="1" Style="{StaticResource BodyText}" Text="{Binding Text}" />
+        </Grid>
+      </Grid>
+      <DataTemplate.Triggers>
+        <DataTrigger Binding="{Binding Kind}" Value="{x:Static vm:InstallListLineKind.Header}">
+          <Setter TargetName="HeaderPart" Property="Visibility" Value="Visible" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Kind}" Value="{x:Static vm:InstallListLineKind.SubHeader}">
+          <Setter TargetName="SubHeaderPart" Property="Visibility" Value="Visible" />
+          <Setter TargetName="Line" Property="Margin" Value="0,12,0,0" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Kind}" Value="{x:Static vm:InstallListLineKind.Note}">
+          <Setter TargetName="NotePart" Property="Visibility" Value="Visible" />
+          <Setter TargetName="Line" Property="Margin" Value="0,6,0,2" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Kind}" Value="{x:Static vm:InstallListLineKind.Message}">
+          <Setter TargetName="MessagePart" Property="Visibility" Value="Visible" />
+          <Setter TargetName="Line" Property="Margin" Value="0,10,0,4" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding IsFirst}" Value="True">
+          <Setter TargetName="Line" Property="Margin" Value="0" />
+        </DataTrigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Kontener linii: bez fokusu (strzałki ją przeskakują, klik jej nie zaznacza), bez tła, najechania i kreski wiersza -->
+    <Style x:Key="InstallListLineItem" TargetType="ListBoxItem">
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="IsTabStop" Value="False" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="AutomationProperties.Name" Value="{Binding AutomationName}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ListBoxItem">
+            <ContentPresenter />
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Fokus linku „Zaznaczono N …” w pasku serii: ramka jak BrandFocusVisual, ale przy dolnej krawędzi tekstu – przycisk ma ujemne
+         marginesy (tekst w linii z podpowiedzią przy 0), więc zwykła ramka 3 px poza przyciskiem weszłaby na drugą linię paska -->
+    <Style x:Key="SelectionLinkFocusVisual">
+      <Setter Property="Control.Template">
+        <Setter.Value>
+          <ControlTemplate>
+            <Rectangle Margin="-3,1,-3,2" RadiusX="4" RadiusY="4" StrokeThickness="2" SnapsToDevicePixels="True"
+                       Stroke="{DynamicResource TextFillColorPrimaryBrush}" />
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <views:InstallListContainerSelector x:Key="InstallListContainers" RowStyle="{StaticResource ItemListBoxItem}" LineStyle="{StaticResource InstallListLineItem}" />
+  </UserControl.Resources>
+
+  <Grid>
+    <!-- Treść | pasek serii (8 + 56, jak na stronach kategorii) -->
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <!-- Tab: szukaj → „Szukaj też w winget” → „Odśwież” → kategorie → lista (TabIndex lokalnie) -->
+    <DockPanel KeyboardNavigation.TabNavigation="Local">
+      <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel>
+          <TextBlock Style="{StaticResource PageTitleText}" Text="{Binding Name}" />
+          <TextBlock Style="{StaticResource SubText}" Text="{Binding Subtitle}" ToolTip="{Binding Subtitle}" />
+        </StackPanel>
+        <Button Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
+                Content="{x:Static install:InstallText.RefreshButton}" Tag="Refresh" Command="{Binding RefreshCommand}" KeyboardNavigation.TabIndex="3" />
+      </Grid>
+
+      <!-- Wyszukiwanie (spec poprawek pkt 3): każdy znak filtruje listę; Enter albo przycisk = także winget (tylko przy działającym
+           winget); Esc czyści pole. Pole aktywne zawsze przy odczytanej liście. -->
+      <Grid DockPanel.Dock="Top" Margin="0,0,0,12" Visibility="{Binding HasList, Converter={StaticResource BoolToVisibility}}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBox x:Name="SearchBox" Style="{StaticResource SearchTextBox}" Tag="{Binding SearchPlaceholder}" KeyboardNavigation.TabIndex="1"
+                 AutomationProperties.Name="Szukaj aplikacji" AutomationProperties.HelpText="{Binding SearchPlaceholder}"
+                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
+          <TextBox.InputBindings>
+            <KeyBinding Key="Return" Command="{Binding SearchCommand}" />
+            <KeyBinding Key="Escape" Command="{Binding ClearSearchCommand}" />
+          </TextBox.InputBindings>
+        </TextBox>
+        <Button Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
+                Content="{x:Static install:InstallText.SearchButton}" Command="{Binding SearchCommand}" KeyboardNavigation.TabIndex="2" />
+      </Grid>
+
+      <!-- Odmowa konta nad listą (inne konto, Administrator Protection, niepewny użytkownik): trójkąt + tekst, lista bez pól wyboru -->
+      <Grid DockPanel.Dock="Top" Margin="0,0,12,12" Visibility="{Binding HasAccountNotice, Converter={StaticResource BoolToVisibility}}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="26" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <views:BrandIcon Kind="Warning" Size="16" Margin="0,1,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"
+                         Foreground="{DynamicResource SystemFillColorCautionBrush}" />
+        <TextBlock Grid.Column="1" Style="{StaticResource BodyText}" Text="{Binding AccountNotice}" />
+      </Grid>
+
+      <!-- Winget nie działa (decyzja planu 1): komunikat nad listą jak odmowa konta – trójkąt, nagłówek, stan winget, dopisek o RustDesk
+           z GitHuba i „Przejdź do: Napraw winget” po prawej. Pozycje winget bez pól wyboru, filtr listy działa, winget nie (Core). -->
+      <Grid DockPanel.Dock="Top" Margin="0,0,12,12" Visibility="{Binding HasWingetNotice, Converter={StaticResource BoolToVisibility}}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="26" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <views:BrandIcon Kind="Warning" Size="16" Margin="0,2,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"
+                         Foreground="{DynamicResource SystemFillColorCautionBrush}" />
+        <StackPanel Grid.Column="1" VerticalAlignment="Top">
+          <TextBlock Style="{StaticResource ItemTitleText}" FontWeight="SemiBold" Margin="0,0,0,2" TextWrapping="Wrap" TextTrimming="None"
+                     Text="{Binding WingetNoticeTitle}" />
+          <TextBlock Style="{StaticResource BodyText}" Text="{Binding WingetNotice}" />
+          <TextBlock Style="{StaticResource BodyText}" Margin="0,2,0,0" Text="{Binding GitHubStillAvailable}"
+                     Visibility="{Binding HasGitHubStillAvailable, Converter={StaticResource BoolToVisibility}}" />
+        </StackPanel>
+        <!-- „Pokaż RustDesk” (M5): link tekstowy obok przycisku naprawy – kategoria RustDeska i jego wiersz (fokus), nic nie zaznacza -->
+        <StackPanel Grid.Column="2" Margin="16,0,0,0" Orientation="Horizontal" VerticalAlignment="Top">
+          <Button x:Name="ShowRustDeskButton" Margin="0,0,16,0" VerticalAlignment="Center" Style="{StaticResource TextLinkButton}"
+                  Content="{Binding ShowRustDeskText}" Command="{Binding ShowRustDeskCommand}"
+                  Visibility="{Binding CanShowRustDesk, Converter={StaticResource BoolToVisibility}}" />
+          <Button x:Name="RepairWingetButton" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
+                  Content="{x:Static install:InstallText.RepairWingetButton}" Command="{Binding RepairWingetCommand}"
+                  Visibility="{Binding ShowRepairWinget, Converter={StaticResource BoolToVisibility}}" />
+        </StackPanel>
+      </Grid>
+
+      <Grid>
+        <!-- Błąd odczytu listy zainstalowanych: komunikat zamiast listy (bez statusów i pól wyboru); to nie usterka winget, więc bez „Napraw” -->
+        <Grid Margin="0,8,0,0" VerticalAlignment="Top" Visibility="{Binding ShowsProblem, Converter={StaticResource BoolToVisibility}}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="28" />
+            <ColumnDefinition Width="*" MaxWidth="560" />
+          </Grid.ColumnDefinitions>
+          <views:BrandIcon Kind="Warning" Size="20" Margin="0,1,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"
+                           Foreground="{DynamicResource SystemFillColorCautionBrush}" />
+          <TextBlock Grid.Column="1" Style="{StaticResource BodyText}" Text="{Binding WingetMessage}" />
+        </Grid>
+
+        <!-- Wariant A: kategorie z licznikami | wiersze grupy -->
+        <Grid Visibility="{Binding HasList, Converter={StaticResource BoolToVisibility}}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="236" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <!-- „Wszystkie”, „Zaznaczone”, kategorie; w trybie wyszukiwania nic nie jest wybrane (lista pokazuje wyniki filtra) -->
+          <Border BorderThickness="0,0,1,0" BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}">
+            <ListBox x:Name="CategoryList" Style="{StaticResource CategoryListBox}" ItemsSource="{Binding Categories}"
+                     SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" AutomationProperties.Name="Kategorie" KeyboardNavigation.TabIndex="4"
+                     SelectionChanged="OnCategorySelectionChanged" />
+          </Border>
+
+          <DockPanel Grid.Column="1" Margin="16,0,0,0">
+            <!-- Nagłówek wybranej kategorii; przy „Wszystkie”, „Zaznaczone” i wynikach filtra go nie ma – nagłówki są w liście -->
+
+            <StackPanel DockPanel.Dock="Top" Margin="0,0,12,0">
+              <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding ShowsCategoryHeaders}" Value="True">
+                      <Setter Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </StackPanel.Style>
+              <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                <TextBlock Style="{StaticResource SectionHeaderText}" Text="{Binding SelectedGroup.Name}" />
+                <TextBlock Style="{StaticResource SubText}" Margin="8,0,0,1" VerticalAlignment="Bottom" Text="{Binding SelectedGroup.CountText}" />
+              </StackPanel>
+              <Border Height="1" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+            </StackPanel>
+
+            <!-- Pusta lista: „Brak na liście…” (filtr bez dopasowań) albo „Nic nie jest zaznaczone…” (pusta grupa „Zaznaczone”) -->
+            <Grid>
+              <TextBlock VerticalAlignment="Top" Margin="0,10,12,0" Style="{StaticResource BodyText}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                         Text="{Binding EmptyText}" />
+              <!-- Płaska lista: wiersze aplikacji (kontener ItemListBoxItem) i linie InstallListLine (kontener bez fokusu) – InstallListContainers -->
+              <ListBox x:Name="InstallList" Style="{StaticResource ItemListBox}" KeyboardNavigation.TabIndex="6"
+                       ItemContainerStyle="{x:Null}" ItemContainerStyleSelector="{StaticResource InstallListContainers}"
+                       ItemsSource="{Binding VisibleItems}" IsSynchronizedWithCurrentItem="False" SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
+                       AutomationProperties.Name="Aplikacje do instalacji"
+                       MouseDoubleClick="OnInstallListDoubleClick" PreviewKeyDown="OnInstallListKeyDown" />
+            </Grid>
+          </DockPanel>
+        </Grid>
+      </Grid>
+    </DockPanel>
+
+    <!-- Pasek serii instalacji: obramowanie „L” w kolorze marki (lewa 3 px + dolna 1 px) jak na stronie „Aplikacje”; bez „Cofnij” -->
+    <Border Grid.Row="1" Height="56" Margin="0,8,0,0" Padding="14,0,12,0"
+            BorderThickness="3,0,0,1" BorderBrush="{DynamicResource BrandAccentBrush}"
+            Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+            Visibility="{Binding HasList, Converter={StaticResource BoolToVisibility}}">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel VerticalAlignment="Center">
+          <!-- „Zaznaczono N …” = link do „Zaznaczone” (spec 4); przy 0 sama podpowiedź, jak zacząć -->
+          <Button x:Name="ShowSelectedButton" HorizontalAlignment="Left" Margin="-2,-4,0,-4" Style="{StaticResource TextLinkButton}"
+                  FocusVisualStyle="{StaticResource SelectionLinkFocusVisual}"
+                  Content="{Binding SelectionBarTitle}" Command="{Binding ShowSelectedCommand}"
+                  Visibility="{Binding HasSelection, Converter={StaticResource BoolToVisibility}}" />
+          <TextBlock FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Text="{Binding SelectionBarTitle}"
+                     ToolTip="{Binding SelectionBarTitle}" Visibility="{Binding ShowsSelectionHint, Converter={StaticResource BoolToVisibility}}" />
+          <TextBlock TextTrimming="CharacterEllipsis" Text="{Binding SelectionBarDetails}" ToolTip="{Binding SelectionBarDetails}">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock" BasedOn="{StaticResource SubText}">
+                <Style.Triggers>
+                  <Trigger Property="Text" Value="">
+                    <Setter Property="ToolTipService.IsEnabled" Value="False" />
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
+        </StackPanel>
+        <Button Grid.Column="1" Margin="12,0,12,0" Style="{StaticResource TextLinkButton}" Content="Odznacz wszystko"
+                Command="{Binding ClearSelectionCommand}" />
+        <Button x:Name="InstallButton" Grid.Column="2" VerticalAlignment="Center" Style="{StaticResource PrimaryButton}"
+                Content="{Binding InstallText}" Command="{Binding InstallCommand}" />
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

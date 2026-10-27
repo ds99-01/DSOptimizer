@@ -1,0 +1,5 @@
+Name                Id                  Version Match
+--------------------------------------------------------
+Plain App           Vendor.Plain        3.0
+<additional entries truncated due to result limit>
+  <inna notatka po tabeli>

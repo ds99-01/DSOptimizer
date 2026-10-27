@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>DSOptimizer.Tests.Windows</RootNamespace>
+    <!-- NavMenuWidthTests: pomiar tekstu menu czcionką z zasobów DSOptimizer.exe (PresentationCore, FormattedText) -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Management" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DSOptimizer.Windows\DSOptimizer.Windows.csproj" />
+    <ProjectReference Include="..\..\src\DSOptimizer.App\DSOptimizer.App.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,227 @@
+[
+  {
+    "id": "privacy.widgets",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Wyłącz Widżety",
+    "summary": "Win+W przestaje otwierać Widżety, a przycisk znika z paska zadań.",
+    "benefit": "Z paska zadań znika tablica z wiadomościami i pogodą – nic nie wyskakuje po najechaniu myszą.",
+    "description": "Polityka AllowNewsAndInterests = 0 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh, dla wszystkich kont. Win+W przestaje otwierać tablicę od razu, a przełącznik „Widżety” w Ustawieniach (Personalizacja > Pasek zadań) jest wyszarzony, dopóki nie cofniesz zmiany. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie usuwa wartość, a także klucz Dsh, jeśli powstał przy zmianie.",
+    "risk": "safe",
+    "scope": "machine",
+    "suggested": true,
+    "warnings": [
+      "Przycisk zniknie po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”)."
+    ],
+    "registry": [
+      { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh", "name": "AllowNewsAndInterests", "type": "DWord", "value": 0, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "privacy.search-web-results",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Wyłącz wyniki z internetu w wyszukiwaniu Windows",
+    "summary": "Wyszukiwanie w menu Start i na pasku zadań przestaje pokazywać podpowiedzi i wyniki z internetu.",
+    "benefit": "Szukasz programu albo pliku i widzisz tylko to, co jest na komputerze – bez podpowiedzi Bing.",
+    "description": "Wyłącza przełącznik „Zezwalaj aplikacjom wyszukiwania na wyświetlanie wyników” (Prywatność > Wyszukaj): IsGlobalWebSearchProviderToggleEnabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings, dla zalogowanego użytkownika. Dotyczy wszystkich dostawców wyników z sieci, nie tylko Bing; pola wyszukiwania w Eksploratorze plików nie zmienia. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie przywraca poprzedni stan przełącznika.",
+    "risk": "safe",
+    "scope": "user",
+    "suggested": true,
+    "warnings": [
+      "Zmiana zadziała po ponownym zalogowaniu; sam restart Eksploratora może nie wystarczyć."
+    ],
+    "registry": [
+      { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings", "name": "IsGlobalWebSearchProviderToggleEnabled", "type": "DWord", "value": 0, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "privacy.settings-suggestions",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Wyłącz rekomendacje i oferty w Ustawieniach",
+    "summary": "Wyłącza przełącznik „Rekomendacje i oferty w ustawieniach” w sekcji Prywatność.",
+    "benefit": "Aplikacja Ustawienia przestaje podsuwać propozycje i oferty Microsoftu.",
+    "description": "Trzy wartości ustawione na 0: SubscribedContent-338393Enabled, SubscribedContent-353694Enabled i SubscribedContent-353696Enabled w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager, dla zalogowanego użytkownika. To te same wartości, które zapisuje przełącznik w Ustawieniach; przełącznik nie jest blokowany. Cofnięcie przywraca poprzednie wartości.",
+    "risk": "safe",
+    "scope": "user",
+    "suggested": true,
+    "registry": [
+      { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338393Enabled", "type": "DWord", "value": 0, "original": "<RemoveEntry>" },
+      { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-353694Enabled", "type": "DWord", "value": 0, "original": "<RemoveEntry>" },
+      { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-353696Enabled", "type": "DWord", "value": 0, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "privacy.windows-tips",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Wyłącz porady i sugestie Windows",
+    "summary": "Odznacza pole „Uzyskaj porady i sugestie podczas korzystania z systemu Windows” w ustawieniach powiadomień.",
+    "benefit": "Windows przestaje wyświetlać porady i podpowiedzi podczas pracy.",
+    "description": "SubscribedContent-338389Enabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager, dla zalogowanego użytkownika. Pole jest w System > Powiadomienia > Ustawienia dodatkowe; po zmianie jest odznaczone tak samo jak po ręcznym odznaczeniu i nadal można je zmieniać ręcznie. Cofnięcie przywraca poprzednią wartość.",
+    "risk": "safe",
+    "scope": "user",
+    "suggested": true,
+    "registry": [
+      { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338389Enabled", "type": "DWord", "value": 0, "original": 1 }
+    ]
+  },
+  {
+    "id": "privacy.settings-account-notifications",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Wyłącz powiadomienia o koncie w Ustawieniach",
+    "summary": "Wyłącza przełącznik „Pokaż powiadomienia w ustawieniach”, czyli komunikaty o koncie w aplikacji Ustawienia.",
+    "benefit": "Ustawienia przestają pokazywać komunikaty o koncie.",
+    "description": "EnableAccountNotifications = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SystemSettings\\AccountNotifications, dla zalogowanego użytkownika. Przełącznik pokazuje potem stan „wyłączone” tak samo jak po ręcznym wyłączeniu i nie jest blokowany. Cofnięcie przywraca poprzedni stan.",
+    "risk": "safe",
+    "scope": "user",
+    "suggested": true,
+    "registry": [
+      { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SystemSettings\\AccountNotifications", "name": "EnableAccountNotifications", "type": "DWord", "value": 0, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "privacy.start-recommendations",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Wyłącz zalecenia w menu Start",
+    "summary": "Wyłącza w ustawieniach menu Start przełącznik zaleceń, czyli porad i propozycji nowych aplikacji.",
+    "benefit": "Menu Start przestaje podsuwać porady i nowe aplikacje.",
+    "description": "Start_IrisRecommendations = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced, dla zalogowanego użytkownika (Personalizacja > Start). Ustawienia pokazują nowy stan od razu. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie przywraca poprzedni stan przełącznika.",
+    "risk": "safe",
+    "scope": "user",
+    "suggested": true,
+    "warnings": [
+      "Zmiana zadziała po ponownym zalogowaniu; sam restart Eksploratora może nie wystarczyć."
+    ],
+    "registry": [
+      { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "Start_IrisRecommendations", "type": "DWord", "value": 0, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "privacy.start-recommended-section",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Ukryj sekcję „Proponowane” w menu Start",
+    "summary": "Chowa z menu Start sekcję „Proponowane” z polecanymi aplikacjami, plikami i stronami.",
+    "benefit": "Menu Start jest krótsze: znika sekcja z polecanymi treściami i ostatnio otwieranymi plikami.",
+    "description": "Polityka HideRecommendedSection = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer, dla zalogowanego użytkownika. Sekcja znika po ponownym zalogowaniu albo po restarcie komputera. Pozycja nie jest zaznaczana automatycznie, bo ukrywa też ostatnio otwierane pliki. Cofnięcie usuwa wartość, a także klucz Explorer, jeśli powstał przy zmianie.",
+    "risk": "safe",
+    "scope": "user",
+    "suggested": false,
+    "warnings": [
+      "Razem z sekcją znikają z menu Start ostatnio otwierane pliki.",
+      "Zmiana zadziała po ponownym zalogowaniu; sam restart Eksploratora może nie wystarczyć."
+    ],
+    "registry": [
+      { "path": "HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer", "name": "HideRecommendedSection", "type": "DWord", "value": 1, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "privacy.advertising-id",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Wyłącz identyfikator reklamowy",
+    "summary": "Wyłącza identyfikator reklamowy, którego aplikacje mogą używać do dopasowywania reklam.",
+    "benefit": "Reklamy w aplikacjach przestają być dopasowywane na podstawie tego identyfikatora.",
+    "description": "Enabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo oraz Value = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\CPSS\\Store\\AdvertisingInfo, dla zalogowanego użytkownika. Przełącznik w Ustawieniach przy wyłączaniu dodatkowo usuwa sam identyfikator (wartość Id) – ta pozycja go nie usuwa, a stan przełącznika jest taki sam jak po ręcznym wyłączeniu. Jeśli przy pierwszej konfiguracji Windows wybrano „nie”, identyfikator bywa już wyłączony i nic się nie zmienia. Cofnięcie przywraca poprzednie wartości.",
+    "risk": "safe",
+    "scope": "user",
+    "suggested": true,
+    "registry": [
+      { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo", "name": "Enabled", "type": "DWord", "value": 0, "original": 0 },
+      { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\CPSS\\Store\\AdvertisingInfo", "name": "Value", "type": "DWord", "value": 0, "original": 0 }
+    ]
+  },
+  {
+    "id": "privacy.tailored-experiences",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Wyłącz spersonalizowane oferty",
+    "summary": "Wyłącza przełącznik „Spersonalizowane oferty”, przez który Microsoft może dobierać porady i oferty do tego, jak używasz komputera.",
+    "benefit": "Microsoft nie dobiera porad i ofert do tego, jak używasz komputera. Na nowej instalacji przełącznik jest zwykle już wyłączony – pozycja zapisuje ten wybór wprost.",
+    "description": "PersonalizedOffersEnabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy, dla zalogowanego użytkownika. Brak tej wartości też oznacza wyłączony przełącznik, ale DSOptimizer uznaje pozycję za zastosowaną dopiero po zapisaniu 0. Cofnięcie przywraca poprzedni stan.",
+    "risk": "safe",
+    "scope": "user",
+    "suggested": true,
+    "registry": [
+      { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy", "name": "PersonalizedOffersEnabled", "type": "DWord", "value": 0, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "privacy.spotlight",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Wyłącz Windows Spotlight (zdjęcia dnia)",
+    "summary": "Wyłącza Windows Spotlight, czyli codzienne zdjęcia od Microsoftu na pulpicie z podpisami i linkami do Binga.",
+    "benefit": "Pulpit dostaje zwykłe tło zamiast codziennego zdjęcia od Microsoftu i znika ikona „Dowiedz się więcej o tym zdjęciu”.",
+    "description": "Polityka DisableWindowsSpotlightFeatures = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, dla zalogowanego użytkownika. Tło pulpitu przełącza się z „W centrum uwagi Windows” na „Obraz” od razu, bez restartu. Nie wiadomo, czy zmiana obejmuje też ekran blokady. Pozycja nie jest zaznaczana automatycznie. Cofnięcie usuwa politykę i klucz CloudContent, ale tło zostaje „Obraz”.",
+    "risk": "caution",
+    "scope": "user",
+    "suggested": false,
+    "warnings": [
+      "Cofnięcie nie przywraca zdjęć dnia: wybierz je ponownie w Ustawienia > Personalizacja > Tło."
+    ],
+    "registry": [
+      { "path": "HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent", "name": "DisableWindowsSpotlightFeatures", "type": "DWord", "value": 1, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "privacy.diagnostic-data-required",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Ogranicz dane diagnostyczne do wymaganych",
+    "summary": "Polityka ogranicza dane diagnostyczne wysyłane do Microsoftu do wymaganych i blokuje przełącznik danych opcjonalnych.",
+    "benefit": "Opcjonalnych danych diagnostycznych nie da się włączyć – do Microsoftu trafiają tylko wymagane.",
+    "description": "Polityka AllowTelemetry = 1 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection, dla wszystkich kont: ogranicz dane diagnostyczne do wymaganych. Nie wyłącza wysyłania danych diagnostycznych. Wartość 0 działa tylko w edycjach Enterprise i Education, dlatego pozycja jej nie używa. Przełącznik opcjonalnych danych (Prywatność i zabezpieczenia > Diagnostyka i opinie) jest wyszarzony, dopóki nie cofniesz zmiany. Cofnięcie usuwa tylko wartość; klucz DataCollection istniał wcześniej i zostaje.",
+    "risk": "caution",
+    "scope": "machine",
+    "suggested": true,
+    "warnings": [
+      "To ograniczenie, a nie wyłączenie – Microsoft nadal otrzymuje dane wymagane.",
+      "W Ustawieniach pojawi się komunikat, że niektórymi ustawieniami zarządza organizacja."
+    ],
+    "registry": [
+      { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection", "name": "AllowTelemetry", "type": "DWord", "value": 1, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "privacy.feedback-notifications",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Wyłącz powiadomienia o opiniach",
+    "summary": "Wyłącza powiadomienia z prośbą o opinię i chowa listę „Częstotliwość opinii” w Ustawieniach.",
+    "benefit": "Nie wyskakują już powiadomienia z prośbą o opinię o Windows.",
+    "description": "Polityka DoNotShowFeedbackNotifications = 1 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection, dla wszystkich kont. Na stronie Diagnostyka i opinie znika lista „Częstotliwość opinii”. Cofnięcie usuwa tylko wartość; klucz DataCollection istniał wcześniej i zostaje.",
+    "risk": "safe",
+    "scope": "machine",
+    "suggested": true,
+    "warnings": [
+      "W Ustawieniach pojawi się komunikat, że niektórymi ustawieniami zarządza organizacja."
+    ],
+    "registry": [
+      { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection", "name": "DoNotShowFeedbackNotifications", "type": "DWord", "value": 1, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "privacy.diagtrack",
+    "category": "privacy",
+    "kind": "tweak",
+    "title": "Wyłącz usługę telemetrii DiagTrack",
+    "summary": "Zatrzymuje usługę „Środowiska użytkownika połączonego i telemetria” (DiagTrack) i nie pozwala jej startować.",
+    "benefit": "Usługa zbierająca dane telemetrii przestaje działać w tle i nie wraca po restarcie komputera.",
+    "description": "Usługa DiagTrack (Connected User Experiences and Telemetry): typ startu Wyłączony i zatrzymanie. Stan pozycji zależy od typu startu, a nie od tego, czy usługa akurat działa. Polityki danych diagnostycznych nie zmienia – to osobna pozycja „Ogranicz dane diagnostyczne do wymaganych”. Cofnięcie przywraca poprzedni typ startu i uruchamia usługę, jeśli działała.",
+    "risk": "caution",
+    "scope": "machine",
+    "suggested": true,
+    "warnings": [
+      "Microsoft nie opisuje wyłączania tej usługi, a korzysta z niej też Windows Update – przy kłopotach z aktualizacjami cofnij zmianę.",
+      "Nie gwarantuje, że Windows przestanie wysyłać dane diagnostyczne."
+    ],
+    "services": [
+      { "name": "DiagTrack", "startType": "Disabled", "stop": true, "original": "Automatic" }
+    ]
+  }
+]

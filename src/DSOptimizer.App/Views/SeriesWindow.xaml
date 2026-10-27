@@ -1,0 +1,376 @@
+<ui:FluentWindow x:Class="DSOptimizer.App.Views.SeriesWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:vm="clr-namespace:DSOptimizer.App.ViewModels"
+                 xmlns:views="clr-namespace:DSOptimizer.App.Views"
+                 xmlns:gui="clr-namespace:DSOptimizer.Core.Gui;assembly=DSOptimizer.Core"
+                 Title="{Binding HeaderTitle}" Width="600" MinHeight="0" SizeToContent="Height" ResizeMode="NoResize"
+                 WindowStartupLocation="CenterOwner" ShowInTaskbar="False" TextOptions.TextFormattingMode="Display"
+                 ExtendsContentIntoTitleBar="True" WindowBackdropType="None" WindowCornerPreference="Round"
+                 FontFamily="{StaticResource BrandFont}" UseLayoutRounding="True" SnapsToDevicePixels="True"
+                 Background="{DynamicResource ApplicationBackgroundBrush}"
+                 Closing="OnClosing" PreviewKeyDown="OnPreviewKeyDown">
+  <Window.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+    <!-- Kroki (makiety 2 i 3): tytuł 13,5, stan po prawej drugorzędny -->
+    <Style x:Key="StepTitle" TargetType="TextBlock" BasedOn="{StaticResource BodyText}">
+      <Setter Property="FontSize" Value="13.5" />
+    </Style>
+    <Style x:Key="StepState" TargetType="TextBlock" BasedOn="{StaticResource SubText}">
+      <Setter Property="HorizontalAlignment" Value="Right" />
+      <Setter Property="Margin" Value="12,0,0,0" />
+    </Style>
+    <!-- Tekst drugorzędny, który się zawija (SubText domyślnie skraca wielokropkiem) -->
+    <Style x:Key="WrappedSubText" TargetType="TextBlock" BasedOn="{StaticResource SubText}">
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="TextTrimming" Value="None" />
+    </Style>
+
+    <!-- Ostrzeżenie: trójkąt w kolorze ostrzeżenia + tekst (jak w panelu szczegółów okna głównego) -->
+    <DataTemplate x:Key="SeriesWarningTemplate">
+      <Grid Margin="0,6,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="22" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <views:BrandIcon Kind="Warning" Size="16" Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                         Margin="0,1,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+        <TextBlock Grid.Column="1" Style="{StaticResource BodyText}" Text="{Binding}" />
+      </Grid>
+    </DataTemplate>
+
+    <!-- Wiersz „nazwa – wartość”: kolumna nazw wspólna dla całej tabeli (SharedSizeGroup) -->
+    <DataTemplate x:Key="FactTemplate" DataType="{x:Type gui:SeriesFact}">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" SharedSizeGroup="FactName" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Style="{StaticResource DetailKeyText}" Text="{Binding Name}" />
+        <TextBlock Grid.Column="1" Style="{StaticResource DetailValueText}" TextWrapping="Wrap" TextTrimming="None" Margin="0,0,0,5"
+                   Text="{Binding Value}" />
+      </Grid>
+    </DataTemplate>
+    <DataTemplate x:Key="TechnicalTemplate" DataType="{x:Type gui:SeriesFact}">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" SharedSizeGroup="TechnicalName" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Style="{StaticResource DetailKeyText}" Text="{Binding Name}" />
+        <TextBlock Grid.Column="1" Style="{StaticResource WrappedSubText}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                   Margin="0,0,0,5" Text="{Binding Value}" />
+      </Grid>
+    </DataTemplate>
+
+    <!-- Pozycja potwierdzenia: miernik ryzyka (bez niego przy usuwaniu aplikacji), tytuł, opis, uwagi, ostrzeżenia,
+         rozwijane szczegóły techniczne -->
+    <DataTemplate x:Key="SeriesItemTemplate" DataType="{x:Type vm:SeriesItemViewModel}">
+      <Grid Margin="0,12,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="{Binding RiskColumnWidth}" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <ContentPresenter Content="{Binding Risk}" ContentTemplate="{StaticResource RiskMeterTemplate}"
+                          VerticalAlignment="Top" Margin="0,4,0,0" Visibility="{Binding ShowRisk, Converter={StaticResource BoolToVisibility}}" />
+        <StackPanel Grid.Column="1">
+          <TextBlock Style="{StaticResource ItemTitleText}" FontWeight="SemiBold" Text="{Binding Title}" />
+          <TextBlock Style="{StaticResource BodyText}" Margin="0,2,0,0" Text="{Binding Summary}" />
+          <ItemsControl ItemsSource="{Binding Notes}" Focusable="False">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Style="{StaticResource WrappedSubText}" Margin="0,3,0,0" Text="{Binding}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <ItemsControl ItemsSource="{Binding Warnings}" ItemTemplate="{StaticResource SeriesWarningTemplate}" Focusable="False" />
+          <Button Style="{StaticResource TextLinkButton}" HorizontalAlignment="Left" Margin="-2,2,0,0"
+                  Content="{Binding ToggleText}" Command="{Binding ToggleCommand}"
+                  Visibility="{Binding HasTechnical, Converter={StaticResource BoolToVisibility}}" />
+          <ItemsControl ItemsSource="{Binding Technical}" ItemTemplate="{StaticResource TechnicalTemplate}" Focusable="False"
+                        Grid.IsSharedSizeScope="True" Margin="0,4,0,0"
+                        Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibility}}" />
+        </StackPanel>
+      </Grid>
+    </DataTemplate>
+
+    <!--
+      Krok postępu i wyniku: gotowy = znacznik ✓ (ścieżka z pola wyboru), w toku = kwadrat akcentu i pogrubienie,
+      ostrzeżenie = trójkąt, błąd = prostokąt krytyczny 6 px i pogrubienie, czeka i pominięty = tekst trzeciorzędny.
+      Pierwsza linia ma 34 px (makieta); szczegóły (tylko w wyniku) pod tytułem.
+    -->
+    <DataTemplate x:Key="StepTemplate" DataType="{x:Type vm:SeriesStepItem}">
+      <Border x:Name="Row" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="28" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="34" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <Path x:Name="DoneMark" Data="M4,9 L7.5,12.5 L14,5.5" Stroke="{DynamicResource TextFillColorPrimaryBrush}" StrokeThickness="2"
+                VerticalAlignment="Center" Visibility="Collapsed" />
+          <Rectangle x:Name="RunningMark" Width="9" Height="9" Fill="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Left"
+                     Margin="4,0,0,0" VerticalAlignment="Center" Visibility="Collapsed" />
+          <Rectangle x:Name="FailedMark" Width="6" Height="6" Fill="{DynamicResource SystemFillColorCriticalBrush}" HorizontalAlignment="Left"
+                     Margin="5,0,0,0" VerticalAlignment="Center" Visibility="Collapsed" />
+          <views:BrandIcon x:Name="WarningMark" Kind="Warning" Size="16" Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                           HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Collapsed" />
+          <TextBlock x:Name="Title" Grid.Column="1" Style="{StaticResource StepTitle}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
+                     VerticalAlignment="Center" Text="{Binding Title}" ToolTip="{Binding Title}" />
+          <TextBlock x:Name="State" Grid.Column="2" Style="{StaticResource StepState}" VerticalAlignment="Center" Text="{Binding StatusText}" />
+          <ItemsControl Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" ItemsSource="{Binding Details}" Focusable="False" Margin="0,-6,0,9"
+                        Visibility="{Binding ShowDetails, Converter={StaticResource BoolToVisibility}}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Style="{StaticResource WrappedSubText}" Margin="0,0,0,1" Text="{Binding}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+      </Border>
+      <DataTemplate.Triggers>
+        <DataTrigger Binding="{Binding IsLast}" Value="True">
+          <Setter TargetName="Row" Property="BorderThickness" Value="0" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding State}" Value="{x:Static gui:BatchStepState.Waiting}">
+          <Setter TargetName="Title" Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+          <Setter TargetName="State" Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding State}" Value="{x:Static gui:BatchStepState.Skipped}">
+          <Setter TargetName="Title" Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+          <Setter TargetName="State" Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding State}" Value="{x:Static gui:BatchStepState.Running}">
+          <Setter TargetName="RunningMark" Property="Visibility" Value="Visible" />
+          <Setter TargetName="Title" Property="FontWeight" Value="SemiBold" />
+          <Setter TargetName="State" Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding State}" Value="{x:Static gui:BatchStepState.Done}">
+          <Setter TargetName="DoneMark" Property="Visibility" Value="Visible" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding State}" Value="{x:Static gui:BatchStepState.Warning}">
+          <Setter TargetName="WarningMark" Property="Visibility" Value="Visible" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding State}" Value="{x:Static gui:BatchStepState.Failed}">
+          <Setter TargetName="FailedMark" Property="Visibility" Value="Visible" />
+          <Setter TargetName="Title" Property="FontWeight" Value="SemiBold" />
+          <Setter TargetName="State" Property="FontWeight" Value="SemiBold" />
+          <Setter TargetName="State" Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </DataTrigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Krzyżyk na pasku: w trakcie postępu nieaktywny (przygaszony) -->
+    <Style x:Key="SeriesCloseButton" TargetType="Button" BasedOn="{StaticResource CaptionCloseButton}">
+      <Style.Triggers>
+        <Trigger Property="IsEnabled" Value="False">
+          <Setter Property="Opacity" Value="0.35" />
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+  </Window.Resources>
+
+  <DockPanel Background="{DynamicResource ApplicationBackgroundBrush}" TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <!-- Pasek tytułu jak pasek marki; obszar podpisu WindowChrome (przeciąganie), krzyżyk = Anuluj / Zamknij -->
+    <Grid DockPanel.Dock="Top" Height="44" Background="{StaticResource HeadBackgroundBrush}">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <DockPanel VerticalAlignment="Center" Margin="16,0,8,0">
+        <TextBlock DockPanel.Dock="Left" Text="{Binding HeaderTitle}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource HeadForegroundBrush}" />
+        <TextBlock Text="{Binding HeaderSubtitle}" FontSize="13" Margin="10,1,0,0" Foreground="{StaticResource HeadForegroundBrush}" Opacity="0.65"
+                   TextTrimming="CharacterEllipsis" />
+      </DockPanel>
+      <Button x:Name="CloseButton" Grid.Column="1" Style="{StaticResource SeriesCloseButton}" Content="&#xE8BB;"
+              AutomationProperties.Name="Zamknij" IsEnabled="{Binding CanClose}" Click="OnCloseClick" />
+    </Grid>
+
+    <!-- Postęp: cienka linia akcentu pod paskiem, długość = ukończone kroki (tylko w trakcie serii; okno długiej naprawy ma pasek
+         w treści, Ruling R6) -->
+    <Grid DockPanel.Dock="Top" Height="3" Background="{DynamicResource DividerStrokeColorDefaultBrush}"
+          Visibility="{Binding ShowSeriesProgressLine, Converter={StaticResource BoolToVisibility}}">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="{Binding ProgressDone}" />
+        <ColumnDefinition Width="{Binding ProgressRest}" />
+      </Grid.ColumnDefinitions>
+      <Rectangle Fill="{DynamicResource BrandAccentBrush}" />
+    </Grid>
+
+    <!-- Stopka zawsze widoczna; treść nad nią przewijana -->
+    <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+            Background="{DynamicResource SubtleFillColorSecondaryBrush}" Padding="20,12">
+      <Grid>
+        <!-- Potwierdzenie -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                    Visibility="{Binding IsConfirm, Converter={StaticResource BoolToVisibility}}">
+          <Button Content="Anuluj" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Command="{Binding CancelCommand}" />
+          <Button Content="{Binding PrimaryText}" Style="{StaticResource PrimaryButton}" Command="{Binding PrimaryCommand}" />
+        </StackPanel>
+        <!-- Postęp -->
+        <DockPanel Visibility="{Binding ShowStopFooter, Converter={StaticResource BoolToVisibility}}">
+          <Button DockPanel.Dock="Right" Content="{Binding StopButtonText}" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"
+                  Command="{Binding StopCommand}" />
+          <TextBlock Style="{StaticResource SubText}" VerticalAlignment="Center" Text="{Binding StopNoteText}" />
+        </DockPanel>
+        <!-- Pytanie o kontynuację bez punktu przywracania (seria usuwania): domyślne „Nie” (IsDefault + fokus z kodu okna) -->
+        <DockPanel Visibility="{Binding IsAsking, Converter={StaticResource BoolToVisibility}}">
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,0,0">
+            <Button Content="{Binding ContinueText}" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Command="{Binding ContinueCommand}" />
+            <!-- Domyślne „Nie”: ramka fokusu (jak render pytanie-bez-punktu) widoczna, gdy przycisk ma fokus klawiatury – także zaraz po
+                 otwarciu pytania (fokus ustawia kod okna); ramka nie przechwytuje kliknięć -->
+            <Grid>
+              <Button x:Name="DeclineButton" Content="{Binding DeclineText}" Style="{StaticResource PrimaryButton}" MinWidth="64" IsDefault="True"
+                      FocusVisualStyle="{x:Null}" Command="{Binding DeclineCommand}" />
+              <Rectangle Margin="-3" RadiusX="4" RadiusY="4" StrokeThickness="2" Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+                         IsHitTestVisible="False"
+                         Visibility="{Binding IsKeyboardFocused, ElementName=DeclineButton, Converter={StaticResource BoolToVisibility}}" />
+            </Grid>
+          </StackPanel>
+          <TextBlock Style="{StaticResource SubText}" VerticalAlignment="Center" Text="{Binding AskNote}" />
+        </DockPanel>
+        <!-- Wynik -->
+        <DockPanel Visibility="{Binding IsResult, Converter={StaticResource BoolToVisibility}}">
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+            <Button Content="Uruchom ponownie teraz" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Command="{Binding RestartCommand}"
+                    Visibility="{Binding ShowRestartButton, Converter={StaticResource BoolToVisibility}}" />
+            <Button x:Name="CloseResultButton" Content="Zamknij" Style="{StaticResource PrimaryButton}" Command="{Binding CloseCommand}" />
+          </StackPanel>
+          <Button Content="Kopiuj wynik" Style="{StaticResource TextLinkButton}" HorizontalAlignment="Left" Margin="-2,0,0,0"
+                  Command="{Binding CopyResultCommand}" />
+        </DockPanel>
+      </Grid>
+    </Border>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+      <Grid Margin="20,14,20,14">
+        <!-- Potwierdzenie: treść (restart) albo fakty serii i pozycje -->
+        <StackPanel Visibility="{Binding IsConfirm, Converter={StaticResource BoolToVisibility}}">
+          <TextBlock Style="{StaticResource BodyText}" Margin="0,2,0,6" Text="{Binding Message}"
+                     Visibility="{Binding HasMessage, Converter={StaticResource BoolToVisibility}}" />
+          <ItemsControl ItemsSource="{Binding Facts}" ItemTemplate="{StaticResource FactTemplate}" Focusable="False" Grid.IsSharedSizeScope="True"
+                        Margin="0,2,0,0" Visibility="{Binding HasFacts, Converter={StaticResource BoolToVisibility}}" />
+          <!-- Ostrzeżenia całej serii (usuwanie aplikacji: ochrona systemu, inne konto procesu, brak cofania) -->
+          <ItemsControl ItemsSource="{Binding ConfirmWarnings}" ItemTemplate="{StaticResource SeriesWarningTemplate}" Focusable="False"
+                        Margin="0,0,0,2" Visibility="{Binding HasConfirmWarnings, Converter={StaticResource BoolToVisibility}}" />
+          <Rectangle Height="1" Fill="{DynamicResource DividerStrokeColorDefaultBrush}" Margin="0,8,0,0"
+                     Visibility="{Binding HasItems, Converter={StaticResource BoolToVisibility}}" />
+          <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{StaticResource SeriesItemTemplate}" Focusable="False" />
+        </StackPanel>
+
+        <!-- Postęp i wynik: kroki, w wyniku ostrzeżenia serii i blok restartu -->
+        <StackPanel>
+          <StackPanel.Style>
+            <Style TargetType="StackPanel">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsConfirm}" Value="True">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </StackPanel.Style>
+          <!--
+            Długa naprawa (wariant B): duży procent obok etapu, pasek 6 px, „Krok N z M”, podpowiedź; w wyniku procent tylko przy
+            udanym końcu (100%), obok tytuł pozycji, pod paskiem treść wyniku z TweakResult. Procent nieokreślony: bez liczby
+            i bez paska (miejsce zostaje, wysokość okna się nie zmienia).
+          -->
+          <StackPanel Visibility="{Binding ShowActionPanel, Converter={StaticResource BoolToVisibility}}">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Left" FontSize="40" FontWeight="SemiBold" VerticalAlignment="Bottom" Text="{Binding ActionPercentText}">
+                <TextBlock.Style>
+                  <Style TargetType="TextBlock" BasedOn="{StaticResource BodyText}">
+                    <Setter Property="Margin" Value="0,0,16,0" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding HasActionPercent}" Value="False">
+                        <Setter Property="Margin" Value="0" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </TextBlock.Style>
+              </TextBlock>
+              <TextBlock Style="{StaticResource BodyText}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                         VerticalAlignment="Bottom" Margin="0,0,0,7" Text="{Binding ActionStage}" ToolTip="{Binding ActionStage}" />
+            </DockPanel>
+            <Grid Height="6" Margin="0,10,0,0" Background="{DynamicResource DividerStrokeColorDefaultBrush}">
+              <Grid.Style>
+                <Style TargetType="Grid">
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding HasActionPercent}" Value="False">
+                      <Setter Property="Visibility" Value="Hidden" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Grid.Style>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{Binding ActionBarDone}" />
+                <ColumnDefinition Width="{Binding ActionBarRest}" />
+              </Grid.ColumnDefinitions>
+              <Rectangle Fill="{DynamicResource BrandAccentBrush}" />
+            </Grid>
+            <!-- „Krok N z M · Dalej: …” w jednej linii; „Dalej” (tekst drugorzędny) tylko, gdy handler podał następny krok -->
+            <DockPanel Margin="0,8,0,0" Visibility="{Binding HasActionStepText, Converter={StaticResource BoolToVisibility}}">
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource BodyText}" TextWrapping="NoWrap" Text="{Binding ActionStepText}" />
+              <TextBlock DockPanel.Dock="Left" Style="{StaticResource SubText}" Margin="8,0" Text="·"
+                         Visibility="{Binding HasActionNextStage, Converter={StaticResource BoolToVisibility}}" />
+              <TextBlock Style="{StaticResource SubText}" Text="{Binding ActionNextStageText}" ToolTip="{Binding ActionNextStageText}"
+                         Visibility="{Binding HasActionNextStage, Converter={StaticResource BoolToVisibility}}" />
+            </DockPanel>
+            <TextBlock Style="{StaticResource WrappedSubText}" Margin="0,8,0,0" Text="{Binding ActionHint}"
+                       Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibility}}" />
+            <ItemsControl ItemsSource="{Binding ActionResultLines}" Focusable="False" Margin="0,12,0,0"
+                          Visibility="{Binding HasActionResultLines, Converter={StaticResource BoolToVisibility}}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Style="{StaticResource BodyText}" Margin="0,0,0,3" Text="{Binding}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+          <ItemsControl x:Name="StepList" ItemsSource="{Binding Steps}" ItemTemplate="{StaticResource StepTemplate}" Focusable="False" />
+          <!-- Pytanie przed pierwszym usunięciem, gdy punkt przywracania nie powstał -->
+          <StackPanel x:Name="QuestionPanel" Visibility="{Binding IsAsking, Converter={StaticResource BoolToVisibility}}">
+            <Rectangle Height="1" Fill="{DynamicResource DividerStrokeColorDefaultBrush}" Margin="0,10,0,10" />
+            <TextBlock Style="{StaticResource BodyText}" FontSize="14" FontWeight="SemiBold" Text="{Binding AskTitle}" />
+            <TextBlock Style="{StaticResource BodyText}" Margin="0,4,0,0" Text="{Binding AskBody}" />
+          </StackPanel>
+          <StackPanel Visibility="{Binding HasResultNotes, Converter={StaticResource BoolToVisibility}}">
+            <Rectangle Height="1" Fill="{DynamicResource DividerStrokeColorDefaultBrush}" Margin="0,10,0,6" />
+            <ItemsControl ItemsSource="{Binding Warnings}" Focusable="False">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid Margin="0,6,0,0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="28" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <views:BrandIcon Kind="Warning" Size="16" Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                     Margin="0,1,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource BodyText}" Text="{Binding}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Grid Margin="0,6,0,0" Visibility="{Binding HasReboot, Converter={StaticResource BoolToVisibility}}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="28" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <views:BrandIcon Kind="Warning" Size="16" Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                               Margin="0,1,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+              <StackPanel Grid.Column="1">
+                <TextBlock Style="{StaticResource BodyText}" FontWeight="SemiBold" Text="{x:Static gui:GuiText.RebootTitle}" />
+                <TextBlock Style="{StaticResource BodyText}" Margin="0,2,0,0" Text="{Binding RebootText}" />
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+  </DockPanel>
+</ui:FluentWindow>

@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>DSOptimizer.App</RootNamespace>
+    <AssemblyName>DSOptimizer</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\dsoptimizer.ico</ApplicationIcon>
+    <StartupObject>DSOptimizer.App.Program</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="WPF-UI" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+  <!--
+    Wariant jednego exe (Etap 5, tools\release\Build-Release.ps1 -Variant SingleExe): /p:DsoSingleExe=true dokłada Costura.Fody,
+    która osadza biblioteki w DSOptimizer.exe jako zwykłe, nieskompresowane zasoby (FodyWeavers.xml) – bez zaciemniania, szyfrowania
+    i pakowania. Bez tej właściwości build to zwykły folder exe + DLL. Osobny katalog pośredni (obj\single\…), żeby exe zszyty
+    przez Costurę nigdy nie trafił z obj do zwykłego buildu. Projekty zależne budują się do własnych bin także przy `-o`, więc
+    w katalogu wyjściowym zostaje sam DSOptimizer.exe (+ .config i .pdb).
+  -->
+  <PropertyGroup Condition="'$(DsoSingleExe)' == 'true'">
+    <IntermediateOutputPath>obj\single\$(Configuration)\</IntermediateOutputPath>
+    <PassOutputPathToReferencedProjects>false</PassOutputPathToReferencedProjects>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(DsoSingleExe)' == 'true'">
+    <PackageReference Include="Fody" PrivateAssets="all" />
+    <PackageReference Include="Costura.Fody" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DSOptimizer.Core\DSOptimizer.Core.csproj" />
+    <ProjectReference Include="..\DSOptimizer.Windows\DSOptimizer.Windows.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\dsoptimizer.ico" />
+    <!-- Hanken Grotesk (SIL OFL 1.1, THIRD_PARTY_NOTICES.md), osadzona w exe -->
+    <Resource Include="Assets\Fonts\HankenGrotesk-*.ttf" />
+  </ItemGroup>
+</Project>

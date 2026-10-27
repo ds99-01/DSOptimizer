@@ -1,0 +1,22 @@
+<Application x:Class="DSOptimizer.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <!-- Motyw startowy; Program przełącza go wg ustawienia (ThemeController: Systemowy, Jasny albo Ciemny) -->
+        <ui:ThemesDictionary Theme="Light" />
+        <ui:ControlsDictionary />
+        <ResourceDictionary Source="Themes/Tokens.xaml" />
+        <ResourceDictionary Source="Themes/Icons.xaml" />
+        <!-- Znak „DŚO”: jedyna definicja, z niej powstaje też Assets/dsoptimizer.ico (tools/brand/Build-AppIcon.ps1) -->
+        <ResourceDictionary Source="Themes/BrandMark.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <!-- Podpowiedzi w czcionce marki (popup nie dziedziczy czcionki okna) -->
+      <Style TargetType="ToolTip" BasedOn="{StaticResource {x:Type ToolTip}}">
+        <Setter Property="FontFamily" Value="{StaticResource BrandFont}" />
+      </Style>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

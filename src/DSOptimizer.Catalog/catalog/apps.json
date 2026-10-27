@@ -1,0 +1,334 @@
+{
+  "entries": [
+    {
+      "id": "install.chrome",
+      "wingetId": "Google.Chrome",
+      "title": "Google Chrome",
+      "summary": "Przeglądarka internetowa Google.",
+      "category": "browsers",
+      "match": { "displayName": "Google Chrome", "publisher": "Google LLC" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/Google/Chrome"
+    },
+    {
+      "id": "install.firefox",
+      "wingetId": "Mozilla.Firefox",
+      "title": "Mozilla Firefox",
+      "summary": "Przeglądarka internetowa fundacji Mozilla.",
+      "category": "browsers",
+      "match": { "displayName": "Mozilla Firefox (*", "publisher": "Mozilla" },
+      "warning": "Instaluje też usługę aktualizacji Mozilla Maintenance Service.",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Mozilla/Firefox"
+    },
+    {
+      "id": "install.brave",
+      "wingetId": "Brave.Brave",
+      "title": "Brave",
+      "summary": "Przeglądarka internetowa z wbudowanym blokowaniem reklam i śledzenia.",
+      "category": "browsers",
+      "match": { "displayName": "Brave" },
+      "warning": "Instaluje się tylko dla bieżącego konta Windows.",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/b/Brave/Brave"
+    },
+    {
+      "id": "install.opera",
+      "wingetId": "Opera.Opera",
+      "title": "Opera",
+      "summary": "Przeglądarka internetowa z wbudowanym VPN i blokowaniem reklam.",
+      "category": "browsers",
+      "match": { "displayName": "Opera Stable*", "publisher": "Opera Software" },
+      "warning": "Instaluje się tylko dla bieżącego konta Windows.",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/Opera/Opera"
+    },
+    {
+      "id": "install.discord",
+      "wingetId": "Discord.Discord",
+      "title": "Discord",
+      "summary": "Komunikator tekstowy i głosowy z serwerami społeczności.",
+      "category": "messengers",
+      "match": { "displayName": "Discord", "publisher": "Discord Inc." },
+      "warning": "Instaluje się tylko dla bieżącego konta Windows.",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/d/Discord/Discord"
+    },
+    {
+      "id": "install.telegram",
+      "wingetId": "Telegram.TelegramDesktop",
+      "title": "Telegram",
+      "summary": "Komunikator Telegram w wersji na komputer.",
+      "category": "messengers",
+      "match": { "displayName": "Telegram Desktop*", "publisher": "Telegram FZ-LLC" },
+      "warning": "Instaluje się tylko dla bieżącego konta Windows.",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/Telegram/TelegramDesktop"
+    },
+    {
+      "id": "install.signal",
+      "wingetId": "OpenWhisperSystems.Signal",
+      "title": "Signal",
+      "summary": "Szyfrowany komunikator Signal w wersji na komputer (wymaga konta w telefonie).",
+      "category": "messengers",
+      "match": { "displayName": "Signal*", "publisher": "Signal Messenger, LLC" },
+      "warning": "Instaluje się tylko dla bieżącego konta Windows.",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/OpenWhisperSystems/Signal"
+    },
+    {
+      "id": "install.zoom",
+      "wingetId": "Zoom.Zoom",
+      "title": "Zoom Workplace",
+      "summary": "Program do spotkań wideo i rozmów Zoom.",
+      "category": "messengers",
+      "match": { "displayName": "Zoom Workplace*", "publisher": "Zoom" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/z/Zoom/Zoom"
+    },
+    {
+      "id": "install.vlc",
+      "wingetId": "VideoLAN.VLC",
+      "title": "VLC media player",
+      "summary": "Odtwarzacz filmów i muzyki, który otwiera prawie każdy format bez doinstalowywania kodeków.",
+      "category": "multimedia",
+      "match": { "displayName": "VLC media player", "publisher": "VideoLAN" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/v/VideoLAN/VLC"
+    },
+    {
+      "id": "install.k-lite",
+      "wingetId": "CodecGuide.K-LiteCodecPack.Standard",
+      "title": "K-Lite Codec Pack Standard",
+      "summary": "Zestaw kodeków i odtwarzacz MPC-HC, dzięki którym Windows otwiera więcej formatów wideo i audio.",
+      "category": "multimedia",
+      "match": { "displayName": "K-Lite Codec Pack * Standard", "publisher": "KLCP" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/CodecGuide/K-LiteCodecPack/Standard"
+    },
+    {
+      "id": "install.foobar2000",
+      "wingetId": "PeterPawlowski.foobar2000",
+      "title": "foobar2000",
+      "summary": "Lekki odtwarzacz muzyki z biblioteką utworów.",
+      "category": "multimedia",
+      "match": { "displayName": "foobar2000*", "publisher": "Peter Pawlowski" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/p/PeterPawlowski/foobar2000"
+    },
+    {
+      "id": "install.foxit-reader",
+      "wingetId": "Foxit.FoxitReader",
+      "title": "Foxit PDF Reader",
+      "summary": "Darmowa przeglądarka plików PDF z wypełnianiem formularzy, komentarzami i podpisem.",
+      "category": "documents",
+      "match": { "displayName": "Foxit PDF Reader", "publisher": "Foxit Software Inc." },
+      "warning": "Instaluje też usługę Foxit PDF Reader Update Service (automatyczne aktualizacje, startuje z systemem).",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/f/Foxit/FoxitReader"
+    },
+    {
+      "id": "install.libreoffice",
+      "wingetId": "TheDocumentFoundation.LibreOffice",
+      "title": "LibreOffice",
+      "summary": "Darmowy pakiet biurowy: edytor tekstu, arkusz kalkulacyjny i prezentacje, otwiera pliki Worda i Excela.",
+      "category": "documents",
+      "match": { "displayName": "LibreOffice*", "publisher": "The Document Foundation" },
+      "warning": "Doinstalowuje też Microsoft Visual C++ v14 Redistributable (x64).",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/TheDocumentFoundation/LibreOffice"
+    },
+    {
+      "id": "install.acrobat-reader",
+      "wingetId": "Adobe.Acrobat.Reader.64-bit",
+      "title": "Adobe Acrobat Reader",
+      "summary": "Przeglądarka plików PDF firmy Adobe.",
+      "category": "documents",
+      "match": { "displayName": "Adobe Acrobat*", "publisher": "Adobe" },
+      "warning": "Dodaje też pakiet aplikacji AdobeAcrobatReaderCoreApp, także do obrazu systemu (pojawi się na nowych kontach).",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Adobe/Acrobat/Reader/64-bit"
+    },
+    {
+      "id": "install.sumatrapdf",
+      "wingetId": "SumatraPDF.SumatraPDF",
+      "title": "SumatraPDF",
+      "summary": "Mała i szybka przeglądarka plików PDF, EPUB i DjVu.",
+      "category": "documents",
+      "match": { "displayName": "SumatraPDF", "publisher": "Krzysztof Kowalczyk" },
+      "warning": "Instaluje się tylko dla bieżącego konta Windows.",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/s/SumatraPDF/SumatraPDF"
+    },
+    {
+      "id": "install.7zip",
+      "wingetId": "7zip.7zip",
+      "title": "7-Zip",
+      "summary": "Program do pakowania i rozpakowywania archiwów (7z, zip, rar i inne).",
+      "category": "tools",
+      "match": { "displayName": "7-Zip*", "publisher": "Igor Pavlov" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/7/7zip/7zip"
+    },
+    {
+      "id": "install.notepadplusplus",
+      "wingetId": "Notepad++.Notepad++",
+      "title": "Notepad++",
+      "summary": "Edytor tekstu i kodu z kolorowaniem składni i kartami.",
+      "category": "tools",
+      "match": { "displayName": "Notepad++*", "publisher": "Notepad++*" },
+      "warning": "Instalator EXE dodaje też pakiet aplikacji NotepadPlusPlus (pozycja w menu kontekstowym).",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/n/Notepad++/Notepad++"
+    },
+    {
+      "id": "install.everything",
+      "wingetId": "voidtools.Everything",
+      "title": "Everything",
+      "summary": "Natychmiastowe wyszukiwanie plików i folderów po nazwie na całym dysku.",
+      "category": "tools",
+      "match": { "displayName": "Everything*", "publisher": "voidtools" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/v/voidtools/Everything"
+    },
+    {
+      "id": "install.powertoys",
+      "wingetId": "Microsoft.PowerToys",
+      "title": "PowerToys",
+      "summary": "Zestaw dodatków Microsoftu do Windows: układy okien, zmiana nazw wielu plików, próbnik kolorów i inne.",
+      "category": "tools",
+      "match": { "displayName": "PowerToys*", "publisher": "Microsoft Corporation" },
+      "warning": "Instaluje się tylko dla bieżącego konta Windows. Dodaje też 5 pakietów aplikacji (m.in. Command Palette).",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/PowerToys"
+    },
+    {
+      "id": "install.winrar",
+      "wingetId": "RARLab.WinRAR",
+      "title": "WinRAR",
+      "summary": "Program do pakowania i rozpakowywania archiwów RAR i ZIP.",
+      "category": "tools",
+      "match": { "displayName": "WinRAR*", "publisher": "win.rar GmbH" },
+      "warning": "Program płatny po okresie próbnym. Dodaje też pakiet aplikacji WinRAR.ShellExtension (menu kontekstowe).",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/RARLab/WinRAR"
+    },
+    {
+      "id": "install.sharex",
+      "wingetId": "ShareX.ShareX",
+      "title": "ShareX",
+      "summary": "Zrzuty ekranu i nagrywanie ekranu z edycją i zapisem do pliku.",
+      "category": "tools",
+      "match": { "displayName": "ShareX", "publisher": "ShareX Team" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/s/ShareX/ShareX"
+    },
+    {
+      "id": "install.cpu-z",
+      "wingetId": "CPUID.CPU-Z",
+      "title": "CPU-Z",
+      "summary": "Informacje o procesorze, płycie głównej i pamięci RAM.",
+      "category": "tools",
+      "match": { "displayName": "CPUID CPU-Z*", "publisher": "CPUID, Inc." },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/CPUID/CPU-Z"
+    },
+    {
+      "id": "install.hwmonitor",
+      "wingetId": "CPUID.HWMonitor",
+      "title": "HWMonitor",
+      "summary": "Odczyt temperatur, napięć i obrotów wentylatorów z czujników komputera.",
+      "category": "tools",
+      "match": { "displayName": "CPUID HWMonitor*", "publisher": "CPUID, Inc." },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/CPUID/HWMonitor"
+    },
+    {
+      "id": "install.gpu-z",
+      "wingetId": "TechPowerUp.GPU-Z",
+      "title": "GPU-Z",
+      "summary": "Informacje o karcie graficznej i odczyt jej czujników.",
+      "category": "tools",
+      "match": { "displayName": "TechPowerUp GPU-Z", "publisher": "TechPowerUp" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/TechPowerUp/GPU-Z"
+    },
+    {
+      "id": "install.hwinfo",
+      "wingetId": "REALiX.HWiNFO",
+      "title": "HWiNFO",
+      "summary": "Szczegółowe informacje o sprzęcie i odczyt czujników: temperatury, napięcia, taktowanie.",
+      "category": "tools",
+      "match": { "displayName": "HWiNFO* 64", "publisher": "Martin Malik, REALiX s.r.o." },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/REALiX/HWiNFO"
+    },
+    {
+      "id": "install.rustdesk",
+      "github": "rustdesk/rustdesk",
+      "title": "RustDesk",
+      "summary": "Zdalny pulpit open source: pomoc na odległość i dostęp do tego komputera z innego.",
+      "category": "remote-help",
+      "match": { "displayName": "RustDesk", "publisher": "Purslane Tech*" },
+      "warning": "Instaluje usługę RustDesk (działa w tle przy starcie Windows), dodaje reguły zapory, skrót na pulpicie i ikonę w Autostarcie wszystkich kont. Instalator pobierany z GitHuba RustDesk i sprawdzany podpisem wydawcy (PURSLANE).",
+      "source": "https://github.com/rustdesk/rustdesk/releases"
+    },
+    {
+      "id": "install.anydesk",
+      "wingetId": "AnyDesk.AnyDesk",
+      "title": "AnyDesk",
+      "summary": "Zdalny pulpit: pomoc na odległość i dostęp do tego komputera z innego.",
+      "category": "remote-help",
+      "match": { "displayName": "AnyDesk", "publisher": "AnyDesk Software GmbH" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/AnyDesk/AnyDesk"
+    },
+    {
+      "id": "install.teamviewer",
+      "wingetId": "TeamViewer.TeamViewer",
+      "title": "TeamViewer",
+      "summary": "Zdalny pulpit: pomoc na odległość i dostęp do tego komputera z innego.",
+      "category": "remote-help",
+      "match": { "displayName": "TeamViewer", "publisher": "TeamViewer" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/TeamViewer/TeamViewer"
+    },
+    {
+      "id": "install.steam",
+      "wingetId": "Valve.Steam",
+      "title": "Steam",
+      "summary": "Sklep i biblioteka gier firmy Valve.",
+      "category": "games",
+      "match": { "displayName": "Steam", "publisher": "Valve Corporation" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/v/Valve/Steam"
+    },
+    {
+      "id": "install.epic-games",
+      "wingetId": "EpicGames.EpicGamesLauncher",
+      "title": "Epic Games Launcher",
+      "summary": "Sklep i biblioteka gier Epic Games.",
+      "category": "games",
+      "match": { "displayName": "Epic Games Launcher", "publisher": "Epic Games, Inc." },
+      "warning": "Instaluje też Microsoft GameInput.",
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/e/EpicGames/EpicGamesLauncher"
+    },
+    {
+      "id": "install.gog-galaxy",
+      "wingetId": "GOG.Galaxy",
+      "title": "GOG Galaxy",
+      "summary": "Sklep i biblioteka gier GOG.",
+      "category": "games",
+      "match": { "displayName": "GOG GALAXY", "publisher": "GOG.com" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/GOG/Galaxy"
+    },
+    {
+      "id": "install.vcredist-x64",
+      "wingetId": "Microsoft.VCRedist.2015+.x64",
+      "title": "Microsoft Visual C++ 2015+ (x64)",
+      "summary": "Biblioteki Visual C++ potrzebne wielu programom i grom 64-bitowym.",
+      "category": "runtimes",
+      "match": { "displayName": "Microsoft Visual C++ *Redistributable (x64) - 14.*", "publisher": "Microsoft Corporation" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/VCRedist/2015+/x64"
+    },
+    {
+      "id": "install.vcredist-x86",
+      "wingetId": "Microsoft.VCRedist.2015+.x86",
+      "title": "Microsoft Visual C++ 2015+ (x86)",
+      "summary": "Biblioteki Visual C++ potrzebne wielu programom i grom 32-bitowym.",
+      "category": "runtimes",
+      "match": { "displayName": "Microsoft Visual C++ *Redistributable (x86) - 14.*", "publisher": "Microsoft Corporation" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/VCRedist/2015+/x86"
+    },
+    {
+      "id": "install.dotnet-desktop-8",
+      "wingetId": "Microsoft.DotNet.DesktopRuntime.8",
+      "title": ".NET Desktop Runtime 8",
+      "summary": "Środowisko .NET 8 potrzebne programom okienkowym napisanym w .NET.",
+      "category": "runtimes",
+      "match": { "displayName": "Microsoft Windows Desktop Runtime - 8.* (x64)", "publisher": "Microsoft Corporation" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/8"
+    },
+    {
+      "id": "install.dotnet-desktop-9",
+      "wingetId": "Microsoft.DotNet.DesktopRuntime.9",
+      "title": ".NET Desktop Runtime 9",
+      "summary": "Środowisko .NET 9 potrzebne programom okienkowym napisanym w .NET.",
+      "category": "runtimes",
+      "match": { "displayName": "Microsoft Windows Desktop Runtime - 9.* (x64)", "publisher": "Microsoft Corporation" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/9"
+    }
+  ]
+}

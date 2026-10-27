@@ -1,0 +1,72 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:views="clr-namespace:DSOptimizer.App.Views">
+  <!--
+    Ikony stylu A: kontur 1,5 px, zaokrąglone końce i złącza, jeden kolor, siatka 20×20 (spec §10, render 07/09/D3).
+    Geometrie wygenerowane ze słownika A w icons.py (archiwum ux-propozycje-2026-10-20); obrót ikony „tools” (45°) wpieczony.
+    Icon{Rodzaj}Stroke = kontur (rysowany linią), Icon{Rodzaj}Fill = część wypełniona (kropki), gdy ikona ją ma.
+    Używa ich BrandIcon (Views/BrandIcon.cs).
+  -->
+  <Geometry x:Key="IconSpecificationStroke">M7,5.5 H13 A1.5,1.5 0 0 1 14.5,7 V13 A1.5,1.5 0 0 1 13,14.5 H7 A1.5,1.5 0 0 1 5.5,13 V7 A1.5,1.5 0 0 1 7,5.5 Z M8.75,8.25 H11.25 A0.5,0.5 0 0 1 11.75,8.75 V11.25 A0.5,0.5 0 0 1 11.25,11.75 H8.75 A0.5,0.5 0 0 1 8.25,11.25 V8.75 A0.5,0.5 0 0 1 8.75,8.25 Z M8.25,3 V5.5 M11.75,3 V5.5 M8.25,14.5 V17 M11.75,14.5 V17 M3,8.25 H5.5 M3,11.75 H5.5 M14.5,8.25 H17 M14.5,11.75 H17</Geometry>
+  <Geometry x:Key="IconPerformanceStroke">M3.5,15.25 A7.5,7.5 0 1 1 16.5,15.25 M10,11.5 L13.25,8.25</Geometry>
+  <Geometry x:Key="IconPerformanceFill">M8.65,11.5 A1.35,1.35 0 1 1 11.35,11.5 A1.35,1.35 0 1 1 8.65,11.5 Z</Geometry>
+  <Geometry x:Key="IconDiskStroke">M3.5,10.25 L6.25,4.5 H13.75 L16.5,10.25 M5,10.25 H15 A1.5,1.5 0 0 1 16.5,11.75 V14.25 A1.5,1.5 0 0 1 15,15.75 H5 A1.5,1.5 0 0 1 3.5,14.25 V11.75 A1.5,1.5 0 0 1 5,10.25 Z M6.25,13 H9</Geometry>
+  <Geometry x:Key="IconDiskFill">M12.55,13 A0.95,0.95 0 1 1 14.45,13 A0.95,0.95 0 1 1 12.55,13 Z</Geometry>
+  <Geometry x:Key="IconNetworkStroke">M8.75,3 H11.25 A1,1 0 0 1 12.25,4 V6 A1,1 0 0 1 11.25,7 H8.75 A1,1 0 0 1 7.75,6 V4 A1,1 0 0 1 8.75,3 Z M10,7 V10.25 M5.25,10.25 H14.75 M5.25,10.25 V12.75 M14.75,10.25 V12.75 M4,12.75 H6.5 A1,1 0 0 1 7.5,13.75 V15.75 A1,1 0 0 1 6.5,16.75 H4 A1,1 0 0 1 3,15.75 V13.75 A1,1 0 0 1 4,12.75 Z M13.5,12.75 H16 A1,1 0 0 1 17,13.75 V15.75 A1,1 0 0 1 16,16.75 H13.5 A1,1 0 0 1 12.5,15.75 V13.75 A1,1 0 0 1 13.5,12.75 Z</Geometry>
+  <Geometry x:Key="IconSecurityStroke">M10,2.75 L16,5 V9.5 C16,13.4 13.4,16.1 10,17.25 C6.6,16.1 4,13.4 4,9.5 V5 Z M8.6,8.6 A1.4,1.4 0 1 1 11.4,8.6 A1.4,1.4 0 1 1 8.6,8.6 Z M10,10 V12.75</Geometry>
+  <Geometry x:Key="IconExplorerStroke">M3,6 A1.5,1.5 0 0 1 4.5,4.5 H7.9 L9.6,6.25 H15.5 A1.5,1.5 0 0 1 17,7.75 V14.5 A1.5,1.5 0 0 1 15.5,16 H4.5 A1.5,1.5 0 0 1 3,14.5 Z M3,8.75 H17</Geometry>
+  <Geometry x:Key="IconPanelsStroke">M4.5,3.5 H15.5 A1.5,1.5 0 0 1 17,5 V15 A1.5,1.5 0 0 1 15.5,16.5 H4.5 A1.5,1.5 0 0 1 3,15 V5 A1.5,1.5 0 0 1 4.5,3.5 Z M3,7 H17 M7.5,7 V16.5 M10,10.25 H14 M10,13.25 H13</Geometry>
+  <Geometry x:Key="IconToolsStroke">M14.94,2.94 L12.12,5.76 L14.24,7.88 L17.06,5.06 A4.25,4.25 45 0 1 11.2,10.57 L6.11,15.66 A1.25,1.25 45 0 1 4.34,13.89 L9.43,8.8 A4.25,4.25 45 0 1 14.94,2.94 Z</Geometry>
+  <Geometry x:Key="IconSettingsStroke">M8.27,4.67 L8.44,2.66 L11.56,2.66 L11.73,4.67 A5.6,5.6 0 0 1 13.75,5.84 L15.57,4.98 L17.13,7.68 L15.48,8.84 A5.6,5.6 0 0 1 15.48,11.16 L17.13,12.32 L15.57,15.02 L13.75,14.16 A5.6,5.6 0 0 1 11.73,15.33 L11.56,17.34 L8.44,17.34 L8.27,15.33 A5.6,5.6 0 0 1 6.25,14.16 L4.43,15.02 L2.87,12.32 L4.52,11.16 A5.6,5.6 0 0 1 4.52,8.84 L2.87,7.68 L4.43,4.98 L6.25,5.84 A5.6,5.6 0 0 1 8.27,4.67 Z M7.6,10 A2.4,2.4 0 1 1 12.4,10 A2.4,2.4 0 1 1 7.6,10 Z</Geometry>
+  <Geometry x:Key="IconRefreshStroke">M16,10 A6,6 0 1 1 13.18,4.91 M12.76,1.94 L13.18,4.91 L10.33,5.84</Geometry>
+  <!-- Historia zmian (makieta 8): lustro strzałki „Odśwież” (obrót wstecz) + wskazówki zegara -->
+  <Geometry x:Key="IconHistoryStroke">M4,10 A6,6 0 1 0 6.82,4.91 M7.24,1.94 L6.82,4.91 L9.67,5.84 M10,7 V10 L12.25,11.5</Geometry>
+  <Geometry x:Key="IconCopyStroke">M8.5,6.5 H14.5 A1.5,1.5 0 0 1 16,8 V16 A1.5,1.5 0 0 1 14.5,17.5 H8.5 A1.5,1.5 0 0 1 7,16 V8 A1.5,1.5 0 0 1 8.5,6.5 Z M4,13.5 V4.5 A1.5,1.5 0 0 1 5.5,3 H12.5</Geometry>
+  <Geometry x:Key="IconSaveReportStroke">M6.5,2.75 H11.25 L15,6.5 V15.75 A1.5,1.5 0 0 1 13.5,17.25 H6.5 A1.5,1.5 0 0 1 5,15.75 V4.25 A1.5,1.5 0 0 1 6.5,2.75 Z M11.25,2.75 V6.5 H15 M10,8.75 V14 M7.75,11.75 L10,14 L12.25,11.75</Geometry>
+  <Geometry x:Key="IconSearchStroke">M3.75,8.75 A5,5 0 1 1 13.75,8.75 A5,5 0 1 1 3.75,8.75 Z M12.3,12.3 L16.75,16.75</Geometry>
+  <Geometry x:Key="IconInfoStroke">M2.75,10 A7.25,7.25 0 1 1 17.25,10 A7.25,7.25 0 1 1 2.75,10 Z M10,9 V13.75</Geometry>
+  <Geometry x:Key="IconInfoFill">M9.05,6.5 A0.95,0.95 0 1 1 10.95,6.5 A0.95,0.95 0 1 1 9.05,6.5 Z</Geometry>
+  <Geometry x:Key="IconWarningStroke">M10,3 L17.5,16.25 H2.5 Z M10,8 V11.5</Geometry>
+  <Geometry x:Key="IconWarningFill">M9.05,13.75 A0.95,0.95 0 1 1 10.95,13.75 A0.95,0.95 0 1 1 9.05,13.75 Z</Geometry>
+  <!-- Prywatność i AI (E4, wybór Dawida 2026-10-21): oko przekreślone, kontur i źrenica przerwane przy kresce -->
+  <Geometry x:Key="IconPrivacyStroke">M2.75,10 A7.63,7.63 0 0 1 4.09,7.55 M8.18,4.97 A7.63,7.63 0 0 1 17.25,10 A7.63,7.63 0 0 1 15.91,12.45 M11.82,15.03 A7.63,7.63 0 0 1 2.75,10 M9.25,12.65 A2.75,2.75 0 0 1 7.35,10.75 M10.75,7.35 A2.75,2.75 0 0 1 12.65,9.25 M3.5,3.5 L16.5,16.5</Geometry>
+  <!-- Pozycja sugerowana (wariant C): żarówka -->
+  <Geometry x:Key="IconSuggestedStroke">M7.5,14.25 V12.9 A5.25,5.25 0 1 1 12.5,12.9 V14.25 Z M8.25,17 H11.75</Geometry>
+  <!-- Aplikacje (K1, wybór Dawida 2026-10-21): siatka 2×2 zaokrąglonych kafli -->
+  <Geometry x:Key="IconAppsStroke">M4.5,3.25 H7.5 A1.25,1.25 0 0 1 8.75,4.5 V7.5 A1.25,1.25 0 0 1 7.5,8.75 H4.5 A1.25,1.25 0 0 1 3.25,7.5 V4.5 A1.25,1.25 0 0 1 4.5,3.25 Z M12.5,3.25 H15.5 A1.25,1.25 0 0 1 16.75,4.5 V7.5 A1.25,1.25 0 0 1 15.5,8.75 H12.5 A1.25,1.25 0 0 1 11.25,7.5 V4.5 A1.25,1.25 0 0 1 12.5,3.25 Z M4.5,11.25 H7.5 A1.25,1.25 0 0 1 8.75,12.5 V15.5 A1.25,1.25 0 0 1 7.5,16.75 H4.5 A1.25,1.25 0 0 1 3.25,15.5 V12.5 A1.25,1.25 0 0 1 4.5,11.25 Z M12.5,11.25 H15.5 A1.25,1.25 0 0 1 16.75,12.5 V15.5 A1.25,1.25 0 0 1 15.5,16.75 H12.5 A1.25,1.25 0 0 1 11.25,15.5 V12.5 A1.25,1.25 0 0 1 12.5,11.25 Z</Geometry>
+  <!-- Instalacja (I2, render Tasku 1 Etapu 4c, ruling R5): strzałka w dół nad tacą -->
+  <Geometry x:Key="IconInstallStroke">M10,3 V11.5 M6.5,8 L10,11.5 L13.5,8 M4,12.5 V14.75 A1.5,1.5 0 0 0 5.5,16.25 H14.5 A1.5,1.5 0 0 0 16,14.75 V12.5</Geometry>
+  <!-- Przygotowanie (I1, wybór Dawida 2026-10-21): lista z ptaszkami – dwa wiersze odhaczone, trzeci (kółko) czeka -->
+  <Geometry x:Key="IconPrepStroke">M3.25,5.25 L4.75,6.75 L7.25,4 M10,5.5 H16.75 M3.25,10.25 L4.75,11.75 L7.25,9 M10,10.5 H16.75 M3.6,15.25 A1.65,1.65 0 1 1 6.9,15.25 A1.65,1.65 0 1 1 3.6,15.25 Z M10,15.25 H16.75</Geometry>
+  <!-- Aplikacja chroniona (render Tasku 1): kłódka z kropką zamiast pola wyboru -->
+  <Geometry x:Key="IconLockStroke">M5.5,9 H14.5 A1.5,1.5 0 0 1 16,10.5 V15.5 A1.5,1.5 0 0 1 14.5,17 H5.5 A1.5,1.5 0 0 1 4,15.5 V10.5 A1.5,1.5 0 0 1 5.5,9 Z M6.75,9 V6.25 A3.25,3.25 0 0 1 13.25,6.25 V9</Geometry>
+  <Geometry x:Key="IconLockFill">M9.1,13 A0.9,0.9 0 1 1 10.9,13 A0.9,0.9 0 1 1 9.1,13 Z</Geometry>
+  <!-- Naprawy (wariant A, wybór Dawida 2026-10-22): klucz płaski dwustronny, oba końce otwarte, ukośnie TL-BR; tylko kontur. -->
+  <Geometry x:Key="IconRepairStroke">M11.87,13.57 A3,3 0 0 0 15.76,17.46 L13.11,14.81 A1.2,1.2 0 0 1 14.81,13.11 L17.46,15.76 A3,3 0 0 0 13.57,11.87 L8.13,6.43 A3,3 0 0 0 4.24,2.54 L6.89,5.19 A1.2,1.2 0 0 1 5.19,6.89 L2.54,4.24 A3,3 0 0 0 6.43,8.13 Z</Geometry>
+  <Geometry x:Key="IconOpenLocationStroke">M3.5,15.5 V5 A1,1 0 0 1 4.5,4 H8 L9.75,5.75 H14.5 A1,1 0 0 1 15.5,6.75 V8.75 M3.5,15.5 L6.25,8.75 H17.5 L14.75,15.5 Z</Geometry>
+
+  <!-- Szablon BrandIcon: Viewbox 20×20; kontur 1,5 px z zaokrąglonymi końcami i złączami oraz część wypełniona, oba w kolorze Foreground.
+       Geometrie wstawia kod (BrandIcon.OnApplyTemplate) wg Kind; brak klucza = pusta ikona. -->
+  <!-- Oficjalny znak GitHub (Octicons mark-github-16, MIT; https://raw.githubusercontent.com/primer/octicons/main/icons/mark-github-16.svg, 2026-10-20),
+       siatka 16 przeskalowana x1,25 do siatki 20×20 (transformacja wpieczona; kwadrat, więc bez przesunięcia). Tylko wypełnienie, bez Stroke.
+       Zasady logo GitHub: jeden kolor (biały lub czarny), bez zmiany proporcji. Licencja: THIRD_PARTY_NOTICES.md. -->
+  <Geometry x:Key="IconGitHubFill">M8.4575,14.16c-2.5788,-0.3125,-4.395,-2.1675,-4.395,-4.57,0,-0.9763,0.3513,-2.0312,0.9375,-2.735,-0.2538,-0.6438,-0.215,-2.0112,0.0788,-2.5775,0.7812,-0.0975,1.835,0.3125,2.46,0.8787,0.7425,-0.2338,1.5238,-0.3513,2.4813,-0.3513,0.9563,0,1.7375,0.1175,2.4413,0.3313,0.605,-0.5463,1.68,-0.9563,2.4613,-0.8588,0.2725,0.5275,0.3125,1.8937,0.0575,2.5588,0.625,0.7412,0.9575,1.7375,0.9575,2.7537,0,2.4025,-1.8163,4.2188,-4.4337,4.55,0.6638,0.43,1.1125,1.3675,1.1125,2.4425v2.0312c0,0.585,0.4888,0.9175,1.075,0.6838C17.2263,17.9488,20,14.4125,20,10.0375,20,4.5125,15.5075,0,9.98,0,4.4538,0,0,4.5125,0,10.0388a9.85,9.85,0,0,0,6.465,9.2775c0.5275,0.195,1.035,-0.1562,1.035,-0.6838v-1.5625c-0.2737,0.1175,-0.625,0.195,-0.9375,0.195,-1.2887,0,-2.05,-0.7025,-2.5975,-2.0112,-0.215,-0.5275,-0.45,-0.84,-0.8987,-0.8987,-0.2338,-0.0187,-0.3125,-0.1162,-0.3125,-0.2338,0,-0.235,0.3912,-0.41,0.7812,-0.41,0.5663,0,1.055,0.3513,1.5625,1.075,0.3912,0.565,0.8,0.8188,1.2887,0.8188s0.8013,-0.175,1.25,-0.625c0.3325,-0.3313,0.5875,-0.625,0.8213,-0.82</Geometry>
+  <Style TargetType="{x:Type views:BrandIcon}">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="SnapsToDevicePixels" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type views:BrandIcon}">
+          <Viewbox Width="{TemplateBinding Size}" Height="{TemplateBinding Size}" Stretch="Uniform">
+            <Canvas Width="20" Height="20">
+              <Path x:Name="PART_Fill" Fill="{TemplateBinding Foreground}" />
+              <Path x:Name="PART_Stroke" Stroke="{TemplateBinding Foreground}" StrokeThickness="1.5"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+            </Canvas>
+          </Viewbox>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

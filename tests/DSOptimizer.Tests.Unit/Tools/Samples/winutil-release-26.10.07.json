@@ -1,0 +1,19 @@
+{
+  "url": "https://api.github.com/repos/ChrisTitusTech/winutil/releases/1",
+  "html_url": "https://github.com/ChrisTitusTech/winutil/releases/tag/26.10.07",
+  "tag_name": "26.10.07",
+  "name": "26.10.07",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2026-10-07T12:00:00Z",
+  "assets": [
+    {
+      "name": "winutil.ps1",
+      "content_type": "application/octet-stream",
+      "state": "uploaded",
+      "size": 927798,
+      "digest": "sha256:eeae69922fbe6354ea4e2a37f705eaa17bdaf45cc7889618a313178a513b13ee",
+      "browser_download_url": "https://github.com/ChrisTitusTech/winutil/releases/download/26.10.07/winutil.ps1"
+    }
+  ]
+}

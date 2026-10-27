@@ -1,0 +1,352 @@
+<UserControl x:Class="DSOptimizer.App.Views.HistoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:DSOptimizer.App.ViewModels"
+             xmlns:views="clr-namespace:DSOptimizer.App.Views"
+             xmlns:gui="clr-namespace:DSOptimizer.Core.Gui;assembly=DSOptimizer.Core">
+  <!-- Strona „Historia zmian” (makieta 8): lista wpisów z kolumnami Data / Pozycja / Konto / Stan i panel szczegółów
+       zaznaczonego wpisu (szerokość jak na stronie kategorii) z „Cofnij” przyklejonym na dole. Teksty z HistoryText. -->
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+    <!-- Komórki wiersza (13 px; tytuł pozycji = ItemTitleText jak na liście kategorii) -->
+    <Style x:Key="Cell" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Margin" Value="0,1,12,0" />
+      <Setter Property="VerticalAlignment" Value="Top" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    </Style>
+    <Style x:Key="CellDim" TargetType="TextBlock" BasedOn="{StaticResource Cell}">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    </Style>
+    <Style x:Key="ColumnHeader" TargetType="TextBlock" BasedOn="{StaticResource SubText}">
+      <Setter Property="Margin" Value="0,0,12,0" />
+    </Style>
+    <!-- Konto w jednej linii: długa nazwa albo SID ucięty wielokropkiem, pełny tekst w podpowiedzi -->
+    <Style x:Key="AccountCell" TargetType="TextBlock" BasedOn="{StaticResource Cell}">
+      <Setter Property="Grid.Column" Value="2" />
+      <Setter Property="Width" Value="92" />
+      <Setter Property="TextWrapping" Value="NoWrap" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <!-- Stan: 150 px, w wąskim oknie (menu zwinięte) 138 px -->
+    <Style x:Key="StateCell" TargetType="Grid">
+      <Setter Property="Grid.Column" Value="3" />
+      <Setter Property="VerticalAlignment" Value="Top" />
+      <Setter Property="Width" Value="150" />
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsNavCompact, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+          <Setter Property="Width" Value="138" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style x:Key="DateHeader" TargetType="TextBlock" BasedOn="{StaticResource ColumnHeader}">
+      <Setter Property="Width" Value="106" />
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsNavCompact, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+          <Setter Property="Width" Value="70" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <!-- Data: w wąskim oknie (menu zwinięte) data i godzina w dwóch liniach, żeby kolumna „Pozycja” dostała miejsce -->
+    <Style x:Key="DateCell" TargetType="TextBlock" BasedOn="{StaticResource CellDim}">
+      <Setter Property="Width" Value="106" />
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsNavCompact, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+          <Setter Property="Width" Value="70" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+
+    <!-- Znacznik stanu wpisu (12 px): aktywna = pełne koło, cofnięta = pusty szary pierścień,
+         czeka na restart (także cofnięta) = pierścień w kolorze ostrzeżenia (jak trójkąt banera),
+         przerwana = pionowa kreska w kolorze błędu (jak krawędź linii błędu w dzienniku). Treść = HistoryState.
+         Usunięcia aplikacji tym samym kluczem: usunięta = pełne koło (jak aktywna), nie potwierdzono = pierścień ostrzeżenia,
+         nie powiodło się = kreska błędu (jak przerwana). Instalacje aplikacji tak samo (Ruling R11): zainstalowana = pełne koło,
+         nie potwierdzono instalacji = pierścień ostrzeżenia, nie zainstalowano = kreska błędu. -->
+    <DataTemplate x:Key="HistoryStateMarkerTemplate">
+      <Grid Width="12" Height="12" HorizontalAlignment="Left">
+        <Ellipse x:Name="Ring" Stroke="{DynamicResource TextFillColorSecondaryBrush}" StrokeThickness="1.5" />
+        <Rectangle x:Name="Bar" Width="4" Height="12" Margin="4,0,0,0" HorizontalAlignment="Left"
+                   Fill="{DynamicResource SystemFillColorCriticalBrush}" Visibility="Collapsed" />
+      </Grid>
+      <DataTemplate.Triggers>
+        <DataTrigger Binding="{Binding}" Value="{x:Static gui:HistoryState.Active}">
+          <Setter TargetName="Ring" Property="Stroke" Value="{x:Null}" />
+          <Setter TargetName="Ring" Property="Fill" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding}" Value="{x:Static gui:HistoryState.PendingReboot}">
+          <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource SystemFillColorCautionBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding}" Value="{x:Static gui:HistoryState.UndonePendingReboot}">
+          <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource SystemFillColorCautionBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding}" Value="{x:Static gui:HistoryState.Aborted}">
+          <Setter TargetName="Ring" Property="Visibility" Value="Collapsed" />
+          <Setter TargetName="Bar" Property="Visibility" Value="Visible" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding}" Value="{x:Static gui:HistoryState.Removed}">
+          <Setter TargetName="Ring" Property="Stroke" Value="{x:Null}" />
+          <Setter TargetName="Ring" Property="Fill" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding}" Value="{x:Static gui:HistoryState.RemovalNotConfirmed}">
+          <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource SystemFillColorCautionBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding}" Value="{x:Static gui:HistoryState.RemovalFailed}">
+          <Setter TargetName="Ring" Property="Visibility" Value="Collapsed" />
+          <Setter TargetName="Bar" Property="Visibility" Value="Visible" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding}" Value="{x:Static gui:HistoryState.Installed}">
+          <Setter TargetName="Ring" Property="Stroke" Value="{x:Null}" />
+          <Setter TargetName="Ring" Property="Fill" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding}" Value="{x:Static gui:HistoryState.InstallNotConfirmed}">
+          <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource SystemFillColorCautionBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding}" Value="{x:Static gui:HistoryState.InstallNotDone}">
+          <Setter TargetName="Ring" Property="Visibility" Value="Collapsed" />
+          <Setter TargetName="Bar" Property="Visibility" Value="Visible" />
+        </DataTrigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Wiersz: data | tytuł (+ „pozycja spoza tego katalogu”) | konto („cały komputer” i „nieznane” drugorzędnie) | znacznik i stan -->
+    <DataTemplate x:Key="HistoryRowTemplate" DataType="{x:Type vm:HistoryRowViewModel}">
+      <Grid Margin="12,10,0,10">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Style="{StaticResource DateCell}" Text="{Binding DateText}" />
+        <Grid Grid.Column="1" Margin="0,0,16,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <views:BrandIcon Kind="{Binding IconKind}" Size="16" Margin="0,2,10,0" VerticalAlignment="Top"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+          <StackPanel Grid.Column="1">
+            <TextBlock Style="{StaticResource ItemTitleText}" Text="{Binding Title}" />
+            <TextBlock Style="{StaticResource SubText}" Text="{Binding KindText}" />
+            <TextBlock Style="{StaticResource SubText}" Text="{x:Static gui:HistoryText.OutOfCatalog}"
+                       Visibility="{Binding ShowOutOfCatalogMarker, Converter={StaticResource BoolToVisibility}}" />
+          </StackPanel>
+        </Grid>
+        <TextBlock x:Name="Account" Style="{StaticResource AccountCell}" Text="{Binding AccountText}" ToolTip="{Binding AccountText}" />
+        <Grid Style="{StaticResource StateCell}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="22" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <ContentPresenter Margin="0,4,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"
+                            Content="{Binding State}" ContentTemplate="{StaticResource HistoryStateMarkerTemplate}" />
+          <!-- Stan zawija się (jak przed falą poprawek); powód porażki osobno, drugą linią drobnym tekstem: jedna linia, za długi
+               ucięty wielokropkiem, pełny stan z powodem w podpowiedzi i w panelu szczegółów -->
+          <StackPanel Grid.Column="1">
+            <TextBlock Style="{StaticResource Cell}" Margin="0,1,0,0" Text="{Binding StateName}" />
+            <TextBlock Style="{StaticResource SubText}" Margin="0,1,0,0" TextWrapping="NoWrap" Text="{Binding ReasonText}"
+                       ToolTip="{Binding StateToolTip}" Visibility="{Binding HasReason, Converter={StaticResource BoolToVisibility}}" />
+          </StackPanel>
+        </Grid>
+      </Grid>
+      <DataTemplate.Triggers>
+        <DataTrigger Binding="{Binding IsAccountGeneric}" Value="True">
+          <Setter TargetName="Account" Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </DataTrigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Zdarzenie „Przebieg”: czas z sekundami | tekst; porażka = krawędź 6 px w kolorze błędu i pogrubiony tekst (jak linia błędu w dzienniku) -->
+    <DataTemplate x:Key="HistoryEventTemplate" DataType="{x:Type vm:HistoryEventRow}">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" SharedSizeGroup="EventTime" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Style="{StaticResource DetailKeyText}" Margin="0,0,12,6" Text="{Binding TimeText}" />
+        <Border x:Name="Edge" Grid.Column="1" Margin="0,0,0,6" BorderBrush="{DynamicResource SystemFillColorCriticalBrush}" BorderThickness="0">
+          <TextBlock x:Name="EventText" Style="{StaticResource BodyText}" Text="{Binding Text}" />
+        </Border>
+      </Grid>
+      <DataTemplate.Triggers>
+        <DataTrigger Binding="{Binding IsFailure}" Value="True">
+          <Setter TargetName="Edge" Property="BorderThickness" Value="6,0,0,0" />
+          <Setter TargetName="Edge" Property="Padding" Value="8,0,0,0" />
+          <Setter TargetName="EventText" Property="FontWeight" Value="SemiBold" />
+        </DataTrigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Lista jak ItemListBox, ale z wirtualizacją (przewijanie po pikselu): journal może mieć setki wpisów -->
+    <Style x:Key="HistoryListBox" TargetType="ListBox" BasedOn="{StaticResource ItemListBox}">
+      <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+      <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+      <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ListBox">
+            <ScrollViewer Focusable="False" CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+              <!-- Odstęp na pasek przewijania WPF-UI, który rysuje się nad treścią -->
+              <ItemsPresenter Margin="0,0,12,0" />
+            </ScrollViewer>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Resources>
+
+  <Grid SizeChanged="OnSizeChanged">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition x:Name="DetailColumn" Width="246" />
+    </Grid.ColumnDefinitions>
+
+    <DockPanel Margin="0,0,20,0">
+      <Grid DockPanel.Dock="Top" Margin="0,0,0,14">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel>
+          <TextBlock Style="{StaticResource PageTitleText}" Text="{x:Static gui:HistoryText.PageTitle}" />
+          <TextBlock Style="{StaticResource SubText}" TextWrapping="Wrap" TextTrimming="None" Text="{x:Static gui:HistoryText.PageSubtitle}" />
+        </StackPanel>
+        <ComboBox Grid.Column="1" Margin="12,0,0,0" Width="196" Style="{StaticResource BrandComboBox}"
+                  AutomationProperties.Name="{x:Static gui:HistoryText.FilterLabel}" ItemsSource="{Binding Filters}" SelectedValuePath="Value"
+                  SelectedValue="{Binding Filter}" />
+      </Grid>
+
+      <!-- Ostrzeżenie odczytu (np. uszkodzony journal): trójkąt w kolorze ostrzeżenia + tekst, jak w szczegółach pozycji -->
+      <Grid DockPanel.Dock="Top" Margin="0,0,12,12" Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="20" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <views:BrandIcon Kind="Warning" Size="16" Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                         Margin="0,1,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+        <TextBlock Grid.Column="1" Style="{StaticResource BodyText}" Text="{Binding ErrorText}" />
+      </Grid>
+
+      <!-- Nagłówki kolumn: małe, zwykłe litery, kolor drugorzędny; linia jak pod nagłówkiem sekcji -->
+      <StackPanel DockPanel.Dock="Top" Margin="0,0,12,0">
+        <Grid Margin="12,0,0,4">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Style="{StaticResource DateHeader}" Text="{x:Static gui:HistoryText.DateLabel}" />
+          <TextBlock Grid.Column="1" Style="{StaticResource ColumnHeader}" Text="{x:Static gui:HistoryText.ItemLabel}" />
+          <TextBlock Grid.Column="2" Width="92" Style="{StaticResource ColumnHeader}" Text="{x:Static gui:HistoryText.AccountLabel}" />
+          <Grid Style="{StaticResource StateCell}">
+            <TextBlock Style="{StaticResource ColumnHeader}" Margin="22,0,0,0" Text="{x:Static gui:HistoryText.StateLabel}" />
+          </Grid>
+        </Grid>
+        <Border Height="1" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+      </StackPanel>
+
+      <Grid>
+        <TextBlock Margin="12,10,12,0" VerticalAlignment="Top" Style="{StaticResource BodyText}"
+                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding EmptyText}" />
+        <ListBox x:Name="EntryList" Style="{StaticResource HistoryListBox}" ItemTemplate="{StaticResource HistoryRowTemplate}"
+                 ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
+                 AutomationProperties.Name="{x:Static gui:HistoryText.PageTitle}" PreviewKeyDown="OnEntryListKeyDown" />
+      </Grid>
+    </DockPanel>
+
+    <!-- Szczegóły wpisu: treść przewijana, „Cofnij” przyklejony na dole (tylko wpis aktywny; nad nim powód blokady). Brak wpisu = zwinięte.
+         Autopowtórzenie Entera nie wciska „Cofnij” (PreviewKeyDown). Tab: treść (strzałki, PgUp/PgDn) → „Cofnij” (TabIndex lokalnie). -->
+    <DockPanel Grid.Column="1" DataContext="{Binding SelectedEntry}" KeyboardNavigation.TabNavigation="Local"
+               PreviewKeyDown="OnDetailPanelPreviewKeyDown" DataContextChanged="OnDetailPanelDataContextChanged">
+      <DockPanel.Style>
+        <Style TargetType="DockPanel">
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding}" Value="{x:Null}">
+              <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </DockPanel.Style>
+      <StackPanel DockPanel.Dock="Bottom" Visibility="{Binding ShowUndoArea, Converter={StaticResource BoolToVisibility}}">
+        <Border Height="1" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+        <!-- Powód blokady także bez przycisku (Ruling R11: wpis instalacji – aplikację usuwa się na stronie „Aplikacje”) -->
+        <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding UndoBlockedReason}"
+                   Visibility="{Binding HasUndoBlockedReason, Converter={StaticResource BoolToVisibility}}">
+          <TextBlock.Style>
+            <Style TargetType="TextBlock" BasedOn="{StaticResource BodyText}">
+              <Setter Property="Margin" Value="0,12,0,0" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding ShowUndoButton}" Value="False">
+                  <Setter Property="Margin" Value="0,12,0,14" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
+        <StackPanel Orientation="Horizontal" Visibility="{Binding ShowUndoButton, Converter={StaticResource BoolToVisibility}}">
+          <StackPanel.Style>
+            <Style TargetType="StackPanel">
+              <Setter Property="Margin" Value="0,12,0,14" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding HasUndoBlockedReason}" Value="True">
+                  <Setter Property="Margin" Value="0,10,0,14" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </StackPanel.Style>
+          <Button x:Name="UndoButton" Style="{StaticResource PrimaryButton}" Content="{x:Static gui:HistoryText.UndoButton}"
+                  Command="{Binding DataContext.UndoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                  KeyboardNavigation.TabIndex="2" />
+        </StackPanel>
+      </StackPanel>
+      <ScrollViewer x:Name="EntryDetailScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                    Focusable="True" KeyboardNavigation.IsTabStop="True" KeyboardNavigation.TabIndex="1"
+                    FocusVisualStyle="{StaticResource BrandFocusVisual}" AutomationProperties.Name="{Binding Title}">
+        <StackPanel Margin="0,0,12,12">
+          <TextBlock Style="{StaticResource DetailTitleText}" Text="{Binding Title}" />
+          <Grid Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition />
+              <RowDefinition />
+              <RowDefinition />
+              <RowDefinition />
+            </Grid.RowDefinitions>
+            <TextBlock Style="{StaticResource DetailKeyText}" Text="{x:Static gui:HistoryText.StateLabel}" />
+            <StackPanel Grid.Column="1">
+              <!-- Stan z powodem w całości (zawija się, bez wielokropka) -->
+              <TextBlock Style="{StaticResource DetailValueText}" FontWeight="SemiBold" TextWrapping="Wrap" TextTrimming="None"
+                         Text="{Binding StateText}" />
+              <StackPanel Margin="0,6,0,0" Visibility="{Binding IsInstall, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Style="{StaticResource BodyText}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Text="{x:Static gui:HistoryText.InstallUndoBlocked}" />
+                <!-- Odstęp pod linkiem: ramka fokusu (3 px poza przyciskiem) nie dotyka wiersza „Konto” -->
+                <Button Style="{StaticResource TextLinkButton}" HorizontalAlignment="Left" Margin="0,4,0,6"
+                        Content="{x:Static gui:HistoryText.GoToAppsLink}"
+                        Command="{Binding DataContext.ShowAppsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+              </StackPanel>
+            </StackPanel>
+            <TextBlock Grid.Row="1" Style="{StaticResource DetailKeyText}" Text="{x:Static gui:HistoryText.AccountLabel}" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource DetailValueText}" Text="{Binding AccountText}"
+                       ToolTip="{Binding AccountText}" />
+            <TextBlock Grid.Row="2" Style="{StaticResource DetailKeyText}" Text="{x:Static gui:HistoryText.CategoryLabel}" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource DetailValueText}" Text="{Binding CategoryText}"
+                       ToolTip="{Binding CategoryText}" />
+            <TextBlock Grid.Row="3" Style="{StaticResource DetailKeyText}" Text="{x:Static gui:HistoryText.AppliedLabel}" />
+            <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource DetailValueText}" Text="{Binding DateText}" />
+          </Grid>
+          <TextBlock Style="{StaticResource SectionHeaderText}" Margin="0,16,0,6" Text="{x:Static gui:HistoryText.EventsLabel}" />
+          <ItemsControl ItemsSource="{Binding Events}" ItemTemplate="{StaticResource HistoryEventTemplate}" Focusable="False"
+                        Grid.IsSharedSizeScope="True" />
+        </StackPanel>
+      </ScrollViewer>
+    </DockPanel>
+  </Grid>
+</UserControl>

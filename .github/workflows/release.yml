@@ -1,0 +1,105 @@
+name: Release
+
+# Tag v* = wydanie ROBOCZE (draft) na GitHubie; workflow_dispatch = tylko artefakt, bez publikacji.
+# Wariant (SingleExe/Folder) jest w jednym miejscu: tools/release/variant.txt.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      # Zwykły build i testy PRZED wydaniem: restore z /p:DsoSingleExe=true zostawia Fody w obj\project.assets.json,
+      # więc po Build-Release.ps1 nie wolno już budować ani pomijać restore.
+      - name: Build
+        run: dotnet build DSOptimizer.sln -c Release
+
+      - name: Test (unit + pokrycie Core >= 90%)
+        run: dotnet test tests/DSOptimizer.Tests.Unit/DSOptimizer.Tests.Unit.csproj -c Release --no-build /p:CollectCoverage=true /p:Threshold=90 /p:ThresholdType=line "/p:Include=[DSOptimizer.Core]*" --logger "trx;LogFileName=unit.trx"
+
+      - name: Test (Windows – piaskownica HKCU, PowerShell, journal)
+        run: dotnet test tests/DSOptimizer.Tests.Windows/DSOptimizer.Tests.Windows.csproj -c Release --no-build --logger "trx;LogFileName=windows.trx"
+
+      - name: Wydanie (Build-Release.ps1)
+        id: release
+        shell: powershell
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $Variant = (Get-Content -LiteralPath tools/release/variant.txt -Raw).Trim()
+          $IsTag = $env:REF_TYPE -eq 'tag'
+          if ($IsTag) {
+            & .\tools\release\Build-Release.ps1 -Variant $Variant -Tag $env:REF_NAME -OutRoot out
+          } else {
+            & .\tools\release\Build-Release.ps1 -Variant $Variant -OutRoot out
+          }
+          if ($LASTEXITCODE -ne 0) { throw "Build-Release.ps1 zakonczyl sie kodem $LASTEXITCODE" }
+          $Dir = Get-ChildItem -LiteralPath out -Directory | Select-Object -First 1
+          $Version = ($Dir.Name -replace '^v', '') -replace "-$Variant$", ''
+          # Bez BOM: zapis z kodowaniem utf8 w PowerShell 5.1 dopisuje BOM, ktory psuje nazwe pierwszego wyjscia.
+          $Utf8NoBom = New-Object System.Text.UTF8Encoding $false
+          [IO.File]::AppendAllText($env:GITHUB_OUTPUT, "variant=$Variant`n", $Utf8NoBom)
+          [IO.File]::AppendAllText($env:GITHUB_OUTPUT, "version=$Version`n", $Utf8NoBom)
+          [IO.File]::AppendAllText($env:GITHUB_OUTPUT, "dir=$($Dir.FullName)`n", $Utf8NoBom)
+
+      - name: Sprawdzenie SHA256SUMS.txt
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $Dir = '${{ steps.release.outputs.dir }}'
+          foreach ($Line in Get-Content -LiteralPath (Join-Path $Dir 'SHA256SUMS.txt')) {
+            $Hash, $Name = $Line -split '  ', 2
+            $Actual = (Get-FileHash -LiteralPath (Join-Path $Dir $Name) -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($Actual -ne $Hash) { throw "SHA256 niezgodny dla $Name" }
+            Write-Host "OK $Name $Hash"
+          }
+
+      # Wydany exe sprawdzony przez CLI (--list-install z pustego folderu); bez ponownego budowania.
+      - name: Smoke wydanego exe (SingleExe)
+        if: ${{ steps.release.outputs.variant == 'SingleExe' }}
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $Exe = Get-ChildItem -LiteralPath '${{ steps.release.outputs.dir }}' -Filter 'DSOptimizer-*.exe' | Select-Object -First 1
+          $env:DSO_SINGLE_EXE_PATH = $Exe.FullName
+          dotnet test tests/DSOptimizer.Tests.Windows/DSOptimizer.Tests.Windows.csproj -c Release --no-build --filter "FullyQualifiedName~SingleExeResourcesTests"
+          if ($LASTEXITCODE -ne 0) { throw "Smoke wydanego exe: kod $LASTEXITCODE" }
+
+      - name: Artefakt wydania
+        uses: actions/upload-artifact@v4
+        with:
+          name: wydanie-${{ steps.release.outputs.version }}-${{ steps.release.outputs.variant }}
+          path: ${{ steps.release.outputs.dir }}
+
+      # Tylko push tagu: ręczne workflow_dispatch na tagu też ma github.ref = refs/tags/v…, a ma dać sam artefakt.
+      - name: Wydanie robocze na GitHubie
+        if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+        shell: powershell
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $Dir = '${{ steps.release.outputs.dir }}'
+          $Version = '${{ steps.release.outputs.version }}'
+          $Notes = Join-Path $env:RUNNER_TEMP 'notes.md'
+          $NotesText = "DSOptimizer $Version (wariant ${{ steps.release.outputs.variant }}). Sumy kontrolne w SHA256SUMS.txt: Get-FileHash <plik> -Algorithm SHA256."
+          [IO.File]::WriteAllText($Notes, $NotesText, (New-Object System.Text.UTF8Encoding $false))
+          $Files = @(Get-ChildItem -LiteralPath $Dir -File | ForEach-Object { $_.FullName })
+          gh release create $env:REF_NAME --draft --title "DSOptimizer $Version" --notes-file $Notes @Files
+          if ($LASTEXITCODE -ne 0) { throw "gh release create: kod $LASTEXITCODE" }

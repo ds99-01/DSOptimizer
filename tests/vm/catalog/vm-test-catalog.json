@@ -1,0 +1,104 @@
+﻿[
+  {
+    "id": "vmtest.hklm-value",
+    "category": "vmtest",
+    "kind": "tweak",
+    "title": "VM: wartości w HKLM (piaskownica)",
+    "summary": "Test VM: wartości w HKLM i ich cofnięcie.",
+    "benefit": "Pozycja testowa VM, bez realnego zysku dla użytkownika.",
+    "description": "Piaskownica HKLM\\SOFTWARE\\DSOptimizer.VmTests: widok 64-bit, typy DWord i String z polskimi znakami, undo.",
+    "risk": "safe",
+    "scope": "machine",
+    "registry": [
+      { "path": "HKLM\\SOFTWARE\\DSOptimizer.VmTests", "name": "HklmDword", "type": "DWord", "value": 1, "original": "<RemoveEntry>" },
+      { "path": "HKLM\\SOFTWARE\\DSOptimizer.VmTests", "name": "HklmString", "type": "String", "value": "zażółć", "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "vmtest.reboot-hklm",
+    "category": "vmtest",
+    "kind": "tweak",
+    "title": "VM: wartość w HKLM wymagająca restartu",
+    "summary": "Test VM: wartość w HKLM, która wymaga restartu.",
+    "benefit": "Pozycja testowa VM, bez realnego zysku dla użytkownika.",
+    "description": "Nowy klucz HKLM\\SOFTWARE\\DSOptimizer.VmTests\\Reboot\\Nowy (nie istnieje przed apply); runner restartuje VM między apply a detekcją i po undo.",
+    "risk": "safe",
+    "scope": "machine",
+    "requiresReboot": true,
+    "registry": [
+      { "path": "HKLM\\SOFTWARE\\DSOptimizer.VmTests\\Reboot\\Nowy", "name": "RebootDword", "type": "DWord", "value": 1, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "vmtest.hkcu-value",
+    "category": "vmtest",
+    "kind": "tweak",
+    "title": "VM: wartość w HKCU zalogowanego użytkownika",
+    "summary": "Test VM: wartość w HKCU zalogowanego użytkownika.",
+    "benefit": "Pozycja testowa VM, bez realnego zysku dla użytkownika.",
+    "description": "Proces działa jako Administrator (PowerShell Direct), zmiana ma trafić do HKU\\<SID zalogowanego 'dso'>.",
+    "risk": "safe",
+    "scope": "user",
+    "registry": [
+      { "path": "HKCU\\Software\\DSOptimizer.VmTests", "name": "UserString", "type": "String", "value": "vm-1b", "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "vmtest.service-manual-to-disabled",
+    "category": "vmtest",
+    "kind": "tweak",
+    "title": "VM: RetailDemo Manual → Disabled",
+    "summary": "Test VM: usługa RetailDemo zmieniana z ręcznej na wyłączoną.",
+    "benefit": "Pozycja testowa VM, bez realnego zysku dla użytkownika.",
+    "risk": "caution",
+    "scope": "machine",
+    "services": [ { "name": "RetailDemo", "startType": "Disabled", "original": "Manual" } ]
+  },
+  {
+    "id": "vmtest.service-delayed-stop",
+    "category": "vmtest",
+    "kind": "tweak",
+    "title": "VM: WSearch Disabled + zatrzymanie, undo do Automatic (Delayed)",
+    "summary": "Test VM: wyłączenie i zatrzymanie usługi WSearch, cofnięcie do opóźnionego startu.",
+    "benefit": "Pozycja testowa VM, bez realnego zysku dla użytkownika.",
+    "risk": "caution",
+    "scope": "machine",
+    "services": [ { "name": "WSearch", "startType": "Disabled", "original": "AutomaticDelayed", "stop": true } ]
+  },
+  {
+    "id": "vmtest.service-dependents-running",
+    "category": "vmtest",
+    "kind": "tweak",
+    "title": "VM: zatrzymanie usługi z działającymi zależnymi (oczekiwana odmowa)",
+    "summary": "Test VM: zatrzymanie usługi z działającymi zależnymi (oczekiwana odmowa).",
+    "benefit": "Pozycja testowa VM, bez realnego zysku dla użytkownika.",
+    "risk": "caution",
+    "scope": "machine",
+    "services": [ { "name": "AudioEndpointBuilder", "startType": "Manual", "original": "Automatic", "stop": true } ]
+  },
+  {
+    "id": "vmtest.driver-start-type",
+    "category": "vmtest",
+    "kind": "tweak",
+    "title": "VM: sterownik Serenum Manual → Automatic (ChangeServiceConfig2)",
+    "summary": "Test VM: zmiana typu startu sterownika Serenum.",
+    "benefit": "Pozycja testowa VM, bez realnego zysku dla użytkownika.",
+    "risk": "experimental",
+    "scope": "machine",
+    "services": [ { "name": "Serenum", "startType": "Automatic", "original": "Manual" } ]
+  },
+  {
+    "id": "vmtest.action-marker",
+    "category": "vmtest",
+    "kind": "action",
+    "title": "VM: akcja zapisująca plik znacznika",
+    "summary": "Test VM: akcja zapisująca plik znacznika.",
+    "benefit": "Pozycja testowa VM, bez realnego zysku dla użytkownika.",
+    "description": "Akcja (--execute): zapisuje C:\\dso\\out\\action-marker.txt z treścią zażółć (UTF-8 bez BOM). Sprzątanie robi runner.",
+    "risk": "safe",
+    "scope": "machine",
+    "script": {
+      "apply": "[System.IO.File]::WriteAllText('C:\\dso\\out\\action-marker.txt', 'zażółć', (New-Object System.Text.UTF8Encoding($false)))"
+    }
+  }
+]

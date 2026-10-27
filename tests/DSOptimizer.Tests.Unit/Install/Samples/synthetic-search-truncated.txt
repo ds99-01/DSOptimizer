@@ -1,0 +1,6 @@
+Nazwa                           Identyfikator                    Wersja     Dopasowanie
+--------------------------------------------------------------------------------------
+Visual Studio Code              Microsoft.VisualStudioCode       1.95.0     Moniker: vscode
+Visual Studio Code - Insiders … Microsoft.VisualStudioCode.Ins…  1.96.0     Tag: code
+Bardzo dluga nazwa aplikacji XY…Vendor.LongApp                   2.0
+Krotka                                                           1.0

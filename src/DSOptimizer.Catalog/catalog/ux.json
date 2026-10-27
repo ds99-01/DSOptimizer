@@ -1,0 +1,74 @@
+[
+  {
+    "id": "ux.menu-delay",
+    "aliases": [ "ux_menu" ],
+    "category": "ux",
+    "kind": "tweak",
+    "title": "Szybsze otwieranie podmenu",
+    "summary": "Skraca opóźnienie rozwijania podmenu z 0,4 s do 0,01 s.",
+    "benefit": "Podmenu powinny rozwijać się niemal od razu po najechaniu kursorem – część programów może to ustawienie ignorować.",
+    "description": "MenuShowDelay w HKCU\\Control Panel\\Desktop: z 400 ms (domyślnie) na 10 ms, dla zalogowanego użytkownika. Cofnięcie przywraca poprzednią wartość.",
+    "risk": "safe",
+    "scope": "user",
+    "warnings": [
+      "Zmiana może wymagać ponownego zalogowania, zanim zadziała w już uruchomionych programach."
+    ],
+    "registry": [
+      { "path": "HKCU\\Control Panel\\Desktop", "name": "MenuShowDelay", "type": "String", "value": "10", "original": "400" }
+    ]
+  },
+  {
+    "id": "ux.game-dvr-policy",
+    "aliases": [ "ux_gamedvr" ],
+    "category": "ux",
+    "kind": "tweak",
+    "title": "Zablokuj nagrywanie i transmisję gier na całym komputerze",
+    "summary": "Polityka blokuje nagrywanie i transmisję gier w Windows dla wszystkich kont na tym komputerze.",
+    "benefit": "Nagrywanie i transmisja gier wbudowane w Windows zostają zablokowane dla wszystkich kont.",
+    "description": "Polityka AllowGameDVR = 0 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR (Windows Game Recording and Broadcasting), dla wszystkich użytkowników. Nie usuwa paska gier (Game Bar). Cofnięcie usuwa wartość i klucz GameDVR utworzony przez zmianę, czyli wraca do „nie skonfigurowano”.",
+    "risk": "caution",
+    "scope": "machine",
+    "warnings": [
+      "Microsoft opisuje tę politykę dla Windows 10 Pro i wyższych; na Windows 11 i edycji Home może nie działać.",
+      "W Ustawieniach może pojawić się komunikat, że niektórymi ustawieniami zarządza organizacja."
+    ],
+    "registry": [
+      { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR", "name": "AllowGameDVR", "type": "DWord", "value": 0, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "ux.classic-context-menu",
+    "category": "ux",
+    "kind": "tweak",
+    "title": "Przywróć klasyczne menu prawego przycisku myszy",
+    "summary": "Prawy przycisk myszy na pulpicie otwiera klasyczne menu Win32 zamiast menu z Windows 11.",
+    "benefit": "Prawy klik na pulpicie znowu otwiera klasyczne menu, takie jak w starszych wersjach Windows.",
+    "description": "Tworzy klucz HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32 z pustą wartością domyślną (REG_SZ), dla zalogowanego użytkownika. Wpis przesłania dla tego konta rejestrację menu Windows 11; po zmianie prawy klik otwiera okno menu Win32 (klasa #32768). DSOptimizer sam nie restartuje Eksploratora. Cofnięcie usuwa klucz {86ca1aa0-34aa-4e8b-a509-50c905bae2a2} razem z podkluczem InprocServer32, a po restarcie Eksploratora wraca menu Windows 11.",
+    "risk": "caution",
+    "scope": "user",
+    "warnings": [
+      "Menu zmieni się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”)."
+    ],
+    "registry": [
+      { "path": "HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32", "name": "", "type": "String", "value": "", "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "ux.taskbar-end-task",
+    "category": "ux",
+    "kind": "tweak",
+    "title": "Dodaj „Zakończ zadanie” do menu na pasku zadań",
+    "summary": "Dodaje pozycję „Zakończ zadanie” do menu przycisku programu na pasku zadań.",
+    "benefit": "Zawieszony program zamkniesz prawym klikiem na pasku zadań, bez otwierania Menedżera zadań.",
+    "description": "Włącza przełącznik „Zakończ zadanie” (System > Zaawansowane): TaskbarEndTask = 1 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings, dla zalogowanego użytkownika. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie usuwa wartość i klucz utworzony przez zmianę; po restarcie Eksploratora pozycja znika z menu.",
+    "risk": "safe",
+    "scope": "user",
+    "warnings": [
+      "Pozycja pojawi się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).",
+      "„Zakończ zadanie” kończy proces programu; niezapisane dane w tym programie mogą przepaść."
+    ],
+    "registry": [
+      { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings", "name": "TaskbarEndTask", "type": "DWord", "value": 1, "original": "<RemoveEntry>" }
+    ]
+  }
+]

@@ -1,0 +1,6 @@
+Name                Id                  Version Match
+--------------------------------------------------------
+腾讯QQ              Tencent.QQ
+ＦＵＬＬ            Vendor.Full
+Emoji 😀 App        Vendor.Emoji        2.0
+Plain App           Vendor.Plain        3.0     Tag: plain

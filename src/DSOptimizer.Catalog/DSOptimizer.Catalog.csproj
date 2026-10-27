@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>DSOptimizer.Catalog</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="catalog\*.json" Exclude="catalog\apps-bloat.json;catalog\apps.json" />
+    <!-- Klasyfikacja aplikacji to inny format niż tablice tweaków: osobny zasób, czytany przez BuiltInCatalog.AppsBloatSource. -->
+    <EmbeddedResource Include="catalog\apps-bloat.json" LogicalName="DSOptimizer.AppsBloat.apps-bloat.json" />
+    <!-- Lista instalacji (Etap 4c) to też osobny format: zasób czytany przez BuiltInCatalog.AppsInstallSource. -->
+    <EmbeddedResource Include="catalog\apps.json" LogicalName="DSOptimizer.AppsInstall.apps.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DSOptimizer.Core\DSOptimizer.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="DSOptimizer.Tests.Unit" />
+  </ItemGroup>
+</Project>

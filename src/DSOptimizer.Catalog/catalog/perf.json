@@ -1,0 +1,146 @@
+[
+  {
+    "id": "perf.sysmain",
+    "aliases": [ "io_sysmain" ],
+    "category": "perf",
+    "kind": "tweak",
+    "title": "Wyłącz usługę SysMain (Superfetch)",
+    "summary": "Zatrzymuje usługę SysMain i nie pozwala jej startować z systemem.",
+    "benefit": "Windows przestaje wczytywać do pamięci na zapas programy, których często używasz.",
+    "description": "Ustawia typ startu usługi SysMain na Wyłączony i ją zatrzymuje. Jeśli działają usługi od niej zależne albo zatrzymanie nie zmieści się w limicie czasu, zmiana typu startu jest wycofywana. Microsoft opisuje tę usługę tylko w dokumentacji Windows Server, bez zaleceń co do wyłączania. Cofnięcie przywraca poprzedni typ startu i uruchamia usługę, jeśli działała.",
+    "risk": "experimental",
+    "scope": "machine",
+    "warnings": [
+      "Microsoft nie podaje skutków wyłączenia tej usługi, a korzyść nie jest udokumentowana."
+    ],
+    "services": [
+      { "name": "SysMain", "startType": "Disabled", "stop": true, "original": "Automatic" }
+    ]
+  },
+  {
+    "id": "perf.paging-executive",
+    "aliases": [ "cpu_paging" ],
+    "category": "perf",
+    "kind": "tweak",
+    "title": "Trzymaj kod jądra i sterowników w pamięci",
+    "summary": "Kod systemu i sterowników zostaje zawsze w pamięci RAM, zamiast trafiać do pliku stronicowania.",
+    "benefit": "Kod systemu i sterowników nie jest odkładany na dysk, więc nie trzeba go z niego doczytywać. Nie ma dowodu, że na Windows 11 daje to odczuwalną różnicę.",
+    "description": "Ustawia DisablePagingExecutive = 1 w HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management: kod systemowy i sterowniki nie są stronicowane na dysk, tylko zostają w pamięci fizycznej. Domyślnie wartość wynosi 0. Microsoft opisuje to ustawienie tylko w archiwalnej dokumentacji (Windows Server 2003 i blog z 2007 roku): zysk na komputerach z dużą ilością pamięci, zależny od aplikacji. Cofnięcie przywraca poprzednią wartość – ona także zadziała dopiero po restarcie.",
+    "risk": "experimental",
+    "scope": "machine",
+    "requiresReboot": true,
+    "warnings": [
+      "Wymaga restartu komputera.",
+      "Część pamięci RAM zostaje zajęta na stałe."
+    ],
+    "registry": [
+      { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management", "name": "DisablePagingExecutive", "type": "DWord", "value": 1, "original": 0 }
+    ]
+  },
+  {
+    "id": "perf.vbs-hvci",
+    "aliases": [ "cpu_vbs" ],
+    "category": "perf",
+    "kind": "tweak",
+    "title": "Wyłącz integralność pamięci (HVCI)",
+    "summary": "Wyłącza integralność pamięci w izolacji rdzenia, czyli ochronę jądra przed złośliwymi sterownikami.",
+    "benefit": "Microsoft nie podaje, ile wydajności daje wyłączenie. Pewny skutek to słabsza ochrona jądra przed złośliwymi sterownikami i ostrzeżenie w Zabezpieczeniach Windows.",
+    "description": "Ustawia Enabled = 0 w HKLM\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity – to wartość, którą Microsoft podaje jako „wyłączone”. Osłabia ochronę jądra systemu przed złośliwym kodem; nie wyłącza VBS jako całości ani Credential Guard. Windows Security (Zabezpieczenia Windows) pokaże ostrzeżenie, że integralność pamięci jest wyłączona. Microsoft włącza ją domyślnie na czystych instalacjach Windows 11 na zgodnym sprzęcie i zapowiada rozszerzenie na kolejne urządzenia. Przy blokadzie UEFI (Locked = 1) pozycja odmawia zmiany – wyłączenie wymaga wtedy wyłączenia Secure Boot w UEFI. Stan pozycji łączy wartość w rejestrze z odczytem Win32_DeviceGuard: zmiana jest zastosowana dopiero wtedy, gdy integralność pamięci naprawdę nie działa, czyli po restarcie. Cofnięcie przywraca poprzednią wartość albo usuwa ją razem z kluczem utworzonym przez zmianę.",
+    "risk": "experimental",
+    "scope": "machine",
+    "requiresReboot": true,
+    "warnings": [
+      "Wymaga restartu komputera; do tego czasu integralność pamięci nadal działa.",
+      "Cofnąć można tylko po zmianie wykonanej w DSOptimizerze – inaczej włącz ochronę ręcznie w Zabezpieczeniach Windows."
+    ],
+    "registry": [
+      { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity", "name": "Enabled", "type": "DWord", "value": 0, "original": "<RemoveEntry>" }
+    ],
+    "script": {
+      "detect": [
+        "if (-not (Get-Command Get-DsoSecurityServicesRunning -ErrorAction SilentlyContinue)) {",
+        "    # Haczyk testowy: testy jednostkowe definiują tę funkcję wcześniej jako mock. Dostęp do CIM jest tylko tutaj.",
+        "    function Get-DsoSecurityServicesRunning {",
+        "        # Win32_DeviceGuard.SecurityServicesRunning (MS Learn): tablica kodów liczbowych, 2 = memory integrity. Bez tekstu zależnego od języka.",
+        "        # Zwraca $null, gdy CIM nie podał odpowiedzi (brak instancji albo brak właściwości).",
+        "        $guard = Get-CimInstance -Namespace 'root\\Microsoft\\Windows\\DeviceGuard' -ClassName Win32_DeviceGuard -ErrorAction Stop",
+        "        if ($null -eq $guard -or $null -eq $guard.SecurityServicesRunning -or @($guard.SecurityServicesRunning).Count -eq 0) { return $null }",
+        "        , @($guard.SecurityServicesRunning | ForEach-Object { [int]$_ })",
+        "    }",
+        "}",
+        "if (-not (Get-Command Get-DsoHvciEnabled -ErrorAction SilentlyContinue)) {",
+        "    # Haczyk testowy: testy jednostkowe definiują tę funkcję wcześniej jako mock. Dostęp do rejestru (.NET, widok 64-bit, tylko odczyt) jest tylko tutaj.",
+        "    function Get-DsoHvciEnabled {",
+        "        # Zwraca $null (brak klucza lub wartości Enabled) albo @{ Kind; Value }, gdzie Value to [uint32] dla DWord.",
+        "        $base = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64)",
+        "        try {",
+        "            $key = $base.OpenSubKey('SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity')",
+        "            if ($null -eq $key) { return $null }",
+        "            try {",
+        "                if (@($key.GetValueNames()) -notcontains 'Enabled') { return $null }",
+        "                $kind = $key.GetValueKind('Enabled')",
+        "                $raw = $key.GetValue('Enabled', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)",
+        "                if ($kind -eq [Microsoft.Win32.RegistryValueKind]::DWord) { $raw = [BitConverter]::ToUInt32([BitConverter]::GetBytes([int]$raw), 0) }",
+        "                [pscustomobject]@{ Kind = $kind.ToString(); Value = $raw }",
+        "            }",
+        "            finally { $key.Dispose() }",
+        "        }",
+        "        finally { $base.Dispose() }",
+        "    }",
+        "}",
+        "# Bez wpisu Enabled = DWord 0 to narzędzie niczego nie zastosowało (świeży system, stan po cofnięciu, memory integrity włączone przez Windows): NotApplied, bez pytania CIM o usługę.",
+        "$enabled = Get-DsoHvciEnabled",
+        "if ($null -eq $enabled -or $enabled.Kind -ne 'DWord' -or [uint32]$enabled.Value -ne 0) { 'NotApplied'; return }",
+        "$running = Get-DsoSecurityServicesRunning",
+        "# Brak odpowiedzi CIM (nic, $null albo pusta tablica) to nie \"memory integrity nie działa\": stan nieznany, skrypt kończy się błędem, nigdy Applied.",
+        "if ($null -eq $running -or @($running).Count -eq 0) { throw 'Win32_DeviceGuard nie zwrócił SecurityServicesRunning – stan memory integrity jest nieznany.' }",
+        "# Enabled = 0 jest ustawione. 2 = memory integrity jeszcze działa (Win32_DeviceGuard, przed restartem): NotApplied, złożony z wpisem registry[] daje Partial/PendingReboot; Applied dopiero, gdy memory integrity nie działa.",
+        "if (@($running) -contains 2) { 'NotApplied' } else { 'Applied' }"
+      ],
+      "capture": [
+        "if (-not (Get-Command Get-DsoHvciLocked -ErrorAction SilentlyContinue)) {",
+        "    # Haczyk testowy: testy jednostkowe definiują tę funkcję wcześniej jako mock. Dostęp do rejestru (.NET, widok 64-bit, tylko odczyt) jest tylko tutaj.",
+        "    function Get-DsoHvciLocked {",
+        "        # Zwraca $null (brak klucza lub wartości Locked) albo @{ Kind; Value }, gdzie Value to [uint32] dla DWord.",
+        "        $base = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64)",
+        "        try {",
+        "            $key = $base.OpenSubKey('SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity')",
+        "            if ($null -eq $key) { return $null }",
+        "            try {",
+        "                if (@($key.GetValueNames()) -notcontains 'Locked') { return $null }",
+        "                $kind = $key.GetValueKind('Locked')",
+        "                $raw = $key.GetValue('Locked', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)",
+        "                if ($kind -eq [Microsoft.Win32.RegistryValueKind]::DWord) { $raw = [BitConverter]::ToUInt32([BitConverter]::GetBytes([int]$raw), 0) }",
+        "                [pscustomobject]@{ Kind = $kind.ToString(); Value = $raw }",
+        "            }",
+        "            finally { $key.Dispose() }",
+        "        }",
+        "        finally { $base.Dispose() }",
+        "    }",
+        "}",
+        "function Assert-DsoHvciNotLocked {",
+        "    # Brak wartości Locked albo DWord 0 = bez blokady UEFI. Wszystko inne to odmowa przed jakąkolwiek zmianą.",
+        "    $locked = Get-DsoHvciLocked",
+        "    if ($null -eq $locked) { return }",
+        "    if ($locked.Kind -eq 'DWord' -and [uint32]$locked.Value -eq 0) { return }",
+        "    if ($locked.Kind -eq 'DWord' -and [uint32]$locked.Value -eq 1) {",
+        "        throw 'Memory integrity ma blokadę UEFI (Locked = 1): samo Enabled = 0 w rejestrze nie wystarczy, trzeba wyłączyć Secure Boot w UEFI (Microsoft) – nic nie zmieniono.'",
+        "    }",
+        "    throw ('Wartość Locked w Scenarios\\HypervisorEnforcedCodeIntegrity ma nieoczekiwany typ lub wartość ({0}: {1}) – nie wiadomo, czy jest blokada UEFI; nic nie zmieniono.' -f $locked.Kind, $locked.Value)",
+        "}",
+        "Assert-DsoHvciNotLocked",
+        "'Unlocked'"
+      ],
+      "apply": [
+        "# Odmowa przy blokadzie UEFI jest w capture (przed jakąkolwiek zmianą); skrypt apply biegnie po zapisie Enabled przez silnik i niczego nie zmienia.",
+        "'Brak zmian po stronie skryptu; Enabled = 0 zapisuje wpis rejestru, memory integrity przestanie działać po restarcie.'"
+      ],
+      "undo": [
+        "# Pusty $Snapshot = ścieżka bez wpisu w journalu (fallback `original` z katalogu): nie wiadomo, czy memory integrity było włączone. Odmowa, zanim silnik dotknie rejestru (undo idzie od końca: skrypt, potem Enabled).",
+        "if ([string]::IsNullOrWhiteSpace($Snapshot)) { throw 'Brak wpisu w journalu – nie wiadomo, czy memory integrity było włączone; nic nie zmieniono. Ustaw ręcznie w Windows Security.' }",
+        "# Wartość Enabled przywraca silnik ze snapshotu rejestru (a klucz utworzony przez apply usuwa); skrypt niczego nie zmienia.",
+        "'Nic do przywrócenia po stronie skryptu; Enabled przywraca snapshot rejestru, efekt po restarcie.'"
+      ]
+    }
+  }
+]

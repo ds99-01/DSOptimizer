@@ -1,0 +1,150 @@
+using System;
+using System.Globalization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+namespace DSOptimizer.Core.Settings;
+
+public static class AppSettingsSerializer
+{
+    public static string Serialize(AppSettings settings)
+    {
+        if (settings is null)
+        {
+            throw new ArgumentNullException(nameof(settings));
+        }
+
+        var document = new JObject
+        {
+            ["schemaVersion"] = AppSettings.SchemaVersion,
+            ["createRestorePoint"] = settings.CreateRestorePoint,
+            ["theme"] = ThemeToText(settings.Theme),
+        };
+        return document.ToString(Formatting.None);
+    }
+
+    public static AppSettings Deserialize(string json)
+    {
+        if (json is null)
+        {
+            throw new ArgumentNullException(nameof(json));
+        }
+
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new SettingsFormatException("Pusty plik ustawień.");
+        }
+
+        // Surowy napis z BOM jest odrzucany tutaj; plik z BOM (np. z Notatnika) i tak się wczyta, bo File.ReadAllText
+        // w JsonFileSettingsStore wykrywa BOM i usuwa go, zanim napis trafi do serializera.
+        if (json[0] == '﻿')
+        {
+            throw new SettingsFormatException("Plik ustawień zaczyna się od BOM (oczekiwano UTF-8 bez BOM).");
+        }
+
+        JToken root;
+        try
+        {
+            using var reader = new JsonTextReader(new System.IO.StringReader(json))
+            {
+                DateParseHandling = DateParseHandling.None,
+                Culture = CultureInfo.InvariantCulture,
+            };
+            root = JToken.ReadFrom(reader);
+            if (reader.Read())
+            {
+                throw new SettingsFormatException("Plik ustawień zawiera dane po zamknięciu dokumentu JSON.");
+            }
+        }
+        catch (JsonException ex)
+        {
+            throw new SettingsFormatException($"Uszkodzony plik ustawień: {ex.Message}", ex);
+        }
+
+        if (root is not JObject document)
+        {
+            throw new SettingsFormatException("Plik ustawień musi być obiektem JSON.");
+        }
+
+        CheckSchemaVersion(document["schemaVersion"]);
+
+        return new AppSettings
+        {
+            CreateRestorePoint = ReadBoolean(document["createRestorePoint"], AppSettings.Default.CreateRestorePoint),
+            Theme = ReadTheme(document["theme"], AppSettings.Default.Theme),
+        };
+    }
+
+    private static void CheckSchemaVersion(JToken? token)
+    {
+        if (token is null)
+        {
+            throw new SettingsFormatException("Brak pola schemaVersion w pliku ustawień.");
+        }
+
+        if (token.Type != JTokenType.Integer)
+        {
+            throw new SettingsFormatException("Pole schemaVersion musi być liczbą całkowitą.");
+        }
+
+        // Newtonsoft zwraca long tylko dla liczb mieszczących się w zakresie; większe to BigInteger.
+        if (token is not JValue { Value: long version })
+        {
+            throw new SettingsFormatException("Pole schemaVersion jest poza dozwolonym zakresem liczb.");
+        }
+
+        if (version > AppSettings.SchemaVersion)
+        {
+            throw new SettingsFormatException($"Plik ustawień ma nowszą wersję formatu (schemaVersion {version} – nowsza wersja programu); ta wersja obsługuje {AppSettings.SchemaVersion}.");
+        }
+
+        if (version != AppSettings.SchemaVersion)
+        {
+            throw new SettingsFormatException($"Nieobsługiwana wersja pliku ustawień: {version}.");
+        }
+    }
+
+    private static bool ReadBoolean(JToken? token, bool fallback)
+    {
+        if (token is null)
+        {
+            return fallback;
+        }
+
+        if (token.Type != JTokenType.Boolean)
+        {
+            throw new SettingsFormatException("Pole createRestorePoint musi być wartością true lub false.");
+        }
+
+        return token.Value<bool>();
+    }
+
+    private static ThemePreference ReadTheme(JToken? token, ThemePreference fallback)
+    {
+        if (token is null)
+        {
+            return fallback;
+        }
+
+        if (token.Type != JTokenType.String)
+        {
+            throw new SettingsFormatException("Pole theme musi być tekstem: system, light albo dark.");
+        }
+
+        return (token.Value<string>() ?? string.Empty).ToLowerInvariant() switch
+        {
+            "system" => ThemePreference.System,
+            "light" => ThemePreference.Light,
+            "dark" => ThemePreference.Dark,
+            _ => throw new SettingsFormatException("Nieznana wartość pola theme (dozwolone: system, light, dark)."),
+        };
+    }
+
+    private static string ThemeToText(ThemePreference theme) => theme switch
+    {
+        ThemePreference.System => "system",
+        ThemePreference.Light => "light",
+        ThemePreference.Dark => "dark",
+        _ => throw new ArgumentOutOfRangeException(nameof(theme), theme, "Nieznany motyw."),
+    };
+}

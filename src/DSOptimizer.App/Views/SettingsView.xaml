@@ -1,0 +1,192 @@
+<UserControl x:Class="DSOptimizer.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:DSOptimizer.App.Views"
+             xmlns:core="clr-namespace:DSOptimizer.Core;assembly=DSOptimizer.Core">
+  <UserControl.Resources>
+    <!-- Pole wyboru z etykietą (klik w tekst też przełącza): pole jak BrandCheckBox, etykieta 14 px; wyłączone = krycie 0,45 -->
+    <Style x:Key="SettingCheckBox" TargetType="CheckBox">
+      <Setter Property="FocusVisualStyle" Value="{StaticResource BrandFocusVisual}" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="CheckBox">
+            <Grid x:Name="Root" Background="Transparent">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="18" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid Width="18" Height="18" VerticalAlignment="Top" Margin="0,1,0,0">
+                <Border x:Name="Box" CornerRadius="2" BorderThickness="1.5" BorderBrush="{DynamicResource TextFillColorSecondaryBrush}" />
+                <Path x:Name="Mark" Data="M4,9 L7.5,12.5 L14,5.5" Stroke="{DynamicResource BrandOnAccentBrush}" StrokeThickness="2" Visibility="Collapsed" />
+              </Grid>
+              <ContentPresenter Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center"
+                                TextElement.FontSize="14" TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+              </Trigger>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="Box" Property="Background" Value="{DynamicResource BrandAccentBrush}" />
+                <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource BrandAccentBrush}" />
+                <Setter TargetName="Mark" Property="Visibility" Value="Visible" />
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Root" Property="Opacity" Value="0.45" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Przełącznik motywu: pierścień 18 px (obrys 1,5), wybrany = pierścień i kropka w akcencie; etykieta 13,5 px.
+         Odstęp 20 za każdym poza ostatnim: trzy mieszczą się w jednej linii przy ekranie 1024×768. -->
+    <Style x:Key="SettingRadioButton" TargetType="RadioButton">
+      <Setter Property="FocusVisualStyle" Value="{StaticResource BrandFocusVisual}" />
+      <Setter Property="Margin" Value="0,0,20,0" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="RadioButton">
+            <StackPanel x:Name="Root" Orientation="Horizontal" Background="Transparent">
+              <Grid Width="18" Height="18" VerticalAlignment="Center">
+                <Ellipse x:Name="Ring" StrokeThickness="1.5" Stroke="{DynamicResource TextFillColorSecondaryBrush}" Fill="Transparent" />
+                <Ellipse x:Name="Dot" Width="8" Height="8" Fill="{DynamicResource TextFillColorPrimaryBrush}" Visibility="Collapsed" />
+              </Grid>
+              <ContentPresenter Margin="9,0,0,0" VerticalAlignment="Center"
+                                TextElement.FontSize="13.5" TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+            </StackPanel>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+              </Trigger>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                <Setter TargetName="Dot" Property="Visibility" Value="Visible" />
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Root" Property="Opacity" Value="0.45" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Opis pod polem: tekst drugorzędny z zawijaniem -->
+    <Style x:Key="SettingHint" TargetType="TextBlock" BasedOn="{StaticResource BodyText}">
+      <Setter Property="FontSize" Value="12.5" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    </Style>
+
+    <!-- Nagłówek sekcji formularza + cienka linia (jak w Specyfikacji) -->
+    <Style x:Key="SettingSectionLine" TargetType="Border">
+      <Setter Property="Height" Value="1" />
+      <Setter Property="Margin" Value="0,4,0,14" />
+      <Setter Property="Background" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
+    </Style>
+  </UserControl.Resources>
+
+  <!-- Układ B (render 05): formularz po lewej, „O programie” po prawej w kolumnie o szerokości panelu szczegółów (GuiLayout) -->
+  <Grid SizeChanged="OnSizeChanged">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition x:Name="AboutColumn" Width="280" />
+    </Grid.ColumnDefinitions>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+      <StackPanel Margin="0,0,20,16">
+        <TextBlock Style="{StaticResource PageTitleText}" Text="Ustawienia" />
+        <TextBlock Style="{StaticResource SubText}" Text="Zmiany zapisują się od razu." />
+
+        <!-- W trakcie operacji nieaktywne: seria nie zmienia polityki punktu przywracania w połowie -->
+        <StackPanel Margin="0,22,0,0" IsEnabled="{Binding IsEditable}">
+          <TextBlock Style="{StaticResource SectionHeaderText}" Text="Zmiany w systemie" />
+          <Border Style="{StaticResource SettingSectionLine}" />
+          <!-- Etykieta zawija się w wąskiej kolumnie zamiast ucinać się na krawędzi. Kolor i rozmiar jawnie: TextBlock z treści
+               nie brał koloru z ContentPresenter szablonu (w ciemnym motywie był czarny na ciemnym tle, render Task 10). -->
+          <CheckBox Style="{StaticResource SettingCheckBox}" IsChecked="{Binding CreateRestorePoint, Mode=TwoWay}"
+                    AutomationProperties.Name="Twórz punkt przywracania przed zmianami">
+            <TextBlock TextWrapping="Wrap" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                       Text="Twórz punkt przywracania przed zmianami" />
+          </CheckBox>
+          <TextBlock Style="{StaticResource SettingHint}" Margin="30,4,0,0"
+                     Text="Przed pierwszą zmianą każdego „Zastosuj” (pojedynczego i w serii) program próbuje utworzyć punkt przywracania Windows. Gdy się nie uda, na przykład przy wyłączonej ochronie systemu, zmiany i tak zostaną wprowadzone, a dziennik pokaże ostrzeżenie. Nie dotyczy „Cofnij” ani akcji." />
+
+          <TextBlock Style="{StaticResource SectionHeaderText}" Margin="0,26,0,0" Text="Wygląd i język" />
+          <Border Style="{StaticResource SettingSectionLine}" />
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="64" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Style="{StaticResource BodyText}" FontSize="13.5" Margin="0,1,0,0" VerticalAlignment="Top" Text="Motyw" />
+            <StackPanel Grid.Column="1">
+              <WrapPanel>
+                <RadioButton Style="{StaticResource SettingRadioButton}" GroupName="Theme" Content="Systemowy" IsChecked="{Binding IsSystemTheme, Mode=TwoWay}" />
+                <RadioButton Style="{StaticResource SettingRadioButton}" GroupName="Theme" Content="Jasny" IsChecked="{Binding IsLightTheme, Mode=TwoWay}" />
+                <RadioButton Style="{StaticResource SettingRadioButton}" GroupName="Theme" Content="Ciemny" IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" Margin="0" />
+              </WrapPanel>
+              <TextBlock Style="{StaticResource SettingHint}" Margin="0,8,0,0"
+                         Text="Systemowy zmienia się razem z motywem Windows. Pasek marki i menu zostają grafitowe." />
+            </StackPanel>
+
+            <TextBlock Grid.Row="1" Style="{StaticResource BodyText}" FontSize="13.5" Margin="0,28,0,0" VerticalAlignment="Top" Text="Język" />
+            <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,22,0,0">
+              <!-- Jedyny język; lista nieaktywna do czasu kolejnych tłumaczeń -->
+              <ComboBox Style="{StaticResource BrandComboBox}" Width="200" HorizontalAlignment="Left" IsEnabled="False"
+                        SelectedIndex="0" AutomationProperties.Name="Język">
+                <ComboBoxItem Content="Polski" />
+              </ComboBox>
+              <TextBlock Style="{StaticResource SettingHint}" Margin="0,8,0,0" Text="Na razie dostępny jest tylko polski." />
+            </StackPanel>
+          </Grid>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- O programie: znak, nazwa, wersja, autor, licencja programu i zdanie o marce, GitHub (znak jednokolorowy w kolorze tekstu), licencje -->
+    <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+      <StackPanel Margin="0,4,12,16">
+        <!-- Delikatny obrys znaku (wariant B): 1 px na zewnątrz 40 px kwadratu, narożnik = narożnik znaku (2,5 px) + 1 -->
+        <Grid Width="40" Height="40" HorizontalAlignment="Left">
+          <Image Source="{StaticResource BrandMarkImage}" Width="40" Height="40" />
+          <Border Margin="-1" BorderThickness="1" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" CornerRadius="3.5" IsHitTestVisible="False" />
+        </Grid>
+        <TextBlock Style="{StaticResource DetailTitleText}" Margin="0,14,0,0" Text="{x:Static core:ProductInfo.Name}" />
+        <TextBlock Style="{StaticResource SubText}" Margin="0,2,0,0" Text="{Binding VersionText}" />
+        <Grid Margin="0,16,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <TextBlock Style="{StaticResource DetailKeyText}" Text="Autor" />
+          <TextBlock Grid.Column="1" Style="{StaticResource DetailValueText}" FontWeight="SemiBold" Text="{x:Static core:ProductInfo.AuthorName}" />
+          <TextBlock Grid.Row="1" Style="{StaticResource DetailKeyText}" Text="Licencja" />
+          <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource DetailValueText}" TextWrapping="Wrap"
+                     Text="{x:Static core:ProductInfo.LicenseName}" />
+        </Grid>
+        <!-- Zdanie o marce zawija się w wąskiej kolumnie (SubText domyślnie ucina wielokropkiem) -->
+        <TextBlock Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" TextTrimming="None"
+                   Text="{x:Static core:ProductInfo.TrademarkNotice}" />
+        <Border Height="1" Margin="0,10,0,10" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+        <StackPanel Orientation="Horizontal">
+          <views:BrandIcon Kind="GitHub" Size="16" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+          <Button Style="{StaticResource TextLinkButton}" Margin="6,0,0,0" Content="{x:Static core:ProductInfo.AuthorUrlText}"
+                  AutomationProperties.Name="Otwórz github.com/ds99-01" Command="{Binding OpenAuthorPageCommand}" />
+        </StackPanel>
+        <Button Style="{StaticResource TextLinkButton}" Margin="0,6,0,0" HorizontalAlignment="Left" Content="Licencje komponentów"
+                Command="{Binding ShowLicensesCommand}" />
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

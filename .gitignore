@@ -1,0 +1,33 @@
+# Lokalne archiwum starych wersji (zawiera dane prywatne) – nigdy do repo
+_archiwum/
+
+# Lokalne buildy do użytku (pendrive) – nigdy do repo
+wydania/
+
+# .NET
+bin/
+obj/
+artifacts/
+*.user
+*.suo
+.vs/
+TestResults/
+*.binlog
+
+# Katalogi buildów
+build/
+dist/
+
+# Narzędzia
+.playwright-cli/
+output/
+*.log
+
+# Pokrycie (coverlet)
+coverage.json
+
+# Testy VM (artefakty, obrazy)
+tests/vm/out/
+instalka iso/
+*.iso
+*.vhdx

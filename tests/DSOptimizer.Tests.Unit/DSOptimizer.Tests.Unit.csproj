@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>DSOptimizer.Tests.Unit</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="coverlet.msbuild" PrivateAssets="all" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- docs/tweaks, katalog wbudowany i katalog VM testy czytają bezpośrednio z repo (Support\RepoRoot): kopie PreserveNewest w bin trzymały nieaktualne pliki. -->
+    <EmbeddedResource Include="Resources\*.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DSOptimizer.Core\DSOptimizer.Core.csproj" />
+    <ProjectReference Include="..\..\src\DSOptimizer.Catalog\DSOptimizer.Catalog.csproj" />
+  </ItemGroup>
+</Project>

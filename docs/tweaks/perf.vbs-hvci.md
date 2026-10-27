@@ -1,0 +1,70 @@
+# perf.vbs-hvci – Wyłącz integralność pamięci (HVCI)
+
+## Werdykt 26H2
+Portować z ograniczeniem, jako `risk=experimental`: tylko wąski wariant (memory integrity, `Scenarios\HypervisorEnforcedCodeIntegrity\Enabled` = 0), którego wartość „wyłączone” podaje Microsoft. Wariant z v3.2 (dodatkowo `EnableVirtualizationBasedSecurity` = 0) nie wchodzi: MS nie potwierdza tej wartości jako „wyłączone”, a wyłączałby też podstawę Credential Guard. Wyłączenie memory integrity obniża ochronę jądra, więc to świadoma decyzja użytkownika, nie „optymalizacja”.
+
+## Co zmienia
+- Rejestr (`registry[]`, zapis przez API C#): `HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity`, wartość `Enabled`, **DWord**, `0`. `scope=machine`, `requiresReboot=true`. Na świeżym 26H2 klucz i wartość nie istnieją, więc `original` = `<RemoveEntry>`.
+- Skrypt (`script`) niczego nie zapisuje w rejestrze. Robi dwie rzeczy: `detect` odczytuje `Win32_DeviceGuard` (czy memory integrity działa), a `capture` odmawia zmiany (przed jakimkolwiek zapisem), gdy `Scenarios\HypervisorEnforcedCodeIntegrity\Locked` oznacza blokadę UEFI. `apply` i `undo` skryptu są no-opami (potrzebne, by operacja była „zmieniająca”, a `capture` w ogóle biegł) (wartość i klucz cofa silnik).
+- Nie dotyka: `EnableVirtualizationBasedSecurity`, `WasEnabledBy`, `LsaCfgFlags`, `Locked`, `HVCIEnabled` ani BCD.
+
+### Decyzja: `registry[]` + `script`, a nie sam `script`
+Silnik składa stan tweaka z wszystkich operacji, które biorą udział w detekcji (`StateAggregator.Aggregate`, `src/DSOptimizer.Core/Engine/StateAggregator.cs`): `Applied` tylko gdy każda operacja daje `Match`, `NotApplied` gdy żadna, w pozostałych przypadkach `Partial`. `ScriptOperation.Detect` (`src/DSOptimizer.Core/Operations/ScriptOperation.cs`) mapuje ostatnią linię `Applied`/`NotApplied`/`NotSupported` na `Match`/`Mismatch`/`NotSupported`, a `OperationFactory.Create` (`src/DSOptimizer.Core/Operations/OperationFactory.cs`) dodaje wpisy rejestru, usługi i skrypt do jednej listy. Wpis rejestru + skrypt z `detect` współistnieją więc w jednym tweaku, a przypadek „konfiguracja `Enabled` = 0, ale `SecurityServicesRunning` dalej zawiera 2” daje `Partial` (rejestr `Match`, skrypt `Mismatch`), czyli detekcja po zapisie ≠ `Applied`. Przy `requiresReboot=true` `TweakEngine.Apply` zwraca wtedy `PendingReboot` (`src/DSOptimizer.Core/Engine/TweakEngine.Apply.cs`), a po restarcie, gdy memory integrity przestaje działać, detekcja daje `Applied` i wpis journala przechodzi z `PendingReboot` w `Active` (`PromotePendingReboot`, `TweakEngine.cs`).
+
+Przeniesienie całości do `script` nie było potrzebne, a kosztowałoby: reguła A1 (undo usuwa puste klucze utworzone przez apply, `RegistryValueOperation.Restore`, `src/DSOptimizer.Core/Operations/RegistryValueOperation.cs`) działa tylko dla `registry[]`, więc skrypt musiałby sam kasować klucz, a rejestr szedłby przez PowerShell zamiast przez API C#.
+
+Odmowa przy blokadzie UEFI wymaga operacji, której `Capture` może rzucić. `Capture` wpisu rejestru nie odmawia, a operacje „detect-only” nie są przechwytywane (`TweakEngine.Apply.cs`, `mutating`). Dlatego skrypt ma też `apply` i `undo` (obie to jednolinijkowe no-opy; `apply` biegnie już PO zapisie rejestru, więc odmowa tam byłaby rollbackiem, a nie odmową przed zmianą): wtedy jest operacją zmieniającą, silnik woła jego `capture` przed jakąkolwiek zmianą i błąd przerywa apply przed zapisem rejestru i journala.
+
+## Źródła
+- https://learn.microsoft.com/en-us/windows/security/hardware-security/enable-virtualization-based-protection-of-code-integrity – MS Learn, dostęp 2026-10-18 (ms.date 2026-08-14): nazwy memory integrity = HVCI; klucze `Scenarios\HypervisorEnforcedCodeIntegrity` (`Enabled`, `Locked`, `WasEnabledBy`); **`reg add ... /v Enabled /t REG_DWORD /d 0 /f`** jako wyłączenie (sekcja Troubleshooting); blokada UEFI (wyłączenie wymaga dostępu do UEFI i wyłączenia Secure Boot); `Win32_DeviceGuard`: `SecurityServicesRunning`, kod 2 = memory integrity; zmiana wymaga restartu.
+- https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-hvci-enablement – MS Learn, dostęp 2026-10-18 (updated_at 2026-06-12): memory integrity domyślnie włączone na czystych instalacjach Windows 11 na zgodnym sprzęcie; Windows 11 22H2 i nowsze pokazuje w Windows Security ostrzeżenie, gdy jest wyłączone.
+- https://learn.microsoft.com/en-us/windows/security/identity-protection/credential-guard/configure – MS Learn, dostęp 2026-10-18 (updated_at 2026-10-08): osobny przełącznik Credential Guard (`LsaCfgFlags`); powód, dla którego nie zerujemy `EnableVirtualizationBasedSecurity`.
+- https://techcommunity.microsoft.com/blog/windows-itpro-blog/expanding-memory-integrity-protection-across-windows-devices/4551984 – wpis MS (Windows IT Pro Blog), dostęp 2026-10-18: potwierdzone są tylko tytuł i adres (zapowiedź rozszerzenia ochrony na kolejne urządzenia); treść strony nie została pobrana. Data „od października 2026” pochodzi z doniesień prasowych (research, sekcja 4), nie od Microsoftu; kryteriów katalog nie podaje.
+- Odczyt VM 26H2 Home i Pro, 2026-10-18 (`docs/zrodla/2026-10-18-partia-c2-zrodla.md`, „Wyniki VM”, punkt 4).
+
+## Wartości domyślne na świeżym 26H2
+Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = Pro), Gen2:
+- `Win32_DeviceGuard`: `VirtualizationBasedSecurityStatus` = 0 (wg MS: VBS nie włączone), `SecurityServicesConfigured` = [0], `SecurityServicesRunning` = [0]. Memory integrity **nie działa** na świeżej VM.
+- Klucz `...\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity` **nie istnieje** (brak `Enabled`, `Locked`, `WasEnabledBy`). Klucz `Control\CI\State` nie istnieje (brak `HVCIEnabled`). W `Control\DeviceGuard` brak wartości VBS; `LsaCfgFlags` brak.
+- Wniosek: `original` dla `Enabled` = brak wartości i brak klucza (`<RemoveEntry>`). `CI\State\HVCIEnabled` nie nadaje się na sygnał detekcji (na świeżym systemie brak klucza), więc nie jest używany nawet jako `detectOnly`.
+
+## Detekcja i undo
+Stan składa się z dwóch sygnałów (patrz „Decyzja” wyżej), oba liczbowe, bez parsowania tekstu zależnego od języka:
+1. Konfiguracja (`registry[]`): `Enabled` = DWORD 0 → `Match`; brak wartości, 1 albo inny typ → `Mismatch`.
+2. Realny stan (`script.detect`), w tej kolejności (zmiana E3-P2, 2026-10-21):
+   - Najpierw odczyt `Enabled` (helper `Get-DsoHvciEnabled`, .NET, widok 64-bit, tylko odczyt). Brak wartości, typ inny niż DWord albo wartość ≠ 0 → skrypt zwraca `NotApplied` i **nie pyta CIM**: bez konfiguracji `Enabled` = 0 to narzędzie niczego nie zastosowało, więc stan usługi nie ma znaczenia.
+   - Tylko przy `Enabled` = DWord 0: `Get-CimInstance Win32_DeviceGuard` (przestrzeń `root\Microsoft\Windows\DeviceGuard`), pole `SecurityServicesRunning` jest tablicą, więc sprawdzane jest zawieranie wartości 2 (a nie równość). Zawiera 2 → `NotApplied`, w przeciwnym razie `Applied`. Błąd CIM, a także brak odpowiedzi (`$null` zamiast instancji, instancja bez `SecurityServicesRunning` albo pusta tablica), kończy skrypt kodem ≠ 0 (stan nieznany), nigdy `Applied`.
+
+Wynik tweaka: `Applied` tylko gdy konfiguracja = 0 **i** memory integrity nie działa. Konfiguracja 0, a usługa jeszcze działa (przed restartem) → `Partial`; po zapisie z `requiresReboot=true` daje to wynik `PendingReboot`, po restarcie `Applied`. Brak konfiguracji (świeża VM, stan po cofnięciu, memory integrity włączone przez Windows) → `NotApplied`, niezależnie od `SecurityServicesRunning` (rejestr `Mismatch` + skrypt `Mismatch`). Tabela: świeży system `NotApplied`; po apply przed restartem (HVCI działa) `Partial`/`PendingReboot`; po restarcie `Applied`; po undo `NotApplied` (także zanim minie restart).
+
+Historia: do 2026-10-21 skrypt pytał tylko CIM, więc „brak konfiguracji i nic nie działa” dawało `Partial` (rejestr `Mismatch` + skrypt `Match`) bez wpisu journala; GUI oferowało „Cofnij”, a skrypt `undo` słusznie odmawiał bez snapshotu (`UndoIncomplete`, kod CLI 4). Pomiar: 2026-10-21.
+
+Apply na systemie, gdzie memory integrity nie działa (VM): zapis `Enabled` = 0 daje od razu `Applied` z flagą `requiresReboot`. Odmowa przy blokadzie: `capture` (tylko on; `apply` skryptu jest no-opem) czyta `Scenarios\HypervisorEnforcedCodeIntegrity\Locked` (API .NET, tylko odczyt): brak wartości albo DWORD 0 → `Unlocked`; DWORD 1 → błąd z komunikatem o blokadzie UEFI i wyłączeniu Secure Boot; każdy inny typ lub wartość → błąd (nie zgadujemy). Błąd `capture` przerywa apply przed jakąkolwiek zmianą (rejestru i journala), wynik `Failed`, nie sukces. Czy rejestrowe `Locked` = 1 zawsze odpowiada blokadzie w firmware, MS nie opisuje, dlatego odmowa jest ostrożna.
+
+Undo: silnik przywraca `Enabled` ze snapshotu z journala (poprzednia wartość albo jej brak); gdy wartości nie było, usuwa ją, a regułą A1 także pusty klucz utworzony przez apply. Fallback `original` = `<RemoveEntry>`. Przywrócenie `Enabled` = 1 (jeśli było) działa po restarcie. Skrypt `undo` niczego nie zmienia, o ile w journalu jest wpis.
+
+**Cofnięcie działa tylko po apply wykonanym tym narzędziem.** Bez wpisu w journalu (ścieżka „wartości domyślne z katalogu”) nie wiadomo, czy memory integrity było włączone, a `original` = `<RemoveEntry>` z VM jest prawdą tylko dla sprzętu bez HVCI (tam, gdzie HVCI jest domyślnie włączone, „domyślne” to `Enabled` = 1). Dlatego skrypt `undo` przy pustym `$Snapshot` kończy się błędem (komunikat: brak wpisu w journalu, nic nie zmieniono, ustaw ręcznie w Windows Security). Undo kolejność ma od końca (skrypt, potem rejestr; `OperationFactory.Create` dodaje rejestr przed skryptem), a `UndoFromDefaults` przerywa na pierwszym błędzie, więc `Enabled` zostaje nietknięte, a wynik to `UndoIncomplete` (kod CLI 4, `CliExitCode.Incomplete`), nie sukces.
+
+Blokada i polityki: gdy VBS jest zablokowane (`Control\DeviceGuard\Locked`) albo memory integrity wymuszają GPO/MDM, zapis `Enabled` = 0 może nie zadziałać, a pozycja zostanie w `Partial` / `PendingReboot`. Fałszywego `Applied` nie ma (detekcja czyta też `Win32_DeviceGuard`). Nie zweryfikowano (brak takiego sprzętu ani konfiguracji w testach).
+
+## Ryzyka i ostrzeżenia
+- `risk=experimental`.
+- Ostrzeżenia w katalogu: „Wymaga restartu komputera; do tego czasu integralność pamięci nadal działa.” oraz „Cofnąć można tylko po zmianie wykonanej w DSOptimizerze – inaczej włącz ochronę ręcznie w Zabezpieczeniach Windows.”
+- Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): wyłączenie obniża ochronę jądra; MS włącza memory integrity domyślnie na czystych instalacjach na zgodnym sprzęcie i zapowiada rozszerzenie na kolejne urządzenia (wpis Windows IT Pro Blog; data „od października 2026” pochodzi z doniesień prasowych, nie od Microsoftu); Windows Security pokaże ostrzeżenie; przy blokadzie UEFI pozycja odmawia, a wyłączenie wymaga wyłączenia Secure Boot.
+- Bez twierdzeń o WSL2/Hyper-V/Docker (żadne pobrane źródło MS tego nie mówi) i bez liczb wydajności (opis „10-25% CPU” z v3.2 nie ma źródła MS).
+- Wpływu na wydajność nie mierzono (wcześniej w programie: „pomiaru nie było”; od 2026-10-26 opis mówi, że Microsoft nie podaje zysku).
+
+## Test VM
+Przypadek `perf-vbs-hvci` (`Flow=Reboot`, `Catalog=BuiltIn`) w `tests/vm/cases.psd1`: `Snapshot` wartości `Enabled`, stan początkowy i końcowy to brak wartości i brak klucza (`KeyAbsentAfterUndo`), `CheckAfterApply`/`CheckAfterUndo` z `Win32_DeviceGuard` (`Get-CimInstance` z `-ErrorAction Stop` i jawną kontrolą, że instancja nie jest `$null`). 
+
+Przebieg VM z 2026-10-18 (13:51, stan sprzed poprawki E3-P2: `detect-before` i `detect-after-undo` = `Partial`, dziś `NotApplied`, patrz niżej, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba bez błędów (212 zaliczonych / 0 błędów / 10 pominiętych na każdej VM; pominięte to wyłącznie `disk-hibernation`). Raporty lokalne: `tests/vm/out/20261018-135146/<VM>/<RunLabel>/report.json` (katalog w `.gitignore`).
+
+Przypadek `perf-vbs-hvci` (`Flow=Reboot`, przebieg `reboot-perf-vbs-hvci`, osobny przebieg od czystego checkpointu; Pester 16/16 na Home i Pro), Home i Pro identycznie:
+- Sprawdzono: `detect-before` = `Partial` (brak wartości `Enabled`, memory integrity nie działa), `apply` = `Applied` (`requiresReboot` = true), `detect-after-apply` = `Applied`, **prawdziwy restart** (potwierdzony), `detect-after-reboot` = `Applied`, `undo` = `Undone` (`requiresReboot` = true, `finalState` = `Partial`), `detect-after-undo` = `Partial`. `CheckAfterApply` i `CheckAfterUndo` Passed (konfiguracja oraz `Win32_DeviceGuard.SecurityServicesRunning` bez 2); klucz `HypervisorEnforcedCodeIntegrity` utworzony przez apply nie istnieje po undo.
+
+Przebieg po poprawce E3-P2 (2026-10-21, `Flow=Reboot`): `detect-before` = `NotApplied`, `apply` = `Applied`, po restarcie `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`, kod 0.
+
+**Realny stan nie testowany na VM:** na świeżej VM Gen2 memory integrity nie działa (`VirtualizationBasedSecurityStatus` = 0). Przypadek VM sprawdza więc konfigurację (zapis, restart, undo, zniknięcie klucza) oraz to, że `Win32_DeviceGuard` dalej nie raportuje 2 w `SecurityServicesRunning`. Scenariusz „konfiguracja wyłączona, memory integrity jeszcze działa” (`PendingReboot`, potem `Applied` po restarcie), odmowę przy `Locked` = 1 i detekcję z różnych tablic `SecurityServicesRunning` pokrywają testy jednostkowe na mockach i fake'ach (`PerfVbsHvciTests`). Nie sprawdzono: czy VBS wystartuje po włączeniu na VM Gen2, zachowanie przy prawdziwej blokadzie UEFI, skutek na sprzęcie z działającym memory integrity.
+
+## Reddit
+Do uzupełnienia w części E.

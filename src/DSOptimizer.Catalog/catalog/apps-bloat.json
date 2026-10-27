@@ -1,0 +1,437 @@
+{
+  "entries": [
+    {
+      "id": "ms.copilot",
+      "match": { "packageName": "Microsoft.Copilot" },
+      "group": "microsoft",
+      "suggested": true,
+      "summary": "Asystent Copilot od Microsoftu. Do niczego innego w systemie nie jest potrzebny.",
+      "source": "Odczyt VM 26H2 Home 2026-10-21 (pakiet jest tylko na Home); dokumentacja MS „manage-windows-copilot” (usuwanie pakietu Microsoft.Copilot); decyzja Dawida 2026-10-21"
+    },
+    {
+      "id": "ms.bing-news",
+      "match": { "packageName": "Microsoft.BingNews" },
+      "group": "microsoft",
+      "suggested": true,
+      "summary": "Aplikacja z wiadomościami (Microsoft News). Nie jest potrzebna do działania systemu.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21 (usunięty na VM bez skutków ubocznych); spec 6.2 (News)"
+    },
+    {
+      "id": "ms.bing-weather",
+      "match": { "packageName": "Microsoft.BingWeather" },
+      "group": "microsoft",
+      "suggested": true,
+      "summary": "Aplikacja Pogoda od Microsoftu. Nie jest potrzebna do działania systemu.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21 (usunięty na VM bez skutków ubocznych); spec 6.2 (Weather)"
+    },
+    {
+      "id": "ms.solitaire",
+      "match": { "packageName": "Microsoft.MicrosoftSolitaireCollection" },
+      "group": "microsoft",
+      "suggested": true,
+      "summary": "Gra Microsoft Solitaire Collection z reklamami.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21; spec 6.2 (Solitaire)"
+    },
+    {
+      "id": "ms.clipchamp",
+      "match": { "packageName": "Clipchamp.Clipchamp" },
+      "group": "microsoft",
+      "suggested": true,
+      "summary": "Edytor wideo Clipchamp, część jego funkcji jest płatna.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21; spec 6.2 (Clipchamp)"
+    },
+    {
+      "id": "ms.xbox-app",
+      "match": { "packageName": "Microsoft.GamingApp" },
+      "group": "microsoft",
+      "suggested": true,
+      "summary": "Aplikacja Xbox. Pasek gry (Game Bar) i składniki logowania Xbox to osobne pakiety i tu ich nie ruszamy.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21; spec 6.2 (Xbox, bez Game Bar)"
+    },
+    {
+      "id": "ms.game-bar",
+      "match": { "packageName": "Microsoft.XboxGamingOverlay" },
+      "group": "microsoft",
+      "suggested": false,
+      "summary": "Pasek gry (Game Bar): zrzuty ekranu, nagrywanie i nakładka dla gier. Usuń tylko, gdy z niego nie korzystasz.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21; decyzja Dawida 2026-10-21 (Game Bar nie jest sugerowany)"
+    },
+    {
+      "id": "ms.teams-new",
+      "match": { "packageName": "MSTeams" },
+      "group": "microsoft",
+      "suggested": false,
+      "summary": "Nowy Microsoft Teams (osobisty i służbowy).",
+      "warning": "Może to być Teams do pracy lub szkoły; usuń tylko, jeśli nie jest używany.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21; MS Learn „Uninstall the Teams client” (pakiet MSTeams); ten sam pakiet obsługuje konta służbowe, więc nie jest sugerowany (decyzja projektowa 2026-10-21)"
+    },
+    {
+      "id": "ms.office-hub",
+      "match": { "packageName": "Microsoft.MicrosoftOfficeHub" },
+      "group": "microsoft",
+      "suggested": true,
+      "summary": "Aplikacja Microsoft 365 (Office Hub): skrót do usług Office, bez pakietu Office.",
+      "source": "Nazwa pakietu: MS Learn, archiwum forum „Which AppXPackage can be removed without causing system problems?” https://learn.microsoft.com/en-us/archive/msdn-technet-forums/10740522-6c7e-4664-bc5e-f638467aae5d (lista Get-AppxPackage Windows 10, sprawdzono pobraniem strony 2026-10-21); brak na świeżym 26H2 (odczyt VM 2026-10-21); spec 6.2"
+    },
+    {
+      "id": "ms.todo",
+      "match": { "packageName": "Microsoft.Todos" },
+      "group": "microsoft",
+      "suggested": true,
+      "summary": "Lista zadań Microsoft To Do.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21; spec 6.2 (To Do)"
+    },
+    {
+      "id": "ms.tips",
+      "match": { "packageName": "Microsoft.Getstarted" },
+      "group": "microsoft",
+      "suggested": true,
+      "summary": "Aplikacja Porady z podpowiedziami o Windows.",
+      "source": "Nazwa pakietu: MS Learn, archiwum forum „Which AppXPackage can be removed without causing system problems?” https://learn.microsoft.com/en-us/archive/msdn-technet-forums/10740522-6c7e-4664-bc5e-f638467aae5d (lista Get-AppxPackage Windows 10, sprawdzono pobraniem strony 2026-10-21); brak na świeżym 26H2 (odczyt VM 2026-10-21); spec 6.2"
+    },
+    {
+      "id": "ms.feedback-hub",
+      "match": { "packageName": "Microsoft.WindowsFeedbackHub" },
+      "group": "microsoft",
+      "suggested": true,
+      "summary": "Centrum opinii: wysyłanie uwag do Microsoftu.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21; spec 6.2 (Centrum opinii)"
+    },
+    {
+      "id": "ms.power-automate",
+      "match": { "packageName": "Microsoft.PowerAutomateDesktop" },
+      "group": "microsoft",
+      "suggested": true,
+      "summary": "Power Automate: automatyzacja zadań, rzadko używana na domowym komputerze.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21; spec 6.2 (Power Automate)"
+    },
+    {
+      "id": "ms.onedrive",
+      "match": { "displayName": "Microsoft OneDrive" },
+      "group": "microsoft",
+      "suggested": false,
+      "summary": "Synchronizacja plików z chmurą OneDrive. Usuń tylko, gdy nie korzystasz z OneDrive.",
+      "warning": "Pliki zsynchronizowane tylko w chmurze mogą przestać być dostępne na tym komputerze.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21 (wpis Uninstall per użytkownik, DisplayName „Microsoft OneDrive”); spec 6.2 (nie sugerowane)"
+    },
+    {
+      "id": "ms.outlook-new",
+      "match": { "packageName": "Microsoft.OutlookForWindows" },
+      "group": "microsoft",
+      "suggested": false,
+      "summary": "Nowy Outlook dla Windows. Usuń tylko, gdy nie czytasz w nim poczty.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21; spec 6.2 (nie sugerowane)"
+    },
+    {
+      "id": "ms.quick-assist",
+      "match": { "packageName": "MicrosoftCorporationII.QuickAssist" },
+      "group": "microsoft",
+      "suggested": false,
+      "summary": "Szybka pomoc: zdalna pomoc innej osoby przez internet. Usuń tylko, gdy nie będzie potrzebna.",
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21; spec 6.2 (nie sugerowane)"
+    },
+    {
+      "id": "lenovo.vantage-store",
+      "match": { "packageName": "E046963F.LenovoCompanion" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "Lenovo Vantage: aplikacja producenta z ustawieniami sprzętu i aktualizacjami.",
+      "warning": "Może sterować oszczędzaniem baterii i klawiszami Fn; po usunięciu ta funkcja może zniknąć.",
+      "source": "Strona Lenovo „Lenovo Vantage” (smartsupport.lenovo.com/solutions/ht505081; Vantage zastępuje Companion). Dokładna nazwa pakietu NIE potwierdzona w sieci ani na VM; wpis niesugerowany, więc pomyłka nie usunie niczego"
+    },
+    {
+      "id": "lenovo.vantage-win32",
+      "match": { "displayName": "Lenovo Vantage*" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "Lenovo Vantage: aplikacja producenta z ustawieniami sprzętu i aktualizacjami.",
+      "warning": "Może sterować oszczędzaniem baterii i klawiszami Fn; po usunięciu ta funkcja może zniknąć.",
+      "source": "Strona Lenovo „Lenovo Vantage” (smartsupport.lenovo.com/solutions/ht505081); nazwa produktu z dokumentacji Lenovo, wpis niesugerowany"
+    },
+    {
+      "id": "asus.myasus-store",
+      "match": { "packageName": "B9ECED6F.ASUSPCAssistant" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "MyASUS: aplikacja producenta z aktualizacjami sterowników i ustawieniami sprzętu.",
+      "warning": "Może sterować oszczędzaniem baterii i klawiszami Fn; po usunięciu ta funkcja może zniknąć.",
+      "source": "Nazwa pakietu: katalog WindowsApps z MyASUS.exe (freefixer.com/library/file/MyASUS.exe-303786); funkcje (Battery Care, sterowniki): rog.asus.com „Armoury Crate vs MyASUS vs GPU Tweak III”. Nie sprawdzono na sprzęcie ASUS; wpis niesugerowany"
+    },
+    {
+      "id": "asus.myasus-win32",
+      "match": { "displayName": "MyASUS*" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "MyASUS: aplikacja producenta z aktualizacjami sterowników i ustawieniami sprzętu.",
+      "warning": "Może sterować oszczędzaniem baterii i klawiszami Fn; po usunięciu ta funkcja może zniknąć.",
+      "source": "rog.asus.com „Armoury Crate vs MyASUS vs GPU Tweak III” (Battery Care, sterowniki). Nie sprawdzono na sprzęcie ASUS; wpis niesugerowany"
+    },
+    {
+      "id": "asus.armoury-store",
+      "match": { "packageName": "B9ECED6F.ArmouryCrate" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "Armoury Crate: aplikacja producenta ASUS do trybów wydajności, wentylatorów i podświetlenia.",
+      "warning": "Może sterować oszczędzaniem baterii i klawiszami Fn; po usunięciu ta funkcja może zniknąć.",
+      "source": "Nazwa pakietu: rog-forum.asus.com (raport awarii „B9ECED6F.ArmouryCrate_…”); funkcje: rog.asus.com „Armoury Crate vs MyASUS vs GPU Tweak III”. Nie sprawdzono na sprzęcie ASUS; wpis niesugerowany"
+    },
+    {
+      "id": "asus.armoury-win32",
+      "match": { "displayName": "*Armoury Crate*" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "Armoury Crate: aplikacja producenta ASUS do trybów wydajności, wentylatorów i podświetlenia.",
+      "warning": "Może sterować oszczędzaniem baterii i klawiszami Fn; po usunięciu ta funkcja może zniknąć.",
+      "source": "rog.asus.com „Armoury Crate vs MyASUS vs GPU Tweak III”. Nie sprawdzono na sprzęcie ASUS; wpis niesugerowany"
+    },
+    {
+      "id": "acer.care-center",
+      "match": { "packageName": "AcerIncorporated.AcerCareCenterS" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "Acer Care Center: aplikacja producenta do konserwacji komputera i aktualizacji.",
+      "warning": "Może zarządzać aktualizacjami i ustawieniami producenta; po usunięciu sprawdzaj je ręcznie.",
+      "source": "community.acer.com/en/kb/articles/145 („What is the Acer Care Center application?”); nazwa pakietu: community.acer.com/en/discussion/comment/1259754 (Get-AppxPackage AcerIncorporated.AcerCareCenterS). Nie sprawdzono na sprzęcie Acer; wpis niesugerowany"
+    },
+    {
+      "id": "hp.support-assistant-store",
+      "match": { "packageName": "AD2F1837.HPSupportAssistant" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "HP Support Assistant: asystent producenta z diagnostyką, powiadomieniami i aktualizacjami sterowników HP.",
+      "warning": "Może sterować aktualizacjami sterowników HP; po usunięciu sprawdzaj je ręcznie.",
+      "source": "Forum HP h30434.www3.hp.com („uninstall HP Support Assistant for all users”) i skrypt czyszczący (notes.ponderworthy.com) z nazwą AD2F1837.HPSupportAssistant. Nie sprawdzono na sprzęcie HP; wpis niesugerowany"
+    },
+    {
+      "id": "hp.support-assistant-win32",
+      "match": { "displayName": "HP Support Assistant*" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "HP Support Assistant: asystent producenta z diagnostyką, powiadomieniami i aktualizacjami sterowników HP.",
+      "warning": "Może sterować aktualizacjami sterowników HP; po usunięciu sprawdzaj je ręcznie.",
+      "source": "Forum HP h30434.www3.hp.com („uninstall HP Support Assistant for all users”). Nie sprawdzono na sprzęcie HP; wpis niesugerowany"
+    },
+    {
+      "id": "dell.supportassist",
+      "match": { "displayName": "Dell SupportAssist*" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "Dell SupportAssist: asystent producenta z diagnostyką sprzętu i powiadomieniami.",
+      "warning": "Może sterować aktualizacjami sterowników Dell; po usunięciu sprawdzaj je ręcznie.",
+      "source": "dell.com „Apps For Your Dell” (pre-installed-apps; SupportAssist wykrywa problemy sprzętowe i programowe). Nie sprawdzono na sprzęcie Dell; wpis niesugerowany"
+    },
+    {
+      "id": "dell.mydell",
+      "match": { "displayName": "MyDell*" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "MyDell: aplikacja producenta, która dostraja dźwięk, obraz, baterię i wydajność.",
+      "warning": "Może sterować oszczędzaniem baterii i klawiszami Fn; po usunięciu ta funkcja może zniknąć.",
+      "source": "dell.com „Apps For Your Dell” (MyDell dostraja baterię i wydajność). Nie sprawdzono na sprzęcie Dell; wpis niesugerowany"
+    },
+    {
+      "id": "dell.optimizer",
+      "match": { "displayName": "Dell Optimizer*" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "Dell Optimizer: aplikacja producenta, która dostraja ustawienia systemu pod programy.",
+      "warning": "Może sterować oszczędzaniem baterii i klawiszami Fn; po usunięciu ta funkcja może zniknąć.",
+      "source": "dell.com „Apps For Your Dell” (Dell Optimizer zmienia ustawienia systemu, w tym zasilanie). Nie sprawdzono na sprzęcie Dell; wpis niesugerowany"
+    },
+    {
+      "id": "dell.digital-delivery",
+      "match": { "displayName": "Dell Digital Delivery*" },
+      "group": "producent",
+      "suggested": false,
+      "summary": "Dell Digital Delivery: instaluje oprogramowanie kupione razem z komputerem Dell.",
+      "warning": "Może przechowywać instalatory i licencje oprogramowania kupionego z komputerem.",
+      "source": "dell.com „Apps For Your Dell” oraz dell.com/support/article/sln153764 (Dell Digital Delivery daje dostęp do licencji kupionych z komputerem). Nie sprawdzono na sprzęcie Dell; wpis niesugerowany"
+    },
+    {
+      "id": "trial.mcafee-livesafe",
+      "match": { "displayName": "McAfee LiveSafe*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "Wersja próbna antywirusa McAfee LiveSafe, preinstalowana przez producenta komputera.",
+      "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
+      "source": "Oficjalna strona produktu https://www.mcafee.com/en-us/antivirus/mcafee-livesafe.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez Dawida 2026-10-21 (pobranie strony: timeout, curl: 403)",
+      "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
+    },
+    {
+      "id": "trial.mcafee-total-protection",
+      "match": { "displayName": "McAfee Total Protection*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "Wersja próbna antywirusa McAfee Total Protection, preinstalowana przez producenta komputera.",
+      "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
+      "source": "Oficjalna strona produktu https://www.mcafee.com/en-us/antivirus/mcafee-total-protection.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez Dawida 2026-10-21 (pobranie strony: timeout, curl: 403)",
+      "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
+    },
+    {
+      "id": "trial.mcafee-antivirus-plus",
+      "match": { "displayName": "McAfee AntiVirus Plus*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "Wersja próbna antywirusa McAfee AntiVirus Plus, preinstalowana przez producenta komputera.",
+      "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
+      "source": "Oficjalna strona McAfee z wymaganiami systemowymi, lista produktów konsumenckich (w tym AntiVirus Plus): https://www.mcafee.com/en-in/consumer-support/help/system-requirement.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez Dawida 2026-10-21 (pobranie strony: timeout, curl: 403)",
+      "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
+    },
+    {
+      "id": "trial.mcafee-internet-security",
+      "match": { "displayName": "McAfee Internet Security*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "Wersja próbna pakietu McAfee Internet Security, preinstalowana przez producenta komputera.",
+      "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
+      "source": "Oficjalna strona McAfee z wymaganiami systemowymi, lista produktów konsumenckich (w tym Internet Security): https://www.mcafee.com/en-in/consumer-support/help/system-requirement.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez Dawida 2026-10-21 (pobranie strony: timeout, curl: 403)",
+      "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
+    },
+    {
+      "id": "trial.mcafee-personal-security",
+      "match": { "displayName": "McAfee Personal Security*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "Wersja próbna McAfee Personal Security, preinstalowana przez producenta komputera.",
+      "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
+      "source": "Which? https://www.which.co.uk/news/article/the-most-common-bloatware-we-found-on-laptops-aGeJX9U0NgXa (McAfee LiveSafe i Personal Security); oficjalnej strony McAfee dla tej nazwy nie znaleziono; sugerowany – spec 6.2 (decyzja Dawida) z 2026-10-21 po przeczytaniu listy. Narzędzie usuwania McAfee: adres podany i sprawdzony ręcznie przez Dawida 2026-10-21",
+      "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
+    },
+    {
+      "id": "trial.mcafee-webadvisor",
+      "match": { "displayName": "McAfee WebAdvisor*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "McAfee WebAdvisor: dodatek przeglądarki od McAfee, zwykle razem z wersją próbną antywirusa.",
+      "warning": "Może być częścią antywirusa, którego używasz. Własny deinstalator potrafi zostawić resztki.",
+      "source": "Zlecenie projektowe 2026-10-21 (lista konsumenckich produktów McAfee); brak niezależnego źródła; sugerowany – spec 6.2 (decyzja Dawida) z 2026-10-21 po przeczytaniu listy"
+    },
+    {
+      "id": "trial.mcafee-security-scan-plus",
+      "match": { "displayName": "McAfee Security Scan Plus*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "McAfee Security Scan Plus: darmowy skaner McAfee, zwykle dołączany do preinstalowanych programów.",
+      "warning": "Własny deinstalator potrafi zostawić resztki.",
+      "source": "Zlecenie projektowe 2026-10-21 (lista konsumenckich produktów McAfee); brak niezależnego źródła; sugerowany – spec 6.2 (decyzja Dawida) z 2026-10-21 po przeczytaniu listy"
+    },
+    {
+      "id": "trial.norton-360",
+      "match": { "displayName": "Norton 360*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "Wersja próbna Norton 360, preinstalowana przez producenta komputera.",
+      "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
+      "source": "Oficjalna strona Norton „Download and run the Norton 360 Remover tool for Windows” https://support.norton.com/sp/en/us/home/current/solutions/v60392881 (sprawdzono pobraniem strony 2026-10-21); spec 6.2 (trial Norton); Norton Family i Utilities świadomie poza wzorcem",
+      "cleanupUrl": "https://support.norton.com/sp/en/us/home/current/solutions/v60392881"
+    },
+    {
+      "id": "trial.norton-antivirus",
+      "match": { "displayName": "Norton AntiVirus*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "Wersja próbna Norton AntiVirus, preinstalowana przez producenta komputera.",
+      "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
+      "source": "Oficjalna strona Norton „Download and run the Norton 360 Remover tool for Windows” https://support.norton.com/sp/en/us/home/current/solutions/v60392881 (sprawdzono pobraniem strony 2026-10-21); spec 6.2 (trial Norton); Norton Family i Utilities świadomie poza wzorcem",
+      "cleanupUrl": "https://support.norton.com/sp/en/us/home/current/solutions/v60392881"
+    },
+    {
+      "id": "trial.norton-internet-security",
+      "match": { "displayName": "Norton Internet Security*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "Wersja próbna Norton Internet Security, preinstalowana przez producenta komputera.",
+      "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
+      "source": "Oficjalna strona Norton „Download and run the Norton 360 Remover tool for Windows” https://support.norton.com/sp/en/us/home/current/solutions/v60392881 (sprawdzono pobraniem strony 2026-10-21); spec 6.2 (trial Norton); Norton Family i Utilities świadomie poza wzorcem",
+      "cleanupUrl": "https://support.norton.com/sp/en/us/home/current/solutions/v60392881"
+    },
+    {
+      "id": "trial.norton-security",
+      "match": { "displayName": "Norton Security*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "Wersja próbna Norton Security, preinstalowana przez producenta komputera.",
+      "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
+      "source": "Oficjalna strona Norton „Download and run the Norton 360 Remover tool for Windows” https://support.norton.com/sp/en/us/home/current/solutions/v60392881 (sprawdzono pobraniem strony 2026-10-21); spec 6.2 (trial Norton); Norton Family i Utilities świadomie poza wzorcem",
+      "cleanupUrl": "https://support.norton.com/sp/en/us/home/current/solutions/v60392881"
+    },
+    {
+      "id": "trial.hp-games-wildtangent",
+      "match": { "displayName": "HP Games by WildTangent*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "HP Games by WildTangent: gry próbne dodawane przez HP do nowych komputerów.",
+      "warning": "Zakupionych w nich gier nie da się odzyskać bez przywrócenia systemu.",
+      "source": "spec 6.2 (decyzja Dawida); nazwa: https://malwaretips.com/blogs/hp-games-by-wildtangent-should-i-remove-it/ (brak oficjalnej strony producenta w sprawdzonych źródłach)"
+    },
+    {
+      "id": "trial.wildtangent",
+      "match": { "displayName": "WildTangent*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "Gry próbne WildTangent (także „HP Games by WildTangent”) dodawane przez producentów komputerów.",
+      "warning": "Zakupionych w nich gier nie da się odzyskać bez przywrócenia systemu.",
+      "source": "spec 6.2 (decyzja Dawida); nazwa: https://malwaretips.com/blogs/hp-games-by-wildtangent-should-i-remove-it/ (brak oficjalnej strony producenta w sprawdzonych źródłach)"
+    },
+    {
+      "id": "trial.booking",
+      "match": { "displayName": "Booking.com*" },
+      "group": "trial",
+      "suggested": true,
+      "summary": "Aplikacja z ofertami Booking.com preinstalowana na nowych laptopach.",
+      "source": "spec 6.2 (decyzja Dawida); nazwa: https://www.which.co.uk/news/article/the-most-common-bloatware-we-found-on-laptops-aGeJX9U0NgXa (Booking.com na 19% laptopów; brak oficjalnej strony wpisu Uninstall)"
+    }
+  ],
+  "protected": [
+    { "id": "prot.calculator", "match": { "packageName": "Microsoft.WindowsCalculator" }, "reason": "Kalkulator: podstawowe narzędzie systemu." },
+    { "id": "prot.media-player", "match": { "packageName": "Microsoft.ZuneMusic" }, "reason": "Odtwarzacz multimediów: domyślny odtwarzacz muzyki." },
+    { "id": "prot.movies-tv", "match": { "packageName": "Microsoft.ZuneVideo" }, "reason": "Filmy i TV: domyślny odtwarzacz wideo." },
+    { "id": "prot.paint", "match": { "packageName": "Microsoft.Paint" }, "reason": "Paint: podstawowe narzędzie systemu." },
+    { "id": "prot.notepad", "match": { "packageName": "Microsoft.WindowsNotepad" }, "reason": "Notatnik: podstawowe narzędzie systemu." },
+    { "id": "prot.sticky-notes", "match": { "packageName": "Microsoft.MicrosoftStickyNotes" }, "reason": "Sticky Notes: notatki, które użytkownik może na co dzień trzymać na pulpicie." },
+    { "id": "prot.photos", "match": { "packageName": "Microsoft.Windows.Photos" }, "reason": "Zdjęcia: domyślna przeglądarka obrazów." },
+    { "id": "prot.snipping-tool", "match": { "packageName": "Microsoft.ScreenSketch" }, "reason": "Narzędzie Wycinanie: zrzuty ekranu." },
+    { "id": "prot.camera", "match": { "packageName": "Microsoft.WindowsCamera" }, "reason": "Aparat: obsługa kamery." },
+    { "id": "prot.sound-recorder", "match": { "packageName": "Microsoft.WindowsSoundRecorder" }, "reason": "Rejestrator dźwięku: podstawowe narzędzie systemu." },
+    { "id": "prot.clock", "match": { "packageName": "Microsoft.WindowsAlarms" }, "reason": "Zegar: alarmy i minutniki." },
+    { "id": "prot.store", "match": { "packageName": "Microsoft.WindowsStore" }, "reason": "Microsoft Store: bez niego nie zainstalujesz aplikacji ze Sklepu z powrotem." },
+    { "id": "prot.store-purchase", "match": { "packageName": "Microsoft.StorePurchaseApp" }, "reason": "Zakupy w Microsoft Store: część sklepu, bez której nie kupisz ani nie zainstalujesz aplikacji." },
+    { "id": "prot.app-installer", "match": { "packageName": "Microsoft.DesktopAppInstaller" }, "reason": "Instalator aplikacji (winget): instalowanie programów i pakietów." },
+    { "id": "prot.terminal", "match": { "packageName": "Microsoft.WindowsTerminal" }, "reason": "Terminal Windows: podstawowe narzędzie systemu." },
+    { "id": "prot.compat", "match": { "packageName": "Microsoft.ApplicationCompatibilityEnhancements" }, "reason": "Ulepszenia zgodności aplikacji: składnik systemu, dzięki któremu starsze programy działają poprawnie." },
+    { "id": "prot.edge", "match": { "displayName": "Microsoft Edge" }, "reason": "Edge: domyślna przeglądarka i składnik systemu." },
+    { "id": "prot.edge-store", "match": { "packageName": "Microsoft.MicrosoftEdge.Stable" }, "reason": "Edge: domyślna przeglądarka i składnik systemu." },
+    { "id": "prot.webview2", "match": { "displayName": "Microsoft Edge WebView2 Runtime" }, "reason": "WebView2: wymagany przez wiele programów, także Microsoftu." },
+    { "id": "prot.vc-redist", "match": { "displayName": "Microsoft Visual C++ * Redistributable*" }, "reason": "Biblioteki Visual C++: wymagane przez wiele programów i gier; po usunięciu przestaną się uruchamiać.", "source": "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist (wiele programów zbudowanych w MSVC wymaga tych bibliotek); nazwa wpisu: odczyt Uninstall hosta Windows 11 (2026-10-21)" },
+    { "id": "prot.dotnet-desktop-runtime", "match": { "displayName": "Microsoft Windows Desktop Runtime*" }, "reason": ".NET Desktop Runtime: bez niego programy .NET (WPF, Windows Forms) się nie uruchomią.", "source": "https://learn.microsoft.com/dotnet/core/install/windows (runtime uruchamia aplikacje .NET; Desktop Runtime – WPF/Windows Forms, ASP.NET Core Runtime – aplikacje webowe)" },
+    { "id": "prot.dotnet-runtime", "match": { "displayName": "Microsoft .NET*Runtime*" }, "reason": ".NET Runtime: bez niego programy .NET się nie uruchomią.", "source": "https://learn.microsoft.com/dotnet/core/install/windows (runtime uruchamia aplikacje .NET; Desktop Runtime – WPF/Windows Forms, ASP.NET Core Runtime – aplikacje webowe)" },
+    { "id": "prot.aspnetcore-runtime", "match": { "displayName": "Microsoft ASP.NET Core*Runtime*" }, "reason": "ASP.NET Core Runtime: bez niego programy i usługi oparte na ASP.NET Core się nie uruchomią.", "source": "https://learn.microsoft.com/dotnet/core/install/windows (runtime uruchamia aplikacje .NET; Desktop Runtime – WPF/Windows Forms, ASP.NET Core Runtime – aplikacje webowe)" },
+    { "id": "prot.aspnetcore-shared", "match": { "displayName": "Microsoft ASP.NET Core*Shared Framework*" }, "reason": "ASP.NET Core Shared Framework: bez niego programy i usługi oparte na ASP.NET Core się nie uruchomią.", "source": "https://learn.microsoft.com/dotnet/core/install/windows (runtime uruchamia aplikacje .NET; Desktop Runtime – WPF/Windows Forms, ASP.NET Core Runtime – aplikacje webowe)" },
+    { "id": "prot.update-health-tools", "match": { "displayName": "Microsoft Update Health Tools" }, "reason": "Microsoft Update Health Tools: składnik usługi Windows Update.", "source": "https://support.microsoft.com/servicing/os/windows-10/2020/11/kb4023057-update-health-tools-windows-update-service-components (KB4023057: składniki usługi Windows Update)" },
+    { "id": "prot.gameinput", "match": { "displayName": "Microsoft GameInput*" }, "reason": "Microsoft GameInput: obsługa kontrolerów w grach; gry i usługi gier instalują go z powrotem.", "source": "https://learn.microsoft.com/gaming/gdk/docs/features/common/input/overviews/input-nuget (GameInputRedist.msi instalowany razem z grami na PC); nazwa wpisu: odczyt Uninstall hosta Windows 11 (2026-10-21): program MSI, nie pakiet AppX" },
+    { "id": "prot.remote-desktop-pl", "match": { "displayName": "Podłączanie pulpitu zdalnego" }, "reason": "Podłączanie pulpitu zdalnego: składnik systemu." },
+    { "id": "prot.remote-desktop-en", "match": { "displayName": "Remote Desktop Connection" }, "reason": "Podłączanie pulpitu zdalnego: składnik systemu." },
+    { "id": "prot.codec-heif", "match": { "packageName": "Microsoft.HEIFImageExtension" }, "reason": "Rozszerzenie obrazów HEIF: bez niego zdjęcia z telefonów się nie otworzą." },
+    { "id": "prot.codec-hevc", "match": { "packageName": "Microsoft.HEVCVideoExtension*" }, "reason": "Rozszerzenie wideo HEVC: bez niego część filmów się nie odtworzy." },
+    { "id": "prot.codec-webp", "match": { "packageName": "Microsoft.WebpImageExtension" }, "reason": "Rozszerzenie obrazów WebP: bez niego część obrazów z internetu się nie otworzy." },
+    { "id": "prot.codec-av1", "match": { "packageName": "Microsoft.AV1VideoExtension" }, "reason": "Rozszerzenie wideo AV1: bez niego część filmów się nie odtworzy." },
+    { "id": "prot.codec-avc", "match": { "packageName": "Microsoft.AVCEncoderVideoExtension" }, "reason": "Rozszerzenie kodera AVC: bez niego część programów nie zapisze filmów." },
+    { "id": "prot.codec-mpeg2", "match": { "packageName": "Microsoft.MPEG2VideoExtension" }, "reason": "Rozszerzenie wideo MPEG-2: bez niego część filmów się nie odtworzy." },
+    { "id": "prot.codec-vp9", "match": { "packageName": "Microsoft.VP9VideoExtensions" }, "reason": "Rozszerzenie wideo VP9: bez niego część filmów z internetu się nie odtworzy." },
+    { "id": "prot.codec-raw", "match": { "packageName": "Microsoft.RawImageExtension" }, "reason": "Rozszerzenie obrazów RAW: bez niego zdjęcia z aparatów się nie otworzą." },
+    { "id": "prot.codec-webmedia", "match": { "packageName": "Microsoft.WebMediaExtensions" }, "reason": "Rozszerzenia multimediów sieci Web: bez nich część filmów i muzyki z internetu się nie odtworzy." },
+    { "id": "prot.driver-realtek-store", "match": { "packageName": "RealtekSemiconductorCorp.*" }, "reason": "Panel dźwięku Realtek: steruje dźwiękiem komputera." },
+    { "id": "prot.driver-nvidia-store", "match": { "packageName": "NVIDIACorp.*" }, "reason": "Panel sterownika grafiki NVIDIA." },
+    { "id": "prot.driver-amd-store", "match": { "packageName": "AdvancedMicroDevicesInc-*" }, "reason": "Panel sterownika grafiki AMD." },
+    { "id": "prot.driver-intel-store", "match": { "packageName": "AppUp.IntelGraphicsExperience" }, "reason": "Panel sterownika grafiki Intel." },
+    { "id": "prot.driver-realtek", "match": { "publisher": "Realtek*" }, "reason": "Sterownik i panel dźwięku Realtek." },
+    { "id": "prot.driver-nvidia", "match": { "publisher": "NVIDIA*" }, "reason": "Sterownik i panel grafiki NVIDIA." },
+    { "id": "prot.driver-amd", "match": { "publisher": "Advanced Micro Devices*" }, "reason": "Sterownik i panel grafiki AMD." },
+    { "id": "prot.driver-intel", "match": { "publisher": "Intel*" }, "reason": "Sterownik i narzędzie sprzętowe Intel." },
+    { "id": "prot.corp-mcafee-agent", "match": { "displayName": "McAfee Agent*" }, "reason": "Może być oprogramowaniem firmowym (McAfee Agent): usuwa je administrator firmy." },
+    { "id": "prot.corp-mcafee-endpoint", "match": { "displayName": "McAfee Endpoint*" }, "reason": "Może być oprogramowaniem firmowym (McAfee Endpoint Security): usuwa je administrator firmy." },
+    { "id": "prot.corp-mcafee-encryption", "match": { "displayName": "McAfee Drive Encryption*" }, "reason": "Może być oprogramowaniem firmowym (szyfrowanie dysku): usunięcie grozi utratą dostępu do danych." },
+    { "id": "prot.corp-mcafee-dlp", "match": { "displayName": "McAfee Data Loss Prevention*" }, "reason": "Może być oprogramowaniem firmowym (McAfee DLP): usuwa je administrator firmy." },
+    { "id": "prot.corp-trellix", "match": { "displayName": "Trellix*" }, "reason": "Może być oprogramowaniem firmowym (Trellix, dawniej McAfee Enterprise): usuwa je administrator firmy." }
+  ]
+}

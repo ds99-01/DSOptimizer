@@ -1,0 +1,37 @@
+2026-10-22 08:33:07, Info                  CSI    0000000a@2026/10/22:06:33:07.486 Corruption detection complete. numCorruptions = 0, Disp = 1.
+2026-10-22 08:33:10, Info                  CBS    Checking System Update Readiness.
+2026-10-22 08:33:10, Info                  CBS    
+2026-10-22 08:33:10, Info                  CBS    
+2026-10-22 08:33:10, Info                  CBS    Summary:
+2026-10-22 08:33:10, Info                  CBS    Operation: Detect only 
+2026-10-22 08:33:10, Info                  CBS    Operation result: 0x0
+2026-10-22 08:33:10, Info                  CBS    Last Successful Step: Stage package detection completes.
+2026-10-22 08:33:10, Info                  CBS    Total Detected Corruption:	0
+2026-10-22 08:33:10, Info                  CBS    	CBS Manifest Corruption:	0
+2026-10-22 08:33:10, Info                  CBS    	CBS Metadata Corruption:	0
+2026-10-22 08:33:10, Info                  CBS    	CSI Manifest Corruption:	0
+2026-10-22 08:33:10, Info                  CBS    	CSI Metadata Corruption:	0
+2026-10-22 08:33:10, Info                  CBS    	CSI Payload Corruption:	0
+2026-10-22 08:33:10, Info                  CBS    	CSI FileFlags Corrupt:	0
+2026-10-22 08:33:10, Info                  CBS    Total Repaired Corruption:	0
+2026-10-22 08:33:10, Info                  CBS    	CBS Manifest Repaired:	0
+2026-10-22 08:33:10, Info                  CBS    	CSI Manifest Repaired:	0
+2026-10-22 08:33:10, Info                  CBS    	CSI Payload Repaired:	0
+2026-10-22 08:33:10, Info                  CBS    	CSI FileFlags Repaired:	0
+2026-10-22 08:33:10, Info                  CBS    	CSI Registry Metadata refreshed:	False
+2026-10-22 08:33:10, Info                  CBS    	CSI Store Metadata refreshed:	True
+2026-10-22 08:33:10, Info                  CBS    Staged Packages:
+2026-10-22 08:33:10, Info                  CBS    	CBS Staged packages:	0
+2026-10-22 08:33:10, Info                  CBS    	CBS Staged packages removed:	0
+2026-10-22 08:33:10, Info                  CBS    
+2026-10-22 08:33:10, Info                  CBS    Total Operation Time: 78 seconds.
+2026-10-22 08:33:10, Info                  CBS    Ensure CBS corruption flag is clear
+2026-10-22 08:33:10, Info                  CBS    Ensure WCP corruption flag is clear
+2026-10-22 08:33:10, Info                  CBS    CheckSur: hrStatus: 0x0 [S_OK], download results: <none>
+2026-10-22 08:33:10, Info                  CBS    Count of times corruption detected: 0
+2026-10-22 08:33:10, Info                  CBS    Seconds between initial corruption detections: -1
+2026-10-22 08:33:10, Info                  CBS    Seconds between corruption and repair: -1
+2026-10-22 08:33:10, Info                  CBS    Reboot mark cleared
+2026-10-22 08:33:10, Info                  CBS    Winlogon: Simplifying Winlogon CreateSession notifications
+2026-10-22 08:33:10, Info                  CBS    Winlogon: Deregistering for CreateSession notifications
+2026-10-22 08:33:10, Info                  CBS    Exec: Processing complete, session(Corruption Detecting): 31285743_101297940 [HRESULT = 0x00000000 - S_OK]

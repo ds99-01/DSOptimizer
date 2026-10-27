@@ -1,0 +1,110 @@
+2026-10-22 08:33:04, Info                  DISM   PID=6864 TID=6316 Scratch directory set to 'C:\Users\Administrator\AppData\Local\Temp\'. - CDISMManager::put_ScratchDir
+2026-10-22 08:33:04, Info                  DISM   PID=6864 TID=6316 DismCore.dll version: 10.0.26100.9278 - CDISMManager::FinalConstruct
+2026-10-22 08:33:04, Info                  DISM   Initialized Panther logging at C:\Windows\Logs\DISM\dism.log
+2026-10-22 08:33:04, Info                  DISM   PID=6864 TID=6316 Successfully loaded the ImageSession at "C:\Windows\System32\Dism" - CDISMManager::LoadLocalImageSession
+2026-10-22 08:33:04, Info                  DISM   Initialized Panther logging at C:\Windows\Logs\DISM\dism.log
+2026-10-22 08:33:04, Info                  DISM   DISM Provider Store: PID=6864 TID=6316 Found and Initialized the DISM Logger. - CDISMProviderStore::Internal_InitializeLogger
+2026-10-22 08:33:04, Info                  DISM   Initialized Panther logging at C:\Windows\Logs\DISM\dism.log
+2026-10-22 08:33:04, Info                  DISM   DISM Manager: PID=6864 TID=6316 Successfully created the local image session and provider store. - CDISMManager::CreateLocalImageSession
+2026-10-22 08:33:04, Info                  DISM   DISM.EXE: 
+2026-10-22 08:33:04, Info                  DISM   DISM.EXE: <----- Starting Dism.exe session ----->
+2026-10-22 08:33:04, Info                  DISM   DISM.EXE: 
+2026-10-22 08:33:04, Info                  DISM   DISM.EXE: Host machine information: OS Version=10.0.26300, Running architecture=amd64, Number of processors=4
+2026-10-22 08:33:04, Info                  DISM   DISM.EXE: Instance information: Parent process=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe, Parent process PID=6444
+2026-10-22 08:33:04, Info                  DISM   DISM.EXE: Dism.exe version: 10.0.26100.8972
+2026-10-22 08:33:04, Info                  DISM   DISM.EXE: Executing command line: "C:\Windows\System32\dism.exe" /Online /Cleanup-Image /RestoreHealth
+2026-10-22 08:33:04, Info                  DISM   DISM Manager: PID=6864 TID=6316 physical location path: C:\ - CDISMManager::CreateImageSession
+2026-10-22 08:33:04, Info                  DISM   DISM Manager: PID=6864 TID=6316 Event name for current DISM session is Global\{5C71CABA-F28D-4DCA-A492-F64D42D67C99} - CDISMManager::CheckSessionAndLock
+2026-10-22 08:33:04, Info                  DISM   DISM Manager: PID=6864 TID=6316 Create session event 0x290 for current DISM session and event name is Global\{5C71CABA-F28D-4DCA-A492-F64D42D67C99}  - CDISMManager::CheckSessionAndLock
+2026-10-22 08:33:04, Info                  DISM   DISM Manager: PID=6864 TID=6316 Copying DISM from "C:\Windows\System32\Dism" - CDISMManager::CreateImageSessionFromLocation
+2026-10-22 08:33:04, Info                  DISM   DISM Manager: PID=6864 TID=6316 No Sandbox was created, DISM running in-place. - CDISMManager::CreateImageSessionFromLocation
+2026-10-22 08:33:04, Info                  DISM   DISM Manager: PID=6864 TID=6316 Successfully loaded the ImageSession at "C:\Windows\System32\Dism" - CDISMManager::LoadRemoteImageSession
+2026-10-22 08:33:04, Info                  DISM   DISM Image Session: PID=6852 TID=6676 Instantiating the Provider Store. - CDISMImageSession::get_ProviderStore
+2026-10-22 08:33:04, Info                  DISM   DISM OS Provider: PID=6852 TID=6676 Defaulting SystemPath to C:\ - CDISMOSServiceManager::Final_OnConnect
+2026-10-22 08:33:04, Info                  DISM   DISM OS Provider: PID=6852 TID=6676 Defaulting Windows folder to C:\Windows - CDISMOSServiceManager::Final_OnConnect
+2026-10-22 08:33:04, Info                  DISM   DISM Provider Store: PID=6852 TID=6676 Attempting to initialize the logger from the Image Session. - CDISMProviderStore::Final_OnConnect
+2026-10-22 08:33:04, Info                  DISM   Initialized Panther logging at C:\Windows\Logs\DISM\dism.log
+2026-10-22 08:33:04, Info                  DISM   DISM Provider Store: PID=6852 TID=6676 Found and Initialized the DISM Logger. - CDISMProviderStore::Internal_InitializeLogger
+2026-10-22 08:33:04, Info                  DISM   Initialized Panther logging at C:\Windows\Logs\DISM\dism.log
+2026-10-22 08:33:04, Info                  DISM   Initialized Panther logging at C:\Windows\Logs\DISM\dism.log
+2026-10-22 08:33:04, Info                  DISM   DISM Manager: PID=6864 TID=6316 Image session successfully loaded from location: C:\Windows\System32\Dism - CDISMManager::CreateImageSession
+2026-10-22 08:33:04, Info                  DISM   DISM.EXE: Target image information: OS Version=10.0.26300.9457, Image architecture=amd64
+2026-10-22 08:33:04, Info                  DISM   DISM.EXE: Image session version: 10.0.26100.9278
+2026-10-22 08:33:04, Info                  DISM   DISM Transmog Provider: PID=6852 TID=6684 Current image session is [ONLINE] - CTransmogManager::GetMode
+2026-10-22 08:33:04, Info                  DISM   DISM Transmog Provider: PID=6852 TID=6684 Audit Mode: [No] - CTransmogManager::Initialize
+2026-10-22 08:33:04, Info                  DISM   DISM Transmog Provider: PID=6852 TID=6684 GetProductType: ProductType = [WinNT] - CTransmogManager::GetProductType
+2026-10-22 08:33:04, Info                  DISM   DISM Transmog Provider: PID=6852 TID=6684 Product Type: [WinNT] - CTransmogManager::Initialize
+2026-10-22 08:33:04, Info                  DISM   DISM Transmog Provider: PID=6852 TID=6684 Product Type ServerNT : [No] - CTransmogManager::Initialize
+2026-10-22 08:33:04, Info                  DISM   DISM OS Provider: PID=6852 TID=6684 Determined System directory to be C:\Windows\System32 - CDISMOSServiceManager::get_SystemDirectory
+2026-10-22 08:33:04, Info                  CSI    00000001 Shim considered [l:123]'\??\C:\Windows\WinSxS\amd64_microsoft-windows-servicingstack_31bf3856ad364e35_10.0.26100.9441_none_a5253a19774da03c\wcp.dll' : got STATUS_SUCCESS
+2026-10-22 08:33:04, Info                  DISM   DISM Driver Manager: PID=6852 TID=6684 Further logs for driver related operations can be found in the target operating system at %WINDIR%\inf\setupapi.offline.log - CDriverManager::Initialize
+2026-10-22 08:33:04, Info                  DISM   DISM Package Manager: PID=6852 TID=6684 Finished initializing the CbsConUI Handler. - CCbsConUIHandler::Initialize
+2026-10-22 08:33:04, Info                  DISM   DISM Package Manager: PID=6852 TID=6684 CBS is being initialized for online use. More information about CBS actions can be located at: %windir%\logs\CBS\CBS.log - CDISMPackageManager::Initialize
+2026-10-22 08:33:04, Info                  DISM   DISM Package Manager: PID=6852 TID=6684 Loaded servicing stack for online use. - CDISMPackageManager::CreateCbsSession
+2026-10-22 08:33:04, Info                  CSI    00000001 Shim considered [l:123]'\??\C:\Windows\WinSxS\amd64_microsoft-windows-servicingstack_31bf3856ad364e35_10.0.26100.9441_none_a5253a19774da03c\wcp.dll' : got STATUS_SUCCESS
+2026-10-22 08:33:04, Info                  DISM   DISM Package Manager: PID=6852 TID=6676 Processing the top level command token(cleanup-image). - CPackageManagerCLIHandler::Private_ValidateCmdLine
+2026-10-22 08:33:04, Info                  DISM   DISM Package Manager: PID=6852 TID=6676 Attempting to route to appropriate command handler. - CPackageManagerCLIHandler::ExecuteCmdLine
+2026-10-22 08:33:04, Info                  DISM   DISM Package Manager: PID=6852 TID=6676 Routing the command... - CPackageManagerCLIHandler::ExecuteCmdLine
+2026-10-22 08:33:04, Info                  DISM   DISM Package Manager: PID=6852 TID=6676 CBS session options=0x40100! - CDISMPackageManager::Internal_Finalize
+2026-10-22 08:33:34, Info                  DISM   PID=8204 TID=1000 Scratch directory set to 'C:\Users\Administrator\AppData\Local\Temp\'. - CDISMManager::put_ScratchDir
+2026-10-22 08:33:34, Info                  DISM   PID=8204 TID=1000 DismCore.dll version: 10.0.26100.9278 - CDISMManager::FinalConstruct
+2026-10-22 08:33:34, Info                  DISM   Initialized Panther logging at C:\Windows\Logs\DISM\dism.log
+2026-10-22 08:33:34, Info                  DISM   PID=8204 TID=1000 Successfully loaded the ImageSession at "C:\Windows\System32\Dism" - CDISMManager::LoadLocalImageSession
+2026-10-22 08:33:34, Info                  DISM   Initialized Panther logging at C:\Windows\Logs\DISM\dism.log
+2026-10-22 08:33:34, Info                  DISM   DISM Provider Store: PID=8204 TID=1000 Found and Initialized the DISM Logger. - CDISMProviderStore::Internal_InitializeLogger
+2026-10-22 08:33:34, Info                  DISM   Initialized Panther logging at C:\Windows\Logs\DISM\dism.log
+2026-10-22 08:33:34, Info                  DISM   DISM Manager: PID=8204 TID=1000 Successfully created the local image session and provider store. - CDISMManager::CreateLocalImageSession
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: 
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: <----- Starting Dism.exe session ----->
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: 
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: Host machine information: OS Version=10.0.26300, Running architecture=amd64, Number of processors=4
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: Instance information: Parent process=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe, Parent process PID=6444
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: Dism.exe version: 10.0.26100.8972
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: Executing command line: "C:\Windows\System32\dism.exe" /Online /Cleanup-Image /CheckHealth
+2026-10-22 08:33:34, Info                  DISM   DISM Manager: PID=8204 TID=1000 physical location path: C:\ - CDISMManager::CreateImageSession
+2026-10-22 08:33:34, Info                  DISM   DISM Manager: PID=8204 TID=1000 Event name for current DISM session is Global\{2F2FF88F-3D23-44D2-8361-CA6BE862A080} - CDISMManager::CheckSessionAndLock
+2026-10-22 08:33:34, Info                  DISM   DISM Manager: PID=8204 TID=1000 Create session event 0x27c for current DISM session and event name is Global\{2F2FF88F-3D23-44D2-8361-CA6BE862A080}  - CDISMManager::CheckSessionAndLock
+2026-10-22 08:33:34, Info                  DISM   DISM Manager: PID=8204 TID=1000 Copying DISM from "C:\Windows\System32\Dism" - CDISMManager::CreateImageSessionFromLocation
+2026-10-22 08:33:34, Info                  DISM   DISM Manager: PID=8204 TID=1000 No Sandbox was created, DISM running in-place. - CDISMManager::CreateImageSessionFromLocation
+2026-10-22 08:33:34, Info                  DISM   DISM Manager: PID=8204 TID=1000 Successfully loaded the ImageSession at "C:\Windows\System32\Dism" - CDISMManager::LoadRemoteImageSession
+2026-10-22 08:33:34, Info                  DISM   DISM Image Session: PID=2932 TID=6452 Instantiating the Provider Store. - CDISMImageSession::get_ProviderStore
+2026-10-22 08:33:34, Info                  DISM   DISM OS Provider: PID=2932 TID=6452 Defaulting SystemPath to C:\ - CDISMOSServiceManager::Final_OnConnect
+2026-10-22 08:33:34, Info                  DISM   DISM OS Provider: PID=2932 TID=6452 Defaulting Windows folder to C:\Windows - CDISMOSServiceManager::Final_OnConnect
+2026-10-22 08:33:34, Info                  DISM   DISM Provider Store: PID=2932 TID=6452 Attempting to initialize the logger from the Image Session. - CDISMProviderStore::Final_OnConnect
+2026-10-22 08:33:34, Info                  DISM   Initialized Panther logging at C:\Windows\Logs\DISM\dism.log
+2026-10-22 08:33:34, Info                  DISM   DISM Provider Store: PID=2932 TID=6452 Found and Initialized the DISM Logger. - CDISMProviderStore::Internal_InitializeLogger
+2026-10-22 08:33:34, Info                  DISM   Initialized Panther logging at C:\Windows\Logs\DISM\dism.log
+2026-10-22 08:33:34, Info                  DISM   Initialized Panther logging at C:\Windows\Logs\DISM\dism.log
+2026-10-22 08:33:34, Info                  DISM   DISM Manager: PID=8204 TID=1000 Image session successfully loaded from location: C:\Windows\System32\Dism - CDISMManager::CreateImageSession
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: Target image information: OS Version=10.0.26300.9457, Image architecture=amd64
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: Image session version: 10.0.26100.9278
+2026-10-22 08:33:34, Info                  DISM   DISM Transmog Provider: PID=2932 TID=6428 Current image session is [ONLINE] - CTransmogManager::GetMode
+2026-10-22 08:33:34, Info                  DISM   DISM Transmog Provider: PID=2932 TID=6428 Audit Mode: [No] - CTransmogManager::Initialize
+2026-10-22 08:33:34, Info                  DISM   DISM Transmog Provider: PID=2932 TID=6428 GetProductType: ProductType = [WinNT] - CTransmogManager::GetProductType
+2026-10-22 08:33:34, Info                  DISM   DISM Transmog Provider: PID=2932 TID=6428 Product Type: [WinNT] - CTransmogManager::Initialize
+2026-10-22 08:33:34, Info                  DISM   DISM Transmog Provider: PID=2932 TID=6428 Product Type ServerNT : [No] - CTransmogManager::Initialize
+2026-10-22 08:33:34, Info                  DISM   DISM OS Provider: PID=2932 TID=6428 Determined System directory to be C:\Windows\System32 - CDISMOSServiceManager::get_SystemDirectory
+2026-10-22 08:33:34, Info                  CSI    00000001 Shim considered [l:123]'\??\C:\Windows\WinSxS\amd64_microsoft-windows-servicingstack_31bf3856ad364e35_10.0.26100.9441_none_a5253a19774da03c\wcp.dll' : got STATUS_SUCCESS
+2026-10-22 08:33:34, Info                  DISM   DISM Driver Manager: PID=2932 TID=6428 Further logs for driver related operations can be found in the target operating system at %WINDIR%\inf\setupapi.offline.log - CDriverManager::Initialize
+2026-10-22 08:33:34, Info                  DISM   DISM Package Manager: PID=2932 TID=6428 Finished initializing the CbsConUI Handler. - CCbsConUIHandler::Initialize
+2026-10-22 08:33:34, Info                  DISM   DISM Package Manager: PID=2932 TID=6428 CBS is being initialized for online use. More information about CBS actions can be located at: %windir%\logs\CBS\CBS.log - CDISMPackageManager::Initialize
+2026-10-22 08:33:34, Info                  DISM   DISM Package Manager: PID=2932 TID=6428 Loaded servicing stack for online use. - CDISMPackageManager::CreateCbsSession
+2026-10-22 08:33:34, Info                  CSI    00000001 Shim considered [l:123]'\??\C:\Windows\WinSxS\amd64_microsoft-windows-servicingstack_31bf3856ad364e35_10.0.26100.9441_none_a5253a19774da03c\wcp.dll' : got STATUS_SUCCESS
+2026-10-22 08:33:34, Info                  DISM   DISM Package Manager: PID=2932 TID=6428 Processing the top level command token(cleanup-image). - CPackageManagerCLIHandler::Private_ValidateCmdLine
+2026-10-22 08:33:34, Info                  DISM   DISM Package Manager: PID=2932 TID=6428 Attempting to route to appropriate command handler. - CPackageManagerCLIHandler::ExecuteCmdLine
+2026-10-22 08:33:34, Info                  DISM   DISM Package Manager: PID=2932 TID=6428 Routing the command... - CPackageManagerCLIHandler::ExecuteCmdLine
+2026-10-22 08:33:34, Info                  DISM   DISM Package Manager: PID=2932 TID=6428 Finalizing CBS core. - CDISMPackageManager::Finalize
+2026-10-22 08:33:34, Info                  DISM   DISM Manager: PID=8204 TID=1000 Closing session event handle 0x27c - CDISMManager::CleanupImageSessionEntry
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: Image session has been closed. Reboot required=no.
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: 
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: <----- Ending Dism.exe session ----->
+2026-10-22 08:33:34, Info                  DISM   DISM.EXE: 
+2026-10-22 08:34:15, Info                  CSI    00000001 Shim considered [l:123]'\??\C:\Windows\WinSxS\amd64_microsoft-windows-servicingstack_31bf3856ad364e35_10.0.26100.9441_none_a5253a19774da03c\wcp.dll' : got STATUS_SUCCESS
+2026-10-22 08:34:16, Info                  DISM   DISM Package Manager: PID=6852 TID=6676 Loaded servicing stack for online use. - CDISMPackageManager::CreateCbsSession
+2026-10-22 08:34:16, Info                  CSI    00000001 Shim considered [l:123]'\??\C:\Windows\WinSxS\amd64_microsoft-windows-servicingstack_31bf3856ad364e35_10.0.26100.9441_none_a5253a19774da03c\wcp.dll' : got STATUS_SUCCESS
+2026-10-22 08:34:16, Info                  DISM   DISM Package Manager: PID=6852 TID=6676 Finalizing CBS core. - CDISMPackageManager::Finalize
+2026-10-22 08:34:16, Info                  DISM   DISM Manager: PID=6864 TID=6316 Closing session event handle 0x290 - CDISMManager::CleanupImageSessionEntry
+2026-10-22 08:34:16, Info                  DISM   DISM.EXE: Image session has been closed. Reboot required=no.
+2026-10-22 08:34:16, Info                  DISM   DISM.EXE: 
+2026-10-22 08:34:16, Info                  DISM   DISM.EXE: <----- Ending Dism.exe session ----->
+2026-10-22 08:34:16, Info                  DISM   DISM.EXE: 

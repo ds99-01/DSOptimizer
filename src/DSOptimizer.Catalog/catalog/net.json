@@ -1,0 +1,236 @@
+[
+  {
+    "id": "net.ipv6-prefer-ipv4",
+    "aliases": [],
+    "category": "net",
+    "kind": "tweak",
+    "title": "Preferuj IPv4 przed IPv6",
+    "summary": "Połączenia idą najpierw przez IPv4; IPv6 zostaje włączone jako zapas.",
+    "benefit": "Pomaga, gdy strony lub gry ładują się wolno albo zrywają przez źle działające IPv6 u dostawcy.",
+    "description": "Ustawia DisabledComponents = 0x20 (Prefer IPv4 over IPv6) w HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters: w tablicy zasad prefiksów adresy IPv4 dostają pierwszeństwo przed IPv6, a IPv6 zostaje włączone. Microsoft zaleca to ustawienie zamiast wyłączania IPv6. Pozycja zapisuje całą wartość: rozpoznaje tylko dokładnie 0x20, a inne ustawione bity (np. 0x21) nadpisze. Nie da się jej zastosować razem z „Wyłącz IPv6” (ta sama wartość) – najpierw cofnij tamtą; wartości ustawionej ręcznie poza DSOptimizerem nie rozpoznaje jako konfliktu (zmiana ją nadpisze, a cofnięcie przywróci). Zmiana i jej cofnięcie działają po restarcie komputera. Cofnięcie przywraca poprzednią wartość, a jeśli jej nie było – usuwa ją.",
+    "risk": "caution",
+    "scope": "machine",
+    "requiresReboot": true,
+    "conflicts": [ "net.ipv6-disable" ],
+    "warnings": [
+      "Wymaga restartu komputera."
+    ],
+    "registry": [
+      { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters", "name": "DisabledComponents", "type": "DWord", "value": 32, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "net.ipv6-disable",
+    "aliases": [ "net_ipv6" ],
+    "category": "net",
+    "kind": "tweak",
+    "title": "Wyłącz IPv6",
+    "summary": "Wyłącza IPv6 – komputer łączy się tylko przez IPv4.",
+    "benefit": "IPv6 przestaje być używane. Jeśli chodzi tylko o kłopoty z IPv6 u dostawcy, lepiej wybrać „Preferuj IPv4 przed IPv6”.",
+    "description": "Ustawia DisabledComponents = 0xFF (wartość „IPv6 disabled” z dokumentacji Microsoftu) w HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters. Nie używa 0xFFFFFFFF, bo według Microsoftu ta wartość opóźnia start systemu o pięć sekund. IPv6 nie da się wyłączyć całkowicie: adres pętli zwrotnej ::1 nadal odpowiada, a pole wyboru IPv6 we właściwościach karty sieciowej się nie zmienia. Microsoft zaleca zamiast tego Prefer IPv4 over IPv6 (pozycja „Preferuj IPv4 przed IPv6”). Nie da się jej zastosować razem z tamtą pozycją (ta sama wartość) – najpierw cofnij tamtą; wartości ustawionej ręcznie poza DSOptimizerem nie rozpoznaje jako konfliktu (zmiana ją nadpisze, a cofnięcie przywróci). Zmiana i jej cofnięcie działają po restarcie komputera. Cofnięcie przywraca poprzednią wartość, a jeśli jej nie było – usuwa ją.",
+    "risk": "experimental",
+    "scope": "machine",
+    "requiresReboot": true,
+    "conflicts": [ "net.ipv6-prefer-ipv4" ],
+    "warnings": [
+      "Microsoft nie zaleca wyłączania IPv6: część funkcji Windows może przestać działać, np. usługa Routing and Remote Access.",
+      "Wymaga restartu komputera."
+    ],
+    "registry": [
+      { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters", "name": "DisabledComponents", "type": "DWord", "value": 255, "original": "<RemoveEntry>" }
+    ]
+  },
+  {
+    "id": "net.smb-guest-access",
+    "aliases": [ "lan_godmode" ],
+    "category": "net",
+    "kind": "tweak",
+    "title": "Zezwól na logowanie gościa do udziałów sieciowych",
+    "summary": "Komputer może łączyć się bez hasła (jako gość) ze starym NAS-em albo dyskiem sieciowym.",
+    "benefit": "Odblokowujesz dostęp do starego NAS-a albo dysku sieciowego, który wpuszcza tylko jako gościa, bez hasła. To wygoda kosztem bezpieczeństwa.",
+    "description": "Ustawia AllowInsecureGuestAuth = 1 w HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters – ten sam zapis robi Set-SmbClientConfiguration -EnableInsecureGuestLogons $true. Stan to połączenie wpisu w rejestrze z odczytem EnableInsecureGuestLogons z Get-SmbClientConfiguration: pozycja jest zastosowana dopiero, gdy oba się zgadzają, a rozjazd daje stan częściowy. Na Windows 11 Home odczyt Get-SmbClientConfiguration domyślnie pokazuje gościa jako dozwolonego, więc przed zmianą pozycja pokazuje stan częściowy. Od Windows 11 24H2 wymagane podpisywanie SMB blokuje logowanie gościa, dlatego potrzebna jest też pozycja „Nie wymagaj podpisywania SMB po stronie klienta”, która dalej obniża ochronę. Microsoft zaleca łączenie się z hasłem zamiast gościa. Pozycja nie obiecuje widoczności komputerów w sieci ani udanego połączenia. Cofnięcie przywraca poprzednią wartość; jeśli jej nie było albo DSOptimizer nie ma zapisu sprzed zmiany, usuwa ją, co przywraca ustawienie domyślne edycji (Home: gość dozwolony, Pro: zablokowany).",
+    "risk": "caution",
+    "scope": "machine",
+    "warnings": [
+      "Microsoft odradza tę zmianę: podstawiony serwer w sieci może przejąć połączenie bez pytania o hasło, a ruch nie jest szyfrowany.",
+      "Zwykle trzeba też zastosować „Nie wymagaj podpisywania SMB po stronie klienta” – bez tego Windows i tak zablokuje gościa."
+    ],
+    "registry": [
+      { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters", "name": "AllowInsecureGuestAuth", "type": "DWord", "value": 1, "original": "<RemoveEntry>" }
+    ],
+    "script": {
+      "detect": [
+        "if (-not (Get-Command Get-DsoSmbClientSetting -ErrorAction SilentlyContinue)) {",
+        "    # Haczyk testowy: testy jednostkowe definiują tę funkcję wcześniej jako mock. Jedyne wywołanie Get-SmbClientConfiguration (tylko odczyt) jest tutaj.",
+        "    function Get-DsoSmbClientSetting([string]$Name) {",
+        "        # Zwraca wartość logiczną ustawienia klienta SMB. Bez tekstu zależnego od języka; $null, gdy cmdlet nic nie zwrócił.",
+        "        $configuration = Get-SmbClientConfiguration -ErrorAction Stop",
+        "        if ($null -eq $configuration) { return $null }",
+        "        $configuration.$Name",
+        "    }",
+        "}",
+        "$value = Get-DsoSmbClientSetting -Name 'EnableInsecureGuestLogons'",
+        "# Brak wartości logicznej (błąd cmdletu, $null, tekst) to nie \"ustawienie wyłączone\": stan nieznany, skrypt kończy się błędem, nigdy Applied.",
+        "if ($value -isnot [bool]) { throw 'Get-SmbClientConfiguration nie zwrócił wartości logicznej EnableInsecureGuestLogons – stan nieznany.' }",
+        "# Konfigurację (AllowInsecureGuestAuth = 1) sprawdza wpis registry[]; stan złożony: Applied dopiero, gdy oba się zgadzają.",
+        "if ($value -eq $true) { 'Applied' } else { 'NotApplied' }"
+      ]
+    }
+  },
+  {
+    "id": "net.smb-signing-client-off",
+    "aliases": [],
+    "category": "net",
+    "kind": "tweak",
+    "title": "Nie wymagaj podpisywania SMB po stronie klienta",
+    "summary": "Komputer łączy się z udziałami sieciowymi, które nie obsługują podpisywania, np. ze starymi NAS-ami.",
+    "benefit": "Odblokowujesz połączenia ze starym NAS-em albo serwerem plików, który nie obsługuje podpisywania SMB. To zgodność kosztem bezpieczeństwa.",
+    "description": "Ustawia RequireSecuritySignature = 0 w HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters – ten sam zapis robi Set-SmbClientConfiguration -RequireSecuritySignature $false. Dotyczy tylko klienta SMB (połączenia wychodzące z tego komputera); ustawień serwera SMB nie zmienia. Stan to połączenie wpisu w rejestrze z odczytem RequireSecuritySignature z Get-SmbClientConfiguration: pozycja jest zastosowana dopiero, gdy oba się zgadzają, a rozjazd daje stan częściowy. Od Windows 11 24H2 podpisywanie jest domyślnie wymagane, a to blokuje także logowanie gościa: do dostępu gościa potrzebna jest ta pozycja razem z „Zezwól na logowanie gościa do udziałów sieciowych” (sama gościa nie włącza). Cofnięcie przywraca poprzednią wartość; jeśli jej nie było albo DSOptimizer nie ma zapisu sprzed zmiany, usuwa ją, co przywraca domyślne wymaganie podpisywania.",
+    "risk": "caution",
+    "scope": "machine",
+    "warnings": [
+      "Microsoft odradza wyłączanie podpisywania – to obniża bezpieczeństwo połączeń z udziałami sieciowymi."
+    ],
+    "registry": [
+      { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters", "name": "RequireSecuritySignature", "type": "DWord", "value": 0, "original": "<RemoveEntry>" }
+    ],
+    "script": {
+      "detect": [
+        "if (-not (Get-Command Get-DsoSmbClientSetting -ErrorAction SilentlyContinue)) {",
+        "    # Haczyk testowy: testy jednostkowe definiują tę funkcję wcześniej jako mock. Jedyne wywołanie Get-SmbClientConfiguration (tylko odczyt) jest tutaj.",
+        "    function Get-DsoSmbClientSetting([string]$Name) {",
+        "        # Zwraca wartość logiczną ustawienia klienta SMB. Bez tekstu zależnego od języka; $null, gdy cmdlet nic nie zwrócił.",
+        "        $configuration = Get-SmbClientConfiguration -ErrorAction Stop",
+        "        if ($null -eq $configuration) { return $null }",
+        "        $configuration.$Name",
+        "    }",
+        "}",
+        "$value = Get-DsoSmbClientSetting -Name 'RequireSecuritySignature'",
+        "# Brak wartości logicznej (błąd cmdletu, $null, tekst) to nie \"ustawienie wyłączone\": stan nieznany, skrypt kończy się błędem, nigdy Applied.",
+        "if ($value -isnot [bool]) { throw 'Get-SmbClientConfiguration nie zwrócił wartości logicznej RequireSecuritySignature – stan nieznany.' }",
+        "# Konfigurację (RequireSecuritySignature = 0) sprawdza wpis registry[]; stan złożony: Applied dopiero, gdy oba się zgadzają.",
+        "if ($value -eq $false) { 'Applied' } else { 'NotApplied' }"
+      ]
+    }
+  },
+  {
+    "id": "net.smb-harden",
+    "aliases": [ "lan_panic" ],
+    "category": "net",
+    "kind": "action",
+    "title": "Wyłącz logowanie gościa i wymagaj podpisywania SMB",
+    "summary": "Wyłącza logowanie gościa i wymaga podpisywania przy łączeniu z udziałami sieciowymi.",
+    "benefit": "Komputer nie połączy się już z udziałem sieciowym jako gość bez hasła ani bez podpisywania – tak zaleca Microsoft.",
+    "description": "Przez Set-SmbClientConfiguration -Force ustawia w kliencie SMB EnableInsecureGuestLogons = False i RequireSecuritySignature = True, a potem sprawdza obie wartości w Get-SmbClientConfiguration; gdy się nie zgadzają, kończy się błędem. Cmdlet zapisuje jawne wartości w HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters. Dotyczy tylko klienta SMB: nie zmienia serwera SMB, usług odnajdywania ani profilu sieci. Microsoft domyślnie wyłącza logowanie gościa na Windows 11 Pro, Enterprise i Education; na Home gość jest domyślnie dozwolony, więc tam akcja zaostrza ustawienie domyślne. Podpisywanie jest domyślnie wymagane od Windows 11 24H2; tam, gdzie go nie było, urządzenia bez podpisywania mogą zgłaszać błąd STATUS_INVALID_SIGNATURE. Akcja nadpisuje zmiany pozycji „Zezwól na logowanie gościa do udziałów sieciowych” i „Nie wymagaj podpisywania SMB po stronie klienta”; ich późniejsze cofnięcie przywróci stan sprzed ich zastosowania i zdejmie to zabezpieczenie. Bez cofania – poprzednie ustawienia przywrócisz ręcznie poleceniem Set-SmbClientConfiguration -EnableInsecureGuestLogons $true -RequireSecuritySignature $false -Force (tylko dla wartości, które chcesz przywrócić).",
+    "risk": "caution",
+    "scope": "machine",
+    "warnings": [
+      "Stare NAS-y i dyski sieciowe bez podpisywania albo wpuszczające tylko gościa mogą przestać się łączyć.",
+      "Późniejsze cofnięcie pozycji logowania gościa albo podpisywania SMB zdejmie to zabezpieczenie."
+    ],
+    "script": {
+      "apply": [
+        "if (-not (Get-Command Get-DsoSmbClientSetting -ErrorAction SilentlyContinue)) {",
+        "    # Haczyk testowy: testy jednostkowe definiują helpery wcześniej jako mocki. Jedyne wywołanie odczytu konfiguracji klienta SMB jest tutaj.",
+        "    function Get-DsoSmbClientSetting([string]$Name) {",
+        "        # Zwraca wartość logiczną ustawienia klienta SMB. Bez tekstu zależnego od języka; $null, gdy cmdlet nic nie zwrócił.",
+        "        $configuration = Get-SmbClientConfiguration -ErrorAction Stop",
+        "        if ($null -eq $configuration) { return $null }",
+        "        $configuration.$Name",
+        "    }",
+        "}",
+        "if (-not (Get-Command Set-DsoSmbClientSetting -ErrorAction SilentlyContinue)) {",
+        "    # Jedyne miejsce zapisu: oficjalny cmdlet Microsoftu (zapisuje DWORD w LanmanWorkstation\\Parameters, widoczny od razu w odczycie).",
+        "    function Set-DsoSmbClientSetting([bool]$AllowInsecureGuest, [bool]$RequireSigning) {",
+        "        Set-SmbClientConfiguration -EnableInsecureGuestLogons $AllowInsecureGuest -RequireSecuritySignature $RequireSigning -Force -ErrorAction Stop",
+        "    }",
+        "}",
+        "Set-DsoSmbClientSetting -AllowInsecureGuest $false -RequireSigning $true",
+        "# Odczyt zwrotny jest jedynym dowodem skutku (akcja nie ma detekcji ani journala): brak zgodności to błąd, nigdy \"Executed\".",
+        "$guest = Get-DsoSmbClientSetting -Name 'EnableInsecureGuestLogons'",
+        "$signing = Get-DsoSmbClientSetting -Name 'RequireSecuritySignature'",
+        "if ($guest -isnot [bool] -or $signing -isnot [bool]) { throw 'Odczyt zwrotny: konfiguracja klienta SMB nie zwróciła wartości logicznych EnableInsecureGuestLogons i RequireSecuritySignature – nie wiadomo, czy zmiana zadziałała.' }",
+        "$problems = @()",
+        "if ($guest -ne $false) { $problems += 'EnableInsecureGuestLogons = True (oczekiwano False)' }",
+        "if ($signing -ne $true) { $problems += 'RequireSecuritySignature = False (oczekiwano True)' }",
+        "if ($problems.Count -gt 0) { throw ('Odczyt zwrotny nie zgadza się z oczekiwanym: ' + ($problems -join '; ') + '. Możliwa przyczyna: polityka (np. Group Policy) przesłania ustawienie.') }",
+        "'Klient SMB: EnableInsecureGuestLogons = False, RequireSecuritySignature = True (odczyt zwrotny zgodny).'"
+      ]
+    }
+  },
+  {
+    "id": "net.network-private",
+    "aliases": [],
+    "category": "net",
+    "kind": "action",
+    "title": "Zmień aktywną sieć z publicznej na prywatną",
+    "summary": "Aktywne połączenia w profilu publicznym przechodzą na profil prywatny.",
+    "benefit": "W zaufanej sieci domowej lub firmowej komputer staje się widoczny dla innych urządzeń i może udostępniać pliki oraz drukarki, jeśli to skonfigurujesz.",
+    "description": "Dla każdego profilu połączenia w kategorii Public z łącznością IPv4 lub IPv6 wywołuje Set-NetConnectionProfile -NetworkCategory Private, a potem sprawdza kategorię w Get-NetConnectionProfile; gdy zmiana się nie potwierdzi, kończy się błędem. Profile Private i DomainAuthenticated (tej kategorii Microsoft nie pozwala ustawić tym cmdletem) oraz profile bez łączności nie są ruszane. Gdy nie ma aktywnego profilu Public, nic nie zmienia i zgłasza błąd „brak aktywnego połączenia w profilu publicznym – nic nie zmieniono”. W kategorii Private komputer jest wykrywalny w sieci (discoverable) i może udostępniać pliki oraz drukarki, jeśli to skonfigurujesz; zapora Windows przełącza się na reguły profilu Private. Zasady Network List Manager Policies mogą blokować zmianę – wtedy akcja zgłosi błąd. Wynik podaje nazwę, indeks interfejsu i poprzednią kategorię każdego zmienionego profilu. Bez cofania – poprzednią kategorię przywrócisz ręcznie poleceniem Set-NetConnectionProfile -InterfaceIndex <indeks> -NetworkCategory Public.",
+    "risk": "caution",
+    "scope": "machine",
+    "warnings": [
+      "Tylko w zaufanej sieci, w domu albo w firmie – w kawiarni, hotelu czy obcym biurze to osłabia ochronę komputera."
+    ],
+    "script": {
+      "apply": [
+        "if (-not (Get-Command Get-DsoNetConnectionProfile -ErrorAction SilentlyContinue)) {",
+        "    # Haczyk testowy: testy jednostkowe definiują helpery wcześniej jako mocki. Jedyne wywołanie odczytu profili jest tutaj (tylko odczyt).",
+        "    function Get-DsoNetConnectionProfile {",
+        "        Get-NetConnectionProfile -ErrorAction Stop",
+        "    }",
+        "}",
+        "if (-not (Get-Command Set-DsoNetConnectionProfileCategory -ErrorAction SilentlyContinue)) {",
+        "    # Jedyne miejsce zapisu: oficjalny cmdlet Microsoftu, wejście z odczytu profili (-InputObject).",
+        "    function Set-DsoNetConnectionProfileCategory($NetProfile, [string]$Category) {",
+        "        Set-NetConnectionProfile -InputObject $NetProfile -NetworkCategory $Category -ErrorAction Stop",
+        "    }",
+        "}",
+        "$noProfile = 'brak aktywnego połączenia w profilu publicznym – nic nie zmieniono'",
+        "# Kategoria i łączność są porównywane po NAZWIE enuma ([string]), nie po liczbie ani sformatowanym tekście zależnym od języka.",
+        "# Wybór: tylko Public z łącznością IPv4 lub IPv6 innym niż Disconnected. Private i DomainAuthenticated nigdy nie są ruszane.",
+        "$targets = @(Get-DsoNetConnectionProfile | Where-Object {",
+        "    $_ -and ([string]$_.NetworkCategory -eq 'Public') -and",
+        "    (([string]$_.IPv4Connectivity -notin @('', 'Disconnected')) -or ([string]$_.IPv6Connectivity -notin @('', 'Disconnected')))",
+        "})",
+        "if ($targets.Count -eq 0) { throw $noProfile }",
+        "$changed = @()",
+        "$problems = @()",
+        "foreach ($netProfile in $targets) {",
+        "    $name = [string]$netProfile.Name",
+        "    $index = $netProfile.InterfaceIndex",
+        "    # Poprzednia kategoria PRZED zmianą (po Set obiekt może już pokazywać Private).",
+        "    $before = [string]$netProfile.NetworkCategory",
+        "    try {",
+        "        Set-DsoNetConnectionProfileCategory -NetProfile $netProfile -Category 'Private'",
+        "        $changed += [pscustomobject]@{ Name = $name; Alias = [string]$netProfile.InterfaceAlias; Index = $index; Before = $before }",
+        "    }",
+        "    catch {",
+        "        $problems += (\"Nie zmieniono profilu '{0}': {1}\" -f $name, $_.Exception.Message)",
+        "    }",
+        "}",
+        "# Odczyt zwrotny: każdy zmieniony profil musi być teraz Private (akcja nie ma detekcji ani journala, to jedyny dowód skutku).",
+        "$after = $null",
+        "try { $after = @(Get-DsoNetConnectionProfile | Where-Object { $_ }) }",
+        "catch { $problems += ('Odczyt zwrotny nie powiódł się: ' + $_.Exception.Message) }",
+        "if ($null -ne $after) {",
+        "    foreach ($item in $changed) {",
+        "        $now = @($after | Where-Object { $_.InterfaceIndex -eq $item.Index -and [string]$_.Name -eq $item.Name })",
+        "        if ($now.Count -ne 1 -or [string]$now[0].NetworkCategory -ne 'Private') {",
+        "            $problems += (\"Odczyt zwrotny nie potwierdził zmiany profilu '{0}' na Private.\" -f $item.Name)",
+        "        }",
+        "    }",
+        "}",
+        "if ($problems.Count -gt 0) {",
+        "    $summary = ($changed | ForEach-Object { \"'{0}' (poprzednio {1}, indeks {2})\" -f $_.Name, $_.Before, $_.Index }) -join ', '",
+        "    $tail = if ($changed.Count -gt 0) { \" Profile, na których wywołano zmianę (sprawdź i w razie potrzeby cofnij przez -InterfaceIndex i -NetworkCategory Public): $summary.\" } else { '' }",
+        "    throw (($problems -join ' ') + $tail)",
+        "}",
+        "foreach ($item in $changed) {",
+        "    \"Zmieniono profil '{0}' (interfejs {1}, indeks {2}): {3} -> Private. Ręczne cofnięcie: -InterfaceIndex {2} -NetworkCategory Public.\" -f $item.Name, $item.Alias, $item.Index, $item.Before",
+        "}",
+        "'Zmieniono {0} profil(e) z Public na Private (odczyt zwrotny zgodny).' -f $changed.Count"
+      ]
+    }
+  }
+]

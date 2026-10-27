@@ -1,0 +1,20 @@
+* text=auto
+*.cs text eol=crlf
+*.xaml text eol=crlf
+*.csproj text eol=crlf
+*.props text eol=crlf
+*.sln text eol=crlf
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.json text eol=crlf
+*.md text eol=lf
+*.ico binary
+*.png binary
+*.psd1 text eol=crlf
+*.xml text eol=crlf
+*.ttf binary
+# Próbki wyjścia DISM/SFC i wycinki CBS.log z VM: bajt w bajt (CR bez LF, UTF-16LE, OEM 852), bez normalizacji końców linii.
+tests/DSOptimizer.Tests.Unit/Repair/Samples/** binary
+
+# Próbki stdout winget z VM (Etap 4c): bajt w bajt (spinner z samym CR, UTF-8), bez normalizacji końców linii.
+tests/DSOptimizer.Tests.Unit/Install/Samples/** binary

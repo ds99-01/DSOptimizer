@@ -1,0 +1,53 @@
+   -                                                                                                                         Name                                    Id                                      Version                  Match
+-----------------------------------------------------------------------------------------------------------------------
+Codium                                  Alex313031.Codium                       1.93.1.24277             Tag: microsoft
+Lamina                                  Chill-Astro.Lamina                      11.28000.19.0            Tag: microsoft
+GoAwayEdge                              Exploitox.GoAwayEdge                    2.0.3                    Tag: microsoft
+Azure Developer CLI                     Microsoft.Azd                           1.37.200                 Tag: microsoft
+DirectX Texture Assembler               Microsoft.DirectXTex.Texassemble        2026.5.7                 Tag: microsoft
+DirectX Texture Converter               Microsoft.DirectXTex.Texconv            2026.5.7                 Tag: microsoft
+DirectX Texture Diagnostic Tool         Microsoft.DirectXTex.Texdiag            2026.5.7                 Tag: microsoft
+MFCMapi                                 Microsoft.MFCMapi                       26.0.26291.01            Tag: microsoft
+Microsoft Mouse and Keyboard Center     Microsoft.MouseandKeyboardCenter        14.41.137.0              Tag: microsoft
+Office Deployment Tool                  Microsoft.OfficeDeploymentTool          16.0.20430.20146         Tag: microsoft
+Remote help                             Microsoft.RemoteHelp                    5.2.1040.0               Tag: microsoft
+PresenceJam                             PresenceJam.PresenceJam                 5.0.0                    Tag: microsoft
+MSXCP                                   jaimecartodb.MSXCP                      0.5.2                    Tag: microsoft
+Ao                                      klaussinani.ao                          6.9.0                    Tag: microsoft
+Alt App Installer                       mjishnu.altappinstaller                 2.7.3                    Tag: microsoft
+Raven                                   mjishnu.raven                           1.1.2.1                  Tag: microsoft
+Azure DevOps Migration Tools            nkdAgility.AzureDevOpsMigrationTools    16.3.3                   Tag: microsoft
+Azure DevOps Migration Tools (Preview)  nkdAgility.AzureDevOpsMigrationTools.P… 16.3.4-Preview.36        Tag: microsoft
+msdl                                    starkSV.msdl                            0.3.8                    Tag: microsoft
+Outlook for Office365                   tomlm.electron-outlook-365              1.1.1.0                  Tag: microsoft
+Outlook for Outlook.com                 tomlm.electron-outlook-com              1.1.1.0                  Tag: microsoft
+Navicat Monitor                         PremiumSoft.NavicatMonitor              3.1.4                    Tag: Microsoft
+ControlUp Remote DX - Microsoft AVD/RDP ControlUp.RemoteDX.Microsoft            2.4.2.136                
+Google Workspace SyncTM for Microsoft … Google.WorkspaceSyncForMicrosoftOutlook 4.3.99.0                 
+16-Bit InstallShield Support Package    Microsoft.16BitInstallShieldSupport     1.0.0.0                  
+Microsoft 365 Copilot                   Microsoft.365Copilot                    19.2609.33020.0          
+Active Directory Management Pack Helpe… Microsoft.ADMPHO                        1.1                      
+Microsoft Windows AI IsolationSession   Microsoft.AI.IsolationSession           2026.10.5                
+AI Shell                                Microsoft.AIShell                       1.0.0-preview.8          
+AKS desktop                             Microsoft.AKSdesktop                    0.43.0                   
+APM – Agent Package Manager             Microsoft.APM                           0.35.0                   
+Attack Surface Reduction Test Tool      Microsoft.ASRTestTool                   4.13.17600.1000          
+Microsoft Access database engine 2016   Microsoft.AccessDatabaseEngine.2016     16.0.5044.1000           
+Microsoft Access Database Engine 2016 … Microsoft.AccessDatabaseEngine2016      16.0.5044.1000           
+Account Lockout Status                  Microsoft.AccountLockoutStatus          1.0.0.60                 
+Administrative Templates (.admx) for W… Microsoft.AdministrativeTemplates       11.25H2                  
+Microsoft Advertising Editor            Microsoft.AdvertisingEditor             11.31.22826              
+Microsoft App Control Wizard            Microsoft.AppControlPolicyWizard        2.8.0.0                  
+App Installer                           Microsoft.AppInstaller                  1.29.380                 
+AppInstaller File Builder               Microsoft.AppInstallerFileBuilder       1.2020.221.0             
+AppLocker Policy Converter              Microsoft.AppLockerPolicyConverter      2.0.0.0                  
+Microsoft Application Inspector         Microsoft.ApplicationInspector          1.10.2                   
+Aspire CLI                              Microsoft.Aspire                        13.6.1                   
+Aspire CLI (Prerelease)                 Microsoft.Aspire.Prerelease             13.3.0-preview.1.26111.5 
+Axe.Windows                             Microsoft.AxeWindows                    2.4.2                    
+Azure AD Connect Sync Configuration Do… Microsoft.Azure.ADConnectSyncDocumenter 1.20.0917.0              
+AzCopy v10                              Microsoft.Azure.AZCopy.10               10.34.1                  
+Microsoft Azure Arc Setup               Microsoft.Azure.ArcSetup                1.68                     
+Microsoft.Azure.ArtifactSigningClientT… Microsoft.Azure.ArtifactSigningClientT… 0.1.128                  
+AzureAuth                               Microsoft.Azure.Auth                    0.9.7                    
+<additional entries truncated due to result limit>
