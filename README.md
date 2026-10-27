@@ -1,151 +1,168 @@
 # DSOptimizer
 
-DSOptimizer to darmowy program do porządkowania i ustawiania Windows 11, najlepiej zaraz po instalacji systemu.
-Zbiera w jednym oknie rzeczy, które zwykle robi się ręcznie w wielu miejscach: wyłączanie zbędnych funkcji
-i reklam, usuwanie preinstalowanych aplikacji, instalację popularnych programów, proste naprawy systemu
-i sprawdzenie sterowników. Każda zmiana ustawień trafia do historii i można ją cofnąć.
+**English** | [Polski](README.pl.md)
 
-## Co jest w programie
+DSOptimizer is a free tool for cleaning up and configuring Windows 11, best used right after installing the system.
+It brings together in one window the things you would usually do by hand in many different places: turning off
+unneeded features and ads, removing preinstalled apps, installing popular programs, simple system repairs
+and checking drivers. Every settings change is recorded in the history and can be undone.
 
-- **Ustawienia systemu** – strony „Prywatność i AI”, „Wydajność”, „Dysk i system plików”, „Sieć i LAN”,
-  „Bezpieczeństwo i szyfrowanie” oraz „Explorer i wygoda”. Przy każdej pozycji program pokazuje, czy jest już
-  ustawiona na tym komputerze, co zmienia i co na tym zyskasz. Zaznaczasz, co chcesz, i klikasz „Zastosuj”.
-- **Panele systemowe** – szybkie otwieranie paneli Windows, których szuka się zwykle najdłużej.
-- **Naprawy** – m.in. reset Windows Update, sprawdzenie i naprawa plików systemowych, czyszczenie dysku,
-  usunięcie poprzedniej instalacji Windows, reset ustawień sieci, naprawa winget i Microsoft Store.
-- **Narzędzia** – np. ponowne uruchomienie paska zadań i Eksploratora oraz uruchomienie WinUtil (Chris Titus).
-- **Specyfikacja** – podsumowanie sprzętu komputera z możliwością zapisania raportu.
-- **Przygotowanie** – kroki po instalacji Windows: aktualizacje, sterowniki chipsetu i grafiki, strona wsparcia
-  producenta laptopa, urządzenia bez sterownika. Program tylko sprawdza stan i podaje oficjalne linki.
-- **Aplikacje** – lista zainstalowanych aplikacji z sugestiami, co można usunąć. Aplikacje ważne dla systemu
-  są chronione i nie da się ich zaznaczyć.
-- **Instalacja** – instalacja popularnych programów przez winget (Microsoft) oraz RustDesk z GitHuba jego autorów.
-- **Historia zmian** – wszystko, co program zmienił, z przyciskiem „Cofnij” tam, gdzie da się cofnąć.
+## Language
 
-## Wymagania
+The program's interface is currently in Polish only. An English interface is coming.
+Page and button names below are given in Polish, with an English translation in brackets.
 
-- Windows 11, wersja 64-bitowa. Program sprawdzano na Windows 11 26H2 (Home i Pro); na innych wersjach może działać,
-  ale nie był na nich sprawdzany.
-- Konto z uprawnieniami administratora – przy starcie Windows zapyta o zgodę (okno UAC).
-- Nic nie trzeba instalować. .NET Framework 4.8.1, którego program potrzebuje, jest już w Windows 11.
-  Program działa także prosto z pendrive'a.
+## What's inside
 
-## Pobieranie
+- **System settings** – the pages „Prywatność i AI” (Privacy and AI), „Wydajność” (Performance),
+  „Dysk i system plików” (Disk and file system), „Sieć i LAN” (Network and LAN), „Bezpieczeństwo i szyfrowanie”
+  (Security and encryption) and „Explorer i wygoda” (Explorer and convenience). For each item the program shows
+  whether it is already set on this computer, what it changes and what you gain. Select what you want and click
+  „Zastosuj” (Apply).
+- **„Panele systemowe” (System panels)** – quick access to the Windows panels that usually take the longest to find.
+- **„Naprawy” (Repairs)** – among others: Windows Update reset, checking and repairing system files, disk cleanup,
+  removing the previous Windows installation, network settings reset, winget and Microsoft Store repair.
+- **„Narzędzia” (Tools)** – e.g. restarting the taskbar and File Explorer, and launching WinUtil (Chris Titus).
+- **„Specyfikacja” (Specification)** – a summary of the computer's hardware, which you can save as a report.
+- **„Przygotowanie” (Preparation)** – steps after installing Windows: updates, chipset and graphics drivers,
+  the laptop manufacturer's support page, devices without a driver. The program only checks the state and gives
+  official links.
+- **„Aplikacje” (Apps)** – the list of installed apps with suggestions of what can be removed. Apps important for
+  the system are protected and cannot be selected.
+- **„Instalacja” (Install)** – installing popular programs through winget (Microsoft) and RustDesk from its
+  authors' GitHub.
+- **„Historia zmian” (Change history)** – everything the program has changed, with an „Cofnij” (Undo) button
+  wherever undo is possible.
 
-1. Wejdź na stronę [wydań](https://github.com/ds99-01/DSOptimizer/releases) i pobierz plik `DSOptimizer-<wersja>.zip`
-   oraz `SHA256SUMS.txt`.
-2. Sprawdź, czy plik nie został uszkodzony ani podmieniony. W PowerShellu, w folderze z pobranym plikiem:
+## Requirements
+
+- Windows 11, 64-bit. The program was tested on Windows 11 26H2 (Home and Pro); it may work on other versions,
+  but it has not been tested on them.
+- An account with administrator rights – Windows asks for consent at startup (UAC prompt).
+- Nothing to install. The .NET Framework 4.8.1 the program needs is already part of Windows 11.
+  The program also runs straight from a USB drive.
+
+## Download
+
+1. Go to the [releases](https://github.com/ds99-01/DSOptimizer/releases) page and download `DSOptimizer-<version>.zip`
+   and `SHA256SUMS.txt`.
+2. Check that the file has not been damaged or replaced. In PowerShell, in the folder with the downloaded file:
 
    ```powershell
-   Get-FileHash .\DSOptimizer-<wersja>.zip -Algorithm SHA256
+   Get-FileHash .\DSOptimizer-<version>.zip -Algorithm SHA256
    ```
 
-   Wynik musi być taki sam jak suma przy nazwie pliku w `SHA256SUMS.txt` (wielkość liter nie ma znaczenia).
-   Jeśli jest inny, nie rozpakowuj pliku – pobierz go jeszcze raz.
-3. Rozpakuj zip. Powstanie folder `DSOptimizer` – trzymaj go w całości, bo `DSOptimizer.exe` potrzebuje plików,
-   które leżą obok niego.
-4. Uruchom `DSOptimizer.exe` i potwierdź okno UAC.
+   The result must match the checksum next to the file name in `SHA256SUMS.txt` (letter case does not matter).
+   If it is different, do not unpack the file – download it again.
+3. Unpack the zip. You get a `DSOptimizer` folder – keep it whole, because `DSOptimizer.exe` needs the files
+   next to it.
+4. Run `DSOptimizer.exe` and confirm the UAC prompt.
 
-### Ostrzeżenie SmartScreen
+### SmartScreen warning
 
-Program nie ma jeszcze podpisu cyfrowego, więc przy pierwszym uruchomieniu pliku pobranego z internetu Windows
-pokaże niebieskie okno „System Windows ochronił ten komputer”. Kliknij **„Więcej informacji”**, a potem
-**„Uruchom mimo to”**. Okno pojawia się także po rozpakowaniu zipu. Jeśli pliki trafiły na pendrive inną drogą
-niż pobranie z internetu, okna zwykle nie ma.
+The program does not have a digital signature yet, so the first time you run a file downloaded from the internet,
+Windows shows a blue window "Windows protected your PC". Click **"More info"** and then **"Run anyway"**.
+The window also appears after unpacking the zip. If the files got onto the USB drive some other way than
+by downloading them from the internet, the window usually does not appear.
 
-Microsoft Defender z aktualnymi sygnaturami nie blokuje programu ani żadnej jego funkcji – szczegóły sprawdzenia
-są w [raporcie antywirusowym](docs/zrodla/2026-10-26-etap5-raport-antywirus.md).
+Microsoft Defender with up-to-date signatures does not block the program or any of its functions – details of the
+check are in the [antivirus report](docs/zrodla/2026-10-26-etap5-raport-antywirus.md) (in Polish).
 
-## Prywatność
+## Privacy
 
-Program nie ma telemetrii i nie aktualizuje się sam. Sam łączy się z siecią tylko na Twoje żądanie: WinUtil
-i RustDesk pobiera z GitHuba ich autorów, a instalacja i wyszukiwanie aplikacji idą przez winget ze źródła
-Microsoftu. Strona „Przygotowanie” otwiera w przeglądarce strony producentów i Google, ale sama niczego nie wysyła.
+The program has no telemetry and does not update itself. It connects to the network on its own only when you ask
+it to: it downloads WinUtil and RustDesk from their authors' GitHub, and installing and searching for apps goes
+through winget from the Microsoft source. The „Przygotowanie” (Preparation) page opens manufacturers' pages and
+Google in your browser, but sends nothing by itself.
 
-Historia zmian, logi i raporty zostają na komputerze, w folderze `%ProgramData%\DSOptimizer`. Gdy program
-uruchomisz z pendrive'a, kopia logu i raportów trafia też obok `DSOptimizer.exe`.
+Change history, logs and reports stay on the computer, in the `%ProgramData%\DSOptimizer` folder. When you run the
+program from a USB drive, a copy of the log and reports is also saved next to `DSOptimizer.exe`.
 
-## Co da się cofnąć, a co nie
+## What can and cannot be undone
 
-- **Ustawienia systemu** – każdą zmianę cofniesz przyciskiem „Cofnij” przy pozycji albo na stronie
-  „Historia zmian”. Program zapamiętuje stan sprzed zmiany i do niego wraca. Nieliczne pozycje, których
-  nie da się cofnąć, mają o tym wyraźne ostrzeżenie. W Ustawieniach programu jest też opcja tworzenia punktu
-  przywracania Windows przed zmianami.
-- **Usuwanie aplikacji** – usuniętej aplikacji program nie przywraca. Przed usunięciem programu (nie aplikacji
-  ze Sklepu) tworzy punkt przywracania Windows, a gdy to się nie uda, pyta, czy kontynuować bez niego.
-- **Naprawy i akcje** – działają jednorazowo i nie mają „Cofnij” (np. wyczyszczonych plików nie da się
-  odzyskać). Przed uruchomieniem przeczytaj opis pozycji.
-- **Instalacja** – zainstalowany program odinstalujesz na stronie „Aplikacje”.
+- **System settings** – you can undo every change with the „Cofnij” (Undo) button next to the item or on the
+  „Historia zmian” (Change history) page. The program remembers the state before the change and returns to it.
+  The few items that cannot be undone carry a clear warning about it. The program's settings also have an option
+  to create a Windows restore point before changes.
+- **Removing apps** – the program does not restore a removed app. Before removing a desktop program (not a Store
+  app), it creates a Windows restore point, and if that fails, it asks whether to continue without one.
+- **Repairs and actions** – they run once and have no Undo (e.g. cleaned-up files cannot be recovered).
+  Read the item's description before running it.
+- **Install** – you can uninstall an installed program on the „Aplikacje” (Apps) page.
 
-## Budowanie ze źródeł
+## Building from source
 
-Potrzebny jest .NET SDK w wersji podanej w `global.json` (np. `winget install Microsoft.DotNet.SDK.10`).
+You need the .NET SDK version given in `global.json` (e.g. `winget install Microsoft.DotNet.SDK.10`).
 
 ```powershell
 dotnet build DSOptimizer.sln -c Release
 ```
 
-Gotowy program: `src\DSOptimizer.App\bin\Release\net481\DSOptimizer.exe`. Testy (nieobowiązkowo; część z nich
-wymaga PowerShella uruchomionego jako administrator):
+The built program: `src\DSOptimizer.App\bin\Release\net481\DSOptimizer.exe`. Tests (optional; some of them
+require PowerShell running as administrator):
 
 ```powershell
 dotnet test DSOptimizer.sln -c Release
 ```
 
-## Tryb wiersza poleceń
+## Command-line mode
 
-`DSOptimizer.exe` uruchomiony z argumentami nie otwiera okna: wykonuje jedno polecenie, zapisuje raport JSON do pliku `--out` i kończy proces z kodem wyjścia. Bez argumentów otwiera okno. `--out` jest wymagany (wynik trafia do pliku, nie na stdout), a polecenie ma być dokładnie jedno.
+When run with arguments, `DSOptimizer.exe` does not open a window: it runs one command, writes a JSON report to the `--out` file and exits with an exit code. Without arguments it opens the window. `--out` is required (the result goes to a file, not to stdout), and there must be exactly one command.
 
 ```text
-DSOptimizer.exe --detect <id> --out <plik.json>
-DSOptimizer.exe --apply <id> [--restore-point required|ifavailable|skip] --out <plik.json>
-DSOptimizer.exe --undo <id> --out <plik.json>
-DSOptimizer.exe --execute <id> [--catalog <plik.json>] --out <plik.json>
-DSOptimizer.exe --list-apps --out <plik.json>
-DSOptimizer.exe --remove-app <id> [--restore-point required|ifavailable|skip] --out <plik.json>
-DSOptimizer.exe --list-install [--apps-catalog <plik.json>] --out <plik.json>
-DSOptimizer.exe --install-apps <id>[,<id>…] [--apps-catalog <plik.json>] --out <plik.json>
-DSOptimizer.exe --search-apps <tekst> --out <plik.json>
+DSOptimizer.exe --detect <id> --out <file.json>
+DSOptimizer.exe --apply <id> [--restore-point required|ifavailable|skip] --out <file.json>
+DSOptimizer.exe --undo <id> --out <file.json>
+DSOptimizer.exe --execute <id> [--catalog <file.json>] --out <file.json>
+DSOptimizer.exe --list-apps --out <file.json>
+DSOptimizer.exe --remove-app <id> [--restore-point required|ifavailable|skip] --out <file.json>
+DSOptimizer.exe --list-install [--apps-catalog <file.json>] --out <file.json>
+DSOptimizer.exe --install-apps <id>[,<id>…] [--apps-catalog <file.json>] --out <file.json>
+DSOptimizer.exe --search-apps <text> --out <file.json>
 ```
 
-- `--detect`, `--apply` i `--undo` dotyczą pozycji `kind=tweak`; `--execute` dotyczy `kind=action` i `kind=panel` (`--apply` na akcji lub panelu daje kod 2).
-- `--list-apps` zwraca widoczne wiersze strony „Aplikacje”, a `--remove-app` usuwa jedną aplikację po jej id (`appx:<PackageFamilyName>` albo `win32:<klucz>`); wiersz chroniony lub zablokowany jest odrzucany. `--restore-point` domyślnie ma wartość `required`: bez punktu przywracania nic nie jest usuwane.
-- `--list-install` zwraca listę instalacji ze stanem winget, `--install-apps` instaluje podane pozycje (`install.<nazwa>` z listy albo `winget:<id>`) bez pytania, a `--search-apps` zwraca wyniki `winget search`. `--apps-catalog` podmienia wbudowaną listę instalacji.
-- Instalacja i wyszukiwanie przez winget działają tylko na koncie zalogowanego użytkownika; na innym koncie kończą się odmową (kod 1), a winget nie jest uruchamiany.
+- `--detect`, `--apply` and `--undo` apply to `kind=tweak` items; `--execute` applies to `kind=action` and `kind=panel` (`--apply` on an action or panel gives code 2).
+- `--list-apps` returns the visible rows of the „Aplikacje” (Apps) page, and `--remove-app` removes one app by its id (`appx:<PackageFamilyName>` or `win32:<key>`); a protected or blocked row is refused. `--restore-point` defaults to `required`: without a restore point nothing is removed.
+- `--list-install` returns the install list with the winget state, `--install-apps` installs the given items (`install.<name>` from the list or `winget:<id>`) without asking, and `--search-apps` returns `winget search` results. `--apps-catalog` replaces the built-in install list.
+- Installing and searching through winget work only on the signed-in user's account; on another account they end with a refusal (code 1), and winget is not started.
 
-### Kody wyjścia
+### Exit codes
 
-| Kod | Znaczenie |
+| Code | Meaning |
 |---|---|
-| 0 | Sukces (`--detect` zawsze zwraca 0, niezależnie od stanu) |
-| 1 | Operacja niewykonana, stan bez zmian (`Failed`, `FailedRolledBack`, `Refused`, `NotSupported`, `Skipped`; seria przerwana, np. brak punktu przywracania przy `--restore-point required`, pole `aborted`) |
-| 2 | Błędne argumenty albo polecenie niepasujące do rodzaju (`kind`) pozycji |
-| 3 | Błąd katalogu (plik, JSON, walidacja, nieznane id) |
-| 4 | Stan do ręcznej kontroli (`FailedRollbackIncomplete`, `UndoIncomplete`, `NotConfirmed`, `InstalledUnverified`) |
-| 5 | Błąd wewnętrzny (wyjątek, nie da się zabezpieczyć korzenia `%ProgramData%\DSOptimizer`) |
-| 6 | Nie da się zapisać pliku `--out` |
+| 0 | Success (`--detect` always returns 0, regardless of the state) |
+| 1 | Operation not performed, state unchanged (`Failed`, `FailedRolledBack`, `Refused`, `NotSupported`, `Skipped`; series aborted, e.g. no restore point with `--restore-point required`, field `aborted`) |
+| 2 | Invalid arguments or a command that does not match the item's `kind` |
+| 3 | Catalog error (file, JSON, validation, unknown id) |
+| 4 | State needs manual checking (`FailedRollbackIncomplete`, `UndoIncomplete`, `NotConfirmed`, `InstalledUnverified`) |
+| 5 | Internal error (exception, the `%ProgramData%\DSOptimizer` root cannot be secured) |
+| 6 | The `--out` file cannot be written |
 
-### Raport JSON
+### JSON report
 
-Najważniejsze pola: `exitCode` (to samo co kod procesu), `result` (nazwa kodu, np. `UsageError`), `state` (wykryty stan przed operacją), `outcome` (wynik operacji), `finalState` (stan po operacji), `warnings`, `restorePoint` (status punktu przywracania), `user` (SID użytkownika docelowego), `machine` (build, edycja, nazwa maszyny).
+Main fields: `exitCode` (same as the process code), `result` (code name, e.g. `UsageError`), `state` (state detected before the operation), `outcome` (operation result), `finalState` (state after the operation), `warnings`, `restorePoint` (restore point status), `user` (target user's SID), `machine` (build, edition, machine name).
 
-Plik `--out` to UTF-8 bez BOM. Windows PowerShell 5.1 czyta taki plik poprawnie (polskie znaki) tylko z jawnym kodowaniem: `Get-Content <plik> -Raw -Encoding UTF8`.
+The `--out` file is UTF-8 without BOM. Windows PowerShell 5.1 reads such a file correctly (Polish characters) only with an explicit encoding: `Get-Content <file> -Raw -Encoding UTF8`.
 
-### Katalog zewnętrzny (`--catalog`)
+### External catalog (`--catalog`)
 
-`--catalog <plik.json>` **zastępuje** katalog wbudowany i wykonuje skrypty z tego pliku jako administrator. Używaj wyłącznie zaufanych plików. Użycie katalogu zewnętrznego jest odnotowane w `warnings` raportu, razem z hashem katalogu (z prefiksem `sha256:`). Hash to SHA-256 z nazwy pliku i zdekodowanego tekstu JSON, a nie z bajtów pliku, więc nie zgadza się z wynikiem `Get-FileHash`.
+`--catalog <file.json>` **replaces** the built-in catalog and runs the scripts from that file as administrator. Use trusted files only. Use of an external catalog is recorded in the report's `warnings`, together with the catalog hash (prefixed with `sha256:`). The hash is SHA-256 of the file name and the decoded JSON text, not of the file bytes, so it does not match the result of `Get-FileHash`.
 
-## Licencja
+## Documentation
 
-DSOptimizer jest udostępniony na licencji Mozilla Public License 2.0 – pełny tekst w pliku [LICENSE](LICENSE).
-W skrócie: program możesz używać, zmieniać i rozpowszechniać, ale jeśli rozpowszechniasz zmienioną wersję,
-kod zmienionych plików programu musi być dostępny na tej samej licencji.
+Item documentation (`docs/tweaks`, `docs/apps`, `docs/prep`) and source records (`docs/zrodla`) are in Polish.
 
-Nazwa DSOptimizer i znak DŚO nie są objęte licencją MPL 2.0; przerobione wersje muszą nosić inną nazwę.
+## License
 
-Program korzysta z bibliotek i czcionek innych autorów, na ich własnych licencjach – lista w
+DSOptimizer is released under the Mozilla Public License 2.0 – full text in the [LICENSE](LICENSE) file.
+In short: you may use, modify and distribute the program, but if you distribute a modified version,
+the source of the modified program files must be available under the same license.
+
+The DSOptimizer name and the DŚO mark are not covered by the MPL 2.0 license; modified versions must use a different name.
+
+The program uses libraries and fonts by other authors, under their own licenses – see
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-## Autor
+## Author
 
 Dawid Świeboda – [github.com/ds99-01](https://github.com/ds99-01)
