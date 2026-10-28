@@ -1,0 +1,111 @@
+<ui:FluentWindow x:Class="DSOptimizer.App.Views.LanguageChoiceWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 Title="DSOptimizer" Width="480" MinHeight="0" SizeToContent="Height" ResizeMode="NoResize"
+                 WindowStartupLocation="CenterScreen" ShowInTaskbar="True" TextOptions.TextFormattingMode="Display"
+                 ExtendsContentIntoTitleBar="True" WindowBackdropType="None" WindowCornerPreference="Round"
+                 FontFamily="{StaticResource BrandFont}" UseLayoutRounding="True" SnapsToDevicePixels="True"
+                 Background="{DynamicResource ApplicationBackgroundBrush}"
+                 AutomationProperties.AutomationId="LanguageChoiceWindow"
+                 PreviewKeyDown="OnPreviewKeyDown">
+  <!-- Teksty okna są dwujęzyczne na stałe (pokazuje się, zanim program zna język), więc bez tłumaczenia. -->
+  <Window.Resources>
+    <!-- Kafel języka: flaga z cienkim obrysem + nazwa; kafel wykrytego języka (IsDefault, Enter) = obrys 2 px w akcencie -->
+    <Style x:Key="LanguageTile" TargetType="Button">
+      <Setter Property="FocusVisualStyle" Value="{StaticResource BrandFocusVisual}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Face" CornerRadius="4" BorderThickness="1" Padding="0,22,0,18"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+              <ContentPresenter HorizontalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsDefault" Value="True">
+                <Setter TargetName="Face" Property="BorderBrush" Value="{DynamicResource BrandAccentBrush}" />
+                <Setter TargetName="Face" Property="BorderThickness" Value="2" />
+                <Setter TargetName="Face" Property="Padding" Value="0,21,0,17" />
+              </Trigger>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Face" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+    <!-- Flaga 96×64 (3:2) w ramce 1 px -->
+    <Style x:Key="FlagFrame" TargetType="Border">
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+      <Setter Property="CornerRadius" Value="2" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    <!-- Nazwa języka: jawny kolor tekstu (bez niego w ciemnym motywie zawartość przycisku jest czarna) -->
+    <Style x:Key="LanguageName" TargetType="TextBlock">
+      <Setter Property="Margin" Value="0,14,0,0" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    </Style>
+    <Style x:Key="WrappedSubText" TargetType="TextBlock" BasedOn="{StaticResource SubText}">
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="TextTrimming" Value="None" />
+    </Style>
+  </Window.Resources>
+
+  <DockPanel Background="{DynamicResource ApplicationBackgroundBrush}" TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <!-- Pasek tytułu jak w oknie serii; obszar podpisu WindowChrome (przeciąganie), krzyżyk = zamknięcie bez wyboru (język wykryty) -->
+    <Grid DockPanel.Dock="Top" Height="44" Background="{StaticResource HeadBackgroundBrush}">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,8,0">
+        <Image Source="{StaticResource BrandMarkImage}" Width="20" Height="20" />
+        <TextBlock Text="DSOptimizer" Margin="10,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource HeadForegroundBrush}"
+                   VerticalAlignment="Center" />
+      </StackPanel>
+      <Button Grid.Column="1" Style="{StaticResource CaptionCloseButton}" Content="&#xE8BB;"
+              AutomationProperties.Name="Zamknij / Close" Click="OnCloseClick" />
+    </Grid>
+
+    <StackPanel Margin="28,24,28,26">
+      <TextBlock Style="{StaticResource PageTitleText}" Text="Język / Language" />
+      <TextBlock Style="{StaticResource SubText}" Margin="0,4,0,0" Text="Wybierz język programu · Choose the program language" />
+
+      <Grid Margin="0,22,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="16" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Button x:Name="PolishTile" Style="{StaticResource LanguageTile}"
+                IsDefault="{Binding IsPolishDetected, Mode=OneTime}" Command="{Binding ChoosePolishCommand}"
+                AutomationProperties.AutomationId="LanguageChoicePolish" AutomationProperties.Name="Polski">
+          <StackPanel>
+            <Border Style="{StaticResource FlagFrame}">
+              <Image Source="{StaticResource FlagPolish}" Width="96" Height="64" />
+            </Border>
+            <TextBlock Style="{StaticResource LanguageName}" Text="Polski" />
+          </StackPanel>
+        </Button>
+        <Button x:Name="EnglishTile" Grid.Column="2" Style="{StaticResource LanguageTile}"
+                IsDefault="{Binding IsEnglishDetected, Mode=OneTime}" Command="{Binding ChooseEnglishCommand}"
+                AutomationProperties.AutomationId="LanguageChoiceEnglish" AutomationProperties.Name="English">
+          <StackPanel>
+            <Border Style="{StaticResource FlagFrame}">
+              <Image Source="{StaticResource FlagUnitedKingdom}" Width="96" Height="64" />
+            </Border>
+            <TextBlock Style="{StaticResource LanguageName}" Text="English" />
+          </StackPanel>
+        </Button>
+      </Grid>
+
+      <TextBlock Style="{StaticResource WrappedSubText}" Margin="0,18,0,0" Text="Możesz to zmienić później w Ustawieniach." />
+      <TextBlock Style="{StaticResource WrappedSubText}" Margin="0,2,0,0" Text="You can change this later in Settings." />
+    </StackPanel>
+  </DockPanel>
+</ui:FluentWindow>

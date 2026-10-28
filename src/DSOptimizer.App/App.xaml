@@ -12,6 +12,8 @@
         <ResourceDictionary Source="Themes/Icons.xaml" />
         <!-- Znak „DŚO”: jedyna definicja, z niej powstaje też Assets/dsoptimizer.ico (tools/brand/Build-AppIcon.ps1) -->
         <ResourceDictionary Source="Themes/BrandMark.xaml" />
+        <!-- Flagi okna wyboru języka -->
+        <ResourceDictionary Source="Themes/Flags.xaml" />
       </ResourceDictionary.MergedDictionaries>
       <!-- Podpowiedzi w czcionce marki (popup nie dziedziczy czcionki okna) -->
       <Style TargetType="ToolTip" BasedOn="{StaticResource {x:Type ToolTip}}">

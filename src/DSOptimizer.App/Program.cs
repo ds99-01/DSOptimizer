@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Threading;
 using DSOptimizer.App.Gui;
 using DSOptimizer.App.ViewModels;
+using DSOptimizer.App.Views;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
@@ -14,6 +15,7 @@ using DSOptimizer.Core.Cli;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Hardware;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Prep;
 using DSOptimizer.Core.Settings;
 using DSOptimizer.Windows;
@@ -36,6 +38,10 @@ internal static class Program
         {
             return CliHost.Run(args, SecureRoot.ProgramData, FileLog.DefaultMirrorDirectory);
         }
+
+        // Komunikaty sprzed odczytu ustawień (katalog, korzeń) w języku systemu; zapisany albo wybrany język ustawia się niżej.
+        var detected = LanguageDetector.DetectCurrent();
+        L.SetDefault(detected);
 
         var sink = new UiLogSink(Dispatcher.CurrentDispatcher, new SystemClock());
         var catalog = CliCatalog.Load(null, path => File.ReadAllText(path, Encoding.UTF8), BuiltInCatalog.Sources);
@@ -114,6 +120,19 @@ internal static class Program
         app.InitializeComponent();
         var theme = new ThemeController(log);
         theme.ApplyAtStartup(settings.Settings.Theme);
+        // Język: zapisany = bez pytania; brak = okno wyboru (motyw już zastosowany), zamknięte bez wyboru = język wykryty.
+        var language = StartupLanguage.Choose(settings.Settings, detected, LanguageChoiceWindow.Ask, settingsStore);
+        L.SetDefault(language.Language);
+        if (language.Warning is { } languageWarning)
+        {
+            log.Warn("Ustawienia", languageWarning);
+        }
+
+        if (L.LoadWarning is { } translationsWarning)
+        {
+            log.Warn("Ustawienia", translationsWarning);
+        }
+
         var machine = MachineSummary.Format(composition.Services.SystemInfo);
         var user = composition.Services.User;
         // Link w dzienniku: Eksplorator za strażnikiem powłoki; ścieżek z katalogu programu nie otwiera (tylko kopiowanie).
@@ -122,7 +141,7 @@ internal static class Program
         var shell = new ShellActions(revealer, new ShellUrlOpener(new WindowsExplorerProcessQuery()), log);
         var specification = CreateSpecification(composition, sink, shell);
         var prep = CreatePrep(composition, sink, shell);
-        var settingsPage = new SettingsViewModel(settings, settingsStore, session, theme, shell, log);
+        var settingsPage = new SettingsViewModel(new SettingsLoadResult(language.Settings, settings.Warning), settingsStore, session, theme, shell, log);
         var seriesDialogs = new SeriesDialogs(log, sink.Add, composition.Services.Clock);
         // Baner restartu: czas startu systemu z CIM (tylko odczyt); restart przez shutdown.exe – wyłącznie po potwierdzeniu w oknie,
         // ze śladem w pliku logu (zlecenie i przyczyna błędu).
