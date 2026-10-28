@@ -1,0 +1,833 @@
+{
+  "language": "en",
+  "entries": [
+    {
+      "pl": "Pliki tymczasowe systemu",
+      "en": "System temporary files"
+    },
+    {
+      "pl": "Pliki tymczasowe konta",
+      "en": "Account temporary files"
+    },
+    {
+      "pl": "Optymalizacja dostarczania",
+      "en": "Delivery Optimization"
+    },
+    {
+      "pl": "Pobrane aktualizacje",
+      "en": "Downloaded updates"
+    },
+    {
+      "pl": "Magazyn składników",
+      "en": "Component store"
+    },
+    {
+      "pl": "Miniatury konta",
+      "en": "Account thumbnails"
+    },
+    {
+      "pl": "pominięto – nie udało się ustalić profilu konta.",
+      "en": "skipped – couldn't determine the account profile."
+    },
+    {
+      "pl": "pominięto – zatrzymano.",
+      "en": "skipped – stopped."
+    },
+    {
+      "pl": "Zwolniono: {0}.",
+      "en": "Freed: {0}."
+    },
+    {
+      "pl": "disk-cleanup: {0} Wolne {1} przed: {2}, po: {3}. Wynik: {4}.",
+      "en": "disk-cleanup: {0} Free space on {1} before: {2}, after: {3}. Result: {4}."
+    },
+    {
+      "pl": "disk-cleanup: nieoczekiwany błąd kroku „{0}”.",
+      "en": "disk-cleanup: unexpected error in step \"{0}\"."
+    },
+    {
+      "pl": "skrypt zakończył się kodem {0}",
+      "en": "the script ended with code {0}"
+    },
+    {
+      "pl": "wykonano – polecenie zakończyło się bez błędu (pliki pobierane w tej chwili zostają).",
+      "en": "done – the command finished without an error (files being downloaded right now stay)."
+    },
+    {
+      "pl": "pominięto – w tym systemie nie ma polecenia Delete-DeliveryOptimizationCache.",
+      "en": "skipped – this system doesn't have the Delete-DeliveryOptimizationCache command."
+    },
+    {
+      "pl": "skrypt nie potwierdził wyczyszczenia pamięci podręcznej (brak znacznika wyniku)",
+      "en": "the script didn't confirm that the cache was cleared (no result marker)"
+    },
+    {
+      "pl": "pominięto – brak folderu {0}.",
+      "en": "skipped – folder {0} doesn't exist."
+    },
+    {
+      "pl": "pominięto – nie udało się odczytać usługi {0} ({1}); nic nie zatrzymano.",
+      "en": "skipped – couldn't read service {0} ({1}); nothing was stopped."
+    },
+    {
+      "pl": "usługa {0} nie zatrzymała się ({1})",
+      "en": "service {0} didn't stop ({1})"
+    },
+    {
+      "pl": "Usługa {0} nie działa po przywróceniu: {1}.",
+      "en": "Service {0} isn't running after the restore: {1}."
+    },
+    {
+      "pl": "; uruchomiono ponownie: {0}",
+      "en": "; restarted: {0}"
+    },
+    {
+      "pl": "pominięto – {0}",
+      "en": "skipped – {0}"
+    },
+    {
+      "pl": "usunięto pliki ({0})",
+      "en": "deleted files ({0})"
+    },
+    {
+      "pl": "{0}, ale nie udało się ponownie uruchomić usług: {1}{2}",
+      "en": "{0}, but couldn't restart services: {1}{2}"
+    },
+    {
+      "pl": "{0}, a potem nie udało się ponownie uruchomić usług: {1}{2}",
+      "en": "{0}, and then couldn't restart services: {1}{2}"
+    },
+    {
+      "pl": "pominięto – {0}; usługi przywrócono.",
+      "en": "skipped – {0}; services were restored."
+    },
+    {
+      "pl": "; usługi uruchomiono ponownie: {0}",
+      "en": "; services were restarted: {0}"
+    },
+    {
+      "pl": "pominięto – {0}{1}.",
+      "en": "skipped – {0}{1}."
+    },
+    {
+      "pl": "wykonano ({0}){1}.",
+      "en": "done ({0}){1}."
+    },
+    {
+      "pl": "nie udało się uruchomić DISM: {0}",
+      "en": "couldn't start DISM: {0}"
+    },
+    {
+      "pl": "nadal działa w tle po {0} – program przestał czekać, a DISM pracuje dalej. Wynik sprawdzisz w {1}.",
+      "en": "still running in the background after {0} – the program stopped waiting, and DISM keeps working. You can check the result in {1}."
+    },
+    {
+      "pl": "DISM nie zwrócił kodu wyjścia. Szczegóły: {0}",
+      "en": "DISM didn't return an exit code. Details: {0}"
+    },
+    {
+      "pl": "wykonano (DISM /StartComponentCleanup, kod 0).",
+      "en": "done (DISM /StartComponentCleanup, code 0)."
+    },
+    {
+      "pl": "wykonano – dokończy się po ponownym uruchomieniu komputera (kod 3010).",
+      "en": "done – it will finish after the computer restarts (code 3010)."
+    },
+    {
+      "pl": "błąd {0} – szczegóły: {1}.",
+      "en": "error {0} – details: {1}."
+    },
+    {
+      "pl": "pominięto – {0}.",
+      "en": "skipped – {0}."
+    },
+    {
+      "pl": "wykonano ({0}).",
+      "en": "done ({0})."
+    },
+    {
+      "pl": "pominięto – nie udało się ustalić zalogowanego konta (brak sesji interaktywnej); program nie czyści zamiast niego własnego konta.",
+      "en": "skipped – couldn't determine the signed-in account (no interactive session); the program doesn't clean its own account instead."
+    },
+    {
+      "pl": "pominięto – nieprawidłowy identyfikator zalogowanego konta ({0}).",
+      "en": "skipped – invalid identifier of the signed-in account ({0})."
+    },
+    {
+      "pl": "pominięto – ścieżka profilu konta {0} nie jest pełną ścieżką lokalną ({1}).",
+      "en": "skipped – the profile path of account {0} isn't a full local path ({1})."
+    },
+    {
+      "pl": "pominięto – brak ścieżki profilu konta {0} w rejestrze (ProfileList).",
+      "en": "skipped – no profile path for account {0} in the registry (ProfileList)."
+    },
+    {
+      "pl": "pominięto – nie udało się odczytać ścieżki profilu konta {0} ({1}).",
+      "en": "skipped – couldn't read the profile path of account {0} ({1})."
+    },
+    {
+      "pl": "brak odczytu",
+      "en": "no reading"
+    },
+    {
+      "pl": "plików: {0}, {1}",
+      "en": "files: {0}, {1}"
+    },
+    {
+      "pl": "; młodszych niż 24 h zostało: {0}",
+      "en": "; kept, newer than 24 h: {0}"
+    },
+    {
+      "pl": "; w użyciu zostało: {0}",
+      "en": "; kept, in use: {0}"
+    },
+    {
+      "pl": "disk-cleanup: nieoczekiwany błąd przy zatrzymanych usługach Windows Update.",
+      "en": "disk-cleanup: unexpected error while the Windows Update services were stopped."
+    },
+    {
+      "pl": "nieznany błąd",
+      "en": "unknown error"
+    },
+    {
+      "pl": "błąd – {0}.",
+      "en": "error – {0}."
+    },
+    {
+      "pl": "nie udało się odczytać wolnego miejsca",
+      "en": "couldn't read the free space"
+    },
+    {
+      "pl": "nie da się uczciwie podać zwolnionego miejsca (inne programy zapisywały na dysku)",
+      "en": "the freed space can't be reported honestly (other programs were writing to the disk)"
+    },
+    {
+      "pl": "mniej niż 1 MB",
+      "en": "less than 1 MB"
+    },
+    {
+      "pl": "DSOptimizer – punkt ręczny",
+      "en": "DSOptimizer – manual restore point"
+    },
+    {
+      "pl": "Utworzono punkt przywracania „{0}” ({1}).",
+      "en": "Created restore point \"{0}\" ({1})."
+    },
+    {
+      "pl": "Ochrona systemu na dysku C: jest wyłączona – włącz ją pozycją „Ochrona systemu” w tej kategorii.",
+      "en": "System Protection is turned off for drive C: – turn it on with the \"System Protection\" item in this category."
+    },
+    {
+      "pl": "Nie udało się utworzyć punktu przywracania.",
+      "en": "Couldn't create a restore point."
+    },
+    {
+      "pl": " (kod {0})",
+      "en": " (code {0})"
+    },
+    {
+      "pl": "Start {0} zgłosił błąd ({1}), ale usługa działa – przywrócona.",
+      "en": "Starting {0} reported an error ({1}), but the service is running – restored."
+    },
+    {
+      "pl": "brak stanu Running",
+      "en": "no Running state"
+    },
+    {
+      "pl": "Poprzednia operacja serwisowania jeszcze trwa – spróbuj za chwilę.",
+      "en": "The previous servicing operation is still in progress – try again in a moment."
+    },
+    {
+      "pl": "Działa jeszcze proces: {0}.",
+      "en": "A process is still running: {0}."
+    },
+    {
+      "pl": "DISM nadal działa w tle po {0} – program przestał czekać. Wynik sprawdzisz w {1}.",
+      "en": "DISM is still running in the background after {0} – the program stopped waiting. You can check the result in {1}."
+    },
+    {
+      "pl": "SFC nie został uruchomiony (DISM jeszcze pracuje).",
+      "en": "SFC wasn't started (DISM is still working)."
+    },
+    {
+      "pl": "DISM: nie udało się uruchomić – {0}",
+      "en": "DISM: couldn't start – {0}"
+    },
+    {
+      "pl": "system-files: zatrzymano między krokami – SFC pominięty.",
+      "en": "system-files: stopped between steps – SFC skipped."
+    },
+    {
+      "pl": "SFC pominięty – zatrzymano.",
+      "en": "SFC skipped – stopped."
+    },
+    {
+      "pl": "SFC nadal działa w tle po {0} – program przestał czekać. Wynik sprawdzisz w {1}.",
+      "en": "SFC is still running in the background after {0} – the program stopped waiting. You can check the result in {1}."
+    },
+    {
+      "pl": "SFC: nie udało się uruchomić – {0}",
+      "en": "SFC: couldn't start – {0}"
+    },
+    {
+      "pl": "system-files: {0} nie wystartował: {1}",
+      "en": "system-files: {0} didn't start: {1}"
+    },
+    {
+      "pl": "system-files: {0} po limicie {1} dalej działa w tle – program przestał czekać.",
+      "en": "system-files: {0} is still running in the background after the {1} limit – the program stopped waiting."
+    },
+    {
+      "pl": "system-files: {0} zakończony kodem {1} po {2} s.",
+      "en": "system-files: {0} ended with code {1} after {2} s."
+    },
+    {
+      "pl": "system-files: nie można odczytać rozmiaru {0}: {1}",
+      "en": "system-files: can't read the size of {0}: {1}"
+    },
+    {
+      "pl": "system-files: nie można odczytać {0}: {1}",
+      "en": "system-files: can't read {0}: {1}"
+    },
+    {
+      "pl": "Logi: {0}, {1}.",
+      "en": "Logs: {0}, {1}."
+    },
+    {
+      "pl": "DISM: magazyn składników jest zdrowy – nie wykryto uszkodzeń.",
+      "en": "DISM: the component store is healthy – no corruption detected."
+    },
+    {
+      "pl": "DISM: naprawiono uszkodzenia magazynu składników ({0} z {1}).",
+      "en": "DISM: component store corruption repaired ({0} of {1})."
+    },
+    {
+      "pl": "DISM: zakończony bez błędu (kod 0); z CBS.log nie dało się odczytać, czy coś naprawiono.",
+      "en": "DISM: finished without an error (code 0); CBS.log didn't show whether anything was repaired."
+    },
+    {
+      "pl": "DISM: naprawa dokończy się po ponownym uruchomieniu komputera (kod {0}).",
+      "en": "DISM: the repair will finish after the computer restarts (code {0})."
+    },
+    {
+      "pl": "DISM: nie znaleziono plików do naprawy – potrzebny internet (Windows Update) albo nośnik instalacyjny (kod {0}).",
+      "en": "DISM: the repair files weren't found – an internet connection (Windows Update) or installation media is needed (code {0})."
+    },
+    {
+      "pl": "DISM: uszkodzenia magazynu składników: wykryto {0}, naprawiono {1}. Szczegóły: {2}.",
+      "en": "DISM: component store corruption: {0} detected, {1} repaired. Details: {2}."
+    },
+    {
+      "pl": "DISM: błąd {0}. Szczegóły: {1}.",
+      "en": "DISM: error {0}. Details: {1}."
+    },
+    {
+      "pl": "SFC: nie znaleziono naruszeń integralności plików systemowych.",
+      "en": "SFC: didn't find any integrity violations in system files."
+    },
+    {
+      "pl": "SFC: znaleziono uszkodzone pliki systemowe i je naprawiono.",
+      "en": "SFC: found corrupt system files and repaired them."
+    },
+    {
+      "pl": "SFC: naprawa plików systemowych dokończy się po ponownym uruchomieniu komputera.",
+      "en": "SFC: the system file repair will finish after the computer restarts."
+    },
+    {
+      "pl": "SFC: nie udało się naprawić części plików systemowych – szczegóły (wpisy [SR]) w {0}.",
+      "en": "SFC: couldn't repair some system files – details ([SR] entries) in {0}."
+    },
+    {
+      "pl": "SFC: zakończony kodem {0}, ale wyniku nie da się jednoznacznie odczytać – sprawdź wpisy [SR] w {1}.",
+      "en": "SFC: ended with code {0}, but the result can't be read clearly – check the [SR] entries in {1}."
+    },
+    {
+      "pl": "Oczyszczanie dysku",
+      "en": "Disk Cleanup"
+    },
+    {
+      "pl": "Sprawdzenie",
+      "en": "Check"
+    },
+    {
+      "pl": "Nie ma poprzedniej instalacji Windows – nie ma czego usuwać.",
+      "en": "There's no previous Windows installation – nothing to remove."
+    },
+    {
+      "pl": "windows-old: nie udało się sprawdzić {0}: {1}",
+      "en": "windows-old: couldn't check {0}: {1}"
+    },
+    {
+      "pl": "Nie udało się sprawdzić folderu {0} ({1}) – nic nie zmieniono.",
+      "en": "Couldn't check folder {0} ({1}) – nothing was changed."
+    },
+    {
+      "pl": "windows-old: brak {0} – nic do usunięcia.",
+      "en": "windows-old: {0} doesn't exist – nothing to remove."
+    },
+    {
+      "pl": "nie sprawdzano (Oczyszczanie dysku nie wystartowało)",
+      "en": "not checked (Disk Cleanup didn't start)"
+    },
+    {
+      "pl": "stan nieznany ({0})",
+      "en": "status unknown ({0})"
+    },
+    {
+      "pl": "nadal istnieje",
+      "en": "still exists"
+    },
+    {
+      "pl": "nie istnieje",
+      "en": "doesn't exist"
+    },
+    {
+      "pl": "windows-old: {0} {1}. Wolne {2} przed: {3}, po: {4}.",
+      "en": "windows-old: {0} {1}. Free space on {2} before: {3}, after: {4}."
+    },
+    {
+      "pl": "Nie udało się sprawdzić folderu {0} ({1}) – sprawdź go później.",
+      "en": "Couldn't check folder {0} ({1}) – check it later."
+    },
+    {
+      "pl": "Folder {0} jeszcze istnieje – sprawdź go później.",
+      "en": "Folder {0} still exists – check it later."
+    },
+    {
+      "pl": "Folder {0} już nie istnieje (zwolniono: {1}).",
+      "en": "Folder {0} no longer exists (freed: {1})."
+    },
+    {
+      "pl": "Czyszczenie nadal działa w tle – program przestał czekać po {0}. {1}",
+      "en": "Cleanup is still running in the background – the program stopped waiting after {0}. {1}"
+    },
+    {
+      "pl": "Oczyszczanie dysku zakończyło pracę, ale nie udało się sprawdzić, czy folder {0} zniknął ({1}) – sprawdź go ręcznie (zwolniono: {2}).",
+      "en": "Disk Cleanup finished, but checking whether folder {0} is gone failed ({1}) – check it manually (freed: {2})."
+    },
+    {
+      "pl": "Folder Windows.old nadal istnieje (zwolniono: {0}).",
+      "en": "The Windows.old folder still exists (freed: {0})."
+    },
+    {
+      "pl": "Usunięto poprzednią instalację Windows. Zwolniono: {0}.",
+      "en": "Removed the previous Windows installation. Freed: {0}."
+    },
+    {
+      "pl": "windows-old: wynik {0}.",
+      "en": "windows-old: result {0}."
+    },
+    {
+      "pl": "Nie udało się odczytać ustawień Oczyszczania dysku ({0}) – nic nie zmieniono.",
+      "en": "Couldn't read the Disk Cleanup settings ({0}) – nothing was changed."
+    },
+    {
+      "pl": "Wartość {0} już jest w ustawieniach Oczyszczania dysku (VolumeCaches\\{1}) – ustawił ją inny program albo przerwany wcześniejszy przebieg; nic nie zmieniono.",
+      "en": "Value {0} is already in the Disk Cleanup settings (VolumeCaches\\{1}) – another program or an interrupted earlier run set it; nothing was changed."
+    },
+    {
+      "pl": "Nie udało się sprawdzić ustawień Oczyszczania dysku (VolumeCaches\\{0}: {1}) – nic nie zmieniono.",
+      "en": "Couldn't check the Disk Cleanup settings (VolumeCaches\\{0}: {1}) – nothing was changed."
+    },
+    {
+      "pl": "W tym systemie Oczyszczanie dysku nie ma programu obsługi „Previous Installations” – nic nie zmieniono.",
+      "en": "Disk Cleanup on this system has no \"Previous Installations\" handler – nothing was changed."
+    },
+    {
+      "pl": "windows-old: zapis {0} nieudany: {1}",
+      "en": "windows-old: writing {0} failed: {1}"
+    },
+    {
+      "pl": "Nie udało się zaznaczyć poprzedniej instalacji w Oczyszczaniu dysku ({0}) – nic nie zmieniono, Oczyszczanie dysku nie zostało uruchomione.",
+      "en": "Couldn't select the previous installation in Disk Cleanup ({0}) – nothing was changed, Disk Cleanup wasn't started."
+    },
+    {
+      "pl": "windows-old: {0} nie wystartował: {1}",
+      "en": "windows-old: {0} didn't start: {1}"
+    },
+    {
+      "pl": "Nie udało się uruchomić Oczyszczania dysku – {0} Nic nie usunięto.",
+      "en": "Couldn't start Disk Cleanup – {0} Nothing was deleted."
+    },
+    {
+      "pl": "windows-old: {0} po limicie {1} dalej działa w tle – program przestał czekać.",
+      "en": "windows-old: {0} is still running in the background after the {1} limit – the program stopped waiting."
+    },
+    {
+      "pl": "windows-old: {0} zakończony kodem {1} po {2} s.",
+      "en": "windows-old: {0} ended with code {1} after {2} s."
+    },
+    {
+      "pl": "Oczyszczanie dysku zakończyło się kodem {0}.",
+      "en": "Disk Cleanup ended with code {0}."
+    },
+    {
+      "pl": "windows-old: {0} zakończony kodem nieznanym po {1} s.",
+      "en": "windows-old: {0} ended with an unknown code after {1} s."
+    },
+    {
+      "pl": "Oczyszczanie dysku zakończyło się kodem nieznanym.",
+      "en": "Disk Cleanup ended with an unknown code."
+    },
+    {
+      "pl": "windows-old: nie udało się usunąć {0}: {1}",
+      "en": "windows-old: couldn't remove {0}: {1}"
+    },
+    {
+      "pl": "Nie udało się usunąć wartości {0} z VolumeCaches\\Previous Installations ({1}) – usuń ją ręcznie, inaczej kolejne uruchomienie odmówi.",
+      "en": "Couldn't remove value {0} from VolumeCaches\\Previous Installations ({1}) – remove it manually, otherwise the next run will refuse."
+    },
+    {
+      "pl": "Historia aktualizacji w Ustawieniach zostanie wyczyszczona (zostać mogą tylko wpisy definicji Microsoft Defender); aktualizacje pobiorą się od nowa.",
+      "en": "Update history in Settings will be cleared (only Microsoft Defender definition entries may stay); updates will download again."
+    },
+    {
+      "pl": "Na komputerze zarządzanym przez Intune/MDM usunięte polityki mogą wrócić przy następnej synchronizacji.",
+      "en": "On a computer managed by Intune/MDM, the removed policies may come back at the next sync."
+    },
+    {
+      "pl": "Nic nie zmieniono.",
+      "en": "Nothing was changed."
+    },
+    {
+      "pl": "Anulowano przed zmianami. Nic nie zmieniono.",
+      "en": "Canceled before any changes. Nothing was changed."
+    },
+    {
+      "pl": "Nie udało się ponownie uruchomić usług: {0}.",
+      "en": "Couldn't restart services: {0}."
+    },
+    {
+      "pl": " Foldery Windows Update zresetowano (kopie niżej), usługi przywrócono.",
+      "en": " Windows Update folders were reset (copies below), services were restored."
+    },
+    {
+      "pl": "Nie znaleziono folderów Windows Update ({0}, {1}) – nie było czego zresetować. Usługi przywrócono.",
+      "en": "Windows Update folders weren't found ({0}, {1}) – there was nothing to reset. Services were restored."
+    },
+    {
+      "pl": "Odczyt zwrotny nie potwierdził resetu: {0}.",
+      "en": "Verification didn't confirm the reset: {0}."
+    },
+    {
+      "pl": "Odczyt zwrotny: usługi działają jak przed resetem, kopie folderów istnieją.",
+      "en": "Verification: services are running as before the reset, folder copies exist."
+    },
+    {
+      "pl": "Zresetowano składniki Windows Update i usunięto blokady aktualizacji, jeśli były.",
+      "en": "Windows Update components were reset and update blocks were removed, if there were any."
+    },
+    {
+      "pl": "Zresetowano składniki Windows Update.",
+      "en": "Windows Update components were reset."
+    },
+    {
+      "pl": " Polityki Windows Update zostały już usunięte (kopia: {0}; przywrócenie: reg import \"{0}\").",
+      "en": " Windows Update policies have already been removed (backup: {0}; to restore: reg import \"{0}\")."
+    },
+    {
+      "pl": " Typy startu usług nie zostały zmienione.",
+      "en": " Service startup types weren't changed."
+    },
+    {
+      "pl": "Komputer jest w domenie: polityki Windows Update ustawia administrator domeny.",
+      "en": "The computer is joined to a domain: Windows Update policies are set by the domain administrator."
+    },
+    {
+      "pl": "Nie udało się sprawdzić, czy komputer jest w domenie.",
+      "en": "Couldn't check whether the computer is joined to a domain."
+    },
+    {
+      "pl": "Usługa {0} nie istnieje – pominięta.",
+      "en": "Service {0} doesn't exist – skipped."
+    },
+    {
+      "pl": "Nie udało się odczytać usługi {0}: {1} Nic nie zmieniono.",
+      "en": "Couldn't read service {0}: {1} Nothing was changed."
+    },
+    {
+      "pl": "Usługa {0} jest wyłączona (Disabled). Program jej nie zmienia (system odmawia zapisu), a wyłączona usługa może blokować aktualizacje.",
+      "en": "Service {0} is disabled (Disabled). The program doesn't change it (the system refuses the write), and a disabled service can block updates."
+    },
+    {
+      "pl": "Usługa {0} nie działała – bez zmian.",
+      "en": "Service {0} wasn't running – no change."
+    },
+    {
+      "pl": "Foldery nietknięte, ale nie udało się ponownie uruchomić: {0}.",
+      "en": "Folders untouched, but couldn't restart: {0}."
+    },
+    {
+      "pl": "Nie udało się zatrzymać usługi {0}: {1} {2}",
+      "en": "Couldn't stop service {0}: {1} {2}"
+    },
+    {
+      "pl": "Zatrzymano usługę {0}.",
+      "en": "Stopped service {0}."
+    },
+    {
+      "pl": "Zatrzymano usługę {0} razem z zależnymi: {1}.",
+      "en": "Stopped service {0} together with its dependent services: {1}."
+    },
+    {
+      "pl": "Pominięto {0} – folder nie istnieje.",
+      "en": "Skipped {0} – the folder doesn't exist."
+    },
+    {
+      "pl": "Przeniesiono {0} → {1}.",
+      "en": "Moved {0} → {1}."
+    },
+    {
+      "pl": "Nie udało się przenieść folderu {0}: {1}",
+      "en": "Couldn't move folder {0}: {1}"
+    },
+    {
+      "pl": " Usługi przywrócono.",
+      "en": " Services were restored."
+    },
+    {
+      "pl": " Nie udało się ponownie uruchomić: {0}.",
+      "en": " Couldn't restart: {0}."
+    },
+    {
+      "pl": " Cofnięto przeniesienie {0}.",
+      "en": " Undid the move of {0}."
+    },
+    {
+      "pl": "Folder {0} jest pod nazwą {1}. Windows mógł już utworzyć nowy folder {0} – najpierw go przenieś albo usuń, potem przywróć nazwę. Kolejny reset w DSOptimizerze usunie kopię {1} jako starszą.",
+      "en": "Folder {0} is now named {1}. Windows may have already created a new folder {0} – move or delete it first, then restore the name. The next reset in DSOptimizer will delete the copy {1} as an older one."
+    },
+    {
+      "pl": " Nie udało się cofnąć przeniesienia ({0}) – zmień nazwę {1} z powrotem na {2} ręcznie, przy zatrzymanych usługach.",
+      "en": " Couldn't undo the move ({0}) – rename {1} back to {2} manually, with the services stopped."
+    },
+    {
+      "pl": "Brak polityk Windows Update.",
+      "en": "No Windows Update policies."
+    },
+    {
+      "pl": "Nie udało się sprawdzić polityk Windows Update ({0}: {1}); polityki zostają bez zmian. Nic nie zmieniono.",
+      "en": "Couldn't check the Windows Update policies ({0}: {1}); the policies stay unchanged. Nothing was changed."
+    },
+    {
+      "pl": "Nie udało się zapisać kopii polityk Windows Update ({0}); polityki zostają bez zmian. Nic nie zmieniono.",
+      "en": "Couldn't save a backup of the Windows Update policies ({0}); the policies stay unchanged. Nothing was changed."
+    },
+    {
+      "pl": "Zapisano kopię polityk Windows Update: {0}.",
+      "en": "Saved a backup of the Windows Update policies: {0}."
+    },
+    {
+      "pl": "Przywrócenie: reg import \"{0}\".",
+      "en": "To restore: reg import \"{0}\"."
+    },
+    {
+      "pl": "Kopia polityk zapisana w {0}, ale usunięcie klucza nie powiodło się: {1} {2}",
+      "en": "Policy backup saved in {0}, but deleting the key failed: {1} {2}"
+    },
+    {
+      "pl": "Kopia polityk zapisana w {0}, ale klucz nadal istnieje po usunięciu ({1}). {2}",
+      "en": "Policy backup saved in {0}, but the key still exists after deletion ({1}). {2}"
+    },
+    {
+      "pl": "Polityki Windows Update usunięte (z podkluczem AU); kopia: {0}. {1}",
+      "en": "Windows Update policies removed (with the AU subkey); backup: {0}. {1}"
+    },
+    {
+      "pl": "reg export {0}: kod {1}: {2}",
+      "en": "reg export {0}: code {1}: {2}"
+    },
+    {
+      "pl": "reg export zakończył się kodem {0}: {1}",
+      "en": "reg export ended with code {0}: {1}"
+    },
+    {
+      "pl": "plik kopii {0} jest pusty albo go nie ma",
+      "en": "backup file {0} is empty or missing"
+    },
+    {
+      "pl": "Usługa {0} nie działa po przywróceniu: {1}",
+      "en": "Service {0} isn't running after the restore: {1}"
+    },
+    {
+      "pl": "Uruchomiono ponownie: {0}.",
+      "en": "Restarted: {0}."
+    },
+    {
+      "pl": "# DSOptimizer: typy startu usług Windows Update przed resetem z usuwaniem blokad ({0}).",
+      "en": "# DSOptimizer: startup types of the Windows Update services before the reset with block removal ({0})."
+    },
+    {
+      "pl": "# Przywrócenie ręczne: sc.exe config <nazwa> start= auto | delayed-auto | demand | disabled",
+      "en": "# Manual restore: sc.exe config <name> start= auto | delayed-auto | demand | disabled"
+    },
+    {
+      "pl": "Nie udało się zapisać kopii typów startu ({0}); typy startu nie zostały zmienione.",
+      "en": "Couldn't save a backup of the startup types ({0}); the startup types weren't changed."
+    },
+    {
+      "pl": "Typy startu sprzed zapisane w {0}.",
+      "en": "Previous startup types saved in {0}."
+    },
+    {
+      "pl": "Nie udało się ustawić typu startu {0} na {1}: {2}",
+      "en": "Couldn't set the startup type of {0} to {1}: {2}"
+    },
+    {
+      "pl": "Typ startu {0} po zmianie to {1} zamiast {2}.",
+      "en": "Startup type of {0} after the change is {1} instead of {2}."
+    },
+    {
+      "pl": "Typ startu {0}: {1} → {2}.",
+      "en": "Startup type of {0}: {1} → {2}."
+    },
+    {
+      "pl": "Typ startu bez zmian: {0}.",
+      "en": "Startup type unchanged: {0}."
+    },
+    {
+      "pl": "Polityka: {0} = {1}",
+      "en": "Policy: {0} = {1}"
+    },
+    {
+      "pl": "Polityka: {0} – nie udało się odczytać ({1}).",
+      "en": "Policy: {0} – couldn't read it ({1})."
+    },
+    {
+      "pl": "Mogą być przyczyną problemu; usuwa je pozycja „Zresetuj Windows Update i usuń blokady” (z kopią).",
+      "en": "They may be the cause of the problem; the item \"Reset Windows Update and remove blocks\" removes them (with a backup)."
+    },
+    {
+      "pl": "usługa {0} nie działa",
+      "en": "service {0} isn't running"
+    },
+    {
+      "pl": "brak kopii {0}",
+      "en": "copy {0} is missing"
+    },
+    {
+      "pl": "Nie udało się sprawdzić starszych kopii {0}: {1}",
+      "en": "Couldn't check older copies of {0}: {1}"
+    },
+    {
+      "pl": "Usunięto starszą kopię {0}.",
+      "en": "Deleted the older copy {0}."
+    },
+    {
+      "pl": "Nie udało się usunąć starszej kopii {0}: {1}",
+      "en": "Couldn't delete the older copy {0}: {1}"
+    },
+    {
+      "pl": "Nieoczekiwany błąd kroku resetu Windows Update.",
+      "en": "Unexpected error in a Windows Update reset step."
+    },
+    {
+      "pl": "nieznany błąd.",
+      "en": "unknown error."
+    },
+    {
+      "pl": "Nie wykonano – brak połączenia z GitHubem.",
+      "en": "Not done – no connection to GitHub."
+    },
+    {
+      "pl": "Nie wykonano – GitHub chwilowo odmawia (limit zapytań).",
+      "en": "Not done – GitHub is temporarily refusing requests (rate limit)."
+    },
+    {
+      "pl": "Nie wykonano – GitHub zwrócił nieoczekiwaną odpowiedź.",
+      "en": "Not done – GitHub returned an unexpected response."
+    },
+    {
+      "pl": "Nie wykonano – najnowsze wydanie WinUtil nie ma pliku winutil.ps1.",
+      "en": "Not done – the latest WinUtil release has no winutil.ps1 file."
+    },
+    {
+      "pl": "Nie wykonano – pobrany plik nie przeszedł sprawdzenia.",
+      "en": "Not done – the downloaded file didn't pass the check."
+    },
+    {
+      "pl": "Nie wykonano – {0}.",
+      "en": "Not done – {0}."
+    },
+    {
+      "pl": "Nie wykonano – nie udało się otworzyć okna PowerShell: {0}.",
+      "en": "Not done – couldn't open the PowerShell window: {0}."
+    },
+    {
+      "pl": "Nie wykonano – nie udało się przygotować folderu pobrań ({0}).",
+      "en": "Not done – couldn't prepare the downloads folder ({0})."
+    },
+    {
+      "pl": "Otwarto okno WinUtil {0} (plik z wydania GitHuba, SHA256 zgodny).",
+      "en": "Opened the WinUtil {0} window (file from the GitHub release, SHA256 matches)."
+    },
+    {
+      "pl": "Pobieranie WinUtil {0} z GitHuba…",
+      "en": "Downloading WinUtil {0} from GitHub…"
+    },
+    {
+      "pl": "Nie udało się przygotować folderu pobrań.",
+      "en": "Couldn't prepare the downloads folder."
+    },
+    {
+      "pl": "Pobrano i sprawdzono {0} ({1}): {2}, {3} B, SHA256 {4}",
+      "en": "Downloaded and checked {0} ({1}): {2}, {3} B, SHA256 {4}"
+    },
+    {
+      "pl": "Nie udało się otworzyć okna PowerShell: {0}",
+      "en": "Couldn't open the PowerShell window: {0}"
+    },
+    {
+      "pl": "GitHub API: {0}, kod {1}: {2}",
+      "en": "GitHub API: {0}, code {1}: {2}"
+    },
+    {
+      "pl": "Adres pobrania spoza wydań ChrisTitusTech/winutil: {0}",
+      "en": "Download address outside the ChrisTitusTech/winutil releases: {0}"
+    },
+    {
+      "pl": "Nie udało się zapisać pobranego pliku {0}.",
+      "en": "Couldn't save the downloaded file {0}."
+    },
+    {
+      "pl": "Pobranie {0}: {1}, kod {2}: {3}",
+      "en": "Download of {0}: {1}, code {2}: {3}"
+    },
+    {
+      "pl": "Nie udało się policzyć SHA256 pliku {0}.",
+      "en": "Couldn't compute the SHA256 of file {0}."
+    },
+    {
+      "pl": "SHA256 pobranego pliku {0} ≠ {1} z GitHuba.",
+      "en": "SHA256 of the downloaded file {0} ≠ {1} from GitHub."
+    },
+    {
+      "pl": "Usuwanie pobranego pliku {0} rzuciło wyjątek.",
+      "en": "Deleting the downloaded file {0} threw an exception."
+    },
+    {
+      "pl": "wydanie testowe (prerelease)",
+      "en": "test release (prerelease)"
+    },
+    {
+      "pl": "szkic wydania",
+      "en": "release draft"
+    },
+    {
+      "pl": "nieoczekiwany numer wersji",
+      "en": "unexpected version number"
+    },
+    {
+      "pl": "brak skrótu SHA256",
+      "en": "no SHA256 hash"
+    },
+    {
+      "pl": "plik większy niż 5 MB",
+      "en": "file larger than 5 MB"
+    },
+    {
+      "pl": "błędna odpowiedź GitHuba",
+      "en": "invalid GitHub response"
+    }
+  ]
+}

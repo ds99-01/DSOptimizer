@@ -1,13 +1,14 @@
 using System;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Repair;
 
 /// <summary>Strażnik drugiej naprawy w trakcie: handlery długich napraw wołają go przed pierwszym krokiem.</summary>
 public static class ServicingGuard
 {
-    public const string RefusalMessage = "Poprzednia operacja serwisowania jeszcze trwa – spróbuj za chwilę.";
+    public static string RefusalMessage => L.T("Poprzednia operacja serwisowania jeszcze trwa – spróbuj za chwilę.");
 
     /// <summary><c>null</c> = można startować; inaczej <see cref="TweakOutcome.Refused"/> z nazwą procesu w <c>Warnings</c>.</summary>
     public static ActionHandlerResult? Check(IServicingActivity activity)
@@ -27,7 +28,7 @@ public static class ServicingGuard
         {
             Outcome = TweakOutcome.Refused,
             Message = RefusalMessage,
-            Warnings = new[] { $"Działa jeszcze proces: {active}." },
+            Warnings = new[] { L.F("Działa jeszcze proces: {0}.", active) },
         };
     }
 }

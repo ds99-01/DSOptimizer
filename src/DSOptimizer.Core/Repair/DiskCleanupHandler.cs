@@ -8,6 +8,7 @@ using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Repair;
@@ -45,25 +46,26 @@ public sealed class DiskCleanupHandler : IActionHandler
 
     public const string ThumbnailExtension = ".db";
 
-    public const string SystemTempStage = "Pliki tymczasowe systemu";
+    public static string SystemTempStage => L.T("Pliki tymczasowe systemu");
 
-    public const string UserTempStage = "Pliki tymczasowe konta";
+    public static string UserTempStage => L.T("Pliki tymczasowe konta");
 
-    public const string DeliveryOptimizationStage = "Optymalizacja dostarczania";
+    public static string DeliveryOptimizationStage => L.T("Optymalizacja dostarczania");
 
-    public const string DownloadStage = "Pobrane aktualizacje";
+    public static string DownloadStage => L.T("Pobrane aktualizacje");
 
-    public const string ComponentStoreStage = "Magazyn składników";
+    public static string ComponentStoreStage => L.T("Magazyn składników");
 
-    public const string ThumbnailsStage = "Miniatury konta";
+    public static string ThumbnailsStage => L.T("Miniatury konta");
 
-    private const string Component = "Naprawy";
+    private static string Component => L.T("Naprawy");
     private const string DismArguments = "/Online /Cleanup-Image /StartComponentCleanup";
     private const int RebootRequiredCode = 3010;
 
     private static readonly TimeSpan ServiceTimeout = TimeSpan.FromSeconds(30);
 
-    private static readonly string[] Stages =
+    /// <summary>Nazwy kroków w kolejności wykonania (w bieżącym języku – budowane przy każdym wywołaniu).</summary>
+    private static string[] Stages => new[]
     {
         SystemTempStage, UserTempStage, DeliveryOptimizationStage, DownloadStage, ComponentStoreStage, ThumbnailsStage,
     };
@@ -122,7 +124,7 @@ public sealed class DiskCleanupHandler : IActionHandler
         private bool _profileResolved;
         private string? _profile;
         /// <summary>Powód pominięcia kroków konta; domyślny, gdy <see cref="ResolveProfile"/> przerwał wyjątek (krok konta = błąd, następny = ten powód).</summary>
-        private string _profileSkip = "pominięto – nie udało się ustalić profilu konta.";
+        private string _profileSkip = L.T("pominięto – nie udało się ustalić profilu konta.");
         private bool _reboot;
 
         public Pass(RepairServices services, TimeSpan limit, IProgress<string>? output, IProgress<ActionProgress>? progress, CancellationToken cancellationToken)
@@ -140,19 +142,20 @@ public sealed class DiskCleanupHandler : IActionHandler
         {
             var before = _s.DiskSpace.FreeBytes(SystemDrive);
             var steps = new Func<StepOutcome>[] { SystemTemp, UserTemp, DeliveryOptimization, DownloadedUpdates, ComponentStore, Thumbnails };
+            var stages = Stages;
             bool error = false, background = false, stopped = false;
-            for (var i = 0; i < Stages.Length; i++)
+            for (var i = 0; i < stages.Length; i++)
             {
-                var stage = Stages[i];
+                var stage = stages[i];
                 StepOutcome outcome;
                 if (_cancellationToken.IsCancellationRequested)
                 {
                     stopped = true;
-                    outcome = new StepOutcome(StepKind.Skipped, "pominięto – zatrzymano.");
+                    outcome = new StepOutcome(StepKind.Skipped, L.T("pominięto – zatrzymano."));
                 }
                 else
                 {
-                    _progress?.Report(new ActionProgress(stage, null, i, Stages.Length, i + 1 < Stages.Length ? Stages[i + 1] : null));
+                    _progress?.Report(new ActionProgress(stage, null, i, stages.Length, i + 1 < stages.Length ? stages[i + 1] : null));
                     outcome = RunStep(stage, steps[i]);
                 }
 
@@ -172,12 +175,12 @@ public sealed class DiskCleanupHandler : IActionHandler
             }
 
             var after = _s.DiskSpace.FreeBytes(SystemDrive);
-            var header = $"Zwolniono: {DiskSpaceText.Freed(before, after)}.";
+            var header = L.F("Zwolniono: {0}.", DiskSpaceText.Freed(before, after));
             var result = error
                 ? TweakOutcome.Failed
                 : background || stopped ? TweakOutcome.NotConfirmed : TweakOutcome.Executed;
             // Surowe odczyty do diagnozy (komunikat podaje tylko uczciwy tekst z DiskSpaceText).
-            _s.Log.Info(Component, $"disk-cleanup: {header} Wolne {SystemDrive} przed: {Bytes(before)}, po: {Bytes(after)}. Wynik: {result}.");
+            _s.Log.Info(Component, L.F("disk-cleanup: {0} Wolne {1} przed: {2}, po: {3}. Wynik: {4}.", header, SystemDrive, Bytes(before), Bytes(after), result));
             return new ActionHandlerResult
             {
                 Outcome = result,
@@ -201,7 +204,7 @@ public sealed class DiskCleanupHandler : IActionHandler
             catch (Exception ex)
 #pragma warning restore CA1031
             {
-                _s.Log.Fail(Component, $"disk-cleanup: nieoczekiwany błąd kroku „{stage}”.", ex);
+                _s.Log.Fail(Component, L.F("disk-cleanup: nieoczekiwany błąd kroku „{0}”.", stage), ex);
                 return Error(ex.Message);
             }
         }
@@ -224,15 +227,15 @@ public sealed class DiskCleanupHandler : IActionHandler
             if (result.ExitCode != 0)
             {
                 var errors = string.Join(" ", result.Errors.Where(e => !string.IsNullOrWhiteSpace(e)).Select(e => e.Trim()));
-                return Error(errors.Length > 0 ? errors : $"skrypt zakończył się kodem {result.ExitCode}");
+                return Error(errors.Length > 0 ? errors : L.F("skrypt zakończył się kodem {0}", result.ExitCode));
             }
 
             return result.LastLine switch
             {
                 // Bez odczytu zwrotnego rozmiaru pamięci podręcznej: jedynym dowodem jest brak błędu cmdletu (final review, drobne 5).
-                DiskCleanupScripts.DoneMarker => Done("wykonano – polecenie zakończyło się bez błędu (pliki pobierane w tej chwili zostają)."),
-                DiskCleanupScripts.MissingMarker => Skipped("pominięto – w tym systemie nie ma polecenia Delete-DeliveryOptimizationCache."),
-                _ => Error("skrypt nie potwierdził wyczyszczenia pamięci podręcznej (brak znacznika wyniku)"),
+                DiskCleanupScripts.DoneMarker => Done(L.T("wykonano – polecenie zakończyło się bez błędu (pliki pobierane w tej chwili zostają).")),
+                DiskCleanupScripts.MissingMarker => Skipped(L.T("pominięto – w tym systemie nie ma polecenia Delete-DeliveryOptimizationCache.")),
+                _ => Error(L.T("skrypt nie potwierdził wyczyszczenia pamięci podręcznej (brak znacznika wyniku)")),
             };
         }
 
@@ -241,7 +244,7 @@ public sealed class DiskCleanupHandler : IActionHandler
             var path = Path.Combine(_s.Paths.SystemRoot, "SoftwareDistribution", "Download");
             if (!_s.Files.DirectoryExists(path))
             {
-                return Skipped($"pominięto – brak folderu {path}.");
+                return Skipped(L.F("pominięto – brak folderu {0}.", path));
             }
 
             var running = new List<string>();
@@ -257,7 +260,7 @@ public sealed class DiskCleanupHandler : IActionHandler
                 }
                 else if (state.Status != ReadStatus.NotFound)
                 {
-                    return Skipped($"pominięto – nie udało się odczytać usługi {name} ({Clean(state.Error)}); nic nie zatrzymano.");
+                    return Skipped(L.F("pominięto – nie udało się odczytać usługi {0} ({1}); nic nie zatrzymano.", name, Clean(state.Error)));
                 }
             }
 
@@ -268,7 +271,7 @@ public sealed class DiskCleanupHandler : IActionHandler
                 var stopError = stopper.Stop(name, withDependents: false, out _);
                 if (stopError is not null)
                 {
-                    stopFailure = $"usługa {name} nie zatrzymała się ({Clean(stopError)})";
+                    stopFailure = L.F("usługa {0} nie zatrzymała się ({1})", name, Clean(stopError));
                     break;
                 }
             }
@@ -278,38 +281,41 @@ public sealed class DiskCleanupHandler : IActionHandler
             var restored = stopper.Restore();
             foreach (var notRunning in restored.Failed)
             {
-                _notRestored.Add($"Usługa {notRunning.Name} nie działa po przywróceniu: {Clean(notRunning.Reason)}.");
+                _notRestored.Add(L.F("Usługa {0} nie działa po przywróceniu: {1}.", notRunning.Name, Clean(notRunning.Reason)));
             }
 
             if (restored.Failed.Count > 0)
             {
                 var names = string.Join(", ", restored.Failed.Select(f => f.Name));
-                var started = restored.Started.Count > 0 ? $"; uruchomiono ponownie: {string.Join(", ", restored.Started)}" : string.Empty;
-                var what = stopFailure ?? (failure is not null ? Clean(failure) : cleaned.SkipReason is { } skip ? $"pominięto – {Clean(skip)}" : $"usunięto pliki ({Counts(cleaned)})");
-                var joint = stopFailure is null && failure is null && cleaned.SkipReason is null ? ", ale" : ", a potem";
-                return Error($"{what}{joint} nie udało się ponownie uruchomić usług: {names}{started}", raw: true);
+                var started = restored.Started.Count > 0 ? L.F("; uruchomiono ponownie: {0}", string.Join(", ", restored.Started)) : string.Empty;
+                var what = stopFailure ?? (failure is not null ? Clean(failure) : cleaned.SkipReason is { } skip ? L.F("pominięto – {0}", Clean(skip)) : L.F("usunięto pliki ({0})", Counts(cleaned)));
+                var text = stopFailure is null && failure is null && cleaned.SkipReason is null
+                    ? L.F("{0}, ale nie udało się ponownie uruchomić usług: {1}{2}", what, names, started)
+                    : L.F("{0}, a potem nie udało się ponownie uruchomić usług: {1}{2}", what, names, started);
+                return Error(text, raw: true);
             }
 
             if (stopFailure is not null)
             {
-                return Skipped($"pominięto – {stopFailure}; usługi przywrócono.");
+                return Skipped(L.F("pominięto – {0}; usługi przywrócono.", stopFailure));
             }
 
-            var restartedTail = restored.Started.Count > 0 ? $"; usługi uruchomiono ponownie: {string.Join(", ", restored.Started)}" : string.Empty;
+            var restartedTail = restored.Started.Count > 0 ? L.F("; usługi uruchomiono ponownie: {0}", string.Join(", ", restored.Started)) : string.Empty;
             if (failure is not null)
             {
                 return Error($"{Clean(failure)}{restartedTail}", raw: true);
             }
 
             return cleaned.SkipReason is { } reason
-                ? Skipped($"pominięto – {Clean(reason)}{restartedTail}.")
-                : Done($"wykonano ({Counts(cleaned)}){restartedTail}.");
+                ? Skipped(L.F("pominięto – {0}{1}.", Clean(reason), restartedTail))
+                : Done(L.F("wykonano ({0}){1}.", Counts(cleaned), restartedTail));
         }
 
         private StepOutcome ComponentStore()
         {
-            const string Stage = ComponentStoreStage;
-            const string Next = ThumbnailsStage;
+            var stage = ComponentStoreStage;
+            var next = ThumbnailsStage;
+            var stepCount = Stages.Length;
             int? lastPercent = null;
             void OnLine(string line)
             {
@@ -317,12 +323,12 @@ public sealed class DiskCleanupHandler : IActionHandler
                 var percent = ServicingProgressParser.TryParsePercent(line);
                 if (percent is null)
                 {
-                    _s.Log.Info(Component, $"{Stage}: {line}");
+                    _s.Log.Info(Component, $"{stage}: {line}");
                 }
                 else if (percent != lastPercent)
                 {
                     lastPercent = percent;
-                    _progress?.Report(new ActionProgress(Stage, percent, 4, Stages.Length, Next));
+                    _progress?.Report(new ActionProgress(stage, percent, 4, stepCount, next));
                 }
             }
 
@@ -334,33 +340,33 @@ public sealed class DiskCleanupHandler : IActionHandler
             }
             catch (OperationException ex)
             {
-                return Error($"nie udało się uruchomić DISM: {Clean(ex.Message)}");
+                return Error(L.F("nie udało się uruchomić DISM: {0}", Clean(ex.Message)));
             }
 
             if (run.TimedOut)
             {
                 return new StepOutcome(
                     StepKind.Background,
-                    $"nadal działa w tle po {SystemFilesHandler.Duration(_limit)} – program przestał czekać, a DISM pracuje dalej. Wynik sprawdzisz w {SystemFilesHandler.DismLogText}.");
+                    L.F("nadal działa w tle po {0} – program przestał czekać, a DISM pracuje dalej. Wynik sprawdzisz w {1}.", SystemFilesHandler.Duration(_limit), SystemFilesHandler.DismLogText));
             }
 
             if (run.ExitCode is not { } code)
             {
-                return Error($"DISM nie zwrócił kodu wyjścia. Szczegóły: {SystemFilesHandler.DismLogText}");
+                return Error(L.F("DISM nie zwrócił kodu wyjścia. Szczegóły: {0}", SystemFilesHandler.DismLogText));
             }
 
             if (code == 0)
             {
-                return Done("wykonano (DISM /StartComponentCleanup, kod 0).");
+                return Done(L.T("wykonano (DISM /StartComponentCleanup, kod 0)."));
             }
 
             if (code == RebootRequiredCode)
             {
                 _reboot = true;
-                return Done("wykonano – dokończy się po ponownym uruchomieniu komputera (kod 3010).");
+                return Done(L.T("wykonano – dokończy się po ponownym uruchomieniu komputera (kod 3010)."));
             }
 
-            return new StepOutcome(StepKind.Error, $"błąd {DismOutcome.Hex(code)} – szczegóły: {SystemFilesHandler.DismLogText}.");
+            return new StepOutcome(StepKind.Error, L.F("błąd {0} – szczegóły: {1}.", DismOutcome.Hex(code), SystemFilesHandler.DismLogText));
         }
 
         private StepOutcome Thumbnails()
@@ -373,7 +379,7 @@ public sealed class DiskCleanupHandler : IActionHandler
             var path = Path.Combine(profile, "AppData", "Local", "Microsoft", "Windows", "Explorer");
             if (!_s.Files.DirectoryExists(path))
             {
-                return Skipped($"pominięto – brak folderu {path}.");
+                return Skipped(L.F("pominięto – brak folderu {0}.", path));
             }
 
             return Cleaned(_s.Files.DeleteFilesByName(path, ThumbnailPrefix, ThumbnailExtension));
@@ -387,7 +393,7 @@ public sealed class DiskCleanupHandler : IActionHandler
         {
             if (!_s.Files.DirectoryExists(path))
             {
-                return Skipped($"pominięto – brak folderu {path}.");
+                return Skipped(L.F("pominięto – brak folderu {0}.", path));
             }
 
             return Cleaned(_s.Files.DeleteOldFiles(path, olderThanUtc));
@@ -395,7 +401,7 @@ public sealed class DiskCleanupHandler : IActionHandler
 
         /// <summary>„wykonano (…)”, a folder pominięty przez system plików (link, ścieżka przez link) = „pominięto – &lt;powód&gt;.”.</summary>
         private static StepOutcome Cleaned(OldFilesCleanup result)
-            => result.SkipReason is { } reason ? Skipped($"pominięto – {Clean(reason)}.") : Done($"wykonano ({Counts(result)}).");
+            => result.SkipReason is { } reason ? Skipped(L.F("pominięto – {0}.", Clean(reason))) : Done(L.F("wykonano ({0}).", Counts(result)));
 
         /// <summary>
         /// Profil zalogowanego konta z <c>ProfileList\&lt;SID&gt;\ProfileImagePath</c> (raz na przebieg). <c>null</c> = kroki konta
@@ -411,14 +417,14 @@ public sealed class DiskCleanupHandler : IActionHandler
             _profileResolved = true;
             if (!_s.User.IsCertain)
             {
-                _profileSkip = "pominięto – nie udało się ustalić zalogowanego konta (brak sesji interaktywnej); program nie czyści zamiast niego własnego konta.";
+                _profileSkip = L.T("pominięto – nie udało się ustalić zalogowanego konta (brak sesji interaktywnej); program nie czyści zamiast niego własnego konta.");
                 return null;
             }
 
             var sid = _s.User.Sid;
             if (string.IsNullOrWhiteSpace(sid) || !SidPattern.IsMatch(sid))
             {
-                _profileSkip = $"pominięto – nieprawidłowy identyfikator zalogowanego konta ({sid}).";
+                _profileSkip = L.F("pominięto – nieprawidłowy identyfikator zalogowanego konta ({0}).", sid);
                 return null;
             }
 
@@ -432,13 +438,13 @@ public sealed class DiskCleanupHandler : IActionHandler
                     return path;
                 }
 
-                _profileSkip = $"pominięto – ścieżka profilu konta {sid} nie jest pełną ścieżką lokalną ({raw.Trim()}).";
+                _profileSkip = L.F("pominięto – ścieżka profilu konta {0} nie jest pełną ścieżką lokalną ({1}).", sid, raw.Trim());
                 return null;
             }
 
             _profileSkip = read.Status is ReadStatus.Found or ReadStatus.NotFound
-                ? $"pominięto – brak ścieżki profilu konta {sid} w rejestrze (ProfileList)."
-                : $"pominięto – nie udało się odczytać ścieżki profilu konta {sid} ({Clean(read.Error)}).";
+                ? L.F("pominięto – brak ścieżki profilu konta {0} w rejestrze (ProfileList).", sid)
+                : L.F("pominięto – nie udało się odczytać ścieżki profilu konta {0} ({1}).", sid, Clean(read.Error));
             return null;
         }
 
@@ -453,19 +459,19 @@ public sealed class DiskCleanupHandler : IActionHandler
             return path.Substring(3).Split('\\', '/').All(segment => segment.Length > 0 && segment != "." && segment != "..");
         }
 
-        private static string Bytes(long? value) => value is { } bytes ? bytes.ToString(CultureInfo.InvariantCulture) + " B" : "brak odczytu";
+        private static string Bytes(long? value) => value is { } bytes ? bytes.ToString(CultureInfo.InvariantCulture) + " B" : L.T("brak odczytu");
 
         private static string Counts(OldFilesCleanup result)
         {
-            var text = $"plików: {result.Deleted}, {DiskSpaceText.Size(result.FreedBytes)}";
+            var text = L.F("plików: {0}, {1}", result.Deleted, DiskSpaceText.Size(result.FreedBytes));
             if (result.SkippedYoung > 0)
             {
-                text += $"; młodszych niż 24 h zostało: {result.SkippedYoung}";
+                text += L.F("; młodszych niż 24 h zostało: {0}", result.SkippedYoung);
             }
 
             if (result.SkippedInUse > 0)
             {
-                text += $"; w użyciu zostało: {result.SkippedInUse}";
+                text += L.F("; w użyciu zostało: {0}", result.SkippedInUse);
             }
 
             return text;
@@ -487,7 +493,7 @@ public sealed class DiskCleanupHandler : IActionHandler
             catch (Exception ex)
 #pragma warning restore CA1031
             {
-                _s.Log.Fail(Component, "disk-cleanup: nieoczekiwany błąd przy zatrzymanych usługach Windows Update.", ex);
+                _s.Log.Fail(Component, L.T("disk-cleanup: nieoczekiwany błąd przy zatrzymanych usługach Windows Update."), ex);
                 return ex.Message;
             }
         }
@@ -495,7 +501,7 @@ public sealed class DiskCleanupHandler : IActionHandler
         private static string Clean(string? text)
         {
             var trimmed = (text ?? string.Empty).Trim().TrimEnd('.');
-            return trimmed.Length == 0 ? "nieznany błąd" : trimmed;
+            return trimmed.Length == 0 ? L.T("nieznany błąd") : trimmed;
         }
 
         private static StepOutcome Done(string text) => new(StepKind.Done, text);
@@ -503,6 +509,6 @@ public sealed class DiskCleanupHandler : IActionHandler
         private static StepOutcome Skipped(string text) => new(StepKind.Skipped, text);
 
         /// <summary>„błąd – &lt;powód&gt;.”; <paramref name="raw"/> = powód już oczyszczony (bez obcinania kropek w środku).</summary>
-        private static StepOutcome Error(string reason, bool raw = false) => new(StepKind.Error, $"błąd – {(raw ? reason : Clean(reason))}.");
+        private static StepOutcome Error(string reason, bool raw = false) => new(StepKind.Error, L.F("błąd – {0}.", raw ? reason : Clean(reason)));
     }
 }

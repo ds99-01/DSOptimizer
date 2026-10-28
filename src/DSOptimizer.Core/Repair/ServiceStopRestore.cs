@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Repair;
@@ -73,13 +74,13 @@ public sealed class ServiceStopRestore
                 started.Add(name);
                 if (error is not null)
                 {
-                    _log.Info(_component, $"Start {name} zgłosił błąd ({error}), ale usługa działa – przywrócona.");
+                    _log.Info(_component, L.F("Start {0} zgłosił błąd ({1}), ale usługa działa – przywrócona.", name, error));
                 }
 
                 continue;
             }
 
-            failed.Add(new ServiceRestoreFailure(name, error ?? state.Error ?? "brak stanu Running"));
+            failed.Add(new ServiceRestoreFailure(name, error ?? state.Error ?? L.T("brak stanu Running")));
         }
 
         _restart.Clear();

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
 using Newtonsoft.Json.Linq;
 
 namespace DSOptimizer.Core.Tools;
@@ -31,16 +32,22 @@ public static class WinUtilSource
 
     public static readonly TimeSpan DownloadTimeout = TimeSpan.FromMinutes(2);
 
-    private const string RefusedPrerelease = "wydanie testowe (prerelease)";
-    private const string RefusedDraft = "szkic wydania";
-    private const string RefusedTag = "nieoczekiwany numer wersji";
-    private const string RefusedDigest = "brak skrótu SHA256";
-    private const string RefusedSize = "plik większy niż 5 MB";
-    private const string RefusedResponse = "błędna odpowiedź GitHuba";
     private const string DownloadPathPrefix = "/ChrisTitusTech/winutil/releases/download/";
     private const string DownloadHost = "github.com";
 
     private static readonly Regex TagPattern = new(@"^[0-9]+(\.[0-9]+){1,3}\z", RegexOptions.CultureInvariant);
+
+    private static string RefusedPrerelease => L.T("wydanie testowe (prerelease)");
+
+    private static string RefusedDraft => L.T("szkic wydania");
+
+    private static string RefusedTag => L.T("nieoczekiwany numer wersji");
+
+    private static string RefusedDigest => L.T("brak skrótu SHA256");
+
+    private static string RefusedSize => L.T("plik większy niż 5 MB");
+
+    private static string RefusedResponse => L.T("błędna odpowiedź GitHuba");
 
     /// <summary>
     /// Wybiera <c>winutil.ps1</c> z odpowiedzi <c>releases/latest</c>. <c>true</c> = <paramref name="release"/> gotowe do pobrania.

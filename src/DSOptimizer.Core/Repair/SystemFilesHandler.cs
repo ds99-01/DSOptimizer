@@ -6,6 +6,7 @@ using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Repair;
@@ -33,7 +34,7 @@ public sealed class SystemFilesHandler : IActionHandler
 
     public const string RebootPendingKey = @"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending";
 
-    private const string Component = "Naprawy";
+    private static string Component => L.T("Naprawy");
     private const int StepCount = 2;
     private const string DismArguments = "/Online /Cleanup-Image /RestoreHealth";
     private const string SfcArguments = "/scannow";
@@ -70,15 +71,15 @@ public sealed class SystemFilesHandler : IActionHandler
             return Result(
                 TweakOutcome.NotConfirmed,
                 false,
-                $"DISM nadal działa w tle po {Duration(limit)} – program przestał czekać. Wynik sprawdzisz w {DismLogText}.",
-                "SFC nie został uruchomiony (DISM jeszcze pracuje).");
+                L.F("DISM nadal działa w tle po {0} – program przestał czekać. Wynik sprawdzisz w {1}.", Duration(limit), DismLogText),
+                L.T("SFC nie został uruchomiony (DISM jeszcze pracuje)."));
         }
 
         DismOutcome? dismOutcome = null;
         string dismLine;
         if (dism.StartError is { } dismError)
         {
-            dismLine = $"DISM: nie udało się uruchomić – {dismError}";
+            dismLine = L.F("DISM: nie udało się uruchomić – {0}", dismError);
         }
         else
         {
@@ -89,8 +90,8 @@ public sealed class SystemFilesHandler : IActionHandler
         var dismOk = dismOutcome?.IsSuccess == true;
         if (cancellationToken.IsCancellationRequested)
         {
-            _s.Log.Info(Component, "system-files: zatrzymano między krokami – SFC pominięty.");
-            return Result(dismOk ? TweakOutcome.NotConfirmed : TweakOutcome.Failed, false, dismLine, "SFC pominięty – zatrzymano.");
+            _s.Log.Info(Component, L.T("system-files: zatrzymano między krokami – SFC pominięty."));
+            return Result(dismOk ? TweakOutcome.NotConfirmed : TweakOutcome.Failed, false, dismLine, L.T("SFC pominięty – zatrzymano."));
         }
 
         // Krok 2 z 2: SFC.
@@ -102,12 +103,12 @@ public sealed class SystemFilesHandler : IActionHandler
                 dismOk ? TweakOutcome.NotConfirmed : TweakOutcome.Failed,
                 false,
                 dismLine,
-                $"SFC nadal działa w tle po {Duration(limit)} – program przestał czekać. Wynik sprawdzisz w {CbsLogText}.");
+                L.F("SFC nadal działa w tle po {0} – program przestał czekać. Wynik sprawdzisz w {1}.", Duration(limit), CbsLogText));
         }
 
         if (sfc.StartError is { } sfcError)
         {
-            return Result(TweakOutcome.Failed, false, dismLine, $"SFC: nie udało się uruchomić – {sfcError}");
+            return Result(TweakOutcome.Failed, false, dismLine, L.F("SFC: nie udało się uruchomić – {0}", sfcError));
         }
 
         var appeared = rebootBefore == ReadStatus.NotFound && _s.Registry.KeyStatus(RebootPendingKey) == ReadStatus.Found;
@@ -159,18 +160,18 @@ public sealed class SystemFilesHandler : IActionHandler
         }
         catch (OperationException ex)
         {
-            _s.Log.Warn(Component, $"system-files: {fileName} nie wystartował: {ex.Message}");
+            _s.Log.Warn(Component, L.F("system-files: {0} nie wystartował: {1}", fileName, ex.Message));
             return new ToolStep(false, 0, null, ex.Message);
         }
 
         var seconds = (_s.Clock.UtcNow - started).TotalSeconds.ToString("0", CultureInfo.InvariantCulture);
         if (run.TimedOut || run.ExitCode is not { } code)
         {
-            _s.Log.Warn(Component, $"system-files: {fileName} po limicie {Duration(limit)} dalej działa w tle – program przestał czekać.");
+            _s.Log.Warn(Component, L.F("system-files: {0} po limicie {1} dalej działa w tle – program przestał czekać.", fileName, Duration(limit)));
             return new ToolStep(true, 0, null, null);
         }
 
-        _s.Log.Info(Component, $"system-files: {fileName} zakończony kodem {DismOutcome.Hex(code)} po {seconds} s.");
+        _s.Log.Info(Component, L.F("system-files: {0} zakończony kodem {1} po {2} s.", fileName, DismOutcome.Hex(code), seconds));
         return new ToolStep(false, code, ReadSegment(cbsPath, offset), null);
     }
 
@@ -183,7 +184,7 @@ public sealed class SystemFilesHandler : IActionHandler
         }
         catch (OperationException ex)
         {
-            _s.Log.Warn(Component, $"system-files: nie można odczytać rozmiaru {cbsPath}: {ex.Message}");
+            _s.Log.Warn(Component, L.F("system-files: nie można odczytać rozmiaru {0}: {1}", cbsPath, ex.Message));
             return null;
         }
     }
@@ -201,35 +202,35 @@ public sealed class SystemFilesHandler : IActionHandler
         }
         catch (OperationException ex)
         {
-            _s.Log.Warn(Component, $"system-files: nie można odczytać {cbsPath}: {ex.Message}");
+            _s.Log.Warn(Component, L.F("system-files: nie można odczytać {0}: {1}", cbsPath, ex.Message));
             return null;
         }
     }
 
     private static ActionHandlerResult Result(TweakOutcome outcome, bool reboot, string dismLine, string sfcLine)
     {
-        var lines = new List<string> { dismLine, sfcLine, $"Logi: {DismLogText}, {CbsLogText}." };
+        var lines = new List<string> { dismLine, sfcLine, L.F("Logi: {0}, {1}.", DismLogText, CbsLogText) };
         return new ActionHandlerResult { Outcome = outcome, RequiresReboot = reboot, Message = string.Join(Environment.NewLine, lines) };
     }
 
     private static string DismText(DismOutcome outcome) => outcome.Verdict switch
     {
-        DismVerdict.Healthy => "DISM: magazyn składników jest zdrowy – nie wykryto uszkodzeń.",
-        DismVerdict.Repaired => $"DISM: naprawiono uszkodzenia magazynu składników ({Number(outcome.Repaired)} z {Number(outcome.Detected)}).",
-        DismVerdict.HealthyOrRepaired => "DISM: zakończony bez błędu (kod 0); z CBS.log nie dało się odczytać, czy coś naprawiono.",
-        DismVerdict.RebootRequired => $"DISM: naprawa dokończy się po ponownym uruchomieniu komputera (kod {Number(outcome.ExitCode)}).",
-        DismVerdict.SourceMissing => $"DISM: nie znaleziono plików do naprawy – potrzebny internet (Windows Update) albo nośnik instalacyjny (kod {DismOutcome.Hex(outcome.ExitCode)}).",
-        _ when outcome.ExitCode == 0 => $"DISM: uszkodzenia magazynu składników: wykryto {Number(outcome.Detected)}, naprawiono {Number(outcome.Repaired)}. Szczegóły: {DismLogText}.",
-        _ => $"DISM: błąd {DismOutcome.Hex(outcome.ExitCode)}. Szczegóły: {DismLogText}.",
+        DismVerdict.Healthy => L.T("DISM: magazyn składników jest zdrowy – nie wykryto uszkodzeń."),
+        DismVerdict.Repaired => L.F("DISM: naprawiono uszkodzenia magazynu składników ({0} z {1}).", Number(outcome.Repaired), Number(outcome.Detected)),
+        DismVerdict.HealthyOrRepaired => L.T("DISM: zakończony bez błędu (kod 0); z CBS.log nie dało się odczytać, czy coś naprawiono."),
+        DismVerdict.RebootRequired => L.F("DISM: naprawa dokończy się po ponownym uruchomieniu komputera (kod {0}).", Number(outcome.ExitCode)),
+        DismVerdict.SourceMissing => L.F("DISM: nie znaleziono plików do naprawy – potrzebny internet (Windows Update) albo nośnik instalacyjny (kod {0}).", DismOutcome.Hex(outcome.ExitCode)),
+        _ when outcome.ExitCode == 0 => L.F("DISM: uszkodzenia magazynu składników: wykryto {0}, naprawiono {1}. Szczegóły: {2}.", Number(outcome.Detected), Number(outcome.Repaired), DismLogText),
+        _ => L.F("DISM: błąd {0}. Szczegóły: {1}.", DismOutcome.Hex(outcome.ExitCode), DismLogText),
     };
 
     private static string SfcText(SfcOutcome outcome) => outcome.Verdict switch
     {
-        SfcVerdict.NoViolations => "SFC: nie znaleziono naruszeń integralności plików systemowych.",
-        SfcVerdict.Repaired => "SFC: znaleziono uszkodzone pliki systemowe i je naprawiono.",
-        SfcVerdict.RepairPendingReboot => "SFC: naprawa plików systemowych dokończy się po ponownym uruchomieniu komputera.",
-        SfcVerdict.NotAllRepaired => $"SFC: nie udało się naprawić części plików systemowych – szczegóły (wpisy [SR]) w {CbsLogText}.",
-        _ => $"SFC: zakończony kodem {Number(outcome.ExitCode)}, ale wyniku nie da się jednoznacznie odczytać – sprawdź wpisy [SR] w {CbsLogText}.",
+        SfcVerdict.NoViolations => L.T("SFC: nie znaleziono naruszeń integralności plików systemowych."),
+        SfcVerdict.Repaired => L.T("SFC: znaleziono uszkodzone pliki systemowe i je naprawiono."),
+        SfcVerdict.RepairPendingReboot => L.T("SFC: naprawa plików systemowych dokończy się po ponownym uruchomieniu komputera."),
+        SfcVerdict.NotAllRepaired => L.F("SFC: nie udało się naprawić części plików systemowych – szczegóły (wpisy [SR]) w {0}.", CbsLogText),
+        _ => L.F("SFC: zakończony kodem {0}, ale wyniku nie da się jednoznacznie odczytać – sprawdź wpisy [SR] w {1}.", Number(outcome.ExitCode), CbsLogText),
     };
 
     private static string Number(int? value) => (value ?? 0).ToString(CultureInfo.InvariantCulture);

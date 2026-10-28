@@ -7,6 +7,7 @@ using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Errors;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Tools;
@@ -23,15 +24,15 @@ namespace DSOptimizer.Core.Tools;
 /// </summary>
 public sealed class WinUtilHandler : IActionHandler
 {
-    public const string NoConnection = "Nie wykonano – brak połączenia z GitHubem.";
+    public static string NoConnection => L.T("Nie wykonano – brak połączenia z GitHubem.");
 
-    public const string RateLimited = "Nie wykonano – GitHub chwilowo odmawia (limit zapytań).";
+    public static string RateLimited => L.T("Nie wykonano – GitHub chwilowo odmawia (limit zapytań).");
 
-    public const string UnexpectedResponse = "Nie wykonano – GitHub zwrócił nieoczekiwaną odpowiedź.";
+    public static string UnexpectedResponse => L.T("Nie wykonano – GitHub zwrócił nieoczekiwaną odpowiedź.");
 
-    public const string NoAsset = "Nie wykonano – najnowsze wydanie WinUtil nie ma pliku winutil.ps1.";
+    public static string NoAsset => L.T("Nie wykonano – najnowsze wydanie WinUtil nie ma pliku winutil.ps1.");
 
-    public const string CheckFailed = "Nie wykonano – pobrany plik nie przeszedł sprawdzenia.";
+    public static string CheckFailed => L.T("Nie wykonano – pobrany plik nie przeszedł sprawdzenia.");
 
     private const string Component = "WinUtil";
 
@@ -45,16 +46,16 @@ public sealed class WinUtilHandler : IActionHandler
     /// <summary>Usługi handlera (test składania sprawdza, że są współdzielone z instalacją z GitHuba i silnikiem).</summary>
     public WinUtilServices Services { get; }
 
-    public static string Refused(string refusal) => "Nie wykonano – " + refusal + ".";
+    public static string Refused(string refusal) => L.F("Nie wykonano – {0}.", refusal);
 
-    public static string LaunchFailed(string message) => "Nie wykonano – nie udało się otworzyć okna PowerShell: " + TrimDot(message) + ".";
+    public static string LaunchFailed(string message) => L.F("Nie wykonano – nie udało się otworzyć okna PowerShell: {0}.", TrimDot(message));
 
-    public static string DownloadFolderFailed(string message) => "Nie wykonano – nie udało się przygotować folderu pobrań (" + TrimDot(message) + ").";
+    public static string DownloadFolderFailed(string message) => L.F("Nie wykonano – nie udało się przygotować folderu pobrań ({0}).", TrimDot(message));
 
-    public static string Executed(string tag) => "Otwarto okno WinUtil " + tag + " (plik z wydania GitHuba, SHA256 zgodny).";
+    public static string Executed(string tag) => L.F("Otwarto okno WinUtil {0} (plik z wydania GitHuba, SHA256 zgodny).", tag);
 
     /// <summary>Jedyna linia postępu: przed pobraniem pliku (po udanym odczycie wydania).</summary>
-    public static string Downloading(string tag) => "Pobieranie WinUtil " + tag + " z GitHuba…";
+    public static string Downloading(string tag) => L.F("Pobieranie WinUtil {0} z GitHuba…", tag);
 
     public ActionHandlerResult Run(TweakDefinition tweak, IProgress<string>? output, IProgress<ActionProgress>? progress, CancellationToken cancellationToken)
     {
@@ -71,7 +72,7 @@ public sealed class WinUtilHandler : IActionHandler
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            Services.Log.Fail(Component, "Nie udało się przygotować folderu pobrań.", ex);
+            Services.Log.Fail(Component, L.T("Nie udało się przygotować folderu pobrań."), ex);
             return Failed(DownloadFolderFailed(ex.Message));
         }
 
@@ -93,14 +94,14 @@ public sealed class WinUtilHandler : IActionHandler
 
             Services.Log.Info(
                 Component,
-                $"Pobrano i sprawdzono {WinUtilSource.FileName} ({release.Tag}): {path}, {bytes.ToString(CultureInfo.InvariantCulture)} B, SHA256 {release.Sha256}");
+                L.F("Pobrano i sprawdzono {0} ({1}): {2}, {3} B, SHA256 {4}", WinUtilSource.FileName, release.Tag, path, bytes.ToString(CultureInfo.InvariantCulture), release.Sha256));
             try
             {
                 Services.Launcher.Launch(new LaunchSpec { File = "powershell.exe", Arguments = WinUtilSource.LaunchArguments(path) });
             }
             catch (OperationException ex)
             {
-                Services.Log.Warn(Component, $"Nie udało się otworzyć okna PowerShell: {ex.Message}");
+                Services.Log.Warn(Component, L.F("Nie udało się otworzyć okna PowerShell: {0}", ex.Message));
                 return Failed(LaunchFailed(ex.Message), warnings);
             }
 
@@ -122,7 +123,7 @@ public sealed class WinUtilHandler : IActionHandler
         var api = Services.Web.GetText(WinUtilSource.ReleasesLatestUrl, RustDeskSource.ApiAccept, WinUtilSource.ApiTimeout);
         if (api.Failure != WebFailure.None)
         {
-            Services.Log.Warn(Component, $"GitHub API: {api.Failure}, kod {api.StatusCode?.ToString(CultureInfo.InvariantCulture) ?? "-"}: {api.Error}");
+            Services.Log.Warn(Component, L.F("GitHub API: {0}, kod {1}: {2}", api.Failure, api.StatusCode?.ToString(CultureInfo.InvariantCulture) ?? "-", api.Error));
             failure = WebFailureText(api.Failure, api.StatusCode);
             return null;
         }
@@ -136,7 +137,7 @@ public sealed class WinUtilHandler : IActionHandler
         if (!WinUtilSource.IsAllowedDownloadUrl(release!.DownloadUrl, release))
         {
             // Nic jeszcze nie pobrano, więc to nieoczekiwana odpowiedź API, nie „pobrany plik”.
-            Services.Log.Warn(Component, $"Adres pobrania spoza wydań ChrisTitusTech/winutil: {release.DownloadUrl.OriginalString}");
+            Services.Log.Warn(Component, L.F("Adres pobrania spoza wydań ChrisTitusTech/winutil: {0}", release.DownloadUrl.OriginalString));
             failure = UnexpectedResponse;
             return null;
         }
@@ -157,7 +158,7 @@ public sealed class WinUtilHandler : IActionHandler
         catch (IOException ex)
         {
             // Jak w GitHubInstallStep: błąd zapisu pliku to wyjątek, nie WebFailure; plik częściowy usuwa finally.
-            Services.Log.Fail(Component, $"Nie udało się zapisać pobranego pliku {path}.", ex);
+            Services.Log.Fail(Component, L.F("Nie udało się zapisać pobranego pliku {0}.", path), ex);
             return InstallText.DownloadWriteFailed(ex.Message) + ".";
         }
 
@@ -167,7 +168,7 @@ public sealed class WinUtilHandler : IActionHandler
             return null;
         }
 
-        Services.Log.Warn(Component, $"Pobranie {WinUtilSource.FileName}: {file.Failure}, kod {file.StatusCode?.ToString(CultureInfo.InvariantCulture) ?? "-"}: {file.Error}");
+        Services.Log.Warn(Component, L.F("Pobranie {0}: {1}, kod {2}: {3}", WinUtilSource.FileName, file.Failure, file.StatusCode?.ToString(CultureInfo.InvariantCulture) ?? "-", file.Error));
         return file.Failure == WebFailure.TooLarge ? CheckFailed : WebFailureText(file.Failure, file.StatusCode);
     }
 
@@ -181,7 +182,7 @@ public sealed class WinUtilHandler : IActionHandler
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            Services.Log.Fail(Component, $"Nie udało się policzyć SHA256 pliku {path}.", ex);
+            Services.Log.Fail(Component, L.F("Nie udało się policzyć SHA256 pliku {0}.", path), ex);
             return false;
         }
 
@@ -190,7 +191,7 @@ public sealed class WinUtilHandler : IActionHandler
             return true;
         }
 
-        Services.Log.Warn(Component, $"SHA256 pobranego pliku {hash} ≠ {release.Sha256} z GitHuba.");
+        Services.Log.Warn(Component, L.F("SHA256 pobranego pliku {0} ≠ {1} z GitHuba.", hash, release.Sha256));
         return false;
     }
 
@@ -212,7 +213,7 @@ public sealed class WinUtilHandler : IActionHandler
         }
         catch (Exception ex)
         {
-            Services.Log.Fail(Component, $"Usuwanie pobranego pliku {path} rzuciło wyjątek.", ex);
+            Services.Log.Fail(Component, L.F("Usuwanie pobranego pliku {0} rzuciło wyjątek.", path), ex);
             deleted = false;
         }
 

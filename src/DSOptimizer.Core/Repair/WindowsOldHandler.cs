@@ -6,6 +6,7 @@ using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Repair;
@@ -44,23 +45,23 @@ public sealed class WindowsOldHandler : IActionHandler
 
     public const string PreviousInstallationsKey = VolumeCachesKey + @"\Previous Installations";
 
-    public const string CleanupStage = "Oczyszczanie dysku";
-
-    public const string CheckStage = "Sprawdzenie";
-
-    public const string NothingToRemoveMessage = "Nie ma poprzedniej instalacji Windows – nie ma czego usuwać.";
-
     /// <summary>Limit czekania na cleanmgr, gdy katalog go nie podaje (pomiar Task 2 pkt 6: 2700 s).</summary>
     public static readonly TimeSpan DefaultWaitLimit = TimeSpan.FromSeconds(2700);
 
     /// <summary>Wartość „zaznaczone” programu obsługi (dokumentacja MS „Automating Disk Cleanup”).</summary>
     private const uint Selected = 2;
 
-    private const string Component = "Naprawy";
+    private static string Component => L.T("Naprawy");
     private const int StepCount = 2;
     private const string CleanmgrFile = "cleanmgr.exe";
 
     private static readonly string CleanmgrArguments = "/sagerun:" + SageRunId.ToString(CultureInfo.InvariantCulture);
+
+    public static string CleanupStage => L.T("Oczyszczanie dysku");
+
+    public static string CheckStage => L.T("Sprawdzenie");
+
+    public static string NothingToRemoveMessage => L.T("Nie ma poprzedniej instalacji Windows – nie ma czego usuwać.");
 
     private readonly RepairServices _s;
 
@@ -94,13 +95,13 @@ public sealed class WindowsOldHandler : IActionHandler
         catch (OperationException ex)
         {
             // Nie wiadomo, czy folder jest – ale nic nie zostało zmienione ani uruchomione, więc wynik jest pewny: nie udało się.
-            _s.Log.Warn(Component, $"windows-old: nie udało się sprawdzić {folder}: {ex.Message}");
-            return Result(TweakOutcome.Failed, $"Nie udało się sprawdzić folderu {folder} ({ex.Message}) – nic nie zmieniono.");
+            _s.Log.Warn(Component, L.F("windows-old: nie udało się sprawdzić {0}: {1}", folder, ex.Message));
+            return Result(TweakOutcome.Failed, L.F("Nie udało się sprawdzić folderu {0} ({1}) – nic nie zmieniono.", folder, ex.Message));
         }
 
         if (!present)
         {
-            _s.Log.Info(Component, $"windows-old: brak {folder} – nic do usunięcia.");
+            _s.Log.Info(Component, L.F("windows-old: brak {0} – nic do usunięcia.", folder));
             return new ActionHandlerResult { Outcome = TweakOutcome.NotSupported, Message = NothingToRemoveMessage };
         }
 
@@ -114,7 +115,8 @@ public sealed class WindowsOldHandler : IActionHandler
         }
 
         // Krok 1 z 2: flaga + cleanmgr; własna wartość zawsze usuwana w finally. Nieprzerywalny (R30) – bez „Zatrzymaj”.
-        progress?.Report(new ActionProgress(CleanupStage, null, 0, StepCount, CheckStage, Stoppable: false));
+        var checkStage = CheckStage;
+        progress?.Report(new ActionProgress(CleanupStage, null, 0, StepCount, checkStage, Stoppable: false));
         Cleanmgr run;
         string? flagLeft;
         try
@@ -127,7 +129,7 @@ public sealed class WindowsOldHandler : IActionHandler
         }
 
         // Krok 2 z 2: odczyt zwrotny (tylko gdy cleanmgr wystartował; inaczej folderu nikt nie ruszał).
-        progress?.Report(new ActionProgress(CheckStage, null, 1, StepCount, null, Stoppable: false));
+        progress?.Report(new ActionProgress(checkStage, null, 1, StepCount, null, Stoppable: false));
         var after = _s.DiskSpace.FreeBytes(drive);
         bool? exists = null;
         string? probeError = null;
@@ -144,10 +146,10 @@ public sealed class WindowsOldHandler : IActionHandler
         }
 
         var freed = DiskSpaceText.Freed(before, after);
-        var stateText = !run.Started ? "nie sprawdzano (Oczyszczanie dysku nie wystartowało)"
-            : probeError is not null ? $"stan nieznany ({probeError})"
-            : exists == true ? "nadal istnieje" : "nie istnieje";
-        _s.Log.Info(Component, $"windows-old: {folder} {stateText}. Wolne {drive} przed: {Bytes(before)}, po: {Bytes(after)}.");
+        var stateText = !run.Started ? L.T("nie sprawdzano (Oczyszczanie dysku nie wystartowało)")
+            : probeError is not null ? L.F("stan nieznany ({0})", probeError)
+            : exists == true ? L.T("nadal istnieje") : L.T("nie istnieje");
+        _s.Log.Info(Component, L.F("windows-old: {0} {1}. Wolne {2} przed: {3}, po: {4}.", folder, stateText, drive, Bytes(before), Bytes(after)));
 
         var lines = new List<string>();
         TweakOutcome outcome;
@@ -160,26 +162,26 @@ public sealed class WindowsOldHandler : IActionHandler
         {
             outcome = TweakOutcome.NotConfirmed;
             var state = probeError is not null
-                ? $"Nie udało się sprawdzić folderu {folder} ({probeError}) – sprawdź go później."
+                ? L.F("Nie udało się sprawdzić folderu {0} ({1}) – sprawdź go później.", folder, probeError)
                 : exists == true
-                    ? $"Folder {folder} jeszcze istnieje – sprawdź go później."
-                    : $"Folder {folder} już nie istnieje (zwolniono: {freed}).";
-            lines.Add($"Czyszczenie nadal działa w tle – program przestał czekać po {SystemFilesHandler.Duration(limit)}. {state}");
+                    ? L.F("Folder {0} jeszcze istnieje – sprawdź go później.", folder)
+                    : L.F("Folder {0} już nie istnieje (zwolniono: {1}).", folder, freed);
+            lines.Add(L.F("Czyszczenie nadal działa w tle – program przestał czekać po {0}. {1}", SystemFilesHandler.Duration(limit), state));
         }
         else if (probeError is not null)
         {
             outcome = TweakOutcome.NotConfirmed;
-            lines.Add($"Oczyszczanie dysku zakończyło pracę, ale nie udało się sprawdzić, czy folder {folder} zniknął ({probeError}) – sprawdź go ręcznie (zwolniono: {freed}).");
+            lines.Add(L.F("Oczyszczanie dysku zakończyło pracę, ale nie udało się sprawdzić, czy folder {0} zniknął ({1}) – sprawdź go ręcznie (zwolniono: {2}).", folder, probeError, freed));
         }
         else if (exists == true)
         {
             outcome = TweakOutcome.Failed;
-            lines.Add($"Folder Windows.old nadal istnieje (zwolniono: {freed}).");
+            lines.Add(L.F("Folder Windows.old nadal istnieje (zwolniono: {0}).", freed));
         }
         else
         {
             outcome = TweakOutcome.Executed;
-            lines.Add($"Usunięto poprzednią instalację Windows. Zwolniono: {freed}.");
+            lines.Add(L.F("Usunięto poprzednią instalację Windows. Zwolniono: {0}.", freed));
         }
 
         if (run.Started && !run.TimedOut && run.Text is { } note)
@@ -195,7 +197,7 @@ public sealed class WindowsOldHandler : IActionHandler
             notRestored = new[] { flagLeft };
         }
 
-        _s.Log.Info(Component, $"windows-old: wynik {outcome}.");
+        _s.Log.Info(Component, L.F("windows-old: wynik {0}.", outcome));
         return new ActionHandlerResult { Outcome = outcome, Message = string.Join(Environment.NewLine, lines), NotRestored = notRestored };
     }
 
@@ -212,7 +214,7 @@ public sealed class WindowsOldHandler : IActionHandler
         }
         catch (OperationException ex)
         {
-            return $"Nie udało się odczytać ustawień Oczyszczania dysku ({ex.Message}) – nic nie zmieniono.";
+            return L.F("Nie udało się odczytać ustawień Oczyszczania dysku ({0}) – nic nie zmieniono.", ex.Message);
         }
 
         var hasPrevious = false;
@@ -225,16 +227,15 @@ public sealed class WindowsOldHandler : IActionHandler
                 case ReadStatus.NotFound:
                     continue;
                 case ReadStatus.Found:
-                    return $@"Wartość {StateFlagsName} już jest w ustawieniach Oczyszczania dysku (VolumeCaches\{handler}) – ustawił ją inny program "
-                        + "albo przerwany wcześniejszy przebieg; nic nie zmieniono.";
+                    return L.F("Wartość {0} już jest w ustawieniach Oczyszczania dysku (VolumeCaches\\{1}) – ustawił ją inny program albo przerwany wcześniejszy przebieg; nic nie zmieniono.", StateFlagsName, handler);
                 default:
-                    return $@"Nie udało się sprawdzić ustawień Oczyszczania dysku (VolumeCaches\{handler}: {read.Error ?? read.Status.ToString()}) – nic nie zmieniono.";
+                    return L.F("Nie udało się sprawdzić ustawień Oczyszczania dysku (VolumeCaches\\{0}: {1}) – nic nie zmieniono.", handler, read.Error ?? read.Status.ToString());
             }
         }
 
         return hasPrevious
             ? null
-            : "W tym systemie Oczyszczanie dysku nie ma programu obsługi „Previous Installations” – nic nie zmieniono.";
+            : L.T("W tym systemie Oczyszczanie dysku nie ma programu obsługi „Previous Installations” – nic nie zmieniono.");
     }
 
     private Cleanmgr RunCleanmgr(TimeSpan limit, IProgress<string>? output)
@@ -245,8 +246,8 @@ public sealed class WindowsOldHandler : IActionHandler
         }
         catch (OperationException ex)
         {
-            _s.Log.Warn(Component, $"windows-old: zapis {StateFlagsName} nieudany: {ex.Message}");
-            return new Cleanmgr(false, false, $"Nie udało się zaznaczyć poprzedniej instalacji w Oczyszczaniu dysku ({ex.Message}) – nic nie zmieniono, Oczyszczanie dysku nie zostało uruchomione.");
+            _s.Log.Warn(Component, L.F("windows-old: zapis {0} nieudany: {1}", StateFlagsName, ex.Message));
+            return new Cleanmgr(false, false, L.F("Nie udało się zaznaczyć poprzedniej instalacji w Oczyszczaniu dysku ({0}) – nic nie zmieniono, Oczyszczanie dysku nie zostało uruchomione.", ex.Message));
         }
 
         void OnLine(string line)
@@ -264,19 +265,25 @@ public sealed class WindowsOldHandler : IActionHandler
         }
         catch (OperationException ex)
         {
-            _s.Log.Warn(Component, $"windows-old: {CleanmgrFile} nie wystartował: {ex.Message}");
-            return new Cleanmgr(false, false, $"Nie udało się uruchomić Oczyszczania dysku – {ex.Message} Nic nie usunięto.");
+            _s.Log.Warn(Component, L.F("windows-old: {0} nie wystartował: {1}", CleanmgrFile, ex.Message));
+            return new Cleanmgr(false, false, L.F("Nie udało się uruchomić Oczyszczania dysku – {0} Nic nie usunięto.", ex.Message));
         }
 
         var seconds = (_s.Clock.UtcNow - started).TotalSeconds.ToString("0", CultureInfo.InvariantCulture);
         if (run.TimedOut)
         {
-            _s.Log.Warn(Component, $"windows-old: {CleanmgrFile} po limicie {SystemFilesHandler.Duration(limit)} dalej działa w tle – program przestał czekać.");
+            _s.Log.Warn(Component, L.F("windows-old: {0} po limicie {1} dalej działa w tle – program przestał czekać.", CleanmgrFile, SystemFilesHandler.Duration(limit)));
             return new Cleanmgr(true, true, null);
         }
 
-        _s.Log.Info(Component, $"windows-old: {CleanmgrFile} zakończony kodem {Code(run.ExitCode)} po {seconds} s.");
-        return new Cleanmgr(true, false, run.ExitCode is 0 ? null : $"Oczyszczanie dysku zakończyło się kodem {Code(run.ExitCode)}.");
+        if (run.ExitCode is { } code)
+        {
+            _s.Log.Info(Component, L.F("windows-old: {0} zakończony kodem {1} po {2} s.", CleanmgrFile, Code(code), seconds));
+            return new Cleanmgr(true, false, code == 0 ? null : L.F("Oczyszczanie dysku zakończyło się kodem {0}.", Code(code)));
+        }
+
+        _s.Log.Info(Component, L.F("windows-old: {0} zakończony kodem nieznanym po {1} s.", CleanmgrFile, seconds));
+        return new Cleanmgr(true, false, L.T("Oczyszczanie dysku zakończyło się kodem nieznanym."));
     }
 
     /// <summary>Usuwa własną wartość; <c>null</c> = usunięta (albo jej nie było), inaczej tekst do wyniku.</summary>
@@ -289,15 +296,14 @@ public sealed class WindowsOldHandler : IActionHandler
         }
         catch (OperationException ex)
         {
-            _s.Log.Warn(Component, $"windows-old: nie udało się usunąć {StateFlagsName}: {ex.Message}");
-            return $@"Nie udało się usunąć wartości {StateFlagsName} z VolumeCaches\Previous Installations ({ex.Message}) – usuń ją ręcznie, "
-                + "inaczej kolejne uruchomienie odmówi.";
+            _s.Log.Warn(Component, L.F("windows-old: nie udało się usunąć {0}: {1}", StateFlagsName, ex.Message));
+            return L.F("Nie udało się usunąć wartości {0} z VolumeCaches\\Previous Installations ({1}) – usuń ją ręcznie, inaczej kolejne uruchomienie odmówi.", StateFlagsName, ex.Message);
         }
     }
 
     private static ActionHandlerResult Result(TweakOutcome outcome, string message) => new() { Outcome = outcome, Message = message };
 
-    private static string Code(int? code) => code is { } value ? "0x" + value.ToString("X8", CultureInfo.InvariantCulture) : "nieznanym";
+    private static string Code(int code) => "0x" + code.ToString("X8", CultureInfo.InvariantCulture);
 
     private static string Bytes(long? value) => value?.ToString(CultureInfo.InvariantCulture) ?? "?";
 

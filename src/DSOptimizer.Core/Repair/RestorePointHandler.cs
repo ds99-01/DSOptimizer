@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Repair;
@@ -13,7 +14,7 @@ namespace DSOptimizer.Core.Repair;
 /// </summary>
 public sealed class RestorePointHandler : IActionHandler
 {
-    public const string Description = "DSOptimizer – punkt ręczny";
+    public static string Description => L.T("DSOptimizer – punkt ręczny");
 
     private readonly IRestorePointService _service;
     private readonly IClock _clock;
@@ -30,7 +31,8 @@ public sealed class RestorePointHandler : IActionHandler
 
     public ActionHandlerResult Run(TweakDefinition tweak, IProgress<string>? output, IProgress<ActionProgress>? progress, CancellationToken cancellationToken)
     {
-        var result = _service.Create(Description);
+        var description = Description;
+        var result = _service.Create(description);
         switch (result.Status)
         {
             case RestorePointStatus.Created:
@@ -38,17 +40,17 @@ public sealed class RestorePointHandler : IActionHandler
                 return new ActionHandlerResult
                 {
                     Outcome = TweakOutcome.Executed,
-                    Message = $"Utworzono punkt przywracania „{Description}” ({local.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)}).",
+                    Message = L.F("Utworzono punkt przywracania „{0}” ({1}).", description, local.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)),
                 };
             case RestorePointStatus.ProtectionDisabled:
                 return new ActionHandlerResult
                 {
                     Outcome = TweakOutcome.Failed,
-                    Message = "Ochrona systemu na dysku C: jest wyłączona – włącz ją pozycją „Ochrona systemu” w tej kategorii.",
+                    Message = L.T("Ochrona systemu na dysku C: jest wyłączona – włącz ją pozycją „Ochrona systemu” w tej kategorii."),
                 };
             default:
-                var message = string.IsNullOrWhiteSpace(result.Message) ? "Nie udało się utworzyć punktu przywracania." : result.Message!.Trim();
-                var code = result.Code is { } value ? $" (kod {value.ToString(CultureInfo.InvariantCulture)})" : string.Empty;
+                var message = string.IsNullOrWhiteSpace(result.Message) ? L.T("Nie udało się utworzyć punktu przywracania.") : result.Message!.Trim();
+                var code = result.Code is { } value ? L.F(" (kod {0})", value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
                 return new ActionHandlerResult { Outcome = TweakOutcome.Failed, Message = message + code };
         }
     }

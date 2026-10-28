@@ -9,6 +9,7 @@ using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Repair;
@@ -24,11 +25,11 @@ namespace DSOptimizer.Core.Repair;
 /// </summary>
 public sealed class WindowsUpdateReset
 {
-    private const string Component = "Naprawy";
+    private static string Component => L.T("Naprawy");
     private const string CryptSvc = "cryptsvc";
-    private const string HistoryLine = "Historia aktualizacji w Ustawieniach zostanie wyczyszczona (zostać mogą tylko wpisy definicji Microsoft Defender); aktualizacje pobiorą się od nowa.";
-    private const string MdmWarning = "Na komputerze zarządzanym przez Intune/MDM usunięte polityki mogą wrócić przy następnej synchronizacji.";
-    private const string NothingChanged = "Nic nie zmieniono.";
+    private static string HistoryLine => L.T("Historia aktualizacji w Ustawieniach zostanie wyczyszczona (zostać mogą tylko wpisy definicji Microsoft Defender); aktualizacje pobiorą się od nowa.");
+    private static string MdmWarning => L.T("Na komputerze zarządzanym przez Intune/MDM usunięte polityki mogą wrócić przy następnej synchronizacji.");
+    private static string NothingChanged => L.T("Nic nie zmieniono.");
 
     private static readonly TimeSpan ServiceTimeout = TimeSpan.FromSeconds(30);
 
@@ -93,7 +94,7 @@ public sealed class WindowsUpdateReset
 
         if (_cancellationToken.IsCancellationRequested)
         {
-            return Result(TweakOutcome.Failed, "Anulowano przed zmianami. " + NothingChanged, withSteps: false);
+            return Result(TweakOutcome.Failed, L.T("Anulowano przed zmianami. Nic nie zmieniono."), withSteps: false);
         }
 
         ReportProtectedServices();
@@ -126,18 +127,18 @@ public sealed class WindowsUpdateReset
 
         if (restoreFailure is not null)
         {
-            var header = $"Nie udało się ponownie uruchomić usług: {restoreFailure}.";
+            var header = L.F("Nie udało się ponownie uruchomić usług: {0}.", restoreFailure);
             return Result(TweakOutcome.Failed, (policyFailure is null ? header : header + " " + policyFailure) + FullStopTail());
         }
 
         if (policyFailure is not null)
         {
-            return Result(TweakOutcome.Failed, policyFailure + " Foldery Windows Update zresetowano (kopie niżej), usługi przywrócono.");
+            return Result(TweakOutcome.Failed, policyFailure + L.T(" Foldery Windows Update zresetowano (kopie niżej), usługi przywrócono."));
         }
 
         if (_moved.Count == 0)
         {
-            return Result(TweakOutcome.Failed, $"Nie znaleziono folderów Windows Update ({SoftwareDistribution}, {Catroot2}) – nie było czego zresetować. Usługi przywrócono." + FullStopTail());
+            return Result(TweakOutcome.Failed, L.F("Nie znaleziono folderów Windows Update ({0}, {1}) – nie było czego zresetować. Usługi przywrócono.", SoftwareDistribution, Catroot2) + FullStopTail());
         }
 
         if (_full)
@@ -148,12 +149,12 @@ public sealed class WindowsUpdateReset
 
         if (Readback() is { } readbackFailure)
         {
-            return Result(TweakOutcome.Failed, "Odczyt zwrotny nie potwierdził resetu: " + readbackFailure + ".");
+            return Result(TweakOutcome.Failed, L.F("Odczyt zwrotny nie potwierdził resetu: {0}.", readbackFailure));
         }
 
-        Step("Odczyt zwrotny: usługi działają jak przed resetem, kopie folderów istnieją.");
+        Step(L.T("Odczyt zwrotny: usługi działają jak przed resetem, kopie folderów istnieją."));
         PruneOldCopies();
-        return Result(TweakOutcome.Executed, _full ? "Zresetowano składniki Windows Update i usunięto blokady aktualizacji, jeśli były." : "Zresetowano składniki Windows Update.");
+        return Result(TweakOutcome.Executed, _full ? L.T("Zresetowano składniki Windows Update i usunięto blokady aktualizacji, jeśli były.") : L.T("Zresetowano składniki Windows Update."));
     }
 
     /// <summary>
@@ -169,17 +170,17 @@ public sealed class WindowsUpdateReset
 
         _warnings.Add(MdmWarning);
         var removed = _policiesDeleted && _policyBackup is { } file
-            ? $" Polityki Windows Update zostały już usunięte (kopia: {file}; przywrócenie: reg import \"{file}\")."
+            ? L.F(" Polityki Windows Update zostały już usunięte (kopia: {0}; przywrócenie: reg import \"{0}\").", file)
             : string.Empty;
-        return removed + " Typy startu usług nie zostały zmienione.";
+        return removed + L.T(" Typy startu usług nie zostały zmienione.");
     }
 
     // ---- 1. domena ----
 
     private ActionHandlerResult? RefuseOnDomain() => _s.Domain.IsDomainJoined() switch
     {
-        true => Result(TweakOutcome.Refused, "Komputer jest w domenie: polityki Windows Update ustawia administrator domeny.", withSteps: false),
-        null => Result(TweakOutcome.Refused, "Nie udało się sprawdzić, czy komputer jest w domenie.", withSteps: false),
+        true => Result(TweakOutcome.Refused, L.T("Komputer jest w domenie: polityki Windows Update ustawia administrator domeny."), withSteps: false),
+        null => Result(TweakOutcome.Refused, L.T("Nie udało się sprawdzić, czy komputer jest w domenie."), withSteps: false),
         _ => null,
     };
 
@@ -197,10 +198,10 @@ public sealed class WindowsUpdateReset
                     _before[name] = state;
                     break;
                 case ReadStatus.NotFound:
-                    Warn($"Usługa {name} nie istnieje – pominięta.");
+                    Warn(L.F("Usługa {0} nie istnieje – pominięta.", name));
                     break;
                 default:
-                    return Result(TweakOutcome.Failed, $"Nie udało się odczytać usługi {name}: {Sentence(state.Error)} {NothingChanged}", withSteps: false);
+                    return Result(TweakOutcome.Failed, L.F("Nie udało się odczytać usługi {0}: {1} Nic nie zmieniono.", name, Sentence(state.Error)), withSteps: false);
             }
         }
 
@@ -214,7 +215,7 @@ public sealed class WindowsUpdateReset
             var state = _s.Services.Query(name);
             if (state.Status == ReadStatus.Found && state.StartType == ServiceStartType.Disabled)
             {
-                Warn($"Usługa {name} jest wyłączona (Disabled). Program jej nie zmienia (system odmawia zapisu), a wyłączona usługa może blokować aktualizacje.");
+                Warn(L.F("Usługa {0} jest wyłączona (Disabled). Program jej nie zmienia (system odmawia zapisu), a wyłączona usługa może blokować aktualizacje.", name));
             }
         }
     }
@@ -232,7 +233,7 @@ public sealed class WindowsUpdateReset
 
             if (!state.IsRunning)
             {
-                Step($"Usługa {name} nie działała – bez zmian.");
+                Step(L.F("Usługa {0} nie działała – bez zmian.", name));
                 continue;
             }
 
@@ -243,13 +244,13 @@ public sealed class WindowsUpdateReset
             if (error is not null)
             {
                 var restoreFailure = RestoreServices();
-                var tail = restoreFailure is null ? NothingChanged : $"Foldery nietknięte, ale nie udało się ponownie uruchomić: {restoreFailure}.";
-                return Result(TweakOutcome.Failed, $"Nie udało się zatrzymać usługi {name}: {Sentence(error)} {tail}");
+                var tail = restoreFailure is null ? NothingChanged : L.F("Foldery nietknięte, ale nie udało się ponownie uruchomić: {0}.", restoreFailure);
+                return Result(TweakOutcome.Failed, L.F("Nie udało się zatrzymać usługi {0}: {1} {2}", name, Sentence(error), tail));
             }
 
             Step(dependents.Count == 0
-                ? $"Zatrzymano usługę {name}."
-                : $"Zatrzymano usługę {name} razem z zależnymi: {string.Join(", ", dependents)}.");
+                ? L.F("Zatrzymano usługę {0}.", name)
+                : L.F("Zatrzymano usługę {0} razem z zależnymi: {1}.", name, string.Join(", ", dependents)));
         }
 
         return null;
@@ -266,7 +267,7 @@ public sealed class WindowsUpdateReset
             var error = Attempt(() => exists = _s.Files.DirectoryExists(source));
             if (error is null && !exists)
             {
-                Step($"Pominięto {source} – folder nie istnieje.");
+                Step(L.F("Pominięto {0} – folder nie istnieje.", source));
                 continue;
             }
 
@@ -275,20 +276,20 @@ public sealed class WindowsUpdateReset
             if (error is null)
             {
                 _moved.Add((source, copy));
-                Step($"Przeniesiono {source} → {copy}.");
+                Step(L.F("Przeniesiono {0} → {1}.", source, copy));
                 continue;
             }
 
-            var header = new StringBuilder($"Nie udało się przenieść folderu {source}: {Sentence(error)}");
+            var header = new StringBuilder(L.F("Nie udało się przenieść folderu {0}: {1}", source, Sentence(error)));
             var rolledBack = RollBackMoves(header);
             var restoreFailure = RestoreServices();
             if (restoreFailure is null)
             {
-                header.Append(" Usługi przywrócono.");
+                header.Append(L.T(" Usługi przywrócono."));
             }
             else
             {
-                header.Append($" Nie udało się ponownie uruchomić: {restoreFailure}.");
+                header.Append(L.F(" Nie udało się ponownie uruchomić: {0}.", restoreFailure));
             }
 
             if (rolledBack && restoreFailure is null)
@@ -324,13 +325,13 @@ public sealed class WindowsUpdateReset
             var error = Attempt(() => _s.Files.MoveDirectory(copy, source));
             if (error is null)
             {
-                header.Append($" Cofnięto przeniesienie {source}.");
+                header.Append(L.F(" Cofnięto przeniesienie {0}.", source));
                 continue;
             }
 
             ok = false;
-            _notRestored.Add($"Folder {source} jest pod nazwą {copy}. Windows mógł już utworzyć nowy folder {source} – najpierw go przenieś albo usuń, potem przywróć nazwę. Kolejny reset w DSOptimizerze usunie kopię {copy} jako starszą.");
-            header.Append($" Nie udało się cofnąć przeniesienia ({Sentence(error)}) – zmień nazwę {copy} z powrotem na {source} ręcznie, przy zatrzymanych usługach.");
+            _notRestored.Add(L.F("Folder {0} jest pod nazwą {1}. Windows mógł już utworzyć nowy folder {0} – najpierw go przenieś albo usuń, potem przywróć nazwę. Kolejny reset w DSOptimizerze usunie kopię {1} jako starszą.", source, copy));
+            header.Append(L.F(" Nie udało się cofnąć przeniesienia ({0}) – zmień nazwę {1} z powrotem na {2} ręcznie, przy zatrzymanych usługach.", Sentence(error), copy, source));
         }
 
         _moved.Clear();
@@ -349,13 +350,13 @@ public sealed class WindowsUpdateReset
         var status = _s.Registry.KeyStatus(key);
         if (status == ReadStatus.NotFound)
         {
-            Step("Brak polityk Windows Update.");
+            Step(L.T("Brak polityk Windows Update."));
             return null;
         }
 
         if (status != ReadStatus.Found)
         {
-            return Result(TweakOutcome.Failed, $"Nie udało się sprawdzić polityk Windows Update ({key}: {status}); polityki zostają bez zmian. {NothingChanged}", withSteps: false);
+            return Result(TweakOutcome.Failed, L.F("Nie udało się sprawdzić polityk Windows Update ({0}: {1}); polityki zostają bez zmian. Nic nie zmieniono.", key, status), withSteps: false);
         }
 
         var file = string.Empty;
@@ -363,11 +364,11 @@ public sealed class WindowsUpdateReset
         exportError ??= Export(key, file);
         if (exportError is not null)
         {
-            return Result(TweakOutcome.Failed, $"Nie udało się zapisać kopii polityk Windows Update ({exportError}); polityki zostają bez zmian. {NothingChanged}", withSteps: false);
+            return Result(TweakOutcome.Failed, L.F("Nie udało się zapisać kopii polityk Windows Update ({0}); polityki zostają bez zmian. Nic nie zmieniono.", exportError), withSteps: false);
         }
 
         _policyBackup = file;
-        Step($"Zapisano kopię polityk Windows Update: {file}.");
+        Step(L.F("Zapisano kopię polityk Windows Update: {0}.", file));
         return null;
     }
 
@@ -380,20 +381,20 @@ public sealed class WindowsUpdateReset
         }
 
         var key = WindowsUpdatePolicies.KeyPath;
-        var importHint = $"Przywrócenie: reg import \"{file}\".";
+        var importHint = L.F("Przywrócenie: reg import \"{0}\".", file);
         var deleteError = Attempt(() => _s.Registry.DeleteKeyTree(key));
         if (deleteError is not null)
         {
-            return $"Kopia polityk zapisana w {file}, ale usunięcie klucza nie powiodło się: {Sentence(deleteError)} {importHint}";
+            return L.F("Kopia polityk zapisana w {0}, ale usunięcie klucza nie powiodło się: {1} {2}", file, Sentence(deleteError), importHint);
         }
 
         if (_s.Registry.KeyStatus(key) != ReadStatus.NotFound)
         {
-            return $"Kopia polityk zapisana w {file}, ale klucz nadal istnieje po usunięciu ({key}). {importHint}";
+            return L.F("Kopia polityk zapisana w {0}, ale klucz nadal istnieje po usunięciu ({1}). {2}", file, key, importHint);
         }
 
         _policiesDeleted = true;
-        Step($"Polityki Windows Update usunięte (z podkluczem AU); kopia: {file}. {importHint}");
+        Step(L.F("Polityki Windows Update usunięte (z podkluczem AU); kopia: {0}. {1}", file, importHint));
         return null;
     }
 
@@ -409,10 +410,10 @@ public sealed class WindowsUpdateReset
             return error.TrimEnd('.');
         }
 
-        _s.Log.Info(Component, $"reg export {key}: kod {result!.ExitCode}: {string.Join(" | ", result.Output)}");
+        _s.Log.Info(Component, L.F("reg export {0}: kod {1}: {2}", key, result!.ExitCode, string.Join(" | ", result.Output)));
         if (result.ExitCode != 0)
         {
-            return string.Format(CultureInfo.InvariantCulture, "reg export zakończył się kodem {0}: {1}", result.ExitCode, string.Join(" ", result.Output).Trim());
+            return L.F("reg export zakończył się kodem {0}: {1}", result.ExitCode, string.Join(" ", result.Output).Trim());
         }
 
         long? length = null;
@@ -422,7 +423,7 @@ public sealed class WindowsUpdateReset
             return error.TrimEnd('.');
         }
 
-        return length is > 0 ? null : $"plik kopii {file} jest pusty albo go nie ma";
+        return length is > 0 ? null : L.F("plik kopii {0} jest pusty albo go nie ma", file);
     }
 
     // ---- 6. start usług ----
@@ -433,12 +434,12 @@ public sealed class WindowsUpdateReset
         var restored = _stopper.Restore();
         foreach (var failure in restored.Failed)
         {
-            _notRestored.Add($"Usługa {failure.Name} nie działa po przywróceniu: {Sentence(failure.Reason)}");
+            _notRestored.Add(L.F("Usługa {0} nie działa po przywróceniu: {1}", failure.Name, Sentence(failure.Reason)));
         }
 
         if (restored.Started.Count > 0)
         {
-            Step($"Uruchomiono ponownie: {string.Join(", ", restored.Started)}.");
+            Step(L.F("Uruchomiono ponownie: {0}.", string.Join(", ", restored.Started)));
         }
 
         return restored.Failed.Count == 0 ? null : string.Join(", ", restored.Failed.Select(f => f.Name));
@@ -450,8 +451,8 @@ public sealed class WindowsUpdateReset
     {
         var file = string.Empty;
         var content = new StringBuilder()
-            .AppendLine($"# DSOptimizer: typy startu usług Windows Update przed resetem z usuwaniem blokad ({_timestamp}).")
-            .AppendLine("# Przywrócenie ręczne: sc.exe config <nazwa> start= auto | delayed-auto | demand | disabled");
+            .AppendLine(L.F("# DSOptimizer: typy startu usług Windows Update przed resetem z usuwaniem blokad ({0}).", _timestamp))
+            .AppendLine(L.T("# Przywrócenie ręczne: sc.exe config <nazwa> start= auto | delayed-auto | demand | disabled"));
         foreach (var (name, _) in FreshStartTypes)
         {
             if (_before.TryGetValue(name, out var state))
@@ -464,11 +465,11 @@ public sealed class WindowsUpdateReset
         error ??= Attempt(() => _s.Files.WriteAllText(file, content.ToString()));
         if (error is not null)
         {
-            Warn($"Nie udało się zapisać kopii typów startu ({error.TrimEnd('.')}); typy startu nie zostały zmienione.");
+            Warn(L.F("Nie udało się zapisać kopii typów startu ({0}); typy startu nie zostały zmienione.", error.TrimEnd('.')));
             return;
         }
 
-        Step($"Typy startu sprzed zapisane w {file}.");
+        Step(L.F("Typy startu sprzed zapisane w {0}.", file));
         var unchanged = new List<string>();
         foreach (var (name, target) in FreshStartTypes)
         {
@@ -486,23 +487,23 @@ public sealed class WindowsUpdateReset
             var setError = Attempt(() => _s.Services.SetStartType(name, target));
             if (setError is not null)
             {
-                Warn($"Nie udało się ustawić typu startu {name} na {target}: {Sentence(setError)}");
+                Warn(L.F("Nie udało się ustawić typu startu {0} na {1}: {2}", name, target, Sentence(setError)));
                 continue;
             }
 
             var after = _s.Services.Query(name);
             if (after.Status != ReadStatus.Found || after.StartType != target)
             {
-                Warn($"Typ startu {name} po zmianie to {(after.Status == ReadStatus.Found ? after.StartType.ToString() : after.Status.ToString())} zamiast {target}.");
+                Warn(L.F("Typ startu {0} po zmianie to {1} zamiast {2}.", name, after.Status == ReadStatus.Found ? after.StartType.ToString() : after.Status.ToString(), target));
                 continue;
             }
 
-            Step($"Typ startu {name}: {state.StartType} → {target}.");
+            Step(L.F("Typ startu {0}: {1} → {2}.", name, state.StartType, target));
         }
 
         if (unchanged.Count > 0)
         {
-            Step($"Typ startu bez zmian: {string.Join(", ", unchanged)}.");
+            Step(L.F("Typ startu bez zmian: {0}.", string.Join(", ", unchanged)));
         }
     }
 
@@ -519,19 +520,19 @@ public sealed class WindowsUpdateReset
             {
                 case ReadStatus.Found:
                     found = true;
-                    _diagnosis.Add($"Polityka: {label} = {Display(value.Value)}");
+                    _diagnosis.Add(L.F("Polityka: {0} = {1}", label, Display(value.Value)));
                     break;
                 case ReadStatus.NotFound:
                     break;
                 default:
-                    _diagnosis.Add($"Polityka: {label} – nie udało się odczytać ({value.Error}).");
+                    _diagnosis.Add(L.F("Polityka: {0} – nie udało się odczytać ({1}).", label, value.Error));
                     break;
             }
         }
 
         if (found)
         {
-            _diagnosis.Add("Mogą być przyczyną problemu; usuwa je pozycja „Zresetuj Windows Update i usuń blokady” (z kopią).");
+            _diagnosis.Add(L.T("Mogą być przyczyną problemu; usuwa je pozycja „Zresetuj Windows Update i usuń blokady” (z kopią)."));
         }
     }
 
@@ -554,7 +555,7 @@ public sealed class WindowsUpdateReset
                 var now = _s.Services.Query(name);
                 if (now.Status != ReadStatus.Found || !now.IsRunning)
                 {
-                    problems.Add($"usługa {name} nie działa");
+                    problems.Add(L.F("usługa {0} nie działa", name));
                 }
             }
         }
@@ -565,7 +566,7 @@ public sealed class WindowsUpdateReset
             var error = Attempt(() => exists = _s.Files.DirectoryExists(copy));
             if (error is not null || !exists)
             {
-                problems.Add($"brak kopii {copy}");
+                problems.Add(L.F("brak kopii {0}", copy));
             }
         }
 
@@ -584,7 +585,7 @@ public sealed class WindowsUpdateReset
             var listError = Attempt(() => siblings = _s.Files.ListSiblingDirectories(source, name + ".dso-"));
             if (listError is not null)
             {
-                Warn($"Nie udało się sprawdzić starszych kopii {source}: {Sentence(listError)}");
+                Warn(L.F("Nie udało się sprawdzić starszych kopii {0}: {1}", source, Sentence(listError)));
                 continue;
             }
 
@@ -598,11 +599,11 @@ public sealed class WindowsUpdateReset
                 var error = Attempt(() => _s.Files.DeleteDirectoryTree(old));
                 if (error is null)
                 {
-                    Step($"Usunięto starszą kopię {old}.");
+                    Step(L.F("Usunięto starszą kopię {0}.", old));
                 }
                 else
                 {
-                    Warn($"Nie udało się usunąć starszej kopii {old}: {Sentence(error)}");
+                    Warn(L.F("Nie udało się usunąć starszej kopii {0}: {1}", old, Sentence(error)));
                 }
             }
         }
@@ -629,7 +630,7 @@ public sealed class WindowsUpdateReset
         catch (Exception ex)
 #pragma warning restore CA1031
         {
-            _s.Log.Fail(Component, "Nieoczekiwany błąd kroku resetu Windows Update.", ex);
+            _s.Log.Fail(Component, L.T("Nieoczekiwany błąd kroku resetu Windows Update."), ex);
             return ex.Message;
         }
     }
@@ -637,7 +638,7 @@ public sealed class WindowsUpdateReset
     private static string Sentence(string? text)
     {
         var trimmed = (text ?? string.Empty).Trim().TrimEnd('.');
-        return trimmed.Length == 0 ? "nieznany błąd." : trimmed + ".";
+        return trimmed.Length == 0 ? L.T("nieznany błąd.") : trimmed + ".";
     }
 
     private void Step(string line)

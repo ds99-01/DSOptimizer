@@ -17,10 +17,11 @@ public static class DiskCleanupScripts
     /// <summary>
     /// Sprawdzenie polecenia przez helper <c>Test-DsoDeliveryOptimizationCmdlet</c> (testy definiują go wcześniej jako mock; skrypt
     /// pomija wtedy własną definicję), potem <c>Delete-DeliveryOptimizationCache -Force</c>. Błąd cmdletu = wyjątek (kod 1, stderr).
+    /// Helper to jedyne miejsce sprawdzenia, czy system ma polecenie (moduł <c>DeliveryOptimization</c> ładuje się sam przy
+    /// <c>Get-Command</c>). Treść skryptu bez polskich komentarzy: strażnik polskich tekstów nie ma wyjątku dla literału wieloliniowego.
     /// </summary>
     public const string DeliveryOptimization = """
         if (-not (Get-Command Test-DsoDeliveryOptimizationCmdlet -ErrorAction SilentlyContinue)) {
-            # Jedyne miejsce sprawdzenia, czy system ma polecenie (moduł DeliveryOptimization ładuje się sam przy Get-Command).
             function Test-DsoDeliveryOptimizationCmdlet {
                 return [bool](Get-Command -Name Delete-DeliveryOptimizationCache -ErrorAction SilentlyContinue)
             }

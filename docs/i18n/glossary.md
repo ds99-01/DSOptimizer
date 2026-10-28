@@ -232,6 +232,19 @@ How to read the tables:
 | Przeglądarki | Browsers | Install group |
 | Instalacja aplikacji / Usunięcie aplikacji | App install / App removal | Change history kinds |
 | Działa w edycjach: {0}. | Works in editions: {0}. | "Home, Pro and Enterprise and Education" lists keep edition names unchanged |
+| wykonano / pominięto – / błąd – | done / skipped – / error – | Lower case step results after the step name in long repairs ("Component store: done (…)", "Account thumbnails: skipped – …") |
+| Zwolniono: {0}. | Freed: {0}. | Disk space freed by a repair; sizes "1.5 GB", "255 MB", "less than 1 MB" (decimal separator from the program's culture) |
+| odczyt zwrotny | verification | Reading the state back after a change ("Verification: services are running as before the reset, …") |
+| operacja serwisowania | servicing operation | DISM, SFC or cleanmgr still running ("The previous servicing operation is still in progress – …") |
+| magazyn składników | component store | DISM term, as in Microsoft documentation; repair step "Component store" |
+| kopia (folderu) / kopia (polityk, typów startu) | copy / backup | Renamed folder copies "…\SoftwareDistribution.dso-…" are "copies"; exported `.reg` and text files are "backups" |
+| polityki Windows Update / blokady aktualizacji | Windows Update policies / update blocks | Policy values under `Policies\Microsoft\Windows\WindowsUpdate` |
+| Pliki tymczasowe systemu / Pliki tymczasowe konta / Pobrane aktualizacje / Miniatury konta | System temporary files / Account temporary files / Downloaded updates / Account thumbnails | Disk cleanup step names (the program's own labels) |
+| program obsługi (Oczyszczania dysku) | handler | Disk Cleanup handler; the handler name "Previous Installations" is not translated |
+| folder pobrań / wydanie (GitHub) | downloads folder / release | WinUtil and RustDesk downloads; "test release (prerelease)", "release draft" |
+| Sprawdzenie | Check | Step name after Disk Cleanup in the Windows.old repair |
+| DSOptimizer – punkt ręczny | DSOptimizer – manual restore point | Description of the restore point created on demand; shown by System Restore |
+| Zresetuj Windows Update i usuń blokady | Reset Windows Update and remove blocks | Repair item title quoted in the Windows Update reset result. **do audytu (Etap 5)** – must match the catalog's English title |
 
 ## Windows names
 
@@ -259,6 +272,7 @@ How to read the tables:
 | Menedżer zadań | Task Manager | Same source |
 | Usługi | Services | [Fix problems in Windows Search](https://learn.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/fix-problems-in-windows-search) ("open Services") |
 | Oczyszczanie dysku | Disk Cleanup | [Free up drive space in Windows](https://support.microsoft.com/en-us/windows/experience/storage-filemanagement/free-up-drive-space-in-windows) |
+| Optymalizacja dostarczania | Delivery Optimization | Disk cleanup step and Windows feature; [Delivery Optimization for Windows updates](https://learn.microsoft.com/en-us/windows/deployment/do/waas-delivery-optimization) |
 | Poprzednie instalacje systemu Windows | Previous Windows installation(s) | Disk Cleanup option; the program also matches the handler name "Previous Installations" in Windows – that text is not translated. **do audytu (Etap 5)** |
 | BitLocker | BitLocker | [BitLocker overview](https://support.microsoft.com/en-us/windows/security/encryption/bitlocker-overview) |
 | klucz odzyskiwania | recovery key | [Find your BitLocker recovery key](https://support.microsoft.com/en-us/windows/security/encryption/find-your-bitlocker-recovery-key) |
