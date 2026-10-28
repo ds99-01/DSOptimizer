@@ -34,7 +34,7 @@ No detection (`kind=action`). **No undo** (no journal): the action prints the pr
 - Confirmation in the UI before running (spec, section 7).
 
 ## VM test
-VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports: `tests/vm/out/<data>/<VM>/<RunLabel>/report.json` (folder in `.gitignore`).
+VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports: `tests/vm/out/<date>/<VM>/<RunLabel>/report.json` (folder in `.gitignore`).
 
 Two cases in `tests/vm/cases.psd1` (`Flow=Execute`, `Catalog=BuiltIn`):
 - `net-network-private-no-network`: **Passed** on Home and Pro. VM without a network (0 profiles): `execute` code 1, result `OperationFailed` / `Failed`, and the `message` in `report.json` has the Polish characters intact. Verbatim from the report: "Skrypt zakończył się kodem 1: brak aktywnego połączenia w profilu publicznym – nic nie zmieniono" (The script ended with code 1: no active connection with the public network profile – nothing was changed) (Unicode code points: `ł` U+0142, `ń` U+0144, `ą` U+0105, `ę` U+0119, dash `–` U+2013, so the message went from PowerShell through the CLI into JSON without encoding damage). The assertion `MessageContains = 'profilu publicznym'` (a fragment without Polish characters) passed. `Check` (`@(Get-NetConnectionProfile).Count -eq 0`): **Passed**, state = VM baseline, nothing appeared or changed. This is the only path that can be checked on the VM.

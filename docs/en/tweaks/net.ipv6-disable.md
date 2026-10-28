@@ -33,7 +33,7 @@ Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457), 2026-10-18 
 - No performance promises.
 
 ## VM test
-VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports: `tests/vm/out/<data>/<VM>/<RunLabel>/report.json` (folder in `.gitignore`).
+VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports: `tests/vm/out/<date>/<VM>/<RunLabel>/report.json` (folder in `.gitignore`).
 
 Case `net-ipv6-disable` (`Flow=Reboot`, run `reboot-net-ipv6-disable`, a separate run from a clean checkpoint; Pester 14/14 on Home and Pro), **Passed**, Home and Pro identical:
 - Checked: `detect-before` = `NotApplied` (`DisabledComponents` doesn't exist), `apply` = `Applied` (`requiresReboot` = true; snapshot after apply: DWORD 255 = 0xFF), `detect-after-apply` = `Applied`, **real restart** (later `LastBootUpTime`, `MarkerGone` = true), `detect-after-reboot` = `Applied`, `undo` = `Undone` (`requiresReboot` = true), after the second restart `detect-after-undo` = `NotApplied`. End state = state before: value absent, the `Tcpip6\Parameters` key stays (`KeyPresentAfterUndo`), `SnapshotDiff` empty.

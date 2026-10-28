@@ -46,7 +46,7 @@ No detection (`kind=action`): there's no status row in the UI, and running it ag
 - The effect on the local network isn't measured.
 
 ## VM test
-VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports: `tests/vm/out/<data>/<VM>/<RunLabel>/report.json` (folder in `.gitignore`).
+VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports: `tests/vm/out/<date>/<VM>/<RunLabel>/report.json` (folder in `.gitignore`).
 
 Case `net-smb-harden` (`Flow=Execute`, `Catalog=BuiltIn`), **Passed** on Home and Pro (Pester main 191/0/17):
 - Checked: `execute` code 0, result `Executed`; the `message` field of the CLI report contains the action's stdout: "Klient SMB: EnableInsecureGuestLogons = False, RequireSecuritySignature = True (odczyt zwrotny zgodny)." (in English: "SMB client: EnableInsecureGuestLogons = False, RequireSecuritySignature = True (verification matches)."). `Check` (independent of the action script): **Passed**: the cmdlet gives guest `False` and signing `True`, and the registry DWORDs are 0 and 1.

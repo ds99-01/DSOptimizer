@@ -39,7 +39,7 @@ Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, batch C4 exp
 - No promises of protection or performance.
 
 ## VM test
-Full VM run `vm-run-20261019-002807` (2026-10-19, about 00:28–00:46, build 26300.9457, HEAD `d589405`), Home and Pro, code 0 for this item's cases. Local reports outside git (`tests/vm/out/<data>/<VM>/<RunLabel>/report.json`).
+Full VM run `vm-run-20261019-002807` (2026-10-19, about 00:28–00:46, build 26300.9457, HEAD `d589405`), Home and Pro, code 0 for this item's cases. Local reports outside git (`tests/vm/out/<date>/<VM>/<RunLabel>/report.json`).
 
 - `sec-bitlocker-prevent-auto` (`Flow=Full`, `Catalog=BuiltIn`, value snapshot, `KeyPresentAfterUndo` for the `Control\BitLocker` key): **Passed** on Home and Pro. Checked: detection before `NotApplied`, apply `Applied` (DWORD `PreventDeviceEncryption` = 1 in the snapshot after apply), detection after apply `Applied`, undo `Undone`, detection after undo `NotApplied`; end state = state before (value deleted, `SnapshotDiff` empty), the `Control\BitLocker` key stays.
 - `sec-bitlocker-prevent-auto-effect` (`Flow=DetectOnly`): **Skipped** on Home and Pro. Reason: the effect "encryption doesn't start" requires a new OOBE with a Microsoft account, and the VM has a local account and a checkpoint after OOBE. Reported as skipped, not passed.

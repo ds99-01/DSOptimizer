@@ -6,14 +6,14 @@
 Port as `caution`: the mechanism (static verbs in `HKLM\SOFTWARE\Classes`, a submenu with `ExtendedSubCommandsKey`, `Extended`, `AppliesTo`) is described by MS, and **the specific structure that works on 26H2 was settled by the VMs and Dawid's manual test with UAC** (below). The item only adds menu entries; it doesn't take ownership of anything itself. The v3.2 aliases `sec_take_ownership` (add) and `sec_take_ownership_remove` (remove) both map to this one item (apply = add, undo = remove). Everything in `registry[]` (C# API), no script, no `reg.exe`, no top-level `runas` key.
 
 ## What it changes
-Under each of the two shell classes: `*` (files) and `Directory` (folders). All REG_SZ, paths in `HKLM\SOFTWARE\Classes\<Klasa>\shell\DSOptimizer.TakeOwnership` (not `HKCR\`, because `HKCR` is the merged view of `HKLM\Software\Classes` and `HKCU\Software\Classes`, and the tweak has `scope=machine`):
+Under each of the two shell classes: `*` (files) and `Directory` (folders). All REG_SZ, paths in `HKLM\SOFTWARE\Classes\<Class>\shell\DSOptimizer.TakeOwnership` (not `HKCR\`, because `HKCR` is the merged view of `HKLM\Software\Classes` and `HKCU\Software\Classes`, and the tweak has `scope=machine`):
 
 | Key | Value | Data |
 |---|---|---|
 | `...\DSOptimizer.TakeOwnership` | `MUIVerb` | `Przejmij na własność` |
 | `...\DSOptimizer.TakeOwnership` | `Extended` | empty REG_SZ (entry only with Shift) |
 | `...\DSOptimizer.TakeOwnership` (only `Directory`) | `AppliesTo` | `NOT (System.ItemPathDisplay:="C:\Windows" OR System.ItemPathDisplay:~<"C:\Windows\" OR System.ItemPathDisplay:="C:\")` |
-| `...\DSOptimizer.TakeOwnership` | `ExtendedSubCommandsKey` | `<Klasa>\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey` (path relative to HKCR, for example `*\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey`) |
+| `...\DSOptimizer.TakeOwnership` | `ExtendedSubCommandsKey` | `<Class>\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey` (path relative to HKCR, for example `*\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey`) |
 | `...\ExtendedSubCommandsKey\Shell\runas` | `MUIVerb` | `Przejmij na własność (administrator)` |
 | `...\ExtendedSubCommandsKey\Shell\runas` | `HasLUAShield` | empty REG_SZ (UAC shield, visual only) |
 | `...\ExtendedSubCommandsKey\Shell\runas\command` | (default) | file (`*`): `cmd.exe /c takeown /f "%1" /a && icacls "%1" /grant *S-1-5-32-544:F /c /l /q` |
