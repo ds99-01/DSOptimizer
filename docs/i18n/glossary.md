@@ -305,6 +305,33 @@ How to read the tables:
 | Otwórz github.com/… | Open github.com/… | Screen reader name of the repository link |
 | grafitowy (pasek marki, menu) | graphite | Theme hint: "The brand bar and the menu stay graphite." |
 
+## Catalog
+
+Rules for the texts of catalog items (title, "What you gain", "What it changes", technical details, warnings) and of
+the app lists. The English texts follow the same copy rules as the Polish ones; the repository tests check every
+translated field.
+
+| Polski | English | Notes/source |
+|---|---|---|
+| Co zyskasz | What you gain | Heading of the benefit field (see Key decisions) |
+| Co zmienia | What it changes | Heading of the description field |
+| Szczegóły techniczne | Technical details | Collapsed section with the technical description |
+
+- **Quoting another item.** When a text refers to another catalog item by its title (Polish „Ochrona systemu”), the
+  English text quotes the English title of that item exactly, in straight double quotes. The test
+  `QuotedCatalogTitles_UseEnglishTitle` compares the quote with the title in the English catalog.
+- **Windows names inside catalog texts** (Settings paths, Device Manager, Computer Management, services) follow English
+  Windows 11 exactly, as in the "Windows names" table below; a new Windows term goes there with its source address.
+- **Identifiers stay as they are:** registry paths, service names, cmdlets, file names, `shell:::{GUID}` and `0x…`
+  codes are copied character for character. Product names (titles of the install list) are not translated.
+- **Limits are the same as in Polish:** title up to 60 characters, summary up to 160, "What you gain" up to 220
+  characters and 2 sentences, at most 2 warnings of up to 140 characters each. The restart warning and the "can't be
+  undone" warning stay among the warnings in English too.
+- **Not in visible texts:** measurements, test machines, Windows build numbers, dates of checks and quotes from
+  Microsoft – the same forbidden phrases as in Polish.
+- **Warnings** are the short notes that change the decision (restart, no undo, something stops working); the
+  interface has no heading for them, so there is no fixed term.
+
 ## Windows names
 
 | Polski | English | Notes/source |
