@@ -166,6 +166,66 @@ public class WindowsEnglishTests
         Assert.EndsWith("). Using default settings; the file will be overwritten on the next change.", result.Warning, StringComparison.Ordinal);
     }
 
+    /// <summary>Plik ustawień we własnym korzeniu testu otwarty na wyłączność: odczyt rzuca IOException (tekst .NET w środku zdania).</summary>
+    [Fact]
+    public void Settings_Unreadable_English()
+    {
+        using var temp = new TempDirectory();
+        var store = new JsonFileSettingsStore(temp.AppRoot, new FixedClock());
+        store.Save(AppSettings.Default);
+
+        SettingsLoadResult result;
+        using (new FileStream(store.FilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        using (L.Use(UiLanguage.English))
+        {
+            result = store.Load();
+        }
+
+        Assert.Equal(AppSettings.Default, result.Settings);
+        Assert.StartsWith($"Can't read the settings file {store.FilePath}: ", result.Warning, StringComparison.Ordinal);
+        Assert.EndsWith(". Using default settings.", result.Warning, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Gałąź „brak uprawnień” w Guard: odmowa (Wszyscy) tylko na folderze w <c>%TEMP%\dso-tests\&lt;guid&gt;</c>, zdejmowana w finally;
+    /// SeBackup/SeRestore wyłączone w tokenie wątku (omijałyby ACL, np. w Git Bash).
+    /// </summary>
+    [Fact]
+    public void RepairFileSystem_ProbeDenied_English()
+    {
+        using var temp = new TempDirectory();
+        var locked = temp.Sub("zablokowany");
+        var child = Path.Combine(locked, "Windows.old");
+        Directory.CreateDirectory(child);
+        var everyone = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
+        var acl = Directory.GetAccessControl(locked);
+        acl.AddAccessRule(new FileSystemAccessRule(
+            everyone,
+            FileSystemRights.ListDirectory | FileSystemRights.ReadAttributes,
+            InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+            PropagationFlags.None,
+            AccessControlType.Deny));
+        Directory.SetAccessControl(locked, acl);
+        try
+        {
+            OperationException ex;
+            using (ThreadPrivileges.Disable(ThreadPrivileges.Backup, ThreadPrivileges.Restore))
+            using (L.Use(UiLanguage.English))
+            {
+                ex = Assert.Throws<OperationException>(() => new WindowsRepairFileSystem().ProbeDirectory(child));
+            }
+
+            Assert.Equal(OperationErrorKind.AccessDenied, ex.Kind);
+            Assert.StartsWith($"No permission to check the folder {child}: ", ex.Message, StringComparison.Ordinal);
+        }
+        finally
+        {
+            var restore = Directory.GetAccessControl(locked);
+            restore.RemoveAccessRuleAll(new FileSystemAccessRule(everyone, FileSystemRights.ListDirectory, AccessControlType.Deny));
+            Directory.SetAccessControl(locked, restore);
+        }
+    }
+
     /// <summary>Termin mija w predykacie przekierowania, więc kolejne żądanie nie startuje – zawsze nasz komunikat, nie tekst .NET.</summary>
     [Fact]
     public void WebDownloader_Timeout_English()
