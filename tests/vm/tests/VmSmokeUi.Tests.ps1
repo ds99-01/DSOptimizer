@@ -4,6 +4,27 @@
 
     Import-Module (Join-Path $PSScriptRoot '..\modules\VmSmokeUi.psm1') -Force
     $script:ModulePath = (Resolve-Path (Join-Path $PSScriptRoot '..\modules\VmSmokeUi.psm1')).Path
+    # Polskie teksty programu czytane ze źródeł C#. Są owinięte w L.T("…") (dawniej `const string X = "…"`), a kluczem tłumaczenia
+    # jest polski literał, więc sonda na polskiej VM szuka dokładnie tego, co tu wyciągnięto. Brak tekstu = błąd, nigdy test „na pusto”.
+    function script:ConvertFrom-CsLiteral([string]$Body) {
+        return [regex]::Replace($Body, '\\(.)', {
+            param($M)
+            switch ($M.Groups[1].Value) { 'n' { "`n" } 't' { "`t" } 'r' { "`r" } default { $M.Groups[1].Value } }
+        })
+    }
+    # $Lead = wyrażenie regularne tuż przed literałem; zwraca wszystkie dopasowane literały (z odcytowanymi \" i \\).
+    function script:Get-CsLiteral([string]$Source, [string]$Lead) {
+        return @([regex]::Matches($Source, $Lead + '"((?:[^"\\]|\\.)*)"') | ForEach-Object { ConvertFrom-CsLiteral $_.Groups[1].Value })
+    }
+    # Właściwość/stała tekstowa: `static string X => L.T("…")`, `X = L.T("…")` albo stare `const string X = "…"`.
+    function script:Get-CsText([string]$Source, [string]$Name) {
+        $Found = @(Get-CsLiteral $Source ('\b' + [regex]::Escape($Name) + '\s*(?:\{\s*get;\s*\}\s*)?(?:=>|=)\s*(?:L\.T\(\s*)?'))
+        if ($Found.Count -eq 0) { throw "Nie znaleziono tekstu '$Name' w źródle C# (kształt inny niż L.T(`"…`") albo const string?)." }
+        return $Found[0]
+    }
+    function script:Read-CoreSource([string]$RelativePath) {
+        [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot ('..\..\..\src\DSOptimizer.Core\' + $RelativePath)), [System.Text.Encoding]::UTF8)
+    }
     function script:New-HitPoint([string]$Name, [int]$Ht, $XDip = 8) { [pscustomobject]@{ Name = $Name; XDip = $XDip; X = $XDip; Y = 0; Ht = $Ht } }
     function script:New-UiProbe([hashtable]$Override) {
         $Probe = [ordered]@{
@@ -425,9 +446,7 @@ Describe 'Sonda: „Przygotowanie” (krok 9)' {
             return ($Parts -join ' + ')
         }
         function script:Get-PrepConstant([string]$Pattern) {
-            $Path = Join-Path $PSScriptRoot '..\..\..\src\DSOptimizer.Core\Prep\PrepText.cs'
-            $Source = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
-            return @([regex]::Matches($Source, $Pattern) | ForEach-Object { $_.Groups[1].Value })
+            return @(Get-CsLiteral (Read-CoreSource 'Prep\PrepText.cs') $Pattern)
         }
     }
     It 'krok 9 jest po kroku 8 („Aplikacje”) i jego odczycie N, a przed krokiem 10 („Naprawy”)' {
@@ -440,7 +459,7 @@ Describe 'Sonda: „Przygotowanie” (krok 9)' {
         $script:Step9 | Should -Match ([regex]::Escape('[System.Windows.Automation.SelectionItemPattern]::Pattern).Select()'))
     }
     It 'tytuły kroków hosta = tytuły z PrepText.cs (7, w kolejności), a sonda ma każdy jako literał ASCII' {
-        $Expected = @(Get-PrepConstant 'public const string (?!Page)\w+Title = "([^"]+)";')
+        $Expected = @(Get-PrepConstant 'public (?:static|const) string (?!Page)\w+Title\s*(?:=>|=)\s*(?:L\.T\(\s*)?')
         $Expected.Count | Should -Be 7
         (Get-GuiPrepExpected).Titles | Should -Be $Expected
         foreach ($Title in $Expected) { $script:Step9 | Should -Match ([regex]::Escape((ConvertTo-AsciiLiteral $Title))) }
@@ -451,8 +470,11 @@ Describe 'Sonda: „Przygotowanie” (krok 9)' {
         foreach ($Field in 'PrepMenuFound', 'PrepLoaded', 'PrepTitles') { $script:Step9 | Should -Match $Field }
     }
     It 'szuka przycisku „Otwórz Windows Update” i notatki zastępczej (teksty z PrepText.cs)' {
-        $Button = @(Get-PrepConstant 'OpenWindowsUpdate = "([^"]+)";')[0]
-        $Note = @(Get-PrepConstant 'WindowsUpdateNote = "([^"]+)";')[0]
+        $PrepSource = Read-CoreSource 'Prep\PrepText.cs'
+        $Button = Get-CsText $PrepSource 'OpenWindowsUpdate'
+        $Note = Get-CsText $PrepSource 'WindowsUpdateNote'
+        $Button | Should -Not -BeNullOrEmpty
+        $Note | Should -Not -BeNullOrEmpty
         $script:Step9 | Should -Match ([regex]::Escape((ConvertTo-AsciiLiteral $Button)))
         $script:Step9 | Should -Match ([regex]::Escape((ConvertTo-AsciiLiteral $Note)))
         foreach ($Field in 'PrepWindowsUpdateButton', 'PrepWindowsUpdateNote') { $script:Step9 | Should -Match $Field }
@@ -540,9 +562,8 @@ Describe 'Sonda: „Naprawy” (krok 10)' {
         $script:ProbeText.IndexOf('# 11.') | Should -BeGreaterThan $script:ProbeText.IndexOf('catch { $Out.RepairError = $_.Exception.Message')
     }
     It 'wchodzi na pozycję menu „Naprawy” (nazwa = GuiText dla kategorii repair) wzorcem SelectionItemPattern' {
-        $Path = Join-Path $PSScriptRoot '..\..\..\src\DSOptimizer.Core\Gui\GuiText.cs'
-        $Source = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
-        $Source | Should -Match ([regex]::Escape('"repair" => "Naprawy"'))
+        $Repair = @(Get-CsLiteral (Read-CoreSource 'Gui\GuiText.cs') '"repair"\s*=>\s*(?:L\.T\(\s*)?')
+        $Repair | Should -Be @('Naprawy')
         $script:Step10 | Should -Match ([regex]::Escape("Find-Element `$Root 'Naprawy' `$ListItem"))
         $script:Step10 | Should -Match ([regex]::Escape('[System.Windows.Automation.SelectionItemPattern]::Pattern).Select()'))
     }
@@ -657,9 +678,7 @@ Describe 'Sonda: „Instalacja” (krok 11)' {
         $script:Step11 | Should -Not -Match '# 12\.'
     }
     It 'wchodzi na pozycję menu „Instalacja” (nazwa = InstallText.PageTitle) wzorcem SelectionItemPattern' {
-        $Path = Join-Path $PSScriptRoot '..\..\..\src\DSOptimizer.Core\Install\InstallText.cs'
-        $Source = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
-        $Source | Should -Match ([regex]::Escape('public const string PageTitle = "Instalacja";'))
+        (Get-CsText (Read-CoreSource 'Install\InstallText.cs') 'PageTitle') | Should -Be 'Instalacja'
         $script:Step11 | Should -Match ([regex]::Escape("Find-Element `$Root 'Instalacja' `$ListItem"))
         $script:Step11 | Should -Match ([regex]::Escape('[System.Windows.Automation.SelectionItemPattern]::Pattern).Select()'))
     }
@@ -722,20 +741,18 @@ Describe 'Get-GuiInstallTitle' {
         $R = Get-GuiInstallTitle -CatalogDirectory $Dir
         @($R.Titles) | Should -Be @($Entries | ForEach-Object { [string]$_.title })
         $Core = Join-Path $PSScriptRoot '..\..\..\src\DSOptimizer.Core\Install'
-        $Text = [System.IO.File]::ReadAllText((Join-Path $Core 'InstallText.cs'), [System.Text.Encoding]::UTF8)
+        $Text = Read-CoreSource 'Install\InstallText.cs'
         $Catalog = [System.IO.File]::ReadAllText((Join-Path $Core 'AppsInstallCatalog.cs'), [System.Text.Encoding]::UTF8)
         $Names = @{}
-        foreach ($M in [regex]::Matches($Text, 'InstallCategory\.(\w+) => "([^"]+)"')) { $Names[$M.Groups[1].Value] = $M.Groups[2].Value }
+        foreach ($M in [regex]::Matches($Text, 'InstallCategory\.(\w+)\s*=>\s*(?:L\.T\(\s*)?"((?:[^"\\]|\\.)*)"')) { $Names[$M.Groups[1].Value] = ConvertFrom-CsLiteral $M.Groups[2].Value }
         $Expected = foreach ($M in [regex]::Matches($Catalog, '\["([a-z-]+)"\] = InstallCategory\.(\w+)')) {
             if (@($Entries | Where-Object { [string]$_.category -eq $M.Groups[1].Value }).Count -gt 0) { $Names[$M.Groups[2].Value] }
         }
         $Names.Count | Should -Be 8
         # „Wszystkie” na górze (D1) – ta sama nazwa co InstallText.AllCategoriesName w Core.
-        $All = [regex]::Match($Text, 'AllCategoriesName = "([^"]+)"')
-        $All.Success | Should -BeTrue
-        $Sel = [regex]::Match($Text, 'SelectedGroupName = "([^"]+)"')
-        $Sel.Success | Should -BeTrue
-        @($R.Categories) | Should -Be @(@($All.Groups[1].Value, $Sel.Groups[1].Value) + @($Expected))
+        $All = Get-CsText $Text 'AllCategoriesName'
+        $Sel = Get-CsText $Text 'SelectedGroupName'
+        @($R.Categories) | Should -Be @(@($All, $Sel) + @($Expected))
     }
 }
 
@@ -752,8 +769,9 @@ Describe 'Get-GuiUiCheck: InstallPage' {
         $ProbePrefix = Invoke-Expression $Line.Groups[1].Value
         $HostPrefix = & (Get-Module VmSmokeUi) { $script:InstallSourcePrefix }
         $HostPrefix.StartsWith($ProbePrefix, [System.StringComparison]::Ordinal) | Should -BeTrue
-        $Core = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\..\..\src\DSOptimizer.Core\Install\InstallText.cs'), [System.Text.Encoding]::UTF8)
-        $Core.Contains('"' + $HostPrefix + '"') | Should -BeTrue
+        # PageSummary: polski klucz L.F("Źródła: winget (Microsoft) i GitHub (RustDesk) · {0} · …") zaczyna się od prefiksu hosta.
+        $Core = Read-CoreSource 'Install\InstallText.cs'
+        $Core.Contains('L.F("' + $HostPrefix + '{0}') | Should -BeTrue
     }
     It 'przechodzi: pozycja menu, odczyt, wszystkie kategorie i tytuły, „Zainstaluj (0)” nieaktywne' {
         $Check = Get-InstallCheck (New-UiProbe @{})
@@ -968,6 +986,24 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
     }
     It 'błąd sondy jest w opisie HistoryMenu' {
         (Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{ Ok = $false; Error = 'brak okna'; HistoryMenuFound = $false })) 'HistoryMenu').Detail | Should -BeLike '*sonda: brak okna*'
+    }
+}
+
+Describe 'Get-CsText / Get-CsLiteral (czytanie owiniętych tekstów ze źródeł C#)' {
+    It 'rozpoznaje L.T we właściwości, w switchu i stare const string oraz odcytowuje cudzysłowy i ukośniki' {
+        $Src = @'
+public static string A => L.T("Pierwszy \"cytat\" i \\ ukośnik");
+public static string B { get; } = L.T("Drugi");
+public const string C = "Trzeci";
+InstallCategory.Tools => L.T("Narzędzia"),
+'@
+        Get-CsText $Src 'A' | Should -Be 'Pierwszy "cytat" i \ ukośnik'
+        Get-CsText $Src 'B' | Should -Be 'Drugi'
+        Get-CsText $Src 'C' | Should -Be 'Trzeci'
+        @(Get-CsLiteral $Src 'InstallCategory\.Tools\s*=>\s*(?:L\.T\(\s*)?') | Should -Be @('Narzędzia')
+    }
+    It 'brak tekstu to błąd, nie pusty wynik' {
+        { Get-CsText 'public static string A => Foo();' 'A' } | Should -Throw '*Nie znaleziono*'
     }
 }
 
