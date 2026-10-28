@@ -61,8 +61,8 @@ public static class HistoryText
     };
 
     /// <summary>
-    /// Powód bez przedrostka „Nie wykonano – ”/„Nie potwierdzono – ”; null/biały tekst = null. Przedrostek rozpoznawany w bieżącym
-    /// języku i po polsku: journal trzyma tekst z chwili zapisu, więc wpis sprzed przełączenia na angielski nadal jest polski.
+    /// Powód bez przedrostka „Nie wykonano – ”/„Nie potwierdzono – ”; null/biały tekst = null. Przedrostek rozpoznawany w każdym
+    /// języku interfejsu: journal trzyma tekst z chwili zapisu, więc wpis sprzed przełączenia języka jest w poprzednim języku.
     /// </summary>
     public static string? ShortReason(string? text)
     {
@@ -71,7 +71,7 @@ public static class HistoryText
             return null;
         }
 
-        foreach (var prefix in CurrentAndPolish(() => L.T("Nie wykonano – ")).Concat(CurrentAndPolish(() => L.T("Nie potwierdzono – "))))
+        foreach (var prefix in L.AllLanguages(() => L.T("Nie wykonano – "), () => L.T("Nie potwierdzono – ")))
         {
             if (text!.StartsWith(prefix, StringComparison.Ordinal))
             {
@@ -105,12 +105,12 @@ public static class HistoryText
 
     /// <summary>
     /// Tekst zdarzenia journala; <paramref name="message"/> dopisywany po „ – ”. Komunikat silnika o zmianie aktywnej po restarcie
-    /// (w bieżącym języku albo zapisany po polsku) nie jest dopisywany – mówi to już sam tekst zdarzenia.
+    /// (zapisany w dowolnym języku interfejsu) nie jest dopisywany – mówi to już sam tekst zdarzenia.
     /// </summary>
     public static string Event(string action, string outcome, string? message)
     {
         var text = BaseEventText(action, outcome);
-        return string.IsNullOrEmpty(message) || CurrentAndPolish(() => L.T("Zmiana aktywna po restarcie.")).Contains(message!, StringComparer.Ordinal)
+        return string.IsNullOrEmpty(message) || L.AllLanguages(() => L.T("Zmiana aktywna po restarcie.")).Contains(message!, StringComparer.Ordinal)
             ? text
             : $"{text} – {message}";
     }
@@ -140,19 +140,6 @@ public static class HistoryText
 
     internal static bool TryParseOutcome(string outcome, out TweakOutcome parsed)
         => Enum.TryParse(outcome, ignoreCase: false, out parsed) && Enum.IsDefined(typeof(TweakOutcome), parsed);
-
-    /// <summary>Tekst w bieżącym języku i (gdy inny) po polsku – tak, jak mógł zostać zapisany w journalu przez wcześniejsze uruchomienie.</summary>
-    private static string[] CurrentAndPolish(Func<string> text)
-    {
-        var current = text();
-        string polish;
-        using (L.Use(UiLanguage.Polish))
-        {
-            polish = text();
-        }
-
-        return string.Equals(current, polish, StringComparison.Ordinal) ? new[] { current } : new[] { current, polish };
-    }
 
     private static string BaseEventText(string action, string outcome)
     {

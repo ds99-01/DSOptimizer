@@ -275,7 +275,7 @@
     },
     {
       "pl": "Ponowne uruchomienie nie powiodło się: {0}",
-      "en": "Restart failed: {0}"
+      "en": "Program restart failed: {0}"
     },
     {
       "pl": "Nie można utworzyć potoku: {0}",

@@ -59,11 +59,11 @@
   },
   {
    "pl": "Opcja --catalog nie dotyczy --list-apps ani --remove-app.",
-   "en": "Option --catalog does not apply to --list-apps or --remove-app."
+   "en": "Option --catalog doesn't apply to --list-apps or --remove-app."
   },
   {
    "pl": "Opcja --catalog nie dotyczy poleceń instalacji (listę aplikacji podmienia --apps-catalog).",
-   "en": "Option --catalog does not apply to the install commands (use --apps-catalog to replace the app list)."
+   "en": "Option --catalog doesn't apply to the install commands (use --apps-catalog to replace the app list)."
   },
   {
    "pl": "Opcja --apps-catalog dotyczy tylko --list-install i --install-apps.",

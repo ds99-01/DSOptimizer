@@ -167,7 +167,7 @@
     },
     {
       "pl": "Odczyt obszaru roboczego monitora nie powiódł się ({0}) – używam obszaru monitora głównego.",
-      "en": "Reading the monitor's work area didn't succeed ({0}) – using the primary monitor's work area."
+      "en": "Couldn't read the monitor's work area ({0}) – using the primary monitor's work area."
     },
     {
       "pl": "Sprawdzanie…",

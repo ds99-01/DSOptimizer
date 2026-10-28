@@ -125,6 +125,29 @@ public class GuiEnglishTests
     }
 
     [Fact]
+    public void ShortReason_EnglishEntryInPolishRun()
+    {
+        using (L.Use(UiLanguage.Polish))
+        {
+            Assert.Equal("no connection to GitHub", HistoryText.ShortReason("Not done – no connection to GitHub"));
+            Assert.Equal("the uninstaller is still running", HistoryText.ShortReason("Not confirmed – the uninstaller is still running"));
+            Assert.Equal(
+                "Nie wykonano – no network",
+                HistoryText.Event("install-app", "Failed", "github: rustdesk/rustdesk", "Not done – no network"));
+        }
+    }
+
+    [Fact]
+    public void History_RebootDetectMessage_EnglishEntryInPolishRun()
+    {
+        using (L.Use(UiLanguage.Polish))
+        {
+            Assert.Equal("Po restarcie: zmiana aktywna", HistoryText.Event("detect", "Applied", "The change is active after the restart."));
+            Assert.Equal("Po restarcie: zmiana aktywna", HistoryText.Event("detect", "Applied", "Zmiana aktywna po restarcie."));
+        }
+    }
+
+    [Fact]
     public void ShortReason_PolishRun_Unchanged()
         => Assert.Equal("brak sieci", HistoryText.ShortReason("Nie wykonano – brak sieci"));
 

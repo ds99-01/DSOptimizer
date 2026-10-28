@@ -83,7 +83,7 @@ How to read the tables:
 | Aplikacje | Apps | Page; English README |
 | Instalacja | Install | Page and log component; English README |
 | Historia zmian | Change history | Page; English README |
-| Ustawienia | Settings | Program page and log component; also the Windows Settings app (see Windows names) |
+| Ustawienia | Settings | Program page and log component; also the section headers of the item list (see "Akcje" in Concepts); also the Windows Settings app (see Windows names) |
 | Kategorie | Categories | Menu heading |
 | Wyniki wyszukiwania | Search results | Page title during search |
 | Licencje komponentów | Component licenses | Window title |
@@ -184,6 +184,7 @@ How to read the tables:
 | pozycja | item | See Key decisions. "1 item", "2 items" |
 | ustawienie (rodzaj pozycji) | setting | Item kind `tweak`; "0 of 13 settings applied". "Tweak" not used in the interface |
 | akcja | action | Item kind `action` |
+| kategoria | category | **Warning:** the key "{0} kategorii" is today the locative singular ("w 1 kategorii" → "in 1 category", search summary). Never bind the genitive plural ("5 kategorii" → "5 categories") to the same key – use a separate sentence |
 | panel | panel | Item kind `panel` |
 | aplikacja | app | Windows 11 uses "app"; "34 apps" |
 | program (rodzaj aplikacji) | Program | Desktop app kind next to "Store" |
@@ -286,7 +287,7 @@ How to read the tables:
 | potok / Job Object | pipe / Job Object | Process plumbing in Windows layer errors; "Job Object" kept as the Windows name |
 | Ponowne uruchomienie programu: {0} | Restarting the program: {0} | Startup log line before the program restarts itself |
 | Ostatnie sprawdzenie: {0} | Last check: {0} | Category subtitle after a status check: "Last check: 14:05" (24-hour time in both languages) |
-| Ustawienia / Akcje (sekcje listy) | Settings / Actions | Section headers in the item list (settings vs. actions and panels) |
+| Akcje (sekcja listy) | Actions | Section header in the item list (actions and panels), next to "Ustawienia" = Settings (see Pages and menu) |
 | Identyfikator | ID | Detail panel label (item ID) |
 | Dostępne / Niedostępne / Nie dotyczy | Available / Not available / Not applicable | Detail panel "Undo" values |
 | Administrator | Administrator | Brand bar badge: the program runs as administrator |

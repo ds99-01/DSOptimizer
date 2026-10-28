@@ -161,6 +161,17 @@ public class InstallEnglishTests
     }
 
     [Fact]
+    public void WithoutLog_EnglishTextInPolishRun_CutsLog()
+    {
+        using (L.Use(UiLanguage.Polish))
+        {
+            Assert.Equal("Not done – x.", InstallText.WithoutLog("Not done – x. winget log: " + VlcLog));
+            Assert.Equal("Not done – x.", InstallText.WithoutLog("Not done – x. MSI log: " + MsiLog));
+            Assert.Equal("A", InstallText.WithoutLog("A MSI log: x Log winget: y"));
+        }
+    }
+
+    [Fact]
     public void Install_NoNetwork_English()
     {
         using (L.Use(UiLanguage.English))

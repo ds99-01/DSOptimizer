@@ -7,7 +7,7 @@
     },
     {
       "pl": "Nie znaleziono pliku programu.",
-      "en": "The program file was not found."
+      "en": "The program file wasn't found."
     },
     {
       "pl": "Nie udało się ponownie uruchomić programu: {0}",
@@ -31,7 +31,7 @@
     },
     {
       "pl": "Nie udało się zapisać wybranego języka: {0} Program nie został uruchomiony ponownie.",
-      "en": "Couldn't save the selected language: {0} The program was not restarted."
+      "en": "Couldn't save the selected language: {0} The program wasn't restarted."
     },
     {
       "pl": "Nie udało się zamknąć okna wyboru języka.",

@@ -333,7 +333,7 @@ public class WindowsEnglishTests
         }
 
         Assert.Equal(
-            new[] { @"Info Startup: Restarting the program: C:\x\DSOptimizer.exe", "Warn Startup: Restart failed: Access is denied" },
+            new[] { @"Info Startup: Restarting the program: C:\x\DSOptimizer.exe", "Warn Startup: Program restart failed: Access is denied" },
             events);
     }
 

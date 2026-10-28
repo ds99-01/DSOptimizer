@@ -137,12 +137,12 @@ public static class InstallText
 
     /// <summary>
     /// Tekst bez dopisku ze ścieżką logu (<c>" Log winget: …"</c> albo <c>" Log MSI: …"</c>, pierwszy znaleziony) – powód porażki w journalu.
-    /// Znacznik rozpoznawany w bieżącym języku i po polsku: tekst zapisany przez wcześniejsze uruchomienie nadal jest polski.
+    /// Znacznik rozpoznawany w każdym języku interfejsu: tekst zapisany przez wcześniejsze uruchomienie bywa w innym języku.
     /// </summary>
     public static string WithoutLog(string text)
     {
         var cut = -1;
-        foreach (var marker in CurrentAndPolish(() => WingetLogMarker, () => MsiLogMarker))
+        foreach (var marker in L.AllLanguages(() => WingetLogMarker, () => MsiLogMarker))
         {
             var at = text.IndexOf(marker, StringComparison.Ordinal);
             if (at >= 0 && (cut < 0 || at < cut))
@@ -563,28 +563,4 @@ public static class InstallText
     private static string JournalDetails(string? version, string? logPath)
         => (version is null ? string.Empty : L.F(", wersja {0}", version))
             + (logPath is null ? string.Empty : ", log: " + logPath);
-
-    /// <summary>Teksty w bieżącym języku i (gdy inne) po polsku – tak, jak mogły zostać zapisane przez wcześniejsze uruchomienie.</summary>
-    private static List<string> CurrentAndPolish(params Func<string>[] texts)
-    {
-        var result = new List<string>(texts.Length * 2);
-        foreach (var text in texts)
-        {
-            result.Add(text());
-        }
-
-        using (L.Use(UiLanguage.Polish))
-        {
-            foreach (var text in texts)
-            {
-                var polish = text();
-                if (!result.Contains(polish))
-                {
-                    result.Add(polish);
-                }
-            }
-        }
-
-        return result;
-    }
 }

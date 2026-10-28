@@ -54,7 +54,7 @@ public class ProgramRelauncherTests
         using (L.Use(UiLanguage.English))
         {
             var ex = Assert.Throws<OperationException>(() => relauncher.Relaunch());
-            Assert.Equal("The program file was not found.", ex.Message);
+            Assert.Equal("The program file wasn't found.", ex.Message);
         }
 
         Assert.False(started);

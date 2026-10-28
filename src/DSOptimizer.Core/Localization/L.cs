@@ -103,6 +103,38 @@ public static class L
         return string.Format(Culture, form ?? PolishPlural.Choose(count, one, few, many), count);
     }
 
+    /// <summary>
+    /// Teksty w każdym języku interfejsu: najpierw wszystkie w bieżącym języku, potem w pozostałych (kolejność <see cref="UiLanguage"/>),
+    /// bez powtórzeń. Do rozpoznawania własnych tekstów zapisanych wcześniej (journal) w innym języku niż bieżący.
+    /// </summary>
+    internal static IReadOnlyList<string> AllLanguages(params Func<string>[] texts)
+    {
+        if (texts is null)
+        {
+            throw new ArgumentNullException(nameof(texts));
+        }
+
+        var current = Current;
+        var languages = new[] { current }.Concat(((UiLanguage[])Enum.GetValues(typeof(UiLanguage))).Where(l => l != current));
+        var result = new List<string>(texts.Length * 2);
+        foreach (var language in languages)
+        {
+            using (Use(language))
+            {
+                foreach (var text in texts)
+                {
+                    var value = text();
+                    if (!result.Contains(value, StringComparer.Ordinal))
+                    {
+                        result.Add(value);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
     /// <summary>Wbudowane pliki tłumaczeń (zasoby <c>DSOptimizer.Core.Translations.*.json</c> zestawu Core).</summary>
     public static IReadOnlyList<TranslationSource> BuiltInSources()
     {
