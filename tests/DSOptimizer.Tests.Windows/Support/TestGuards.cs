@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using DSOptimizer.Windows;
 
@@ -25,5 +26,7 @@ internal static class TestGuards
         Environment.SetEnvironmentVariable(BlockRealWinget, "1");
         Environment.SetEnvironmentVariable(BlockRealNetwork, "1");
         Environment.SetEnvironmentVariable(BlockRealMsiexec, "1");
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo("pl-PL");
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("pl-PL");
     }
 }
