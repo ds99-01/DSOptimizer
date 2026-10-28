@@ -25,6 +25,7 @@ BeforeAll {
         $TranslationDirectory = Join-Path -Path $Root -ChildPath 'src\DSOptimizer.Core\Localization\Translations'
         $null = New-Item -ItemType Directory -Path $TranslationDirectory -Force
         [System.IO.File]::WriteAllText((Join-Path -Path $TranslationDirectory -ChildPath 'x.json'), $Translations, $script:Utf8NoBom)
+        [System.IO.File]::WriteAllText((Join-Path -Path $Root -ChildPath 'src\Empty.cs'), 'class Empty { }', $script:Utf8NoBom)
         foreach ($Name in $Files.Keys) {
             $Path = Join-Path -Path $Root -ChildPath $Name
             $null = New-Item -ItemType Directory -Path (Split-Path -Path $Path -Parent) -Force
@@ -34,11 +35,17 @@ BeforeAll {
     }
 
     function script:Invoke-Report {
-        param([string]$Root, [switch]$FailOnMissing)
+        param(
+            [string]$Root,
+            [switch]$FailOnMissing,
+            [string]$ScriptPath = $script:ScriptPath,
+            [string]$WorkDirectory = $TestDrive
+        )
 
-        $Switch = ''
-        if ($FailOnMissing) { $Switch = '-FailOnMissing' }
-        $Command = "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; & '$($script:ScriptPath)' -Root '$Root' $Switch; exit `$LASTEXITCODE"
+        $Arguments = ''
+        if ($Root) { $Arguments += " -Root '$Root'" }
+        if ($FailOnMissing) { $Arguments += ' -FailOnMissing' }
+        $Command = "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Set-Location -LiteralPath '$WorkDirectory'; & '$ScriptPath'$Arguments; exit `$LASTEXITCODE"
         $Previous = [Console]::OutputEncoding
         [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
         try {
@@ -51,7 +58,6 @@ BeforeAll {
         return [pscustomobject]@{ Lines = $Lines; Text = ($Lines -join "`n"); Code = $Code }
     }
 }
-
 Describe 'Get-MissingTranslations.ps1' {
     It 'tekst z tłumaczeniem nie jest brakiem' {
         $Root = New-TestTree -Files @{ 'src\A.cs' = 'var s = L.T("Zapisz");' } -Translations '{"language":"en","entries":[{"pl":"Zapisz","en":"Save"}]}'
@@ -81,17 +87,84 @@ Describe 'Get-MissingTranslations.ps1' {
         $Result.Text | Should -Match 'A\.cs:1  a "b"'
     }
 
-    It 'rozkodowuje \u i \n w literale C#' {
-        $Root = New-TestTree -Files @{ 'src\A.cs' = 'var s = L.T("Ł\n\\");' }
+    It 'rozkodowuje \uXXXX, \t, \0, \'' i \\ w literale C#' {
+        $Root = New-TestTree -Files @{ 'src\A.cs' = 'var s = L.T("\u0141\t\0\'' \\ \a\b\f\v");' }
         $Result = Invoke-Report -Root $Root
-        $Result.Text | Should -Match ([regex]::Escape('A.cs:1  Ł\n\'))
+        $Result.Text | Should -Match ([regex]::Escape('A.cs:1  Ł\t' + [char]0 + "' \ " + [char]7 + [char]8 + [char]12 + [char]11))
     }
 
+    It 'klucze są porównywane z uwzględnieniem wielkości liter' {
+        $Root = New-TestTree -Files @{ 'src\A.cs' = 'var a = L.T("Wyślij"); var b = L.T("stary");' } -Translations '{"language":"en","entries":[{"pl":"wyślij","en":"send"},{"pl":"Stary","en":"Old"},{"pl":"Stary","en":"Old2"},{"pl":"STARY","en":"OLD"}]}'
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match 'Braki: 2, nieużywane: 3'
+        $Result.Text | Should -Match 'A\.cs:1  Wyślij'
+        $Result.Text | Should -Match 'A\.cs:1  stary'
+        $Result.Text | Should -Match '(?m)^  STARY$'
+    }
+
+    It 'ignoruje wywołania w komentarzach C# i zachowuje numery linii' {
+        $Source = "/// <summary>np. L.T(`"Z komentarza`")</summary>`n// L.T(`"Liniowy`")`n/* L.T(`"Blokowy`")`n   L.T(`"Blokowy2`") */`nvar s = L.T(`"Prawdziwy`"); var u = `"http://x`"; var c = '`"'; var t = L.T(`"Po url`");"
+        $Root = New-TestTree -Files @{ 'src\A.cs' = $Source }
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match 'Braki: 2, nieużywane: 0'
+        $Result.Text | Should -Match 'A\.cs:5  Prawdziwy'
+        $Result.Text | Should -Match 'A\.cs:5  Po url'
+        $Result.Text | Should -Not -Match 'komentarza|Liniowy|Blokowy'
+    }
+
+    It 'ignoruje {l:T} w komentarzach XAML' {
+        $Root = New-TestTree -Files @{ 'src\V.xaml' = "<!-- {l:T 'Zakomentowany'}`n -->`n<Button Content=`"{l:T 'Żywy'}`" />" }
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match 'Braki: 1, nieużywane: 0'
+        $Result.Text | Should -Match 'V\.xaml:3  Żywy'
+    }
+
+    It 'czyta plik źródłowy zapisany z BOM' {
+        $Root = New-TestTree
+        $Path = Join-Path -Path $Root -ChildPath 'src\Bom.cs'
+        [System.IO.File]::WriteAllText($Path, 'var s = L.T("Z BOM");', (New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $true))
+        (Invoke-Report -Root $Root).Text | Should -Match 'Bom\.cs:1  Z BOM'
+    }
+
+    It 'nieobsługiwane sekwencje \x i \U dają kod 2 z miejscem' {
+        $Root = New-TestTree -Files @{ 'src\A.cs' = "var a = 1;`nvar s = L.T(`"\U0001F600`");" }
+        $Result = Invoke-Report -Root $Root
+        $Result.Code | Should -Be 2
+        $Result.Text | Should -Match 'src/A\.cs:2'
+        $Root2 = New-TestTree -Files @{ 'src\A.cs' = 'var s = L.T("a \x41");' }
+        (Invoke-Report -Root $Root2).Code | Should -Be 2
+    }
+
+    It 'zły -Root i korzeń bez src dają kod 2, także z -FailOnMissing' {
+        $Result = Invoke-Report -Root (Join-Path -Path $TestDrive -ChildPath 'nie-ma-takiego')
+        $Result.Code | Should -Be 2
+        $Empty = Join-Path -Path $TestDrive -ChildPath ([guid]::NewGuid().ToString('N'))
+        $null = New-Item -ItemType Directory -Path $Empty
+        (Invoke-Report -Root $Empty -FailOnMissing).Code | Should -Be 2
+    }
+
+    It 'bez -Root szuka repo obok skryptu, niezależnie od katalogu roboczego' {
+        $Root = New-TestTree -Files @{ 'src\A.cs' = 'var s = L.T("Zapisz");' } -Translations '{"language":"en","entries":[{"pl":"Zapisz","en":"Save"}]}'
+        $null = New-Item -ItemType Directory -Path (Join-Path -Path $Root -ChildPath 'tools\i18n') -Force
+        $Copy = Join-Path -Path $Root -ChildPath 'tools\i18n\Get-MissingTranslations.ps1'
+        Copy-Item -LiteralPath $script:ScriptPath -Destination $Copy
+        $Other = Join-Path -Path $TestDrive -ChildPath ([guid]::NewGuid().ToString('N'))
+        $null = New-Item -ItemType Directory -Path $Other
+        $Result = Invoke-Report -ScriptPath $Copy -WorkDirectory $Other
+        $Result.Code | Should -Be 0
+        $Result.Text | Should -Match 'Braki: 0, nieużywane: 0'
+    }
     It 'rozkodowuje encje i apostrof w XAML' {
         $Root = New-TestTree -Files @{ 'src\V.xaml' = "<Button Content=`"{l:T 'Zapisz &amp; zamknij'}`" />`r`n<TextBlock Text=`"{l:T 'Nie \'tak\''}`" />" }
         $Result = Invoke-Report -Root $Root
         $Result.Text | Should -Match 'src/V\.xaml:1  Zapisz & zamknij'
         $Result.Text | Should -Match "src/V\.xaml:2  Nie 'tak'"
+    }
+
+    It 'rozkodowuje &lt;, &#N; i \\ w XAML' {
+        $Root = New-TestTree -Files @{ 'src\V.xaml' = "<Button Content=`"{l:T 'a &lt;b&gt; &#65;&#x42; \\ c'}`" />" }
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match ([regex]::Escape('V.xaml:1  a <b> AB \ c'))
     }
 
     It 'wpis bez źródła jest nieużywany' {

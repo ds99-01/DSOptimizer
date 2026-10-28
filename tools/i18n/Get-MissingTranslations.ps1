@@ -43,6 +43,10 @@ function ConvertFrom-CSharpLiteral {
                 'n' { return "`n" }
                 'r' { return "`r" }
                 't' { return "`t" }
+                'a' { return [string][char]7 }
+                'b' { return [string][char]8 }
+                'f' { return [string][char]12 }
+                'v' { return [string][char]11 }
                 '0' { return [string][char]0 }
                 default { return $Code }
             }
@@ -67,10 +71,30 @@ function ConvertFrom-XamlLiteral {
     return [regex]::Replace($Decoded, '\\([\\''])', '$1')
 }
 
+function Hide-Comments {
+    param([string]$Text, [bool]$IsXaml)
+    $Blank = {
+        param($Match)
+        return [regex]::Replace($Match.Value, '[^\r\n]', ' ')
+    }
+    if ($IsXaml) {
+        return [regex]::Replace($Text, '<!--[\s\S]*?-->', $Blank)
+    }
+    $Tokens = '@"(?:[^"]|"")*"|"(?:[^"\\\r\n]|\\.)*"|''(?:[^''\\\r\n]|\\.)+''|//[^\r\n]*|/\*[\s\S]*?\*/'
+    return [regex]::Replace($Text, $Tokens, {
+            param($Match)
+            if ($Match.Value.StartsWith('//') -or $Match.Value.StartsWith('/*')) {
+                return [regex]::Replace($Match.Value, '[^\r\n]', ' ')
+            }
+            return $Match.Value
+        })
+}
+
 function Get-SourceTexts {
     param([string]$Path, [string]$Relative)
     $Content = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
     $IsXaml = $Path.EndsWith('.xaml', [System.StringComparison]::OrdinalIgnoreCase)
+    $Content = Hide-Comments -Text $Content -IsXaml $IsXaml
     if ($IsXaml) {
         $Pattern = '\{l:T ''((?:[^''\\]|\\.)*)''\}'
     }
@@ -81,6 +105,9 @@ function Get-SourceTexts {
         $Line = 1
         for ($Index = 0; $Index -lt $Match.Index; $Index++) {
             if ($Content[$Index] -eq "`n") { $Line++ }
+        }
+        if (-not $IsXaml -and -not [regex]::IsMatch($Match.Groups[1].Value, '^(?:[^\\]|\\[^xU])*$')) {
+            throw ('Nieobsługiwana sekwencja ucieczki (\x lub \U) w {0}:{1}' -f $Relative, $Line)
         }
         if ($IsXaml) { $Decoded = ConvertFrom-XamlLiteral -Text $Match.Groups[1].Value }
         else { $Decoded = ConvertFrom-CSharpLiteral -Text $Match.Groups[1].Value }
@@ -96,80 +123,88 @@ function Format-Shown {
     return $Text.Replace("`r", '\r').Replace("`n", '\n').Replace("`t", '\t')
 }
 
-if ([string]::IsNullOrEmpty($Root)) {
-    $ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
-    $Root = Join-Path -Path $ScriptDirectory -ChildPath '..\..'
-}
-$RootPath = (Resolve-Path -LiteralPath $Root).Path.TrimEnd('\', '/')
-$SrcPath = Join-Path -Path $RootPath -ChildPath 'src'
-$Translations = @{}
+try {
+    if ([string]::IsNullOrEmpty($Root)) {
+        $ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+        $Root = Join-Path -Path $ScriptDirectory -ChildPath '..\..'
+    }
+    $RootPath = (Resolve-Path -LiteralPath $Root).Path.TrimEnd('\', '/')
+    $SrcPath = Join-Path -Path $RootPath -ChildPath 'src'
+    $Translations = New-Object -TypeName 'System.Collections.Generic.Dictionary[string,string]' -ArgumentList ([System.StringComparer]::Ordinal)
 
-$TranslationDirectory = Join-Path -Path $SrcPath -ChildPath 'DSOptimizer.Core\Localization\Translations'
-$TranslationFiles = @()
-if (Test-Path -LiteralPath $TranslationDirectory) {
-    $TranslationFiles = @(Get-ChildItem -LiteralPath $TranslationDirectory -Filter '*.json' -File)
-}
-foreach ($File in $TranslationFiles) {
-    try {
-        $Json = [System.IO.File]::ReadAllText($File.FullName, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
-        if ($null -eq $Json -or $null -eq $Json.PSObject.Properties['entries']) { throw 'brak pola "entries"' }
-        foreach ($Entry in @($Json.entries)) {
-            if ($null -eq $Entry.PSObject.Properties['pl'] -or [string]::IsNullOrEmpty([string]$Entry.pl)) { throw 'wpis bez pola "pl"' }
-            $English = ''
-            if ($null -ne $Entry.PSObject.Properties['en']) { $English = [string]$Entry.en }
-            $Pl = [string]$Entry.pl
-            if (-not $Translations.ContainsKey($Pl) -or $English.Length -gt 0) { $Translations[$Pl] = $English }
+    $TranslationDirectory = Join-Path -Path $SrcPath -ChildPath 'DSOptimizer.Core\Localization\Translations'
+    $TranslationFiles = @()
+    if (Test-Path -LiteralPath $TranslationDirectory) {
+        $TranslationFiles = @(Get-ChildItem -LiteralPath $TranslationDirectory -Filter '*.json' -File)
+    }
+    foreach ($File in $TranslationFiles) {
+        try {
+            $Json = [System.IO.File]::ReadAllText($File.FullName, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+            if ($null -eq $Json -or $null -eq $Json.PSObject.Properties['entries']) { throw 'brak pola "entries"' }
+            foreach ($Entry in @($Json.entries)) {
+                if ($null -eq $Entry.PSObject.Properties['pl'] -or [string]::IsNullOrEmpty([string]$Entry.pl)) { throw 'wpis bez pola "pl"' }
+                $English = ''
+                if ($null -ne $Entry.PSObject.Properties['en']) { $English = [string]$Entry.en }
+                $Pl = [string]$Entry.pl
+                if (-not $Translations.ContainsKey($Pl) -or $English.Length -gt 0) { $Translations[$Pl] = $English }
+            }
+        }
+        catch {
+            Write-Output ('Błąd pliku tłumaczeń {0}: {1}' -f $File.Name, $_.Exception.Message)
+            exit 2
         }
     }
-    catch {
-        Write-Output ('Błąd pliku tłumaczeń {0}: {1}' -f $File.Name, $_.Exception.Message)
-        exit 2
-    }
-}
 
-$Paths = New-Object -TypeName 'System.Collections.Generic.List[string]'
-$Full = New-Object -TypeName 'System.Collections.Generic.List[string]'
-if (Test-Path -LiteralPath $SrcPath) {
-    foreach ($Filter in '*.cs', '*.xaml') {
-        foreach ($File in Get-ChildItem -LiteralPath $SrcPath -Recurse -File -Filter $Filter) {
-            if (-not ($File.Extension -ceq '.cs' -or $File.Extension -ceq '.xaml')) { continue }
-            $Relative = $File.FullName.Substring($RootPath.Length).TrimStart('\', '/').Replace('\', '/')
-            $Segments = $Relative.Split('/')
-            if (($Segments -contains 'obj') -or ($Segments -contains 'bin')) { continue }
-            if ($Relative.EndsWith('Localization/L.cs', [System.StringComparison]::Ordinal)) { continue }
-            $Paths.Add($Relative)
-            $Full.Add($File.FullName)
+    $Paths = New-Object -TypeName 'System.Collections.Generic.List[string]'
+    $Full = New-Object -TypeName 'System.Collections.Generic.List[string]'
+    if (Test-Path -LiteralPath $SrcPath) {
+        foreach ($Filter in '*.cs', '*.xaml') {
+            foreach ($File in Get-ChildItem -LiteralPath $SrcPath -Recurse -File -Filter $Filter) {
+                if (-not ($File.Extension -ceq '.cs' -or $File.Extension -ceq '.xaml')) { continue }
+                $Relative = $File.FullName.Substring($RootPath.Length).TrimStart('\', '/').Replace('\', '/')
+                $Segments = $Relative.Split('/')
+                if (($Segments -contains 'obj') -or ($Segments -contains 'bin')) { continue }
+                if ($Relative.EndsWith('Localization/L.cs', [System.StringComparison]::Ordinal)) { continue }
+                $Paths.Add($Relative)
+                $Full.Add($File.FullName)
+            }
         }
     }
-}
-$PathKeys = $Paths.ToArray()
-$FullItems = $Full.ToArray()
-[System.Array]::Sort($PathKeys, $FullItems, [System.StringComparer]::Ordinal)
+    if (@($Paths | Where-Object { $_.EndsWith('.cs', [System.StringComparison]::Ordinal) }).Count -eq 0) {
+        throw ('Nie znaleziono żadnego pliku .cs w {0} (zły -Root?).' -f $SrcPath)
+    }
+    $PathKeys = $Paths.ToArray()
+    $FullItems = $Full.ToArray()
+    [System.Array]::Sort($PathKeys, $FullItems, [System.StringComparer]::Ordinal)
 
-$Used = @{}
-$Missing = New-Object -TypeName 'System.Collections.Generic.List[object]'
-for ($Index = 0; $Index -lt $PathKeys.Length; $Index++) {
-    foreach ($Item in @(Get-SourceTexts -Path $FullItems[$Index] -Relative $PathKeys[$Index])) {
-        if ($Used.ContainsKey($Item.Text)) { continue }
-        $Used[$Item.Text] = $true
-        if (-not ($Translations.ContainsKey($Item.Text) -and $Translations[$Item.Text].Length -gt 0)) {
-            $Missing.Add($Item)
+    $Used = New-Object -TypeName 'System.Collections.Generic.HashSet[string]' -ArgumentList ([System.StringComparer]::Ordinal)
+    $Missing = New-Object -TypeName 'System.Collections.Generic.List[object]'
+    for ($Index = 0; $Index -lt $PathKeys.Length; $Index++) {
+        foreach ($Item in @(Get-SourceTexts -Path $FullItems[$Index] -Relative $PathKeys[$Index])) {
+            if (-not $Used.Add($Item.Text)) { continue }
+            if (-not ($Translations.ContainsKey($Item.Text) -and $Translations[$Item.Text].Length -gt 0)) {
+                $Missing.Add($Item)
+            }
         }
     }
-}
 
-$Unused = [string[]]@($Translations.Keys | Where-Object { -not $Used.ContainsKey($_) })
-[System.Array]::Sort($Unused, [System.StringComparer]::Ordinal)
+    $Unused = [string[]]@(@($Translations.Keys) | Where-Object { -not $Used.Contains($_) })
+    [System.Array]::Sort($Unused, [System.StringComparer]::Ordinal)
 
-Write-Output ('Brak tłumaczenia ({0})' -f $Missing.Count)
-foreach ($Item in $Missing) {
-    Write-Output ('  {0}  {1}' -f $Item.Where, (Format-Shown -Text $Item.Text))
-}
-Write-Output ('Nieużywane tłumaczenia ({0})' -f $Unused.Count)
-foreach ($Text in $Unused) {
-    Write-Output ('  {0}' -f (Format-Shown -Text $Text))
-}
-Write-Output ('Braki: {0}, nieużywane: {1}' -f $Missing.Count, $Unused.Count)
+    Write-Output ('Brak tłumaczenia ({0})' -f $Missing.Count)
+    foreach ($Item in $Missing) {
+        Write-Output ('  {0}  {1}' -f $Item.Where, (Format-Shown -Text $Item.Text))
+    }
+    Write-Output ('Nieużywane tłumaczenia ({0})' -f $Unused.Count)
+    foreach ($Text in $Unused) {
+        Write-Output ('  {0}' -f (Format-Shown -Text $Text))
+    }
+    Write-Output ('Braki: {0}, nieużywane: {1}' -f $Missing.Count, $Unused.Count)
 
-if ($FailOnMissing -and $Missing.Count -gt 0) { exit 1 }
-exit 0
+    if ($FailOnMissing -and $Missing.Count -gt 0) { exit 1 }
+    exit 0
+}
+catch {
+    Write-Output ('Błąd: {0}' -f $_.Exception.Message)
+    exit 2
+}
