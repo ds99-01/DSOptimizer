@@ -12,7 +12,7 @@
     },
     {
       "pl": "Instaluje też usługę aktualizacji Mozilla Maintenance Service.",
-      "en": "Also installs the Mozilla Maintenance Service update service."
+      "en": "Also installs Mozilla Maintenance Service (automatic updates)."
     },
     {
       "pl": "Przeglądarka internetowa z wbudowanym blokowaniem reklam i śledzenia.",
@@ -20,7 +20,7 @@
     },
     {
       "pl": "Instaluje się tylko dla bieżącego konta Windows.",
-      "en": "Installs only for the current Windows account."
+      "en": "Installs only for the signed-in Windows account."
     },
     {
       "pl": "Przeglądarka internetowa z wbudowanym VPN i blokowaniem reklam.",
@@ -52,7 +52,7 @@
     },
     {
       "pl": "Lekki odtwarzacz muzyki z biblioteką utworów.",
-      "en": "Lightweight music player with a music library."
+      "en": "Lightweight music player with a song library."
     },
     {
       "pl": "Darmowa przeglądarka plików PDF z wypełnianiem formularzy, komentarzami i podpisem.",
@@ -104,7 +104,7 @@
     },
     {
       "pl": "Instaluje się tylko dla bieżącego konta Windows. Dodaje też 5 pakietów aplikacji (m.in. Command Palette).",
-      "en": "Installs only for the current Windows account. Also adds 5 app packages (including Command Palette)."
+      "en": "Installs only for the signed-in Windows account. Also adds 5 app packages (including Command Palette)."
     },
     {
       "pl": "Program do pakowania i rozpakowywania archiwów RAR i ZIP.",
@@ -140,7 +140,7 @@
     },
     {
       "pl": "Instaluje usługę RustDesk (działa w tle przy starcie Windows), dodaje reguły zapory, skrót na pulpicie i ikonę w Autostarcie wszystkich kont. Instalator pobierany z GitHuba RustDesk i sprawdzany podpisem wydawcy (PURSLANE).",
-      "en": "Installs the RustDesk service (runs in the background at Windows startup), adds firewall rules, a desktop shortcut and a Startup icon for all accounts. The installer comes from RustDesk's GitHub and is checked by its publisher signature (PURSLANE)."
+      "en": "Installs the RustDesk service (starts with Windows), firewall rules, a desktop shortcut and a Startup shortcut for all accounts. Downloaded from RustDesk's GitHub and checked against the publisher's signature (PURSLANE)."
     },
     {
       "pl": "Zdalny pulpit: pomoc na odległość i dostęp do tego komputera z innego.",

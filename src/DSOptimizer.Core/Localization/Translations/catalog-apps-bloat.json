@@ -40,7 +40,7 @@
     },
     {
       "pl": "Aplikacja Microsoft 365 (Office Hub): skrót do usług Office, bez pakietu Office.",
-      "en": "Microsoft 365 app (Office Hub): a shortcut to Office services, without the Office suite itself."
+      "en": "Microsoft 365 Copilot app (Office Hub): a shortcut to Office services, without the Office suite itself."
     },
     {
       "pl": "Lista zadań Microsoft To Do.",
@@ -64,7 +64,7 @@
     },
     {
       "pl": "Pliki zsynchronizowane tylko w chmurze mogą przestać być dostępne na tym komputerze.",
-      "en": "Files kept only in the cloud may stop being available on this computer."
+      "en": "Online-only files may stop being available on this computer."
     },
     {
       "pl": "Nowy Outlook dla Windows. Usuń tylko, gdy nie czytasz w nim poczty.",
@@ -144,7 +144,7 @@
     },
     {
       "pl": "Wersja próbna antywirusa McAfee AntiVirus Plus, preinstalowana przez producenta komputera.",
-      "en": "Trial version of the McAfee AntiVirus Plus antivirus, preinstalled by the computer manufacturer."
+      "en": "Trial version of McAfee AntiVirus Plus, preinstalled by the computer manufacturer."
     },
     {
       "pl": "Wersja próbna pakietu McAfee Internet Security, preinstalowana przez producenta komputera.",
@@ -224,7 +224,7 @@
     },
     {
       "pl": "Sticky Notes: notatki, które użytkownik może na co dzień trzymać na pulpicie.",
-      "en": "Sticky Notes: notes you may keep on your desktop every day."
+      "en": "Sticky Notes: notes you may be keeping on your desktop."
     },
     {
       "pl": "Zdjęcia: domyślna przeglądarka obrazów.",
@@ -268,7 +268,7 @@
     },
     {
       "pl": "Edge: domyślna przeglądarka i składnik systemu.",
-      "en": "Edge: the default browser and a part of the system."
+      "en": "Edge: the default browser and part of the system."
     },
     {
       "pl": "WebView2: wymagany przez wiele programów, także Microsoftu.",
@@ -300,7 +300,7 @@
     },
     {
       "pl": "Microsoft GameInput: obsługa kontrolerów w grach; gry i usługi gier instalują go z powrotem.",
-      "en": "Microsoft GameInput: game controller support; games and gaming services install it again."
+      "en": "Microsoft GameInput: game controller support; games and gaming services reinstall it anyway."
     },
     {
       "pl": "Podłączanie pulpitu zdalnego: składnik systemu.",
@@ -376,11 +376,11 @@
     },
     {
       "pl": "Może być oprogramowaniem firmowym (McAfee Agent): usuwa je administrator firmy.",
-      "en": "May be company software (McAfee Agent): the company's administrator removes it."
+      "en": "May be company software (McAfee Agent): only your company's administrator should remove it."
     },
     {
       "pl": "Może być oprogramowaniem firmowym (McAfee Endpoint Security): usuwa je administrator firmy.",
-      "en": "May be company software (McAfee Endpoint Security): the company's administrator removes it."
+      "en": "May be company software (McAfee Endpoint Security): only your company's administrator should remove it."
     },
     {
       "pl": "Może być oprogramowaniem firmowym (szyfrowanie dysku): usunięcie grozi utratą dostępu do danych.",
@@ -388,11 +388,11 @@
     },
     {
       "pl": "Może być oprogramowaniem firmowym (McAfee DLP): usuwa je administrator firmy.",
-      "en": "May be company software (McAfee DLP): the company's administrator removes it."
+      "en": "May be company software (McAfee DLP): only your company's administrator should remove it."
     },
     {
       "pl": "Może być oprogramowaniem firmowym (Trellix, dawniej McAfee Enterprise): usuwa je administrator firmy.",
-      "en": "May be company software (Trellix, formerly McAfee Enterprise): the company's administrator removes it."
+      "en": "May be company software (Trellix, formerly McAfee Enterprise): only your company's administrator should remove it."
     }
   ]
 }

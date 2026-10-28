@@ -36,7 +36,7 @@
     },
     {
       "pl": "Polityka AllowGameDVR = 0 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR (Windows Game Recording and Broadcasting), dla wszystkich użytkowników. Nie usuwa paska gier (Game Bar). Cofnięcie usuwa wartość i klucz GameDVR utworzony przez zmianę, czyli wraca do „nie skonfigurowano”.",
-      "en": "Policy AllowGameDVR = 0 in HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR (Windows Game Recording and Broadcasting), for all users. It doesn't remove Xbox Game Bar. Undo removes the value and the GameDVR key created by the change, which means going back to \"Not Configured\"."
+      "en": "Policy AllowGameDVR = 0 in HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR (Windows Game Recording and Broadcasting), for all users. It doesn't remove Game Bar. Undo removes the value and the GameDVR key created by the change, which means going back to \"Not Configured\"."
     },
     {
       "pl": "Microsoft opisuje tę politykę dla Windows 10 Pro i wyższych; na Windows 11 i edycji Home może nie działać.",

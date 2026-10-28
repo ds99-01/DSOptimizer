@@ -71,7 +71,7 @@ public class InstallPageTests
             catalog.Find(vlc.Target.Id)?.Summary);
 
         var brave = rows.Single(row => row.Target.Id == "install.brave");
-        Assert.Equal("Installs only for the current Windows account.", brave.Target.Warning);
+        Assert.Equal("Installs only for the signed-in Windows account.", brave.Target.Warning);
     }
 
     [Fact]

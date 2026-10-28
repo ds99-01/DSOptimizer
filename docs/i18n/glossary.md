@@ -387,7 +387,6 @@ separator of the Polish text (">"), and use the English page names exactly.
 | typ startu Wyłączony | startup type Disabled | Services; "startup type" already in Concepts |
 | System > Zaawansowane | System > Advanced | Settings page (formerly For developers); [Advanced Windows Settings](https://learn.microsoft.com/en-us/windows/advanced-settings/) |
 | Zakończ zadanie | End task | Taskbar menu item and its toggle on System > Advanced (Microsoft Learn writes "End Task"; the program uses the menu item's sentence case). **do audytu (Etap 5)** |
-| pasek gier (Game Bar) | Xbox Game Bar | Windows app name |
 | nie skonfigurowano | Not Configured | Group Policy state |
 | izolacja rdzenia / integralność pamięci | Core isolation / memory integrity | Windows Security > Device security > Core isolation details; [Core isolation](https://support.microsoft.com/en-us/windows/core-isolation-e30ed737-17d8-42f3-a2a9-87521df09b78). "memory integrity" lower case mid-sentence, as in the item texts |
 | plik stronicowania | paging file | Windows memory term |
@@ -408,7 +407,8 @@ the Polish text sometimes uses a descriptive name, the English text then uses th
 | Narzędzie Wycinanie / Rejestrator dźwięku | Snipping Tool / Sound Recorder | [Sound Recorder app for Windows: FAQ](https://support.microsoft.com/en-us/windows/sound-recorder-app-for-windows-faq-5c208478-2141-bd07-fe1d-d6d1356c1d56) |
 | Terminal Windows / Instalator aplikacji (winget) | Windows Terminal / App Installer (winget) | App Installer: see "Windows names" |
 | Centrum opinii / Porady / Szybka pomoc / Pogoda | Feedback Hub / Tips / Quick Assist / Weather | Inbox apps (packages `WindowsFeedbackHub`, `Getstarted`, `QuickAssist`, `BingWeather`) |
-| Pasek gry (Game Bar) | Game Bar | Package `Microsoft.XboxGamingOverlay`; its manifest display name is "Game Bar". **do audytu (Etap 5)** – older builds show "Xbox Game Bar" |
+| Pasek gry / pasek gier (Game Bar) | Game Bar | Store app name: [Game Bar](https://apps.microsoft.com/detail/9NZKPSTSNW4P); package `Microsoft.XboxGamingOverlay`. Older builds showed "Xbox Game Bar". **do audytu (Etap 5)** |
+| Aplikacja Microsoft 365 (Office Hub) | Microsoft 365 Copilot app (Office Hub) | Package `Microsoft.MicrosoftOfficeHub`; Store listing: [Microsoft 365 Copilot](https://apps.microsoft.com/detail/9WZDNCRD29V9). **do audytu (Etap 5)** – the Polish source still uses the old name "Aplikacja Microsoft 365" |
 | Nowy Outlook dla Windows | the new Outlook for Windows | |
 | Zakupy w Microsoft Store | Microsoft Store purchases | Descriptive, as in Polish; Windows shows the package `Microsoft.StorePurchaseApp` as "Store Experience Host". **do audytu (Etap 5)** |
 | Ulepszenia zgodności aplikacji | Windows Application Compatibility Enhancements | [Microsoft Store listing](https://apps.microsoft.com/detail/9PCSD6N03BKV) |
