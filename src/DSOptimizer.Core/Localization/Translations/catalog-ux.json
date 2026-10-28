@@ -1,0 +1,94 @@
+{
+  "language": "en",
+  "data": true,
+  "entries": [
+    {
+      "pl": "Szybsze otwieranie podmenu",
+      "en": "Open submenus faster"
+    },
+    {
+      "pl": "Skraca opóźnienie rozwijania podmenu z 0,4 s do 0,01 s.",
+      "en": "Shortens the delay before submenus open from 0.4 s to 0.01 s."
+    },
+    {
+      "pl": "Podmenu powinny rozwijać się niemal od razu po najechaniu kursorem – część programów może to ustawienie ignorować.",
+      "en": "Submenus should open almost right after you point at them – some programs may ignore this setting."
+    },
+    {
+      "pl": "MenuShowDelay w HKCU\\Control Panel\\Desktop: z 400 ms (domyślnie) na 10 ms, dla zalogowanego użytkownika. Cofnięcie przywraca poprzednią wartość.",
+      "en": "MenuShowDelay in HKCU\\Control Panel\\Desktop: from 400 ms (default) to 10 ms, for the signed-in user. Undo restores the previous value."
+    },
+    {
+      "pl": "Zmiana może wymagać ponownego zalogowania, zanim zadziała w już uruchomionych programach.",
+      "en": "You may need to sign in again before the change works in programs that are already running."
+    },
+    {
+      "pl": "Zablokuj nagrywanie i transmisję gier na całym komputerze",
+      "en": "Block game recording and broadcasting for all accounts"
+    },
+    {
+      "pl": "Polityka blokuje nagrywanie i transmisję gier w Windows dla wszystkich kont na tym komputerze.",
+      "en": "A policy blocks game recording and broadcasting in Windows for all accounts on this computer."
+    },
+    {
+      "pl": "Nagrywanie i transmisja gier wbudowane w Windows zostają zablokowane dla wszystkich kont.",
+      "en": "Game recording and broadcasting built into Windows are blocked for all accounts."
+    },
+    {
+      "pl": "Polityka AllowGameDVR = 0 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR (Windows Game Recording and Broadcasting), dla wszystkich użytkowników. Nie usuwa paska gier (Game Bar). Cofnięcie usuwa wartość i klucz GameDVR utworzony przez zmianę, czyli wraca do „nie skonfigurowano”.",
+      "en": "Policy AllowGameDVR = 0 in HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR (Windows Game Recording and Broadcasting), for all users. It doesn't remove Xbox Game Bar. Undo removes the value and the GameDVR key created by the change, which means going back to \"Not Configured\"."
+    },
+    {
+      "pl": "Microsoft opisuje tę politykę dla Windows 10 Pro i wyższych; na Windows 11 i edycji Home może nie działać.",
+      "en": "Microsoft documents this policy for Windows 10 Pro and higher; it may not work on Windows 11 or on the Home edition."
+    },
+    {
+      "pl": "W Ustawieniach może pojawić się komunikat, że niektórymi ustawieniami zarządza organizacja.",
+      "en": "Settings may show a message that some settings are managed by your organization."
+    },
+    {
+      "pl": "Przywróć klasyczne menu prawego przycisku myszy",
+      "en": "Bring back the classic right-click menu"
+    },
+    {
+      "pl": "Prawy przycisk myszy na pulpicie otwiera klasyczne menu Win32 zamiast menu z Windows 11.",
+      "en": "Right-clicking the desktop opens the classic Win32 menu instead of the Windows 11 menu."
+    },
+    {
+      "pl": "Prawy klik na pulpicie znowu otwiera klasyczne menu, takie jak w starszych wersjach Windows.",
+      "en": "Right-clicking the desktop opens the classic menu again, like in older versions of Windows."
+    },
+    {
+      "pl": "Tworzy klucz HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32 z pustą wartością domyślną (REG_SZ), dla zalogowanego użytkownika. Wpis przesłania dla tego konta rejestrację menu Windows 11; po zmianie prawy klik otwiera okno menu Win32 (klasa #32768). DSOptimizer sam nie restartuje Eksploratora. Cofnięcie usuwa klucz {86ca1aa0-34aa-4e8b-a509-50c905bae2a2} razem z podkluczem InprocServer32, a po restarcie Eksploratora wraca menu Windows 11.",
+      "en": "Creates the key HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32 with an empty default value (REG_SZ), for the signed-in user. For this account the entry overrides the registration of the Windows 11 menu; after the change a right-click opens a Win32 menu window (class #32768). DSOptimizer doesn't restart File Explorer by itself. Undo removes the {86ca1aa0-34aa-4e8b-a509-50c905bae2a2} key together with the InprocServer32 subkey, and after File Explorer restarts the Windows 11 menu comes back."
+    },
+    {
+      "pl": "Menu zmieni się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).",
+      "en": "The menu changes after you sign in again (or after you restart File Explorer in \"Tools\")."
+    },
+    {
+      "pl": "Dodaj „Zakończ zadanie” do menu na pasku zadań",
+      "en": "Add \"End task\" to the taskbar menu"
+    },
+    {
+      "pl": "Dodaje pozycję „Zakończ zadanie” do menu przycisku programu na pasku zadań.",
+      "en": "Adds the \"End task\" item to the menu of a program's button on the taskbar."
+    },
+    {
+      "pl": "Zawieszony program zamkniesz prawym klikiem na pasku zadań, bez otwierania Menedżera zadań.",
+      "en": "You can close a frozen program by right-clicking it on the taskbar, without opening Task Manager."
+    },
+    {
+      "pl": "Włącza przełącznik „Zakończ zadanie” (System > Zaawansowane): TaskbarEndTask = 1 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings, dla zalogowanego użytkownika. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie usuwa wartość i klucz utworzony przez zmianę; po restarcie Eksploratora pozycja znika z menu.",
+      "en": "Turns on the \"End task\" toggle (System > Advanced): TaskbarEndTask = 1 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings, for the signed-in user. DSOptimizer doesn't restart File Explorer by itself. Undo removes the value and the key created by the change; after File Explorer restarts, the item disappears from the menu."
+    },
+    {
+      "pl": "Pozycja pojawi się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).",
+      "en": "The item appears after you sign in again (or after you restart File Explorer in \"Tools\")."
+    },
+    {
+      "pl": "„Zakończ zadanie” kończy proces programu; niezapisane dane w tym programie mogą przepaść.",
+      "en": "\"End task\" ends the program's process; unsaved data in that program may be lost."
+    }
+  ]
+}

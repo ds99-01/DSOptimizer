@@ -1,0 +1,246 @@
+{
+  "language": "en",
+  "data": true,
+  "entries": [
+    {
+      "pl": "Wyłącz Widżety",
+      "en": "Turn off Widgets"
+    },
+    {
+      "pl": "Win+W przestaje otwierać Widżety, a przycisk znika z paska zadań.",
+      "en": "Win+W no longer opens Widgets, and the button disappears from the taskbar."
+    },
+    {
+      "pl": "Z paska zadań znika tablica z wiadomościami i pogodą – nic nie wyskakuje po najechaniu myszą.",
+      "en": "The news and weather board disappears from the taskbar – nothing pops up when you point at it with the mouse."
+    },
+    {
+      "pl": "Polityka AllowNewsAndInterests = 0 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh, dla wszystkich kont. Win+W przestaje otwierać tablicę od razu, a przełącznik „Widżety” w Ustawieniach (Personalizacja > Pasek zadań) jest wyszarzony, dopóki nie cofniesz zmiany. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie usuwa wartość, a także klucz Dsh, jeśli powstał przy zmianie.",
+      "en": "Policy AllowNewsAndInterests = 0 in HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh, for all accounts. Win+W stops opening the board right away, and the \"Widgets\" toggle in Settings (Personalization > Taskbar) is grayed out until you undo the change. DSOptimizer doesn't restart File Explorer by itself. Undo removes the value, and also the Dsh key if the change created it."
+    },
+    {
+      "pl": "Przycisk zniknie po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).",
+      "en": "The button disappears after you sign in again (or after you restart File Explorer in \"Tools\")."
+    },
+    {
+      "pl": "Wyłącz wyniki z internetu w wyszukiwaniu Windows",
+      "en": "Turn off web results in Windows search"
+    },
+    {
+      "pl": "Wyszukiwanie w menu Start i na pasku zadań przestaje pokazywać podpowiedzi i wyniki z internetu.",
+      "en": "Search in the Start menu and on the taskbar stops showing web suggestions and results."
+    },
+    {
+      "pl": "Szukasz programu albo pliku i widzisz tylko to, co jest na komputerze – bez podpowiedzi Bing.",
+      "en": "When you search for a program or a file, you see only what's on the computer – no Bing suggestions."
+    },
+    {
+      "pl": "Wyłącza przełącznik „Zezwalaj aplikacjom wyszukiwania na wyświetlanie wyników” (Prywatność > Wyszukaj): IsGlobalWebSearchProviderToggleEnabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings, dla zalogowanego użytkownika. Dotyczy wszystkich dostawców wyników z sieci, nie tylko Bing; pola wyszukiwania w Eksploratorze plików nie zmienia. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie przywraca poprzedni stan przełącznika.",
+      "en": "Turns off the \"Let search apps show results\" toggle (Privacy & security > Search): IsGlobalWebSearchProviderToggleEnabled = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings, for the signed-in user. It affects all providers of web results, not only Bing; it doesn't change the search box in File Explorer. DSOptimizer doesn't restart File Explorer by itself. Undo restores the previous state of the toggle."
+    },
+    {
+      "pl": "Zmiana zadziała po ponownym zalogowaniu; sam restart Eksploratora może nie wystarczyć.",
+      "en": "The change takes effect after you sign in again; restarting File Explorer alone may not be enough."
+    },
+    {
+      "pl": "Wyłącz rekomendacje i oferty w Ustawieniach",
+      "en": "Turn off recommendations and offers in Settings"
+    },
+    {
+      "pl": "Wyłącza przełącznik „Rekomendacje i oferty w ustawieniach” w sekcji Prywatność.",
+      "en": "Turns off the \"Recommendations and offers in Settings\" toggle in Privacy & security."
+    },
+    {
+      "pl": "Aplikacja Ustawienia przestaje podsuwać propozycje i oferty Microsoftu.",
+      "en": "The Settings app stops showing suggestions and offers from Microsoft."
+    },
+    {
+      "pl": "Trzy wartości ustawione na 0: SubscribedContent-338393Enabled, SubscribedContent-353694Enabled i SubscribedContent-353696Enabled w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager, dla zalogowanego użytkownika. To te same wartości, które zapisuje przełącznik w Ustawieniach; przełącznik nie jest blokowany. Cofnięcie przywraca poprzednie wartości.",
+      "en": "Three values set to 0: SubscribedContent-338393Enabled, SubscribedContent-353694Enabled and SubscribedContent-353696Enabled in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager, for the signed-in user. These are the same values that the toggle in Settings writes; the toggle isn't locked. Undo restores the previous values."
+    },
+    {
+      "pl": "Wyłącz porady i sugestie Windows",
+      "en": "Turn off Windows tips and suggestions"
+    },
+    {
+      "pl": "Odznacza pole „Uzyskaj porady i sugestie podczas korzystania z systemu Windows” w ustawieniach powiadomień.",
+      "en": "Clears the \"Get tips and suggestions when using Windows\" checkbox in the notification settings."
+    },
+    {
+      "pl": "Windows przestaje wyświetlać porady i podpowiedzi podczas pracy.",
+      "en": "Windows stops showing tips and hints while you work."
+    },
+    {
+      "pl": "SubscribedContent-338389Enabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager, dla zalogowanego użytkownika. Pole jest w System > Powiadomienia > Ustawienia dodatkowe; po zmianie jest odznaczone tak samo jak po ręcznym odznaczeniu i nadal można je zmieniać ręcznie. Cofnięcie przywraca poprzednią wartość.",
+      "en": "SubscribedContent-338389Enabled = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager, for the signed-in user. The checkbox is in System > Notifications > Additional settings; after the change it is cleared just as if you had cleared it by hand, and you can still change it by hand. Undo restores the previous value."
+    },
+    {
+      "pl": "Wyłącz powiadomienia o koncie w Ustawieniach",
+      "en": "Turn off account notifications in Settings"
+    },
+    {
+      "pl": "Wyłącza przełącznik „Pokaż powiadomienia w ustawieniach”, czyli komunikaty o koncie w aplikacji Ustawienia.",
+      "en": "Turns off the \"Show notifications in Settings\" toggle, which controls account messages in the Settings app."
+    },
+    {
+      "pl": "Ustawienia przestają pokazywać komunikaty o koncie.",
+      "en": "Settings stops showing account messages."
+    },
+    {
+      "pl": "EnableAccountNotifications = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SystemSettings\\AccountNotifications, dla zalogowanego użytkownika. Przełącznik pokazuje potem stan „wyłączone” tak samo jak po ręcznym wyłączeniu i nie jest blokowany. Cofnięcie przywraca poprzedni stan.",
+      "en": "EnableAccountNotifications = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SystemSettings\\AccountNotifications, for the signed-in user. The toggle then shows \"Off\", just as after turning it off by hand, and it isn't locked. Undo restores the previous state."
+    },
+    {
+      "pl": "Wyłącz zalecenia w menu Start",
+      "en": "Turn off recommendations in the Start menu"
+    },
+    {
+      "pl": "Wyłącza w ustawieniach menu Start przełącznik zaleceń, czyli porad i propozycji nowych aplikacji.",
+      "en": "Turns off the recommendations toggle in the Start menu settings, which covers tips and suggestions of new apps."
+    },
+    {
+      "pl": "Menu Start przestaje podsuwać porady i nowe aplikacje.",
+      "en": "The Start menu stops suggesting tips and new apps."
+    },
+    {
+      "pl": "Start_IrisRecommendations = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced, dla zalogowanego użytkownika (Personalizacja > Start). Ustawienia pokazują nowy stan od razu. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie przywraca poprzedni stan przełącznika.",
+      "en": "Start_IrisRecommendations = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced, for the signed-in user (Personalization > Start). Settings shows the new state right away. DSOptimizer doesn't restart File Explorer by itself. Undo restores the previous state of the toggle."
+    },
+    {
+      "pl": "Ukryj sekcję „Proponowane” w menu Start",
+      "en": "Hide the \"Recommended\" section in the Start menu"
+    },
+    {
+      "pl": "Chowa z menu Start sekcję „Proponowane” z polecanymi aplikacjami, plikami i stronami.",
+      "en": "Hides the \"Recommended\" section with suggested apps, files and websites from the Start menu."
+    },
+    {
+      "pl": "Menu Start jest krótsze: znika sekcja z polecanymi treściami i ostatnio otwieranymi plikami.",
+      "en": "The Start menu is shorter: the section with recommended content and recently opened files disappears."
+    },
+    {
+      "pl": "Polityka HideRecommendedSection = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer, dla zalogowanego użytkownika. Sekcja znika po ponownym zalogowaniu albo po restarcie komputera. Pozycja nie jest zaznaczana automatycznie, bo ukrywa też ostatnio otwierane pliki. Cofnięcie usuwa wartość, a także klucz Explorer, jeśli powstał przy zmianie.",
+      "en": "Policy HideRecommendedSection = 1 in HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer, for the signed-in user. The section disappears after you sign in again or restart the computer. The item isn't selected automatically, because it also hides recently opened files. Undo removes the value, and also the Explorer key if the change created it."
+    },
+    {
+      "pl": "Razem z sekcją znikają z menu Start ostatnio otwierane pliki.",
+      "en": "Recently opened files disappear from the Start menu together with the section."
+    },
+    {
+      "pl": "Wyłącz identyfikator reklamowy",
+      "en": "Turn off the advertising ID"
+    },
+    {
+      "pl": "Wyłącza identyfikator reklamowy, którego aplikacje mogą używać do dopasowywania reklam.",
+      "en": "Turns off the advertising ID that apps can use to personalize ads."
+    },
+    {
+      "pl": "Reklamy w aplikacjach przestają być dopasowywane na podstawie tego identyfikatora.",
+      "en": "Ads in apps are no longer personalized based on this ID."
+    },
+    {
+      "pl": "Enabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo oraz Value = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\CPSS\\Store\\AdvertisingInfo, dla zalogowanego użytkownika. Przełącznik w Ustawieniach przy wyłączaniu dodatkowo usuwa sam identyfikator (wartość Id) – ta pozycja go nie usuwa, a stan przełącznika jest taki sam jak po ręcznym wyłączeniu. Jeśli przy pierwszej konfiguracji Windows wybrano „nie”, identyfikator bywa już wyłączony i nic się nie zmienia. Cofnięcie przywraca poprzednie wartości.",
+      "en": "Enabled = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo and Value = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\CPSS\\Store\\AdvertisingInfo, for the signed-in user. When you turn the toggle in Settings off, it also deletes the ID itself (the Id value) – this item doesn't delete it, and the toggle state is the same as after turning it off by hand. If \"no\" was chosen during the first Windows setup, the ID is often already off and nothing changes. Undo restores the previous values."
+    },
+    {
+      "pl": "Wyłącz spersonalizowane oferty",
+      "en": "Turn off personalized offers"
+    },
+    {
+      "pl": "Wyłącza przełącznik „Spersonalizowane oferty”, przez który Microsoft może dobierać porady i oferty do tego, jak używasz komputera.",
+      "en": "Turns off the \"Personalized offers\" toggle, which lets Microsoft tailor tips and offers to how you use the computer."
+    },
+    {
+      "pl": "Microsoft nie dobiera porad i ofert do tego, jak używasz komputera. Na nowej instalacji przełącznik jest zwykle już wyłączony – pozycja zapisuje ten wybór wprost.",
+      "en": "Microsoft doesn't tailor tips and offers to how you use the computer. On a new installation the toggle is usually already off – this item saves that choice explicitly."
+    },
+    {
+      "pl": "PersonalizedOffersEnabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy, dla zalogowanego użytkownika. Brak tej wartości też oznacza wyłączony przełącznik, ale DSOptimizer uznaje pozycję za zastosowaną dopiero po zapisaniu 0. Cofnięcie przywraca poprzedni stan.",
+      "en": "PersonalizedOffersEnabled = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy, for the signed-in user. A missing value also means the toggle is off, but DSOptimizer treats the item as applied only after 0 is written. Undo restores the previous state."
+    },
+    {
+      "pl": "Wyłącz Windows Spotlight (zdjęcia dnia)",
+      "en": "Turn off Windows spotlight (pictures of the day)"
+    },
+    {
+      "pl": "Wyłącza Windows Spotlight, czyli codzienne zdjęcia od Microsoftu na pulpicie z podpisami i linkami do Binga.",
+      "en": "Turns off Windows spotlight, the daily pictures from Microsoft on the desktop with captions and links to Bing."
+    },
+    {
+      "pl": "Pulpit dostaje zwykłe tło zamiast codziennego zdjęcia od Microsoftu i znika ikona „Dowiedz się więcej o tym zdjęciu”.",
+      "en": "The desktop gets a regular background instead of a daily picture from Microsoft, and the \"Learn more about this picture\" icon disappears."
+    },
+    {
+      "pl": "Polityka DisableWindowsSpotlightFeatures = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, dla zalogowanego użytkownika. Tło pulpitu przełącza się z „W centrum uwagi Windows” na „Obraz” od razu, bez restartu. Nie wiadomo, czy zmiana obejmuje też ekran blokady. Pozycja nie jest zaznaczana automatycznie. Cofnięcie usuwa politykę i klucz CloudContent, ale tło zostaje „Obraz”.",
+      "en": "Policy DisableWindowsSpotlightFeatures = 1 in HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, for the signed-in user. The desktop background switches from \"Windows spotlight\" to \"Picture\" right away, without a restart. It isn't known whether the change also covers the lock screen. The item isn't selected automatically. Undo removes the policy and the CloudContent key, but the background stays \"Picture\"."
+    },
+    {
+      "pl": "Cofnięcie nie przywraca zdjęć dnia: wybierz je ponownie w Ustawienia > Personalizacja > Tło.",
+      "en": "Undo doesn't bring back the pictures of the day: choose them again in Settings > Personalization > Background."
+    },
+    {
+      "pl": "Ogranicz dane diagnostyczne do wymaganych",
+      "en": "Limit diagnostic data to required data"
+    },
+    {
+      "pl": "Polityka ogranicza dane diagnostyczne wysyłane do Microsoftu do wymaganych i blokuje przełącznik danych opcjonalnych.",
+      "en": "A policy limits the diagnostic data sent to Microsoft to required data and locks the optional diagnostic data toggle."
+    },
+    {
+      "pl": "Opcjonalnych danych diagnostycznych nie da się włączyć – do Microsoftu trafiają tylko wymagane.",
+      "en": "Optional diagnostic data can't be turned on – Microsoft gets only required data."
+    },
+    {
+      "pl": "Polityka AllowTelemetry = 1 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection, dla wszystkich kont: ogranicz dane diagnostyczne do wymaganych. Nie wyłącza wysyłania danych diagnostycznych. Wartość 0 działa tylko w edycjach Enterprise i Education, dlatego pozycja jej nie używa. Przełącznik opcjonalnych danych (Prywatność i zabezpieczenia > Diagnostyka i opinie) jest wyszarzony, dopóki nie cofniesz zmiany. Cofnięcie usuwa tylko wartość; klucz DataCollection istniał wcześniej i zostaje.",
+      "en": "Policy AllowTelemetry = 1 in HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection, for all accounts: limit diagnostic data to required data. It doesn't turn off sending diagnostic data. Value 0 works only in the Enterprise and Education editions, so the item doesn't use it. The optional data toggle (Privacy & security > Diagnostics & feedback) is grayed out until you undo the change. Undo removes only the value; the DataCollection key existed before and stays."
+    },
+    {
+      "pl": "To ograniczenie, a nie wyłączenie – Microsoft nadal otrzymuje dane wymagane.",
+      "en": "This limits the data, it doesn't stop it – Microsoft still receives required data."
+    },
+    {
+      "pl": "W Ustawieniach pojawi się komunikat, że niektórymi ustawieniami zarządza organizacja.",
+      "en": "Settings will show a message that some settings are managed by your organization."
+    },
+    {
+      "pl": "Wyłącz powiadomienia o opiniach",
+      "en": "Turn off feedback notifications"
+    },
+    {
+      "pl": "Wyłącza powiadomienia z prośbą o opinię i chowa listę „Częstotliwość opinii” w Ustawieniach.",
+      "en": "Turns off notifications that ask for feedback and hides the \"Feedback frequency\" list in Settings."
+    },
+    {
+      "pl": "Nie wyskakują już powiadomienia z prośbą o opinię o Windows.",
+      "en": "Notifications asking for your feedback on Windows no longer pop up."
+    },
+    {
+      "pl": "Polityka DoNotShowFeedbackNotifications = 1 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection, dla wszystkich kont. Na stronie Diagnostyka i opinie znika lista „Częstotliwość opinii”. Cofnięcie usuwa tylko wartość; klucz DataCollection istniał wcześniej i zostaje.",
+      "en": "Policy DoNotShowFeedbackNotifications = 1 in HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection, for all accounts. The \"Feedback frequency\" list disappears from the Diagnostics & feedback page. Undo removes only the value; the DataCollection key existed before and stays."
+    },
+    {
+      "pl": "Wyłącz usługę telemetrii DiagTrack",
+      "en": "Turn off the DiagTrack telemetry service"
+    },
+    {
+      "pl": "Zatrzymuje usługę „Środowiska użytkownika połączonego i telemetria” (DiagTrack) i nie pozwala jej startować.",
+      "en": "Stops the \"Connected User Experiences and Telemetry\" service (DiagTrack) and doesn't let it start."
+    },
+    {
+      "pl": "Usługa zbierająca dane telemetrii przestaje działać w tle i nie wraca po restarcie komputera.",
+      "en": "The service that collects telemetry data stops running in the background and doesn't come back after a computer restart."
+    },
+    {
+      "pl": "Usługa DiagTrack (Connected User Experiences and Telemetry): typ startu Wyłączony i zatrzymanie. Stan pozycji zależy od typu startu, a nie od tego, czy usługa akurat działa. Polityki danych diagnostycznych nie zmienia – to osobna pozycja „Ogranicz dane diagnostyczne do wymaganych”. Cofnięcie przywraca poprzedni typ startu i uruchamia usługę, jeśli działała.",
+      "en": "DiagTrack service (Connected User Experiences and Telemetry): startup type Disabled, and the service is stopped. The item's state depends on the startup type, not on whether the service is running at the moment. It doesn't change the diagnostic data policy – that's a separate item, \"Limit diagnostic data to required data\". Undo restores the previous startup type and starts the service if it was running."
+    },
+    {
+      "pl": "Microsoft nie opisuje wyłączania tej usługi, a korzysta z niej też Windows Update – przy kłopotach z aktualizacjami cofnij zmianę.",
+      "en": "Microsoft doesn't document turning off this service, and Windows Update also uses it – if updates cause trouble, undo the change."
+    },
+    {
+      "pl": "Nie gwarantuje, że Windows przestanie wysyłać dane diagnostyczne.",
+      "en": "It doesn't guarantee that Windows stops sending diagnostic data."
+    }
+  ]
+}

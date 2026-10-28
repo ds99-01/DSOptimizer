@@ -359,6 +359,42 @@ Recurring sentences: "Otwiera panel systemowy Windows: klasyczne okno „…”"
 | kreator | wizard | "the System Restore wizard" |
 | karta sieciowa (w Połączeniach sieciowych) | network adapter | Same as in Specification |
 
+### Catalog – privacy, Explorer, performance
+
+Names used in the items of "Privacy and AI", "Explorer and convenience" and "Performance". Settings paths keep the
+separator of the Polish text (">"), and use the English page names exactly.
+
+| Polski | English | Notes/source |
+|---|---|---|
+| Personalizacja > Pasek zadań / Personalizacja > Start / Personalizacja > Tło | Personalization > Taskbar / Personalization > Start / Personalization > Background | Settings pages; "Settings > Personalization > Background" in the Windows spotlight warning |
+| Widżety | Widgets | Taskbar toggle and Win+W board |
+| Prywatność > Wyszukaj | Privacy & security > Search | Settings page; the English text uses the full page name |
+| Zezwalaj aplikacjom wyszukiwania na wyświetlanie wyników | Let search apps show results | Toggle on Privacy & security > Search. **do audytu (Etap 5)** – no Microsoft page found with this label; literal match of the Polish Windows label |
+| Rekomendacje i oferty w ustawieniach | Recommendations and offers in Settings | Privacy & security > Recommendations & offers; [Privacy settings for Recommendations & offers in Windows 11](https://support.microsoft.com/windows/807608ee-3de2-4498-8e7c-eb10d655567f) |
+| Spersonalizowane oferty | Personalized offers | Replaces "Tailored experiences"; same source and [Diagnostics, feedback, and privacy in Windows](https://support.microsoft.com/en-us/windows/diagnostics-feedback-and-privacy-in-windows-28808a2b-a31b-dd73-dcd3-4559a5199319) |
+| identyfikator reklamowy | advertising ID | Same source as "Recommendations and offers in Settings" |
+| Pokaż powiadomienia w ustawieniach | Show notifications in Settings | Account messages in the Settings app. **do audytu (Etap 5)** – only third-party evidence ([Eleven Forum](https://www.elevenforum.com/t/enable-or-disable-show-notifications-in-settings-app-in-windows-11.25835)) |
+| Uzyskaj porady i sugestie podczas korzystania z systemu Windows | Get tips and suggestions when using Windows | Checkbox under System > Notifications > Additional settings; [Notifications and Do Not Disturb in Windows](https://support.microsoft.com/help/4014934). **do audytu (Etap 5)** – some builds say "…when I use Windows" |
+| zalecenia (menu Start) / sekcja „Proponowane” | recommendations / "Recommended" section | Start menu section name "Recommended" |
+| Windows Spotlight / W centrum uwagi Windows / Obraz | Windows spotlight / "Windows spotlight" / "Picture" | Background options in Personalization > Background; [Windows spotlight](https://learn.microsoft.com/en-us/windows/configuration/windows-spotlight/) |
+| Dowiedz się więcej o tym zdjęciu | Learn more about this picture | Desktop icon added by Windows spotlight. **do audytu (Etap 5)** – third-party evidence only |
+| zdjęcia dnia | pictures of the day | Program's own description of Windows spotlight |
+| Prywatność i zabezpieczenia > Diagnostyka i opinie | Privacy & security > Diagnostics & feedback | [Diagnostics, feedback, and privacy in Windows](https://support.microsoft.com/en-us/windows/diagnostics-feedback-and-privacy-in-windows-28808a2b-a31b-dd73-dcd3-4559a5199319) |
+| Częstotliwość opinii | Feedback frequency | Same source |
+| dane diagnostyczne wymagane / opcjonalne | required / optional diagnostic data | Same source |
+| niektórymi ustawieniami zarządza organizacja | some settings are managed by your organization | Message in Settings when a policy is set (Windows: "Some of these settings are managed by your organization") |
+| Środowiska użytkownika połączonego i telemetria | Connected User Experiences and Telemetry | Display name of the DiagTrack service in Services |
+| typ startu Wyłączony | startup type Disabled | Services; "startup type" already in Concepts |
+| System > Zaawansowane | System > Advanced | Settings page (formerly For developers); [Advanced Windows Settings](https://learn.microsoft.com/en-us/windows/advanced-settings/) |
+| Zakończ zadanie | End task | Taskbar menu item and its toggle on System > Advanced (Microsoft Learn writes "End Task"; the program uses the menu item's sentence case). **do audytu (Etap 5)** |
+| pasek gier (Game Bar) | Xbox Game Bar | Windows app name |
+| nie skonfigurowano | Not Configured | Group Policy state |
+| izolacja rdzenia / integralność pamięci | Core isolation / memory integrity | Windows Security > Device security > Core isolation details; [Core isolation](https://support.microsoft.com/en-us/windows/core-isolation-e30ed737-17d8-42f3-a2a9-87521df09b78). "memory integrity" lower case mid-sentence, as in the item texts |
+| plik stronicowania | paging file | Windows memory term |
+| Eksplorator (restart) | File Explorer | "restarting File Explorer", "after File Explorer restarts" (see Windows names) |
+| ponowne zalogowanie | sign in again | Style rule 11: "after you sign in again" |
+| Wymaga restartu komputera. | Requires a computer restart. | Restart warning of items with "Restart required" |
+
 ## Windows names
 
 | Polski | English | Notes/source |

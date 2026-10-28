@@ -6,6 +6,7 @@ using DSOptimizer.Catalog;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Tests.Unit.Engine;
 using DSOptimizer.Tests.Unit.Fakes;
@@ -226,6 +227,34 @@ public class PerfVbsHvciTests
         Assert.Contains("Locked", run.Error, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void VbsHvci_English_Message()
+    {
+        // Komunikat z wartościami ({0}: {1}) po angielsku z tabeli catalog-perf.json.
+        ScriptRun run;
+        using (L.Use(UiLanguage.English))
+        {
+            run = PowerShellHarness.Run(Get().Script!.Capture!, VbsMocks("@(2)", Locked("DWord", 2)), string.Empty);
+        }
+
+        Assert.NotEqual(0, run.ExitCode);
+        Assert.Contains(
+            @"The Locked value in Scenarios\HypervisorEnforcedCodeIntegrity has an unexpected type or value (DWord: 2) – it's unknown whether there's a UEFI lock; nothing was changed.",
+            run.Error,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void VbsHvci_Polish_MessageUnchanged()
+    {
+        var run = PowerShellHarness.Run(Get().Script!.Capture!, VbsMocks("@(2)", Locked("DWord", 2)), string.Empty);
+
+        Assert.NotEqual(0, run.ExitCode);
+        Assert.Contains(
+            @"Wartość Locked w Scenarios\HypervisorEnforcedCodeIntegrity ma nieoczekiwany typ lub wartość (DWord: 2) – nie wiadomo, czy jest blokada UEFI; nic nie zmieniono.",
+            run.Error,
+            StringComparison.Ordinal);
+    }
     [Fact]
     public void Apply_IsSingleLineNoOp_RefusalLivesOnlyInCapture()
     {

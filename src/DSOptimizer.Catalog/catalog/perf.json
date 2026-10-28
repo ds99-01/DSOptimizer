@@ -93,7 +93,7 @@
         "if ($null -eq $enabled -or $enabled.Kind -ne 'DWord' -or [uint32]$enabled.Value -ne 0) { 'NotApplied'; return }",
         "$running = Get-DsoSecurityServicesRunning",
         "# Brak odpowiedzi CIM (nic, $null albo pusta tablica) to nie \"memory integrity nie działa\": stan nieznany, skrypt kończy się błędem, nigdy Applied.",
-        "if ($null -eq $running -or @($running).Count -eq 0) { throw 'Win32_DeviceGuard nie zwrócił SecurityServicesRunning – stan memory integrity jest nieznany.' }",
+        "if ($null -eq $running -or @($running).Count -eq 0) { throw (Get-DsoText 'Win32_DeviceGuard nie zwrócił SecurityServicesRunning – stan memory integrity jest nieznany.') }",
         "# Enabled = 0 jest ustawione. 2 = memory integrity jeszcze działa (Win32_DeviceGuard, przed restartem): NotApplied, złożony z wpisem registry[] daje Partial/PendingReboot; Applied dopiero, gdy memory integrity nie działa.",
         "if (@($running) -contains 2) { 'NotApplied' } else { 'Applied' }"
       ],
@@ -124,22 +124,22 @@
         "    if ($null -eq $locked) { return }",
         "    if ($locked.Kind -eq 'DWord' -and [uint32]$locked.Value -eq 0) { return }",
         "    if ($locked.Kind -eq 'DWord' -and [uint32]$locked.Value -eq 1) {",
-        "        throw 'Memory integrity ma blokadę UEFI (Locked = 1): samo Enabled = 0 w rejestrze nie wystarczy, trzeba wyłączyć Secure Boot w UEFI (Microsoft) – nic nie zmieniono.'",
+        "        throw (Get-DsoText 'Memory integrity ma blokadę UEFI (Locked = 1): samo Enabled = 0 w rejestrze nie wystarczy, trzeba wyłączyć Secure Boot w UEFI (Microsoft) – nic nie zmieniono.')",
         "    }",
-        "    throw ('Wartość Locked w Scenarios\\HypervisorEnforcedCodeIntegrity ma nieoczekiwany typ lub wartość ({0}: {1}) – nie wiadomo, czy jest blokada UEFI; nic nie zmieniono.' -f $locked.Kind, $locked.Value)",
+        "    throw (Get-DsoText 'Wartość Locked w Scenarios\\HypervisorEnforcedCodeIntegrity ma nieoczekiwany typ lub wartość ({0}: {1}) – nie wiadomo, czy jest blokada UEFI; nic nie zmieniono.' $locked.Kind $locked.Value)",
         "}",
         "Assert-DsoHvciNotLocked",
         "'Unlocked'"
       ],
       "apply": [
         "# Odmowa przy blokadzie UEFI jest w capture (przed jakąkolwiek zmianą); skrypt apply biegnie po zapisie Enabled przez silnik i niczego nie zmienia.",
-        "'Brak zmian po stronie skryptu; Enabled = 0 zapisuje wpis rejestru, memory integrity przestanie działać po restarcie.'"
+        "Get-DsoText 'Brak zmian po stronie skryptu; Enabled = 0 zapisuje wpis rejestru, memory integrity przestanie działać po restarcie.'"
       ],
       "undo": [
         "# Pusty $Snapshot = ścieżka bez wpisu w journalu (fallback `original` z katalogu): nie wiadomo, czy memory integrity było włączone. Odmowa, zanim silnik dotknie rejestru (undo idzie od końca: skrypt, potem Enabled).",
-        "if ([string]::IsNullOrWhiteSpace($Snapshot)) { throw 'Brak wpisu w journalu – nie wiadomo, czy memory integrity było włączone; nic nie zmieniono. Ustaw ręcznie w Windows Security.' }",
+        "if ([string]::IsNullOrWhiteSpace($Snapshot)) { throw (Get-DsoText 'Brak wpisu w journalu – nie wiadomo, czy memory integrity było włączone; nic nie zmieniono. Ustaw ręcznie w Windows Security.') }",
         "# Wartość Enabled przywraca silnik ze snapshotu rejestru (a klucz utworzony przez apply usuwa); skrypt niczego nie zmienia.",
-        "'Nic do przywrócenia po stronie skryptu; Enabled przywraca snapshot rejestru, efekt po restarcie.'"
+        "Get-DsoText 'Nic do przywrócenia po stronie skryptu; Enabled przywraca snapshot rejestru, efekt po restarcie.'"
       ]
     }
   }

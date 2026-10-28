@@ -1,0 +1,98 @@
+{
+  "language": "en",
+  "data": true,
+  "entries": [
+    {
+      "pl": "Wyłącz usługę SysMain (Superfetch)",
+      "en": "Turn off the SysMain service (Superfetch)"
+    },
+    {
+      "pl": "Zatrzymuje usługę SysMain i nie pozwala jej startować z systemem.",
+      "en": "Stops the SysMain service and doesn't let it start with Windows."
+    },
+    {
+      "pl": "Windows przestaje wczytywać do pamięci na zapas programy, których często używasz.",
+      "en": "Windows stops loading the programs you use often into memory in advance."
+    },
+    {
+      "pl": "Ustawia typ startu usługi SysMain na Wyłączony i ją zatrzymuje. Jeśli działają usługi od niej zależne albo zatrzymanie nie zmieści się w limicie czasu, zmiana typu startu jest wycofywana. Microsoft opisuje tę usługę tylko w dokumentacji Windows Server, bez zaleceń co do wyłączania. Cofnięcie przywraca poprzedni typ startu i uruchamia usługę, jeśli działała.",
+      "en": "Sets the startup type of the SysMain service to Disabled and stops it. If services that depend on it are running, or stopping it doesn't fit in the time limit, the startup type change is rolled back. Microsoft describes this service only in the Windows Server documentation, without any recommendation about turning it off. Undo restores the previous startup type and starts the service if it was running."
+    },
+    {
+      "pl": "Microsoft nie podaje skutków wyłączenia tej usługi, a korzyść nie jest udokumentowana.",
+      "en": "Microsoft doesn't describe the effects of turning off this service, and the benefit isn't documented."
+    },
+    {
+      "pl": "Trzymaj kod jądra i sterowników w pamięci",
+      "en": "Keep kernel and driver code in memory"
+    },
+    {
+      "pl": "Kod systemu i sterowników zostaje zawsze w pamięci RAM, zamiast trafiać do pliku stronicowania.",
+      "en": "System and driver code always stays in RAM instead of going to the paging file."
+    },
+    {
+      "pl": "Kod systemu i sterowników nie jest odkładany na dysk, więc nie trzeba go z niego doczytywać. Nie ma dowodu, że na Windows 11 daje to odczuwalną różnicę.",
+      "en": "System and driver code isn't moved out to disk, so it doesn't have to be read back from it. There's no evidence that this makes a noticeable difference on Windows 11."
+    },
+    {
+      "pl": "Ustawia DisablePagingExecutive = 1 w HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management: kod systemowy i sterowniki nie są stronicowane na dysk, tylko zostają w pamięci fizycznej. Domyślnie wartość wynosi 0. Microsoft opisuje to ustawienie tylko w archiwalnej dokumentacji (Windows Server 2003 i blog z 2007 roku): zysk na komputerach z dużą ilością pamięci, zależny od aplikacji. Cofnięcie przywraca poprzednią wartość – ona także zadziała dopiero po restarcie.",
+      "en": "Sets DisablePagingExecutive = 1 in HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management: system code and drivers aren't paged out to disk and stay in physical memory. The default value is 0. Microsoft describes this setting only in archived documentation (Windows Server 2003 and a blog post from 2007): a gain on computers with a lot of memory, depending on the application. Undo restores the previous value – it also takes effect only after a restart."
+    },
+    {
+      "pl": "Wymaga restartu komputera.",
+      "en": "Requires a computer restart."
+    },
+    {
+      "pl": "Część pamięci RAM zostaje zajęta na stałe.",
+      "en": "Part of the RAM stays permanently in use."
+    },
+    {
+      "pl": "Wyłącz integralność pamięci (HVCI)",
+      "en": "Turn off memory integrity (HVCI)"
+    },
+    {
+      "pl": "Wyłącza integralność pamięci w izolacji rdzenia, czyli ochronę jądra przed złośliwymi sterownikami.",
+      "en": "Turns off memory integrity in Core isolation, the protection of the kernel against malicious drivers."
+    },
+    {
+      "pl": "Microsoft nie podaje, ile wydajności daje wyłączenie. Pewny skutek to słabsza ochrona jądra przed złośliwymi sterownikami i ostrzeżenie w Zabezpieczeniach Windows.",
+      "en": "Microsoft doesn't say how much performance turning it off gains. The certain effect is weaker kernel protection against malicious drivers and a warning in Windows Security."
+    },
+    {
+      "pl": "Ustawia Enabled = 0 w HKLM\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity – to wartość, którą Microsoft podaje jako „wyłączone”. Osłabia ochronę jądra systemu przed złośliwym kodem; nie wyłącza VBS jako całości ani Credential Guard. Windows Security (Zabezpieczenia Windows) pokaże ostrzeżenie, że integralność pamięci jest wyłączona. Microsoft włącza ją domyślnie na czystych instalacjach Windows 11 na zgodnym sprzęcie i zapowiada rozszerzenie na kolejne urządzenia. Przy blokadzie UEFI (Locked = 1) pozycja odmawia zmiany – wyłączenie wymaga wtedy wyłączenia Secure Boot w UEFI. Stan pozycji łączy wartość w rejestrze z odczytem Win32_DeviceGuard: zmiana jest zastosowana dopiero wtedy, gdy integralność pamięci naprawdę nie działa, czyli po restarcie. Cofnięcie przywraca poprzednią wartość albo usuwa ją razem z kluczem utworzonym przez zmianę.",
+      "en": "Sets Enabled = 0 in HKLM\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity – the value Microsoft gives for \"off\". It weakens the protection of the system kernel against malicious code; it doesn't turn off VBS as a whole or Credential Guard. Windows Security will show a warning that memory integrity is off. Microsoft turns it on by default on clean installations of Windows 11 on compatible hardware and has announced extending this to more devices. With a UEFI lock (Locked = 1) the item refuses the change – turning it off then requires turning off Secure Boot in UEFI. The item's state combines the registry value with a reading of Win32_DeviceGuard: the change counts as applied only when memory integrity is really not running, that is, after a restart. Undo restores the previous value or removes it together with the key created by the change."
+    },
+    {
+      "pl": "Wymaga restartu komputera; do tego czasu integralność pamięci nadal działa.",
+      "en": "Requires a computer restart; until then memory integrity keeps running."
+    },
+    {
+      "pl": "Cofnąć można tylko po zmianie wykonanej w DSOptimizerze – inaczej włącz ochronę ręcznie w Zabezpieczeniach Windows.",
+      "en": "Undo works only after a change made in DSOptimizer – otherwise turn the protection on by hand in Windows Security."
+    },
+    {
+      "pl": "Win32_DeviceGuard nie zwrócił SecurityServicesRunning – stan memory integrity jest nieznany.",
+      "en": "Win32_DeviceGuard didn't return SecurityServicesRunning – the memory integrity state is unknown."
+    },
+    {
+      "pl": "Memory integrity ma blokadę UEFI (Locked = 1): samo Enabled = 0 w rejestrze nie wystarczy, trzeba wyłączyć Secure Boot w UEFI (Microsoft) – nic nie zmieniono.",
+      "en": "Memory integrity has a UEFI lock (Locked = 1): Enabled = 0 in the registry alone isn't enough, Secure Boot must be turned off in UEFI (Microsoft) – nothing was changed."
+    },
+    {
+      "pl": "Wartość Locked w Scenarios\\HypervisorEnforcedCodeIntegrity ma nieoczekiwany typ lub wartość ({0}: {1}) – nie wiadomo, czy jest blokada UEFI; nic nie zmieniono.",
+      "en": "The Locked value in Scenarios\\HypervisorEnforcedCodeIntegrity has an unexpected type or value ({0}: {1}) – it's unknown whether there's a UEFI lock; nothing was changed."
+    },
+    {
+      "pl": "Brak zmian po stronie skryptu; Enabled = 0 zapisuje wpis rejestru, memory integrity przestanie działać po restarcie.",
+      "en": "No changes on the script side; the registry entry writes Enabled = 0, and memory integrity stops running after a restart."
+    },
+    {
+      "pl": "Brak wpisu w journalu – nie wiadomo, czy memory integrity było włączone; nic nie zmieniono. Ustaw ręcznie w Windows Security.",
+      "en": "No journal entry – it's unknown whether memory integrity was on; nothing was changed. Set it by hand in Windows Security."
+    },
+    {
+      "pl": "Nic do przywrócenia po stronie skryptu; Enabled przywraca snapshot rejestru, efekt po restarcie.",
+      "en": "Nothing to restore on the script side; the registry snapshot restores Enabled, and it takes effect after a restart."
+    }
+  ]
+}
