@@ -52,11 +52,11 @@
     },
     {
       "pl": "Wyłącza integralność pamięci w izolacji rdzenia, czyli ochronę jądra przed złośliwymi sterownikami.",
-      "en": "Turns off memory integrity in Core isolation, the protection of the kernel against malicious drivers."
+      "en": "Turns off memory integrity in Core isolation, which protects the kernel from malicious drivers."
     },
     {
       "pl": "Microsoft nie podaje, ile wydajności daje wyłączenie. Pewny skutek to słabsza ochrona jądra przed złośliwymi sterownikami i ostrzeżenie w Zabezpieczeniach Windows.",
-      "en": "Microsoft doesn't say how much performance turning it off gains. The certain effect is weaker kernel protection against malicious drivers and a warning in Windows Security."
+      "en": "Microsoft doesn't say how much performance you gain by turning it off. What is certain: weaker kernel protection against malicious drivers and a warning in Windows Security."
     },
     {
       "pl": "Ustawia Enabled = 0 w HKLM\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity – to wartość, którą Microsoft podaje jako „wyłączone”. Osłabia ochronę jądra systemu przed złośliwym kodem; nie wyłącza VBS jako całości ani Credential Guard. Windows Security (Zabezpieczenia Windows) pokaże ostrzeżenie, że integralność pamięci jest wyłączona. Microsoft włącza ją domyślnie na czystych instalacjach Windows 11 na zgodnym sprzęcie i zapowiada rozszerzenie na kolejne urządzenia. Przy blokadzie UEFI (Locked = 1) pozycja odmawia zmiany – wyłączenie wymaga wtedy wyłączenia Secure Boot w UEFI. Stan pozycji łączy wartość w rejestrze z odczytem Win32_DeviceGuard: zmiana jest zastosowana dopiero wtedy, gdy integralność pamięci naprawdę nie działa, czyli po restarcie. Cofnięcie przywraca poprzednią wartość albo usuwa ją razem z kluczem utworzonym przez zmianę.",
@@ -84,7 +84,7 @@
     },
     {
       "pl": "Brak zmian po stronie skryptu; Enabled = 0 zapisuje wpis rejestru, memory integrity przestanie działać po restarcie.",
-      "en": "No changes on the script side; the registry entry writes Enabled = 0, and memory integrity stops running after a restart."
+      "en": "No changes on the script side; the registry entry writes Enabled = 0, and memory integrity will stop running after a restart."
     },
     {
       "pl": "Brak wpisu w journalu – nie wiadomo, czy memory integrity było włączone; nic nie zmieniono. Ustaw ręcznie w Windows Security.",

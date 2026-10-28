@@ -255,6 +255,7 @@ public class PerfVbsHvciTests
             run.Error,
             StringComparison.Ordinal);
     }
+
     [Fact]
     public void Apply_IsSingleLineNoOp_RefusalLivesOnlyInCapture()
     {

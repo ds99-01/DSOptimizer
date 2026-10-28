@@ -377,7 +377,7 @@ separator of the Polish text (">"), and use the English page names exactly.
 | Uzyskaj porady i sugestie podczas korzystania z systemu Windows | Get tips and suggestions when using Windows | Checkbox under System > Notifications > Additional settings; [Notifications and Do Not Disturb in Windows](https://support.microsoft.com/help/4014934). **do audytu (Etap 5)** – some builds say "…when I use Windows" |
 | zalecenia (menu Start) / sekcja „Proponowane” | recommendations / "Recommended" section | Start menu section name "Recommended" |
 | Windows Spotlight / W centrum uwagi Windows / Obraz | Windows spotlight / "Windows spotlight" / "Picture" | Background options in Personalization > Background; [Windows spotlight](https://learn.microsoft.com/en-us/windows/configuration/windows-spotlight/) |
-| Dowiedz się więcej o tym zdjęciu | Learn more about this picture | Desktop icon added by Windows spotlight. **do audytu (Etap 5)** – third-party evidence only |
+| Dowiedz się więcej o tym zdjęciu | Learn about this picture | Desktop icon added by Windows spotlight. **do audytu (Etap 5)** – third-party evidence only |
 | zdjęcia dnia | pictures of the day | Program's own description of Windows spotlight |
 | Prywatność i zabezpieczenia > Diagnostyka i opinie | Privacy & security > Diagnostics & feedback | [Diagnostics, feedback, and privacy in Windows](https://support.microsoft.com/en-us/windows/diagnostics-feedback-and-privacy-in-windows-28808a2b-a31b-dd73-dcd3-4559a5199319) |
 | Częstotliwość opinii | Feedback frequency | Same source |

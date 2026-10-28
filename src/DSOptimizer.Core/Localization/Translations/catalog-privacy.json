@@ -12,7 +12,7 @@
     },
     {
       "pl": "Z paska zadań znika tablica z wiadomościami i pogodą – nic nie wyskakuje po najechaniu myszą.",
-      "en": "The news and weather board disappears from the taskbar – nothing pops up when you point at it with the mouse."
+      "en": "The news and weather board disappears from the taskbar – nothing pops up when you hover over it."
     },
     {
       "pl": "Polityka AllowNewsAndInterests = 0 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh, dla wszystkich kont. Win+W przestaje otwierać tablicę od razu, a przełącznik „Widżety” w Ustawieniach (Personalizacja > Pasek zadań) jest wyszarzony, dopóki nie cofniesz zmiany. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie usuwa wartość, a także klucz Dsh, jeśli powstał przy zmianie.",
@@ -96,7 +96,7 @@
     },
     {
       "pl": "Wyłącza w ustawieniach menu Start przełącznik zaleceń, czyli porad i propozycji nowych aplikacji.",
-      "en": "Turns off the recommendations toggle in the Start menu settings, which covers tips and suggestions of new apps."
+      "en": "Turns off the recommendations toggle in the Start menu settings, which covers tips and suggested new apps."
     },
     {
       "pl": "Menu Start przestaje podsuwać porady i nowe aplikacje.",
@@ -168,7 +168,7 @@
     },
     {
       "pl": "Pulpit dostaje zwykłe tło zamiast codziennego zdjęcia od Microsoftu i znika ikona „Dowiedz się więcej o tym zdjęciu”.",
-      "en": "The desktop gets a regular background instead of a daily picture from Microsoft, and the \"Learn more about this picture\" icon disappears."
+      "en": "The desktop gets a regular background instead of a daily picture from Microsoft, and the \"Learn about this picture\" icon disappears."
     },
     {
       "pl": "Polityka DisableWindowsSpotlightFeatures = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, dla zalogowanego użytkownika. Tło pulpitu przełącza się z „W centrum uwagi Windows” na „Obraz” od razu, bez restartu. Nie wiadomo, czy zmiana obejmuje też ekran blokady. Pozycja nie jest zaznaczana automatycznie. Cofnięcie usuwa politykę i klucz CloudContent, ale tło zostaje „Obraz”.",
@@ -196,7 +196,7 @@
     },
     {
       "pl": "To ograniczenie, a nie wyłączenie – Microsoft nadal otrzymuje dane wymagane.",
-      "en": "This limits the data, it doesn't stop it – Microsoft still receives required data."
+      "en": "This is a limit, not a shutoff – Microsoft still receives required data."
     },
     {
       "pl": "W Ustawieniach pojawi się komunikat, że niektórymi ustawieniami zarządza organizacja.",
@@ -236,7 +236,7 @@
     },
     {
       "pl": "Microsoft nie opisuje wyłączania tej usługi, a korzysta z niej też Windows Update – przy kłopotach z aktualizacjami cofnij zmianę.",
-      "en": "Microsoft doesn't document turning off this service, and Windows Update also uses it – if updates cause trouble, undo the change."
+      "en": "Microsoft doesn't document turning off this service, and Windows Update also uses it – if you have trouble with updates, undo the change."
     },
     {
       "pl": "Nie gwarantuje, że Windows przestanie wysyłać dane diagnostyczne.",
