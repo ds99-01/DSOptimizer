@@ -9,8 +9,8 @@ Port: a test on a 26H2 VM (Home and Pro) showed a real effect (a banner saying t
 - `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection`, value `AllowTelemetry`, **DWord**, set to `1`; `scope=machine`.
 - The `DataCollection` key **exists on a fresh installation** (it has no `AllowTelemetry` value). Undo deletes only the value, the key stays (VM case: `KeyPresentAfterUndo`).
 - Level 1 = required data. The item doesn't turn off sending diagnostic data.
-- `AllowTelemetry=0` **is not ported**: according to Microsoft, the "Security" level is available only in Windows Enterprise/Education, and the VMs don't have these editions, so there is no evidence (Stage 4a evidence rule). On Home/Pro Microsoft describes 0 as 1.
-- The user mechanism (the "Opcjonalne dane diagnostyczne" (Optional diagnostic data) toggle: `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection`, `AllowTelemetry` and `MaxTelemetryAllowed`, 1/1 by default) isn't changed; the item uses the policy.
+- `AllowTelemetry=0` **is not ported**: according to Microsoft, the "Security" level is available only in Windows Enterprise/Education, and the VMs don't have these editions, so there is no evidence (Stage 4a evidence rule). On Home/Pro Microsoft treats 0 the same as 1.
+- The user mechanism (the optional diagnostic data toggle: `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection`, `AllowTelemetry` and `MaxTelemetryAllowed`, 1/1 by default) isn't changed; the item uses the policy.
 - The policy locks the optional data toggle in Settings (the `ConfigureTelemetryOptInSettingsUx` and `DisableDiagnosticDataViewer` policies aren't ported).
 
 ## Sources

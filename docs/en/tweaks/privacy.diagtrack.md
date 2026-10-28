@@ -20,7 +20,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `DiagTrack` sta
 
 ## Detection and undo
 - Detection: startup type `Disabled` -> `Applied`; any other startup type -> `NotApplied`.
-- Undo restores the snapshot from before the change from the journal (the startup type and, if the service was running, starts it); `original` = Automatic is only a fallback.
+- Undo restores the snapshot from before the change from the journal (the startup type, and starts the service if it was running); `original` = Automatic is only a fallback.
 
 ## Risks and warnings
 - `risk=caution` (R14), `suggested=true`.

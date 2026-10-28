@@ -15,7 +15,7 @@ Port as a **non-suggested** item with a warning (Dawid's decision 2026-10-21, qu
 - Microsoft (ADMX/CSP `Experience/AllowWindowsSpotlight`) lists this policy as ❌ Pro, ✅ Enterprise/Education; on the 26H2 VM, however, the effect on the desktop was the same on Home and Pro, so the observation counts (Stage 4a rule).
 
 ## Defaults on a fresh 26H2
-Reading from the VMs, 2026-10-21: the user's `...\Policies\Microsoft\Windows\CloudContent` key and the value none (Home and Pro); desktop background = "W centrum uwagi Windows" (Windows spotlight).
+Reading from the VMs, 2026-10-21: neither the user's `...\Policies\Microsoft\Windows\CloudContent` key nor the value exists (Home and Pro); desktop background = "W centrum uwagi Windows" (Windows spotlight).
 
 ## Detection and undo
 - Detection: `DisableWindowsSpotlightFeatures` = DWORD 1 -> `Applied`; missing value or a different value -> `NotApplied`.

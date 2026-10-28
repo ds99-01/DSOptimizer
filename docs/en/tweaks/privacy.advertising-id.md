@@ -11,7 +11,7 @@ Port: the advertising ID toggle is changed with two values; a test on a 26H2 VM 
 - R18: the item writes only these two values and **doesn't delete** the `Id` value (REG_SZ) from `AdvertisingInfo\Id`. When turned off, the toggle in Settings additionally deletes `AdvertisingInfo\Id`. In the exploration the write included this deletion, so the 0/0 values alone, without deleting `Id`, weren't checked separately. Task 9 (2026-10-21, Home and Pro) checked this separately: with an existing `Id`, the toggle is off after apply of this item (0/0 only) and on after undo (details in "VM test").
 
 ### Working alternative (described, without its own catalog item)
-`HKLM\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo`, `DisabledByGroupPolicy` = DWORD 1: on Home and Pro it shows the banner "Niektórymi z tych ustawień zarządza Twoja organizacja" (Some of these settings are managed by your organization) and grays out the toggle. It doesn't go into the catalog, because it takes away the user's ability to switch the toggle (spec 5.2: we don't take the choice away).
+`HKLM\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo`, `DisabledByGroupPolicy` = DWORD 1: on Home and Pro it shows the banner "Some of these settings are managed by your organization" and grays out the toggle. It doesn't go into the catalog, because it takes away the user's ability to switch the toggle (spec 5.2: we don't take the choice away).
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457, Windows not activated, local account): write through the registry API (.NET `RegistryKey`) and observation in Settings (UI Automation, screenshots).
