@@ -1,0 +1,4 @@
+# Wyjątki strażnika komunikatów skryptów katalogu (CatalogScriptTextRulesTests): napisy w polach script.*, które celowo zostają po polsku.
+# Tylko wzorce porównywane z wyjściem Windows (polski tekst narzędzia albo cmdletu), nigdy komunikat dla użytkownika – ten idzie przez Get-DsoText.
+# Format: id pozycji katalogu<TAB>napis dokładnie jak w skrypcie (z apostrofami albo cudzysłowami)<TAB>powód.
+# Wpis, którego napisu nie ma już w skryptach tej pozycji, jest błędem testu.

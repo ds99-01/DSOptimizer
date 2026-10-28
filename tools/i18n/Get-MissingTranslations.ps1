@@ -18,7 +18,9 @@
     #     gdy ma wpis z niepustym "en". Teksty danych (L.Data) czyta z src\DSOptimizer.Catalog\catalog\*.json: pozycje tablic
     #     tweaków – title, summary, benefit, description, każda uwaga z warnings; apps.json – summary, warning (bez title, to nazwy
     #     produktów); apps-bloat.json – entries[].summary, entries[].warning, protected[].reason. Miejsce takiego tekstu:
-    #     src/DSOptimizer.Catalog/catalog/<plik>#<id>.<pole>; teksty danych liczą się jako używane. Zły JSON katalogu = kod 2.
+    #     src/DSOptimizer.Catalog/catalog/<plik>#<id>.<pole>; teksty danych liczą się jako używane. Z pozycji tweaków (bez
+    #     apps*.json) także komunikaty skryptów: pierwszy argument Get-DsoText '…' w polach script.apply/undo/detect/capture
+    #     ('' = apostrof), miejsce src/DSOptimizer.Catalog/catalog/<plik>#<id>.script.<pole>. Zły JSON katalogu = kod 2.
     #     Wypisuje sekcje „Brak tłumaczenia (N)” (plik:linia i tekst, każdy tekst raz, z pierwszym miejscem) oraz
     #     „Nieużywane tłumaczenia (M)” (wpisy "pl", których nie ma w źródłach), a na końcu „Braki: N, nieużywane: M”.
     #     Kod wyjścia: 0 zawsze; z -FailOnMissing 1 przy N > 0; 2 przy nieprawidłowym pliku tłumaczeń.
@@ -175,6 +177,21 @@ function Get-CatalogTexts {
                 [pscustomobject]@{
                     Text  = [string]$Value
                     Where = ('{0}#{1}.{2}' -f $Relative, $Id, $Field)
+                }
+            }
+        }
+        # Komunikaty skryptów pozycji tweaków: pierwszy argument Get-DsoText '…' (ten sam wzorzec co ScriptTexts.Find w Core).
+        if ($Name -ceq 'apps.json' -or $Name -ceq 'apps-bloat.json') { continue }
+        $Script = $null
+        if ($null -ne $Entry -and -not ($Entry -is [array]) -and $null -ne $Entry.PSObject.Properties['script']) { $Script = $Entry.script }
+        if ($null -eq $Script -or $Script -is [string] -or $Script -is [array]) { continue }
+        foreach ($Field in 'apply', 'undo', 'detect', 'capture') {
+            if ($null -eq $Script.PSObject.Properties[$Field]) { continue }
+            $Body = (@($Script.$Field) | Where-Object { $_ -is [string] }) -join "`n"
+            foreach ($Match in [regex]::Matches($Body, "Get-DsoText\s+'((?:[^']|'')*)'")) {
+                [pscustomobject]@{
+                    Text  = $Match.Groups[1].Value.Replace("''", "'")
+                    Where = ('{0}#{1}.script.{2}' -f $Relative, $Id, $Field)
                 }
             }
         }

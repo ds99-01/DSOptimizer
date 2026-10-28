@@ -292,6 +292,26 @@ Describe 'Get-MissingTranslations.ps1' {
         $Result.Text | Should -Match 'src/A\.cs:1  Wspólny'
     }
 
+    It 'skrypty katalogu: literał Get-DsoText bez tłumaczenia jest brakiem z miejscem pola skryptu' {
+        $Catalog = '[{"id":"x","title":"T","summary":"S","description":"D","script":{"apply":["Write-Output (Get-DsoText ''Gotowe.'')","throw (Get-DsoText ''Plik ''''{0}'''' zajęty.'' $p)"],"detect":"Get-DsoText ''Przetłumaczony'' 1","undo":["Write-Output ''Zwykły napis''"]}}]'
+        $Translations = '{"language":"en","data":true,"entries":[{"pl":"T","en":"T"},{"pl":"S","en":"S"},{"pl":"D","en":"D"},{"pl":"Przetłumaczony","en":"Translated"}]}'
+        $Root = New-TestTree -Files @{ 'src\DSOptimizer.Catalog\catalog\x.json' = $Catalog } -Translations $Translations
+        $Result = Invoke-Report -Root $Root
+        $Result.Code | Should -Be 0
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/x\.json#x\.script\.apply  Gotowe\.$'
+        $Result.Text | Should -Match "(?m)^  src/DSOptimizer\.Catalog/catalog/x\.json#x\.script\.apply  Plik '\{0\}' zajęty\.$"
+        $Result.Text | Should -Not -Match 'Zwykły napis'
+        $Result.Text | Should -Match 'Braki: 2, nieużywane: 0'
+    }
+
+    It 'apps.json i apps-bloat.json: skrypty nie są czytane' {
+        $Apps = '{"entries":[{"id":"install.a","summary":"S","script":{"apply":["Get-DsoText ''Brak w raporcie''"]}}]}'
+        $Translations = '{"language":"en","data":true,"entries":[{"pl":"S","en":"S"}]}'
+        $Root = New-TestTree -Files @{ 'src\DSOptimizer.Catalog\catalog\apps.json' = $Apps } -Translations $Translations
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match 'Braki: 0, nieużywane: 0'
+    }
+
     It 'nieprawidłowy JSON pliku katalogu daje kod 2' {
         $Root = New-TestTree -Files @{ 'src\DSOptimizer.Catalog\catalog\x.json' = '[{ zly' }
         $Result = Invoke-Report -Root $Root
