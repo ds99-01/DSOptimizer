@@ -28,6 +28,14 @@
     {
       "pl": "Uruchom ponownie teraz",
       "en": "Restart now"
+    },
+    {
+      "pl": "Nie udało się zapisać wybranego języka: {0} Program nie został uruchomiony ponownie.",
+      "en": "Could not save the selected language: {0} The program was not restarted."
+    },
+    {
+      "pl": "Nie udało się zamknąć okna wyboru języka.",
+      "en": "Could not close the language prompt."
     }
   ]
 }

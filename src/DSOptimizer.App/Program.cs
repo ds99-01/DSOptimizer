@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
@@ -185,10 +186,26 @@ internal static class Program
         catch (Exception ex)
         {
             TryLog(log, L.T("Nie udało się pokazać okna wyboru języka. Program używa języka systemu."), ex);
-            // Okno wyboru nie może zostać MainWindow aplikacji – nim ma być okno główne programu.
-            if (Application.Current is { MainWindow: LanguageChoiceWindow } app)
+            if (Application.Current is { } app)
             {
-                app.MainWindow = null;
+                // Pozostawione okno wyboru (np. wyjątek w trakcie pokazywania) nie może trzymać procesu przy OnLastWindowClose.
+                foreach (var chooser in app.Windows.OfType<LanguageChoiceWindow>().ToList())
+                {
+                    try
+                    {
+                        chooser.Close();
+                    }
+                    catch (Exception closeEx)
+                    {
+                        TryLog(log, L.T("Nie udało się zamknąć okna wyboru języka."), closeEx);
+                    }
+                }
+
+                // Okno wyboru nie może zostać MainWindow aplikacji – nim ma być okno główne programu.
+                if (app.MainWindow is LanguageChoiceWindow)
+                {
+                    app.MainWindow = null;
+                }
             }
 
             return null;

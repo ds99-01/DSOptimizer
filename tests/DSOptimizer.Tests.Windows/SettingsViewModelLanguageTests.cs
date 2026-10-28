@@ -30,7 +30,7 @@ public class SettingsViewModelLanguageTests
     {
         public List<AppSettings> Saved { get; } = new();
 
-        public bool Fail { get; init; }
+        public bool Fail { get; set; }
 
         public SettingsLoadResult Load() => new(AppSettings.Default, null);
 
@@ -148,6 +148,47 @@ public class SettingsViewModelLanguageTests
 
             Assert.Equal(1, fixture.Relauncher.Calls);
             Assert.Equal(1, fixture.Shutdowns);
+            // Przed startem nowej instancji ustawienia zapisują się jeszcze raz (wybór + ponowny zapis).
+            Assert.Equal(2, fixture.Store.Saved.Count);
+            Assert.All(fixture.Store.Saved, saved => Assert.Equal(UiLanguage.English, saved.Language));
+        });
+    }
+
+    [Fact]
+    public void Relaunch_SecondExecuteAfterSuccess_DoesNotStartAgain()
+    {
+        RunOnSta(temp =>
+        {
+            var fixture = new Fixture();
+            var vm = Create(temp, fixture, UiLanguage.Polish);
+            vm.SelectedLanguage = UiLanguage.English;
+
+            vm.RelaunchCommand.Execute(null);
+            Assert.False(vm.RelaunchCommand.CanExecute(null));
+            vm.RelaunchCommand.Execute(null);
+
+            Assert.Equal(1, fixture.Relauncher.Calls);
+            Assert.Equal(1, fixture.Shutdowns);
+        });
+    }
+
+    [Fact]
+    public void Relaunch_SaveFails_StaysOpenAndLogs()
+    {
+        RunOnSta(temp =>
+        {
+            var fixture = new Fixture();
+            var vm = Create(temp, fixture, UiLanguage.Polish);
+            fixture.Store.Fail = true;
+            vm.SelectedLanguage = UiLanguage.English;
+
+            vm.RelaunchCommand.Execute(null);
+
+            Assert.Equal(0, fixture.Relauncher.Calls);
+            Assert.Equal(0, fixture.Shutdowns);
+            Assert.Contains(
+                "FAIL Nie udało się zapisać wybranego języka: Brak dostępu. Program nie został uruchomiony ponownie.", fixture.Log.Lines);
+            Assert.True(vm.RelaunchCommand.CanExecute(null));
         });
     }
 

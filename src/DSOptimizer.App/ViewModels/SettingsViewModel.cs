@@ -35,6 +35,7 @@ public sealed class SettingsViewModel : ObservableObject
     private AppSettings _settings;
     private UiLanguage _selectedLanguage;
     private bool _isEditable = true;
+    private bool _relaunching;
 
     /// <param name="running">Język, w którym działa bieżąca instancja programu.</param>
     /// <param name="shutdown">Zamknięcie programu po udanym starcie nowej instancji.</param>
@@ -70,7 +71,7 @@ public sealed class SettingsViewModel : ObservableObject
         // Kilka klików w link w trakcie sprawdzania powłoki ignoruje ShellActions; przycisk nie przygasa na 1–3 s.
         OpenRepositoryPageCommand = new AsyncRelayCommand(OpenRepositoryPageAsync, AsyncRelayCommandOptions.AllowConcurrentExecutions);
         ShowLicensesCommand = new RelayCommand(ShowLicenses);
-        RelaunchCommand = new RelayCommand(Relaunch, () => IsEditable && RelaunchNeeded);
+        RelaunchCommand = new RelayCommand(Relaunch, CanRelaunch);
     }
 
     /// <summary>„Twórz punkt przywracania przed zmianami” (domyślnie tak); ustawia <see cref="GuiSession.CreateRestorePoint"/>.</summary>
@@ -152,7 +153,7 @@ public sealed class SettingsViewModel : ObservableObject
 
     public IRelayCommand ShowLicensesCommand { get; }
 
-    /// <summary>„Uruchom ponownie teraz”: aktywne tylko poza operacją i gdy wybrany język ≠ bieżący.</summary>
+    /// <summary>„Uruchom ponownie teraz”: aktywne tylko poza operacją, gdy wybrany język ≠ bieżący i start nie trwa.</summary>
     public IRelayCommand RelaunchCommand { get; }
 
     /// <summary>RadioButton ustawia true na wybranym i false na poprzednim; liczy się tylko true.</summary>
@@ -197,26 +198,49 @@ public sealed class SettingsViewModel : ObservableObject
         }
     }
 
-    /// <summary>Najpierw nowa instancja, zamknięcie dopiero po udanym starcie; błąd = linia w dzienniku i program zostaje otwarty.</summary>
+    private bool CanRelaunch() => IsEditable && RelaunchNeeded && !_relaunching;
+
+    /// <summary>
+    /// Najpierw ponowny zapis ustawień (nowa instancja czyta język z pliku), potem nowa instancja, zamknięcie dopiero po udanym starcie.
+    /// Błąd zapisu albo startu = linia w dzienniku i program zostaje otwarty.
+    /// </summary>
     private void Relaunch()
     {
-        // RelayCommand.Execute nie sprawdza CanExecute: w trakcie operacji program się nie zamyka.
-        if (!IsEditable || !RelaunchNeeded)
+        // RelayCommand.Execute nie sprawdza CanExecute: w trakcie operacji i po udanym starcie nic się nie dzieje.
+        if (!CanRelaunch())
         {
             return;
         }
 
         try
         {
+            _store.Save(_settings);
+        }
+        catch (SettingsStoreException ex)
+        {
+            _log.Fail(Component, L.F("Nie udało się zapisać wybranego języka: {0} Program nie został uruchomiony ponownie.", ex.Message));
+            return;
+        }
+
+        SetRelaunching(true);
+        try
+        {
             _relauncher.Relaunch();
         }
         catch (OperationException ex)
         {
+            SetRelaunching(false);
             _log.Fail(Component, ex.Message);
             return;
         }
 
         _shutdown();
+    }
+
+    private void SetRelaunching(bool value)
+    {
+        _relaunching = value;
+        RelaunchCommand.NotifyCanExecuteChanged();
     }
 
     private void ShowLicenses()
