@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
+using DSOptimizer.Catalog;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
 using Xunit;
 
 namespace DSOptimizer.Tests.Unit.Install;
@@ -48,6 +50,28 @@ public class InstallPageTests
         });
         Assert.Equal(InstallCategory.Browsers, rows[0].Target.Category);
         Assert.Equal("Mozilla.Firefox", rows[0].Target.WingetId);
+    }
+
+    [Fact]
+    public void CatalogRows_English_Summary()
+    {
+        // Wbudowana lista apps.json po angielsku: opis i uwaga z tabeli catalog-apps.json, tytuł (nazwa produktu) bez zmian.
+        AppsInstallCatalog catalog;
+        using (L.Use(UiLanguage.English))
+        {
+            catalog = AppsInstallCatalog.Load(BuiltInCatalog.AppsInstallSource.Json);
+        }
+
+        var rows = InstallPage.CatalogRows(catalog, Array.Empty<InstalledApp>(), Ready);
+
+        var vlc = rows.Single(row => row.Target.Id == "install.vlc");
+        Assert.Equal("VLC media player", vlc.Target.Title);
+        Assert.Equal(
+            "Video and music player that opens almost any format without installing extra codecs.",
+            catalog.Find(vlc.Target.Id)?.Summary);
+
+        var brave = rows.Single(row => row.Target.Id == "install.brave");
+        Assert.Equal("Installs only for the current Windows account.", brave.Target.Warning);
     }
 
     [Fact]

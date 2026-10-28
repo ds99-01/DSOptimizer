@@ -1,0 +1,182 @@
+{
+  "language": "en",
+  "data": true,
+  "entries": [
+    {
+      "pl": "Przeglądarka internetowa Google.",
+      "en": "Google's web browser."
+    },
+    {
+      "pl": "Przeglądarka internetowa fundacji Mozilla.",
+      "en": "Web browser from the Mozilla Foundation."
+    },
+    {
+      "pl": "Instaluje też usługę aktualizacji Mozilla Maintenance Service.",
+      "en": "Also installs the Mozilla Maintenance Service update service."
+    },
+    {
+      "pl": "Przeglądarka internetowa z wbudowanym blokowaniem reklam i śledzenia.",
+      "en": "Web browser with built-in ad and tracker blocking."
+    },
+    {
+      "pl": "Instaluje się tylko dla bieżącego konta Windows.",
+      "en": "Installs only for the current Windows account."
+    },
+    {
+      "pl": "Przeglądarka internetowa z wbudowanym VPN i blokowaniem reklam.",
+      "en": "Web browser with a built-in VPN and ad blocking."
+    },
+    {
+      "pl": "Komunikator tekstowy i głosowy z serwerami społeczności.",
+      "en": "Text and voice chat app with community servers."
+    },
+    {
+      "pl": "Komunikator Telegram w wersji na komputer.",
+      "en": "Desktop version of the Telegram messenger."
+    },
+    {
+      "pl": "Szyfrowany komunikator Signal w wersji na komputer (wymaga konta w telefonie).",
+      "en": "Desktop version of the encrypted Signal messenger (requires an account on your phone)."
+    },
+    {
+      "pl": "Program do spotkań wideo i rozmów Zoom.",
+      "en": "Zoom app for video meetings and calls."
+    },
+    {
+      "pl": "Odtwarzacz filmów i muzyki, który otwiera prawie każdy format bez doinstalowywania kodeków.",
+      "en": "Video and music player that opens almost any format without installing extra codecs."
+    },
+    {
+      "pl": "Zestaw kodeków i odtwarzacz MPC-HC, dzięki którym Windows otwiera więcej formatów wideo i audio.",
+      "en": "Codec pack and MPC-HC player that let Windows open more video and audio formats."
+    },
+    {
+      "pl": "Lekki odtwarzacz muzyki z biblioteką utworów.",
+      "en": "Lightweight music player with a music library."
+    },
+    {
+      "pl": "Darmowa przeglądarka plików PDF z wypełnianiem formularzy, komentarzami i podpisem.",
+      "en": "Free PDF viewer with form filling, comments and signing."
+    },
+    {
+      "pl": "Instaluje też usługę Foxit PDF Reader Update Service (automatyczne aktualizacje, startuje z systemem).",
+      "en": "Also installs the Foxit PDF Reader Update Service (automatic updates, starts with Windows)."
+    },
+    {
+      "pl": "Darmowy pakiet biurowy: edytor tekstu, arkusz kalkulacyjny i prezentacje, otwiera pliki Worda i Excela.",
+      "en": "Free office suite: word processor, spreadsheet and presentations; opens Word and Excel files."
+    },
+    {
+      "pl": "Doinstalowuje też Microsoft Visual C++ v14 Redistributable (x64).",
+      "en": "Also installs Microsoft Visual C++ v14 Redistributable (x64)."
+    },
+    {
+      "pl": "Przeglądarka plików PDF firmy Adobe.",
+      "en": "Adobe's PDF viewer."
+    },
+    {
+      "pl": "Dodaje też pakiet aplikacji AdobeAcrobatReaderCoreApp, także do obrazu systemu (pojawi się na nowych kontach).",
+      "en": "Also adds the AdobeAcrobatReaderCoreApp app package, including to the system image (it will appear on new accounts)."
+    },
+    {
+      "pl": "Mała i szybka przeglądarka plików PDF, EPUB i DjVu.",
+      "en": "Small, fast viewer for PDF, EPUB and DjVu files."
+    },
+    {
+      "pl": "Program do pakowania i rozpakowywania archiwów (7z, zip, rar i inne).",
+      "en": "Creates and extracts archives (7z, zip, rar and more)."
+    },
+    {
+      "pl": "Edytor tekstu i kodu z kolorowaniem składni i kartami.",
+      "en": "Text and code editor with syntax highlighting and tabs."
+    },
+    {
+      "pl": "Instalator EXE dodaje też pakiet aplikacji NotepadPlusPlus (pozycja w menu kontekstowym).",
+      "en": "The EXE installer also adds the NotepadPlusPlus app package (an entry in the context menu)."
+    },
+    {
+      "pl": "Natychmiastowe wyszukiwanie plików i folderów po nazwie na całym dysku.",
+      "en": "Instant search for files and folders by name across the whole drive."
+    },
+    {
+      "pl": "Zestaw dodatków Microsoftu do Windows: układy okien, zmiana nazw wielu plików, próbnik kolorów i inne.",
+      "en": "Microsoft's set of add-ons for Windows: window layouts, renaming many files at once, a color picker and more."
+    },
+    {
+      "pl": "Instaluje się tylko dla bieżącego konta Windows. Dodaje też 5 pakietów aplikacji (m.in. Command Palette).",
+      "en": "Installs only for the current Windows account. Also adds 5 app packages (including Command Palette)."
+    },
+    {
+      "pl": "Program do pakowania i rozpakowywania archiwów RAR i ZIP.",
+      "en": "Creates and extracts RAR and ZIP archives."
+    },
+    {
+      "pl": "Program płatny po okresie próbnym. Dodaje też pakiet aplikacji WinRAR.ShellExtension (menu kontekstowe).",
+      "en": "Paid after the trial period. Also adds the WinRAR.ShellExtension app package (context menu)."
+    },
+    {
+      "pl": "Zrzuty ekranu i nagrywanie ekranu z edycją i zapisem do pliku.",
+      "en": "Screenshots and screen recording, with editing and saving to a file."
+    },
+    {
+      "pl": "Informacje o procesorze, płycie głównej i pamięci RAM.",
+      "en": "Information about the processor, motherboard and RAM."
+    },
+    {
+      "pl": "Odczyt temperatur, napięć i obrotów wentylatorów z czujników komputera.",
+      "en": "Reads temperatures, voltages and fan speeds from the computer's sensors."
+    },
+    {
+      "pl": "Informacje o karcie graficznej i odczyt jej czujników.",
+      "en": "Information about the graphics card and readings from its sensors."
+    },
+    {
+      "pl": "Szczegółowe informacje o sprzęcie i odczyt czujników: temperatury, napięcia, taktowanie.",
+      "en": "Detailed hardware information and sensor readings: temperatures, voltages, clock speeds."
+    },
+    {
+      "pl": "Zdalny pulpit open source: pomoc na odległość i dostęp do tego komputera z innego.",
+      "en": "Open-source remote desktop: remote support and access to this computer from another one."
+    },
+    {
+      "pl": "Instaluje usługę RustDesk (działa w tle przy starcie Windows), dodaje reguły zapory, skrót na pulpicie i ikonę w Autostarcie wszystkich kont. Instalator pobierany z GitHuba RustDesk i sprawdzany podpisem wydawcy (PURSLANE).",
+      "en": "Installs the RustDesk service (runs in the background at Windows startup), adds firewall rules, a desktop shortcut and a Startup icon for all accounts. The installer comes from RustDesk's GitHub and is checked by its publisher signature (PURSLANE)."
+    },
+    {
+      "pl": "Zdalny pulpit: pomoc na odległość i dostęp do tego komputera z innego.",
+      "en": "Remote desktop: remote support and access to this computer from another one."
+    },
+    {
+      "pl": "Sklep i biblioteka gier firmy Valve.",
+      "en": "Game store and library from Valve."
+    },
+    {
+      "pl": "Sklep i biblioteka gier Epic Games.",
+      "en": "Game store and library from Epic Games."
+    },
+    {
+      "pl": "Instaluje też Microsoft GameInput.",
+      "en": "Also installs Microsoft GameInput."
+    },
+    {
+      "pl": "Sklep i biblioteka gier GOG.",
+      "en": "Game store and library from GOG."
+    },
+    {
+      "pl": "Biblioteki Visual C++ potrzebne wielu programom i grom 64-bitowym.",
+      "en": "Visual C++ libraries needed by many 64-bit programs and games."
+    },
+    {
+      "pl": "Biblioteki Visual C++ potrzebne wielu programom i grom 32-bitowym.",
+      "en": "Visual C++ libraries needed by many 32-bit programs and games."
+    },
+    {
+      "pl": "Środowisko .NET 8 potrzebne programom okienkowym napisanym w .NET.",
+      "en": ".NET 8 runtime needed by desktop programs written in .NET."
+    },
+    {
+      "pl": "Środowisko .NET 9 potrzebne programom okienkowym napisanym w .NET.",
+      "en": ".NET 9 runtime needed by desktop programs written in .NET."
+    }
+  ]
+}

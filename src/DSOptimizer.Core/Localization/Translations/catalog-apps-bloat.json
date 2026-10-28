@@ -1,0 +1,398 @@
+{
+  "language": "en",
+  "data": true,
+  "entries": [
+    {
+      "pl": "Asystent Copilot od Microsoftu. Do niczego innego w systemie nie jest potrzebny.",
+      "en": "Microsoft's Copilot assistant. Nothing else in the system needs it."
+    },
+    {
+      "pl": "Aplikacja z wiadomościami (Microsoft News). Nie jest potrzebna do działania systemu.",
+      "en": "News app (Microsoft News). Windows doesn't need it to work."
+    },
+    {
+      "pl": "Aplikacja Pogoda od Microsoftu. Nie jest potrzebna do działania systemu.",
+      "en": "Microsoft's Weather app. Windows doesn't need it to work."
+    },
+    {
+      "pl": "Gra Microsoft Solitaire Collection z reklamami.",
+      "en": "The Microsoft Solitaire Collection game, with ads."
+    },
+    {
+      "pl": "Edytor wideo Clipchamp, część jego funkcji jest płatna.",
+      "en": "Clipchamp video editor; some of its features are paid."
+    },
+    {
+      "pl": "Aplikacja Xbox. Pasek gry (Game Bar) i składniki logowania Xbox to osobne pakiety i tu ich nie ruszamy.",
+      "en": "The Xbox app. Game Bar and the Xbox sign-in components are separate packages and are left alone here."
+    },
+    {
+      "pl": "Pasek gry (Game Bar): zrzuty ekranu, nagrywanie i nakładka dla gier. Usuń tylko, gdy z niego nie korzystasz.",
+      "en": "Game Bar: screenshots, recording and an in-game overlay. Remove it only if you don't use it."
+    },
+    {
+      "pl": "Nowy Microsoft Teams (osobisty i służbowy).",
+      "en": "The new Microsoft Teams (personal and work)."
+    },
+    {
+      "pl": "Może to być Teams do pracy lub szkoły; usuń tylko, jeśli nie jest używany.",
+      "en": "It may be Teams for work or school; remove it only if no one uses it."
+    },
+    {
+      "pl": "Aplikacja Microsoft 365 (Office Hub): skrót do usług Office, bez pakietu Office.",
+      "en": "Microsoft 365 app (Office Hub): a shortcut to Office services, without the Office suite itself."
+    },
+    {
+      "pl": "Lista zadań Microsoft To Do.",
+      "en": "Microsoft To Do task list."
+    },
+    {
+      "pl": "Aplikacja Porady z podpowiedziami o Windows.",
+      "en": "Tips app with hints about Windows."
+    },
+    {
+      "pl": "Centrum opinii: wysyłanie uwag do Microsoftu.",
+      "en": "Feedback Hub: sends feedback to Microsoft."
+    },
+    {
+      "pl": "Power Automate: automatyzacja zadań, rzadko używana na domowym komputerze.",
+      "en": "Power Automate: task automation, rarely used on a home computer."
+    },
+    {
+      "pl": "Synchronizacja plików z chmurą OneDrive. Usuń tylko, gdy nie korzystasz z OneDrive.",
+      "en": "Syncs files with OneDrive cloud storage. Remove it only if you don't use OneDrive."
+    },
+    {
+      "pl": "Pliki zsynchronizowane tylko w chmurze mogą przestać być dostępne na tym komputerze.",
+      "en": "Files kept only in the cloud may stop being available on this computer."
+    },
+    {
+      "pl": "Nowy Outlook dla Windows. Usuń tylko, gdy nie czytasz w nim poczty.",
+      "en": "The new Outlook for Windows. Remove it only if you don't read your email in it."
+    },
+    {
+      "pl": "Szybka pomoc: zdalna pomoc innej osoby przez internet. Usuń tylko, gdy nie będzie potrzebna.",
+      "en": "Quick Assist: lets another person help you remotely over the internet. Remove it only if you won't need it."
+    },
+    {
+      "pl": "Lenovo Vantage: aplikacja producenta z ustawieniami sprzętu i aktualizacjami.",
+      "en": "Lenovo Vantage: the manufacturer's app with hardware settings and updates."
+    },
+    {
+      "pl": "Może sterować oszczędzaniem baterii i klawiszami Fn; po usunięciu ta funkcja może zniknąć.",
+      "en": "It may control battery saving and the Fn keys; after removal, these features may be gone."
+    },
+    {
+      "pl": "MyASUS: aplikacja producenta z aktualizacjami sterowników i ustawieniami sprzętu.",
+      "en": "MyASUS: the manufacturer's app with driver updates and hardware settings."
+    },
+    {
+      "pl": "Armoury Crate: aplikacja producenta ASUS do trybów wydajności, wentylatorów i podświetlenia.",
+      "en": "Armoury Crate: ASUS's app for performance modes, fans and lighting."
+    },
+    {
+      "pl": "Acer Care Center: aplikacja producenta do konserwacji komputera i aktualizacji.",
+      "en": "Acer Care Center: the manufacturer's app for computer maintenance and updates."
+    },
+    {
+      "pl": "Może zarządzać aktualizacjami i ustawieniami producenta; po usunięciu sprawdzaj je ręcznie.",
+      "en": "It may manage the manufacturer's updates and settings; after removal, check them yourself."
+    },
+    {
+      "pl": "HP Support Assistant: asystent producenta z diagnostyką, powiadomieniami i aktualizacjami sterowników HP.",
+      "en": "HP Support Assistant: the manufacturer's assistant with diagnostics, notifications and HP driver updates."
+    },
+    {
+      "pl": "Może sterować aktualizacjami sterowników HP; po usunięciu sprawdzaj je ręcznie.",
+      "en": "It may handle HP driver updates; after removal, check for them yourself."
+    },
+    {
+      "pl": "Dell SupportAssist: asystent producenta z diagnostyką sprzętu i powiadomieniami.",
+      "en": "Dell SupportAssist: the manufacturer's assistant with hardware diagnostics and notifications."
+    },
+    {
+      "pl": "Może sterować aktualizacjami sterowników Dell; po usunięciu sprawdzaj je ręcznie.",
+      "en": "It may handle Dell driver updates; after removal, check for them yourself."
+    },
+    {
+      "pl": "MyDell: aplikacja producenta, która dostraja dźwięk, obraz, baterię i wydajność.",
+      "en": "MyDell: the manufacturer's app that tunes sound, display, battery and performance."
+    },
+    {
+      "pl": "Dell Optimizer: aplikacja producenta, która dostraja ustawienia systemu pod programy.",
+      "en": "Dell Optimizer: the manufacturer's app that tunes system settings for the programs you use."
+    },
+    {
+      "pl": "Dell Digital Delivery: instaluje oprogramowanie kupione razem z komputerem Dell.",
+      "en": "Dell Digital Delivery: installs software bought together with the Dell computer."
+    },
+    {
+      "pl": "Może przechowywać instalatory i licencje oprogramowania kupionego z komputerem.",
+      "en": "It may hold installers and licenses for software bought with the computer."
+    },
+    {
+      "pl": "Wersja próbna antywirusa McAfee LiveSafe, preinstalowana przez producenta komputera.",
+      "en": "Trial version of the McAfee LiveSafe antivirus, preinstalled by the computer manufacturer."
+    },
+    {
+      "pl": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
+      "en": "If this is a paid antivirus you use, don't remove it. Its own uninstaller can leave leftovers behind."
+    },
+    {
+      "pl": "Wersja próbna antywirusa McAfee Total Protection, preinstalowana przez producenta komputera.",
+      "en": "Trial version of the McAfee Total Protection antivirus, preinstalled by the computer manufacturer."
+    },
+    {
+      "pl": "Wersja próbna antywirusa McAfee AntiVirus Plus, preinstalowana przez producenta komputera.",
+      "en": "Trial version of the McAfee AntiVirus Plus antivirus, preinstalled by the computer manufacturer."
+    },
+    {
+      "pl": "Wersja próbna pakietu McAfee Internet Security, preinstalowana przez producenta komputera.",
+      "en": "Trial version of the McAfee Internet Security suite, preinstalled by the computer manufacturer."
+    },
+    {
+      "pl": "Wersja próbna McAfee Personal Security, preinstalowana przez producenta komputera.",
+      "en": "Trial version of McAfee Personal Security, preinstalled by the computer manufacturer."
+    },
+    {
+      "pl": "McAfee WebAdvisor: dodatek przeglądarki od McAfee, zwykle razem z wersją próbną antywirusa.",
+      "en": "McAfee WebAdvisor: a browser add-on from McAfee, usually installed with the antivirus trial."
+    },
+    {
+      "pl": "Może być częścią antywirusa, którego używasz. Własny deinstalator potrafi zostawić resztki.",
+      "en": "It may be part of an antivirus you use. Its own uninstaller can leave leftovers behind."
+    },
+    {
+      "pl": "McAfee Security Scan Plus: darmowy skaner McAfee, zwykle dołączany do preinstalowanych programów.",
+      "en": "McAfee Security Scan Plus: a free McAfee scanner, usually bundled with preinstalled programs."
+    },
+    {
+      "pl": "Własny deinstalator potrafi zostawić resztki.",
+      "en": "Its own uninstaller can leave leftovers behind."
+    },
+    {
+      "pl": "Wersja próbna Norton 360, preinstalowana przez producenta komputera.",
+      "en": "Trial version of Norton 360, preinstalled by the computer manufacturer."
+    },
+    {
+      "pl": "Wersja próbna Norton AntiVirus, preinstalowana przez producenta komputera.",
+      "en": "Trial version of Norton AntiVirus, preinstalled by the computer manufacturer."
+    },
+    {
+      "pl": "Wersja próbna Norton Internet Security, preinstalowana przez producenta komputera.",
+      "en": "Trial version of Norton Internet Security, preinstalled by the computer manufacturer."
+    },
+    {
+      "pl": "Wersja próbna Norton Security, preinstalowana przez producenta komputera.",
+      "en": "Trial version of Norton Security, preinstalled by the computer manufacturer."
+    },
+    {
+      "pl": "HP Games by WildTangent: gry próbne dodawane przez HP do nowych komputerów.",
+      "en": "HP Games by WildTangent: trial games that HP adds to new computers."
+    },
+    {
+      "pl": "Zakupionych w nich gier nie da się odzyskać bez przywrócenia systemu.",
+      "en": "Games bought in them can't be recovered without restoring the system."
+    },
+    {
+      "pl": "Gry próbne WildTangent (także „HP Games by WildTangent”) dodawane przez producentów komputerów.",
+      "en": "WildTangent trial games (also \"HP Games by WildTangent\") added by computer manufacturers."
+    },
+    {
+      "pl": "Aplikacja z ofertami Booking.com preinstalowana na nowych laptopach.",
+      "en": "App with Booking.com deals, preinstalled on new laptops."
+    },
+    {
+      "pl": "Kalkulator: podstawowe narzędzie systemu.",
+      "en": "Calculator: a basic system tool."
+    },
+    {
+      "pl": "Odtwarzacz multimediów: domyślny odtwarzacz muzyki.",
+      "en": "Media Player: the default music player."
+    },
+    {
+      "pl": "Filmy i TV: domyślny odtwarzacz wideo.",
+      "en": "Movies & TV: the default video player."
+    },
+    {
+      "pl": "Paint: podstawowe narzędzie systemu.",
+      "en": "Paint: a basic system tool."
+    },
+    {
+      "pl": "Notatnik: podstawowe narzędzie systemu.",
+      "en": "Notepad: a basic system tool."
+    },
+    {
+      "pl": "Sticky Notes: notatki, które użytkownik może na co dzień trzymać na pulpicie.",
+      "en": "Sticky Notes: notes you may keep on your desktop every day."
+    },
+    {
+      "pl": "Zdjęcia: domyślna przeglądarka obrazów.",
+      "en": "Photos: the default image viewer."
+    },
+    {
+      "pl": "Narzędzie Wycinanie: zrzuty ekranu.",
+      "en": "Snipping Tool: screenshots."
+    },
+    {
+      "pl": "Aparat: obsługa kamery.",
+      "en": "Camera: the app for the computer's camera."
+    },
+    {
+      "pl": "Rejestrator dźwięku: podstawowe narzędzie systemu.",
+      "en": "Sound Recorder: a basic system tool."
+    },
+    {
+      "pl": "Zegar: alarmy i minutniki.",
+      "en": "Clock: alarms and timers."
+    },
+    {
+      "pl": "Microsoft Store: bez niego nie zainstalujesz aplikacji ze Sklepu z powrotem.",
+      "en": "Microsoft Store: without it, you can't reinstall Store apps."
+    },
+    {
+      "pl": "Zakupy w Microsoft Store: część sklepu, bez której nie kupisz ani nie zainstalujesz aplikacji.",
+      "en": "Microsoft Store purchases: part of the Store; without it, you can't buy or install apps."
+    },
+    {
+      "pl": "Instalator aplikacji (winget): instalowanie programów i pakietów.",
+      "en": "App Installer (winget): installs programs and packages."
+    },
+    {
+      "pl": "Terminal Windows: podstawowe narzędzie systemu.",
+      "en": "Windows Terminal: a basic system tool."
+    },
+    {
+      "pl": "Ulepszenia zgodności aplikacji: składnik systemu, dzięki któremu starsze programy działają poprawnie.",
+      "en": "Windows Application Compatibility Enhancements: a system component that helps older programs work correctly."
+    },
+    {
+      "pl": "Edge: domyślna przeglądarka i składnik systemu.",
+      "en": "Edge: the default browser and a part of the system."
+    },
+    {
+      "pl": "WebView2: wymagany przez wiele programów, także Microsoftu.",
+      "en": "WebView2: required by many programs, including Microsoft's own."
+    },
+    {
+      "pl": "Biblioteki Visual C++: wymagane przez wiele programów i gier; po usunięciu przestaną się uruchamiać.",
+      "en": "Visual C++ libraries: required by many programs and games, which won't start after they're removed."
+    },
+    {
+      "pl": ".NET Desktop Runtime: bez niego programy .NET (WPF, Windows Forms) się nie uruchomią.",
+      "en": ".NET Desktop Runtime: without it, .NET programs (WPF, Windows Forms) won't start."
+    },
+    {
+      "pl": ".NET Runtime: bez niego programy .NET się nie uruchomią.",
+      "en": ".NET Runtime: without it, .NET programs won't start."
+    },
+    {
+      "pl": "ASP.NET Core Runtime: bez niego programy i usługi oparte na ASP.NET Core się nie uruchomią.",
+      "en": "ASP.NET Core Runtime: without it, programs and services built on ASP.NET Core won't start."
+    },
+    {
+      "pl": "ASP.NET Core Shared Framework: bez niego programy i usługi oparte na ASP.NET Core się nie uruchomią.",
+      "en": "ASP.NET Core Shared Framework: without it, programs and services built on ASP.NET Core won't start."
+    },
+    {
+      "pl": "Microsoft Update Health Tools: składnik usługi Windows Update.",
+      "en": "Microsoft Update Health Tools: a component of the Windows Update service."
+    },
+    {
+      "pl": "Microsoft GameInput: obsługa kontrolerów w grach; gry i usługi gier instalują go z powrotem.",
+      "en": "Microsoft GameInput: game controller support; games and gaming services install it again."
+    },
+    {
+      "pl": "Podłączanie pulpitu zdalnego: składnik systemu.",
+      "en": "Remote Desktop Connection: part of the system."
+    },
+    {
+      "pl": "Rozszerzenie obrazów HEIF: bez niego zdjęcia z telefonów się nie otworzą.",
+      "en": "HEIF Image Extension: without it, photos from phones won't open."
+    },
+    {
+      "pl": "Rozszerzenie wideo HEVC: bez niego część filmów się nie odtworzy.",
+      "en": "HEVC Video Extensions: without it, some videos won't play."
+    },
+    {
+      "pl": "Rozszerzenie obrazów WebP: bez niego część obrazów z internetu się nie otworzy.",
+      "en": "WebP Image Extension: without it, some images from the internet won't open."
+    },
+    {
+      "pl": "Rozszerzenie wideo AV1: bez niego część filmów się nie odtworzy.",
+      "en": "AV1 Video Extension: without it, some videos won't play."
+    },
+    {
+      "pl": "Rozszerzenie kodera AVC: bez niego część programów nie zapisze filmów.",
+      "en": "AVC Encoder Video Extension: without it, some programs can't save videos."
+    },
+    {
+      "pl": "Rozszerzenie wideo MPEG-2: bez niego część filmów się nie odtworzy.",
+      "en": "MPEG-2 Video Extension: without it, some videos won't play."
+    },
+    {
+      "pl": "Rozszerzenie wideo VP9: bez niego część filmów z internetu się nie odtworzy.",
+      "en": "VP9 Video Extensions: without it, some videos from the internet won't play."
+    },
+    {
+      "pl": "Rozszerzenie obrazów RAW: bez niego zdjęcia z aparatów się nie otworzą.",
+      "en": "Raw Image Extension: without it, photos from cameras won't open."
+    },
+    {
+      "pl": "Rozszerzenia multimediów sieci Web: bez nich część filmów i muzyki z internetu się nie odtworzy.",
+      "en": "Web Media Extensions: without them, some videos and music from the internet won't play."
+    },
+    {
+      "pl": "Panel dźwięku Realtek: steruje dźwiękiem komputera.",
+      "en": "Realtek audio panel: controls the computer's sound."
+    },
+    {
+      "pl": "Panel sterownika grafiki NVIDIA.",
+      "en": "NVIDIA graphics driver panel."
+    },
+    {
+      "pl": "Panel sterownika grafiki AMD.",
+      "en": "AMD graphics driver panel."
+    },
+    {
+      "pl": "Panel sterownika grafiki Intel.",
+      "en": "Intel graphics driver panel."
+    },
+    {
+      "pl": "Sterownik i panel dźwięku Realtek.",
+      "en": "Realtek audio driver and panel."
+    },
+    {
+      "pl": "Sterownik i panel grafiki NVIDIA.",
+      "en": "NVIDIA graphics driver and panel."
+    },
+    {
+      "pl": "Sterownik i panel grafiki AMD.",
+      "en": "AMD graphics driver and panel."
+    },
+    {
+      "pl": "Sterownik i narzędzie sprzętowe Intel.",
+      "en": "Intel driver and hardware tool."
+    },
+    {
+      "pl": "Może być oprogramowaniem firmowym (McAfee Agent): usuwa je administrator firmy.",
+      "en": "May be company software (McAfee Agent): the company's administrator removes it."
+    },
+    {
+      "pl": "Może być oprogramowaniem firmowym (McAfee Endpoint Security): usuwa je administrator firmy.",
+      "en": "May be company software (McAfee Endpoint Security): the company's administrator removes it."
+    },
+    {
+      "pl": "Może być oprogramowaniem firmowym (szyfrowanie dysku): usunięcie grozi utratą dostępu do danych.",
+      "en": "May be company software (disk encryption): removing it risks losing access to your data."
+    },
+    {
+      "pl": "Może być oprogramowaniem firmowym (McAfee DLP): usuwa je administrator firmy.",
+      "en": "May be company software (McAfee DLP): the company's administrator removes it."
+    },
+    {
+      "pl": "Może być oprogramowaniem firmowym (Trellix, dawniej McAfee Enterprise): usuwa je administrator firmy.",
+      "en": "May be company software (Trellix, formerly McAfee Enterprise): the company's administrator removes it."
+    }
+  ]
+}

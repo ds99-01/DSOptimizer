@@ -395,6 +395,39 @@ separator of the Polish text (">"), and use the English page names exactly.
 | ponowne zalogowanie | sign in again | Style rule 11: "after you sign in again" |
 | Wymaga restartu komputera. | Requires a computer restart. | Restart warning of items with "Restart required" |
 
+### Catalog – app lists
+
+Texts of `apps-bloat.json` (summary, warning, reason of a protected app) and `apps.json` (summary, warning). Titles on the
+install list are product names and are not translated. Microsoft app names follow English Windows 11 and Microsoft Store;
+the Polish text sometimes uses a descriptive name, the English text then uses the name the user sees in English Windows.
+
+| Polski | English | Notes/source |
+|---|---|---|
+| Kalkulator / Notatnik / Zdjęcia / Aparat / Zegar | Calculator / Notepad / Photos / Camera / Clock | Inbox apps; [Policy-based removal of pre-installed Microsoft Store apps](https://support.microsoft.com/en-us/servicing/os/windows/docs/2025/08/policy-based-removal-of-pre-installed-microsoft-store-apps) (package list), [Clock app](https://support.microsoft.com/en-us/windows/apps/how-to-use-alarms-and-timers-in-the-clock-app-in-windows) |
+| Odtwarzacz multimediów / Filmy i TV | Media Player / Movies & TV | Packages `Microsoft.ZuneMusic` / `Microsoft.ZuneVideo`; [Movies & TV app](https://support.microsoft.com/en-us/windows/apps/watch-movies-and-tv-shows-on-the-microsoft-movies-tv-app) |
+| Narzędzie Wycinanie / Rejestrator dźwięku | Snipping Tool / Sound Recorder | [Sound Recorder app for Windows: FAQ](https://support.microsoft.com/en-us/windows/sound-recorder-app-for-windows-faq-5c208478-2141-bd07-fe1d-d6d1356c1d56) |
+| Terminal Windows / Instalator aplikacji (winget) | Windows Terminal / App Installer (winget) | App Installer: see "Windows names" |
+| Centrum opinii / Porady / Szybka pomoc / Pogoda | Feedback Hub / Tips / Quick Assist / Weather | Inbox apps (packages `WindowsFeedbackHub`, `Getstarted`, `QuickAssist`, `BingWeather`) |
+| Pasek gry (Game Bar) | Game Bar | Package `Microsoft.XboxGamingOverlay`; its manifest display name is "Game Bar". **do audytu (Etap 5)** – older builds show "Xbox Game Bar" |
+| Nowy Outlook dla Windows | the new Outlook for Windows | |
+| Zakupy w Microsoft Store | Microsoft Store purchases | Descriptive, as in Polish; Windows shows the package `Microsoft.StorePurchaseApp` as "Store Experience Host". **do audytu (Etap 5)** |
+| Ulepszenia zgodności aplikacji | Windows Application Compatibility Enhancements | [Microsoft Store listing](https://apps.microsoft.com/detail/9PCSD6N03BKV) |
+| Podłączanie pulpitu zdalnego | Remote Desktop Connection | The Win32 entry name in English Windows (matched by the list as well) |
+| Rozszerzenie obrazów HEIF / WebP / RAW | HEIF Image Extension / WebP Image Extension / Raw Image Extension | Store names: [HEIF](https://apps.microsoft.com/detail/9PMMSR1CGPWG), [WebP](https://apps.microsoft.com/detail/9PG2DK419DRG), [Raw](https://apps.microsoft.com/detail/9NCTDW2W1BH8) |
+| Rozszerzenie wideo HEVC / AV1 / MPEG-2 / VP9 | HEVC Video Extensions / AV1 Video Extension / MPEG-2 Video Extension / VP9 Video Extensions | Store names: [HEVC](https://apps.microsoft.com/detail/9NMZLZ57R3T7), [AV1](https://apps.microsoft.com/detail/9MVZQVXJBQ9V), [MPEG-2](https://apps.microsoft.com/detail/9N95Q1ZZPMH4), [VP9](https://apps.microsoft.com/detail/9N4D0MSMP0PT) – singular/plural as Microsoft writes them |
+| Rozszerzenie kodera AVC | AVC Encoder Video Extension | Package `Microsoft.AVCEncoderVideoExtension`. **do audytu (Etap 5)** – Store page not reachable when checked |
+| Rozszerzenia multimediów sieci Web | Web Media Extensions | [Store listing](https://apps.microsoft.com/detail/9N5TDP8VCMHS) |
+| Biblioteki Visual C++ | Visual C++ libraries | Microsoft Visual C++ Redistributable |
+| Środowisko .NET 8 | .NET 8 runtime | |
+| podstawowe narzędzie systemu / składnik systemu | a basic system tool / part of the system | Reasons of protected apps; "składnik usługi Windows Update" = "a component of the Windows Update service" |
+| oprogramowanie firmowe / administrator firmy | company software / the company's administrator | Corporate McAfee and Trellix entries |
+| aplikacja producenta / asystent producenta | the manufacturer's app / the manufacturer's assistant | Manufacturer tools (Lenovo, ASUS, Acer, HP, Dell) |
+| wersja próbna antywirusa … preinstalowana przez producenta komputera | trial version of the … antivirus, preinstalled by the computer manufacturer | |
+| Własny deinstalator potrafi zostawić resztki. | Its own uninstaller can leave leftovers behind. | |
+| Instaluje się tylko dla bieżącego konta Windows. | Installs only for the current Windows account. | Install list warning |
+| pakiet aplikacji / menu kontekstowe | app package / context menu | Install list warnings ("Also adds the … app package") |
+| Autostart (wszystkich kont) | Startup (for all accounts) | RustDesk warning: the Startup folder |
+
 ## Windows names
 
 | Polski | English | Notes/source |

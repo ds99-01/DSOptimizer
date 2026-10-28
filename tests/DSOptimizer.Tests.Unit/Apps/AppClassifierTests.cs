@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DSOptimizer.Catalog;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Localization;
 using Xunit;
 
 namespace DSOptimizer.Tests.Unit.Apps;
@@ -142,6 +144,32 @@ public class AppClassifierTests
         Assert.Equal("Kalkulator.", row.BlockedReason);
         Assert.Null(row.BloatGroup);
         Assert.Null(row.Plan);
+    }
+
+    [Fact]
+    public void ProtectedReason_English()
+    {
+        // Wbudowana lista wczytana po angielsku: powód „Chronione” z tabeli catalog-apps-bloat.json (AppX i Win32).
+        AppsBloatCatalog catalog;
+        using (L.Use(UiLanguage.English))
+        {
+            catalog = AppsBloatCatalog.Load(BuiltInCatalog.AppsBloatSource.Json);
+        }
+
+        var rows = AppClassifier.Classify(
+            new[] { Store("Microsoft.WindowsCalculator", "Calculator"), Program("Remote Desktop Connection", "Microsoft Corporation") },
+            catalog,
+            UserSid,
+            true,
+            UserSid,
+            _ => null,
+            _ => true,
+            System32);
+
+        Assert.Equal(2, rows.Count);
+        Assert.All(rows, row => Assert.Equal(AppGroup.Protected, row.Group));
+        Assert.Equal("Calculator: a basic system tool.", rows[0].BlockedReason);
+        Assert.Equal("Remote Desktop Connection: part of the system.", rows[1].BlockedReason);
     }
 
     [Fact]
