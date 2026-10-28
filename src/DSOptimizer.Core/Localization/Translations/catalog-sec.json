@@ -1,0 +1,146 @@
+{
+  "language": "en",
+  "data": true,
+  "entries": [
+    {
+      "pl": "Zablokuj automatyczne szyfrowanie dysku (BitLocker)",
+      "en": "Block automatic drive encryption (BitLocker)"
+    },
+    {
+      "pl": "Blokuje automatyczne szyfrowanie dysku przez Windows, ale nie odszyfrowuje dysku, który już jest zaszyfrowany.",
+      "en": "Blocks Windows from encrypting the drive automatically, but doesn't decrypt a drive that is already encrypted."
+    },
+    {
+      "pl": "Microsoft opisuje tę blokadę dla pierwszego uruchomienia Windows – wtedy dysk nie zaszyfruje się sam. Dysk już zaszyfrowany zostaje bez zmian.",
+      "en": "Microsoft describes this block for the first start of Windows – then the drive doesn't encrypt itself. A drive that is already encrypted stays as it is."
+    },
+    {
+      "pl": "Ustawia PreventDeviceEncryption = 1 w HKLM\\SYSTEM\\CurrentControlSet\\Control\\BitLocker – wartość, którą Microsoft podaje jako blokadę automatycznego szyfrowania urządzenia (BitLocker automatic device encryption) przy pierwszym uruchomieniu Windows (OOBE); skutek na już działającym systemie nie jest opisany. Pozycja tylko zapisuje tę wartość i nie odszyfrowuje dysku – do tego służy „Wyłącz szyfrowanie BitLocker na dysku C:”. Zdanie o licencji pochodzi z dokumentu Microsoftu dla producentów urządzeń (OEM); decyzja o użyciu pozycji należy do użytkownika. Cofnięcie przywraca poprzednią wartość, a jeśli jej nie było – usuwa ją. Jeśli wartość 1 ustawił wcześniej np. producent, cofnięcie bez zapisu sprzed zmiany też ją usuwa (wraca domyślny stan Windows).",
+      "en": "Sets PreventDeviceEncryption = 1 in HKLM\\SYSTEM\\CurrentControlSet\\Control\\BitLocker – the value Microsoft gives as the block for automatic device encryption (BitLocker automatic device encryption) during the first start of Windows (OOBE); the effect on a system that is already running isn't described. The item only writes this value and doesn't decrypt the drive – that's what \"Turn off BitLocker encryption on the C: drive\" is for. The sentence about the license comes from a Microsoft document for device manufacturers (OEMs); the decision to use the item is up to the user. Undo restores the previous value, or deletes it if there was none. If the value 1 was set earlier, for example by the manufacturer, undo without a record from before the change deletes it too (the Windows default comes back)."
+    },
+    {
+      "pl": "Dysk bez szyfrowania nie chroni danych po kradzieży lub zgubieniu komputera; polityka firmy lub szkoły może wymagać szyfrowania.",
+      "en": "An unencrypted drive doesn't protect data if the computer is stolen or lost; a company or school policy may require encryption."
+    },
+    {
+      "pl": "Według Microsoftu wyłączanie szyfrowania przez kogoś innego niż producent sprzętu narusza licencję Windows 11; odradza je też przy Recall.",
+      "en": "Microsoft says only the hardware manufacturer may turn off encryption under the Windows 11 license; it also advises against it with Recall."
+    },
+    {
+      "pl": "Wyłącz szyfrowanie BitLocker na dysku C:",
+      "en": "Turn off BitLocker encryption on the C: drive"
+    },
+    {
+      "pl": "Odszyfrowuje dysk C: – Windows robi to w tle i może to potrwać, także po restarcie.",
+      "en": "Decrypts the C: drive – Windows does this in the background and it can take a while, also after a restart."
+    },
+    {
+      "pl": "Po zakończeniu dysk C: nie jest już zaszyfrowany, a Windows usuwa z niego wszystkie klucze BitLockera.",
+      "en": "When it's done, the C: drive is no longer encrypted, and Windows removes all BitLocker keys from it."
+    },
+    {
+      "pl": "Odczytuje ConversionStatus woluminu C: (Win32_EncryptableVolume, GetConversionStatus); gdy dysk jest już odszyfrowany, nic nie zmienia. W innym wypadku wywołuje metodę Decrypt, która wraca od razu, a Windows odszyfrowuje dysk w tle, także po restarcie; po zakończeniu usuwa wszystkie protektory klucza woluminu. Akcja nie czeka na koniec: sprawdza tylko, czy ConversionStatus to teraz 3 (odszyfrowywanie w toku) albo 0, a każdy inny wynik kończy się błędem z kodem hex. Postęp w procentach zobaczysz, uruchamiając akcję ponownie, albo w Ustawieniach. Gdy na komputerze są klucze automatycznego odblokowania innych dysków (kod 0x80310029), akcja kończy się błędem i ich nie usuwa – zrób to świadomie poleceniem Clear-BitLockerAutoUnlock. Zablokowany dysk też daje błąd z kodem. Bez pozycji „Zablokuj automatyczne szyfrowanie dysku (BitLocker)” Windows może zaszyfrować dysk ponownie; polityka firmy lub szkoły może wymagać szyfrowania. Bez cofania – ponowne zaszyfrowanie dysku to osobna decyzja w Ustawieniach Windows.",
+      "en": "Reads the ConversionStatus of the C: volume (Win32_EncryptableVolume, GetConversionStatus); if the drive is already decrypted, it changes nothing. Otherwise it calls the Decrypt method, which returns right away, and Windows decrypts the drive in the background, also after a restart; when it's done, it removes all key protectors of the volume. The action doesn't wait for the end: it only checks that ConversionStatus is now 3 (decryption in progress) or 0, and any other result ends with an error with a hex code. You see the progress in percent by running the action again, or in Settings. If the computer has auto-unlock keys of other drives (code 0x80310029), the action ends with an error and doesn't remove them – do that deliberately with Clear-BitLockerAutoUnlock. A locked drive also gives an error with a code. Without the \"Block automatic drive encryption (BitLocker)\" item, Windows may encrypt the drive again; a company or school policy may require encryption. No undo – encrypting the drive again is a separate decision in Windows Settings."
+    },
+    {
+      "pl": "Nie da się tego cofnąć w DSOptimizerze – szyfrowanie włączysz ponownie w Ustawieniach; do tego czasu dane nie są chronione po kradzieży.",
+      "en": "This can't be undone in DSOptimizer – you turn encryption back on in Settings; until then, data isn't protected if the computer is stolen."
+    },
+    {
+      "pl": "Windows może zaszyfrować dysk ponownie, jeśli nie zablokujesz automatycznego szyfrowania albo wymaga go firma lub szkoła.",
+      "en": "Windows may encrypt the drive again if you don't block automatic encryption, or if your company or school requires it."
+    },
+    {
+      "pl": "Win32_EncryptableVolume zwróciło więcej niż jeden wolumin dla C:.",
+      "en": "Win32_EncryptableVolume returned more than one volume for C:."
+    },
+    {
+      "pl": "Nie znaleziono dokładnie jednego woluminu C: w Win32_EncryptableVolume.",
+      "en": "Didn't find exactly one C: volume in Win32_EncryptableVolume."
+    },
+    {
+      "pl": "Nie znaleziono woluminu C: w Win32_EncryptableVolume (root\\CIMV2\\Security\\MicrosoftVolumeEncryption). Nic nie zmieniono.",
+      "en": "Couldn't find the C: volume in Win32_EncryptableVolume (root\\CIMV2\\Security\\MicrosoftVolumeEncryption). Nothing was changed."
+    },
+    {
+      "pl": "Odczyt statusu C: nie zwrócił pól ReturnValue i ConversionStatus (GetConversionStatus). Nic nie zmieniono.",
+      "en": "Reading the C: status didn't return the ReturnValue and ConversionStatus fields (GetConversionStatus). Nothing was changed."
+    },
+    {
+      "pl": "Odczyt statusu C: (GetConversionStatus) zwrócił kod {0}. Nic nie zmieniono.",
+      "en": "Reading the C: status (GetConversionStatus) returned code {0}. Nothing was changed."
+    },
+    {
+      "pl": "Nieznany ConversionStatus = {0} (MS opisuje wartości 0-5). Nic nie zmieniono.",
+      "en": "Unknown ConversionStatus = {0} (Microsoft documents the values 0-5). Nothing was changed."
+    },
+    {
+      "pl": "C: nie jest zaszyfrowany – nic nie zmieniono",
+      "en": "C: isn't encrypted – nothing was changed"
+    },
+    {
+      "pl": "Decrypt nie zwrócił kodu wyniku; stan C: nieznany, sprawdź ConversionStatus ręcznie.",
+      "en": "Decrypt didn't return a result code; the C: state is unknown, check ConversionStatus manually."
+    },
+    {
+      "pl": "Decrypt zwrócił kod {0} (FVE_E_AUTOUNLOCK_ENABLED): Najpierw usuń klucze automatycznego odblokowania innych dysków (Clear-BitLockerAutoUnlock) – akcja tego nie robi.",
+      "en": "Decrypt returned code {0} (FVE_E_AUTOUNLOCK_ENABLED): First remove the auto-unlock keys of other drives (Clear-BitLockerAutoUnlock) – the action doesn't do this."
+    },
+    {
+      "pl": "Decrypt zwrócił kod {0}; odszyfrowywanie C: nie zostało rozpoczęte.",
+      "en": "Decrypt returned code {0}; decryption of C: didn't start."
+    },
+    {
+      "pl": "Odczyt zwrotny po Decrypt nic nie zwrócił (brak woluminu C: w WMI); stan nieznany, sprawdź ConversionStatus ręcznie.",
+      "en": "Verification after Decrypt returned nothing (no C: volume in WMI); the state is unknown, check ConversionStatus manually."
+    },
+    {
+      "pl": "Odczyt zwrotny po Decrypt nie zwrócił pól ReturnValue i ConversionStatus; stan nieznany, sprawdź ConversionStatus ręcznie.",
+      "en": "Verification after Decrypt didn't return the ReturnValue and ConversionStatus fields; the state is unknown, check ConversionStatus manually."
+    },
+    {
+      "pl": "Odczyt zwrotny po Decrypt (GetConversionStatus) zwrócił kod {0}; stan nieznany.",
+      "en": "Verification after Decrypt (GetConversionStatus) returned code {0}; the state is unknown."
+    },
+    {
+      "pl": "Odczyt zwrotny po Decrypt: ConversionStatus = {0} (oczekiwano 3 lub 0); Decrypt zwrócił 0, ale odszyfrowywanie nie ruszyło.",
+      "en": "Verification after Decrypt: ConversionStatus = {0} (expected 3 or 0); Decrypt returned 0, but decryption didn't start."
+    },
+    {
+      "pl": "Odszyfrowywanie C: zakończone (ConversionStatus = 0).",
+      "en": "Decryption of C: finished (ConversionStatus = 0)."
+    },
+    {
+      "pl": "Odszyfrowywanie C: w toku: {0}% zaszyfrowane. Windows kontynuuje w tle, także po restarcie.",
+      "en": "Decryption of C: in progress: {0}% encrypted. Windows continues in the background, also after a restart."
+    },
+    {
+      "pl": "Odszyfrowywanie C: rozpoczęte: {0}% zaszyfrowane. Windows kontynuuje w tle, także po restarcie.",
+      "en": "Decryption of C: started: {0}% encrypted. Windows continues in the background, also after a restart."
+    },
+    {
+      "pl": "Dodaj „Przejmij na własność” do menu kontekstowego",
+      "en": "Add a take ownership entry to the context menu"
+    },
+    {
+      "pl": "Po kliknięciu prawym przyciskiem z wciśniętym Shift pojawia się wpis, który daje administratorom pełny dostęp do pliku lub folderu.",
+      "en": "When you right-click while holding Shift, an entry appears that gives administrators full access to the file or folder."
+    },
+    {
+      "pl": "Plik albo folder, do którego Windows odmawia dostępu, odblokujesz z menu prawego przycisku zamiast poleceniami w konsoli.",
+      "en": "You unlock a file or folder that Windows denies access to from the right-click menu instead of with console commands."
+    },
+    {
+      "pl": "Dodaje dla plików i folderów pozycję „Przejmij na własność” z podmenu „Przejmij na własność (administrator)” – widoczną tylko z Shift, w klasycznym menu „Pokaż więcej opcji”. Po zgodzie w UAC uruchamia takeown i icacls z SID grupy Administratorzy (S-1-5-32-544): plik dostaje właściciela Administratorzy i pełną kontrolę dla tej grupy, a w folderze to samo dotyczy całego drzewa, co na dużych folderach trwa długo. Wpisy leżą w HKLM\\SOFTWARE\\Classes\\* i Directory (klucz DSOptimizer.TakeOwnership), bez skryptu. Zmiana właściciela plików systemowych może zepsuć Windows Update i Windows Resource Protection, a przywrócenie właściciela TrustedInstaller nie jest łatwe. W podfolderze, którego administrator nie może wylistować, takeown /r /d Y zastępuje całą listę ACL wpisem Administratorów – inne konta (np. SYSTEM i Users) tracą dostęp, dlatego przejęcie np. C:\\Program Files\\WindowsApps może zepsuć aplikacje. Foldery C:\\Windows są wykluczone, ale tylko pod tą ścieżką i tylko dla folderów: Windows zainstalowany na inną literę dysku i pliki w C:\\Windows nie są wykluczone. Korzeń dysku nie dostaje pozycji. Nazwy ze znakiem % nie działają: polecenie kończy się błędem i niczego nie zmienia (prawdopodobna przyczyna: cmd.exe rozwija %...% także w cudzysłowie). Cofnięcie usuwa tylko wpisy menu i nie cofa zmian właściciela ani uprawnień zrobionych z menu.",
+      "en": "Adds a \"Przejmij na własność\" (take ownership) entry for files and folders with the submenu \"Przejmij na własność (administrator)\" – the menu text is in Polish – shown only with Shift, in the classic \"Show more options\" menu. After you approve the UAC prompt, it runs takeown and icacls with the SID of the Administrators group (S-1-5-32-544): the file gets Administrators as its owner and full control for that group, and in a folder the same applies to the whole tree, which takes a long time on large folders. The entries are in HKLM\\SOFTWARE\\Classes\\* and Directory (key DSOptimizer.TakeOwnership), without a script. Changing the owner of system files can break Windows Update and Windows Resource Protection, and restoring the TrustedInstaller owner isn't easy. In a subfolder that an administrator can't list, takeown /r /d Y replaces the whole ACL with an Administrators entry – other accounts (for example SYSTEM and Users) lose access, so taking over, for example, C:\\Program Files\\WindowsApps can break apps. C:\\Windows folders are excluded, but only under that path and only for folders: Windows installed on a different drive letter and files in C:\\Windows aren't excluded. The drive root doesn't get the entry. Names with the % character don't work: the command ends with an error and changes nothing (likely cause: cmd.exe expands %...% even inside quotes). Undo removes only the menu entries and doesn't undo owner or permission changes made from the menu."
+    },
+    {
+      "pl": "Nie używaj na plikach systemowych ani w WindowsApps – zmiana właściciela może zepsuć aktualizacje Windows i aplikacje.",
+      "en": "Don't use it on system files or in WindowsApps – changing the owner can break Windows updates and apps."
+    },
+    {
+      "pl": "Cofnięcie usuwa tylko wpis z menu; zmienionych właścicieli i uprawnień plików nie przywraca.",
+      "en": "Undo only removes the menu entry; it doesn't restore changed file owners and permissions."
+    }
+  ]
+}

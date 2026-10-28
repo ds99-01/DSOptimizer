@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Catalog;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Tests.Unit.Support;
 using Xunit;
@@ -256,6 +257,32 @@ public class NetActionsTests
         Assert.Contains("SET Siec1 -> Private", run.Output);
         Assert.Contains(run.Output, line => Has(line, "'Siec1'") && Has(line, "Public -> Private") && !line.StartsWith("SET", StringComparison.Ordinal));
         Assert.Contains(run.Output, line => Has(line, "-NetworkCategory Public")); // wskazówka ręcznego cofnięcia
+    }
+
+    [Fact]
+    public void NetNetworkPrivate_English_Message()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var run = PowerShellHarness.Run(Apply(PrivateId), ProfileMocks(Profile("Siec1", 5, "Public", "Internet")), string.Empty);
+
+            Assert.Equal(0, run.ExitCode);
+            Assert.Contains("Changed profile 'Siec1' (interface Karta5, index 5): Public -> Private. Manual undo: -InterfaceIndex 5 -NetworkCategory Public.", run.Output);
+            Assert.Equal("Changed 1 profile(s) from Public to Private (verification matches).", run.LastLine);
+        }
+    }
+
+    [Fact]
+    public void NetNetworkPrivate_NoProfile_English_Message()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var run = PowerShellHarness.Run(Apply(PrivateId), ProfileMocks(string.Empty), string.Empty);
+
+            Assert.NotEqual(0, run.ExitCode);
+            Assert.Contains("no active connection with the public network profile – nothing was changed", run.Error, StringComparison.Ordinal);
+            Assert.DoesNotContain(NoProfileMessage, run.Error, StringComparison.Ordinal);
+        }
     }
 
     [Fact]

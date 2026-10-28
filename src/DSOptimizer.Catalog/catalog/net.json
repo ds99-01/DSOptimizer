@@ -71,7 +71,7 @@
         "}",
         "$value = Get-DsoSmbClientSetting -Name 'EnableInsecureGuestLogons'",
         "# Brak wartości logicznej (błąd cmdletu, $null, tekst) to nie \"ustawienie wyłączone\": stan nieznany, skrypt kończy się błędem, nigdy Applied.",
-        "if ($value -isnot [bool]) { throw 'Get-SmbClientConfiguration nie zwrócił wartości logicznej EnableInsecureGuestLogons – stan nieznany.' }",
+        "if ($value -isnot [bool]) { throw (Get-DsoText 'Get-SmbClientConfiguration nie zwrócił wartości logicznej EnableInsecureGuestLogons – stan nieznany.') }",
         "# Konfigurację (AllowInsecureGuestAuth = 1) sprawdza wpis registry[]; stan złożony: Applied dopiero, gdy oba się zgadzają.",
         "if ($value -eq $true) { 'Applied' } else { 'NotApplied' }"
       ]
@@ -107,7 +107,7 @@
         "}",
         "$value = Get-DsoSmbClientSetting -Name 'RequireSecuritySignature'",
         "# Brak wartości logicznej (błąd cmdletu, $null, tekst) to nie \"ustawienie wyłączone\": stan nieznany, skrypt kończy się błędem, nigdy Applied.",
-        "if ($value -isnot [bool]) { throw 'Get-SmbClientConfiguration nie zwrócił wartości logicznej RequireSecuritySignature – stan nieznany.' }",
+        "if ($value -isnot [bool]) { throw (Get-DsoText 'Get-SmbClientConfiguration nie zwrócił wartości logicznej RequireSecuritySignature – stan nieznany.') }",
         "# Konfigurację (RequireSecuritySignature = 0) sprawdza wpis registry[]; stan złożony: Applied dopiero, gdy oba się zgadzają.",
         "if ($value -eq $false) { 'Applied' } else { 'NotApplied' }"
       ]
@@ -149,12 +149,12 @@
         "# Odczyt zwrotny jest jedynym dowodem skutku (akcja nie ma detekcji ani journala): brak zgodności to błąd, nigdy \"Executed\".",
         "$guest = Get-DsoSmbClientSetting -Name 'EnableInsecureGuestLogons'",
         "$signing = Get-DsoSmbClientSetting -Name 'RequireSecuritySignature'",
-        "if ($guest -isnot [bool] -or $signing -isnot [bool]) { throw 'Odczyt zwrotny: konfiguracja klienta SMB nie zwróciła wartości logicznych EnableInsecureGuestLogons i RequireSecuritySignature – nie wiadomo, czy zmiana zadziałała.' }",
+        "if ($guest -isnot [bool] -or $signing -isnot [bool]) { throw (Get-DsoText 'Odczyt zwrotny: konfiguracja klienta SMB nie zwróciła wartości logicznych EnableInsecureGuestLogons i RequireSecuritySignature – nie wiadomo, czy zmiana zadziałała.') }",
         "$problems = @()",
-        "if ($guest -ne $false) { $problems += 'EnableInsecureGuestLogons = True (oczekiwano False)' }",
-        "if ($signing -ne $true) { $problems += 'RequireSecuritySignature = False (oczekiwano True)' }",
-        "if ($problems.Count -gt 0) { throw ('Odczyt zwrotny nie zgadza się z oczekiwanym: ' + ($problems -join '; ') + '. Możliwa przyczyna: polityka (np. Group Policy) przesłania ustawienie.') }",
-        "'Klient SMB: EnableInsecureGuestLogons = False, RequireSecuritySignature = True (odczyt zwrotny zgodny).'"
+        "if ($guest -ne $false) { $problems += (Get-DsoText 'EnableInsecureGuestLogons = True (oczekiwano False)') }",
+        "if ($signing -ne $true) { $problems += (Get-DsoText 'RequireSecuritySignature = False (oczekiwano True)') }",
+        "if ($problems.Count -gt 0) { throw (Get-DsoText 'Odczyt zwrotny nie zgadza się z oczekiwanym: {0}. Możliwa przyczyna: polityka (np. Group Policy) przesłania ustawienie.' ($problems -join '; ')) }",
+        "Get-DsoText 'Klient SMB: EnableInsecureGuestLogons = False, RequireSecuritySignature = True (odczyt zwrotny zgodny).'"
       ]
     }
   },
@@ -186,7 +186,7 @@
         "        Set-NetConnectionProfile -InputObject $NetProfile -NetworkCategory $Category -ErrorAction Stop",
         "    }",
         "}",
-        "$noProfile = 'brak aktywnego połączenia w profilu publicznym – nic nie zmieniono'",
+        "$noProfile = Get-DsoText 'brak aktywnego połączenia w profilu publicznym – nic nie zmieniono'",
         "# Kategoria i łączność są porównywane po NAZWIE enuma ([string]), nie po liczbie ani sformatowanym tekście zależnym od języka.",
         "# Wybór: tylko Public z łącznością IPv4 lub IPv6 innym niż Disconnected. Private i DomainAuthenticated nigdy nie są ruszane.",
         "$targets = @(Get-DsoNetConnectionProfile | Where-Object {",
@@ -206,30 +206,30 @@
         "        $changed += [pscustomobject]@{ Name = $name; Alias = [string]$netProfile.InterfaceAlias; Index = $index; Before = $before }",
         "    }",
         "    catch {",
-        "        $problems += (\"Nie zmieniono profilu '{0}': {1}\" -f $name, $_.Exception.Message)",
+        "        $problems += (Get-DsoText 'Nie zmieniono profilu ''{0}'': {1}' $name ($_.Exception.Message))",
         "    }",
         "}",
         "# Odczyt zwrotny: każdy zmieniony profil musi być teraz Private (akcja nie ma detekcji ani journala, to jedyny dowód skutku).",
         "$after = $null",
         "try { $after = @(Get-DsoNetConnectionProfile | Where-Object { $_ }) }",
-        "catch { $problems += ('Odczyt zwrotny nie powiódł się: ' + $_.Exception.Message) }",
+        "catch { $problems += (Get-DsoText 'Odczyt zwrotny nie powiódł się: {0}' ($_.Exception.Message)) }",
         "if ($null -ne $after) {",
         "    foreach ($item in $changed) {",
         "        $now = @($after | Where-Object { $_.InterfaceIndex -eq $item.Index -and [string]$_.Name -eq $item.Name })",
         "        if ($now.Count -ne 1 -or [string]$now[0].NetworkCategory -ne 'Private') {",
-        "            $problems += (\"Odczyt zwrotny nie potwierdził zmiany profilu '{0}' na Private.\" -f $item.Name)",
+        "            $problems += (Get-DsoText 'Odczyt zwrotny nie potwierdził zmiany profilu ''{0}'' na Private.' ($item.Name))",
         "        }",
         "    }",
         "}",
         "if ($problems.Count -gt 0) {",
-        "    $summary = ($changed | ForEach-Object { \"'{0}' (poprzednio {1}, indeks {2})\" -f $_.Name, $_.Before, $_.Index }) -join ', '",
-        "    $tail = if ($changed.Count -gt 0) { \" Profile, na których wywołano zmianę (sprawdź i w razie potrzeby cofnij przez -InterfaceIndex i -NetworkCategory Public): $summary.\" } else { '' }",
+        "    $summary = ($changed | ForEach-Object { Get-DsoText '''{0}'' (poprzednio {1}, indeks {2})' ($_.Name) ($_.Before) ($_.Index) }) -join ', '",
+        "    $tail = if ($changed.Count -gt 0) { Get-DsoText ' Profile, na których wywołano zmianę (sprawdź i w razie potrzeby cofnij przez -InterfaceIndex i -NetworkCategory Public): {0}.' $summary } else { '' }",
         "    throw (($problems -join ' ') + $tail)",
         "}",
         "foreach ($item in $changed) {",
-        "    \"Zmieniono profil '{0}' (interfejs {1}, indeks {2}): {3} -> Private. Ręczne cofnięcie: -InterfaceIndex {2} -NetworkCategory Public.\" -f $item.Name, $item.Alias, $item.Index, $item.Before",
+        "    Get-DsoText 'Zmieniono profil ''{0}'' (interfejs {1}, indeks {2}): {3} -> Private. Ręczne cofnięcie: -InterfaceIndex {2} -NetworkCategory Public.' ($item.Name) ($item.Alias) ($item.Index) ($item.Before)",
         "}",
-        "'Zmieniono {0} profil(e) z Public na Private (odczyt zwrotny zgodny).' -f $changed.Count"
+        "Get-DsoText 'Zmieniono {0} profil(e) z Public na Private (odczyt zwrotny zgodny).' ($changed.Count)"
       ]
     }
   }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Catalog;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Tests.Unit.Support;
 using Xunit;
@@ -150,6 +151,19 @@ public class SecDecryptActionTests
         Assert.DoesNotContain("CLEAR-CALLED", run.Output);
         Assert.Contains(run.Output, line => Has(line, "Odszyfrowywanie C: rozpoczęte: 77% zaszyfrowane. Windows kontynuuje w tle, także po restarcie"));
         Assert.Empty(run.Error);
+    }
+
+    [Fact]
+    public void SecBitlockerDecryptC_English_Message()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var run = Run(Mocks(St(0, 1, 78), St(0, 3, 77)));
+
+            Assert.Equal(0, run.ExitCode);
+            Assert.Contains("Decryption of C: started: 77% encrypted. Windows continues in the background, also after a restart.", run.Output);
+            Assert.Empty(run.Error);
+        }
     }
 
     [Fact]

@@ -1,0 +1,214 @@
+{
+  "language": "en",
+  "data": true,
+  "entries": [
+    {
+      "pl": "Wyłącz hibernację",
+      "en": "Turn off hibernation"
+    },
+    {
+      "pl": "Wyłącza hibernację i usuwa plik hibernacji z dysku C: – Szybkie uruchamianie przestaje działać.",
+      "en": "Turns off hibernation and deletes the hibernation file from the C: drive – fast startup stops working."
+    },
+    {
+      "pl": "Odzyskujesz miejsce na dysku C: zajmowane przez plik hibernacji.",
+      "en": "You get back the space on the C: drive that the hibernation file takes up."
+    },
+    {
+      "pl": "Wywołuje powercfg /hibernate off. Stan jest odczytywany przez udokumentowane API zasilania (CallNtPowerInformation, SYSTEM_POWER_CAPABILITIES) i wartość HibernateEnabled, bez parsowania tekstu. Na sprzęcie bez obsługi hibernacji pozycja jest niedostępna i niczego nie zapisuje. Bez hibernacji nie działa też hybrydowy stan uśpienia. Cofnięcie (powercfg /hibernate on) włącza hibernację z domyślnymi ustawieniami, jeśli była włączona przed zmianą.",
+      "en": "Runs powercfg /hibernate off. The state is read through the documented power API (CallNtPowerInformation, SYSTEM_POWER_CAPABILITIES) and the HibernateEnabled value, without parsing text. On hardware without hibernation support, the item is unavailable and writes nothing. Without hibernation, hybrid sleep doesn't work either. Undo (powercfg /hibernate on) turns hibernation back on with default settings if it was on before the change."
+    },
+    {
+      "pl": "Na laptopach znika hibernacja i Szybkie uruchamianie, a rozładowanie baterii w uśpieniu grozi utratą niezapisanych danych.",
+      "en": "On laptops, hibernation and fast startup go away, and if the battery runs out during sleep, unsaved data can be lost."
+    },
+    {
+      "pl": "CallNtPowerInformation (SystemPowerCapabilities) zwróciło NTSTATUS 0x{0:X8}.",
+      "en": "CallNtPowerInformation (SystemPowerCapabilities) returned NTSTATUS 0x{0:X8}."
+    },
+    {
+      "pl": "Brak jednoznacznego dowodu stanu hibernacji (SystemS4 bez pliku hibernacji i bez jawnego HibernateEnabled = 0, albo plik hibernacji przy HibernateEnabled = 0) – nic nie zmieniono.",
+      "en": "No clear evidence of the hibernation state (SystemS4 without a hibernation file and without an explicit HibernateEnabled = 0, or a hibernation file with HibernateEnabled = 0) – nothing was changed."
+    },
+    {
+      "pl": "powercfg /hibernate {0} zakończył się kodem {1}.",
+      "en": "powercfg /hibernate {0} ended with code {1}."
+    },
+    {
+      "pl": "Hibernacja jest już wyłączona.",
+      "en": "Hibernation is already turned off."
+    },
+    {
+      "pl": "Ten sprzęt lub firmware nie obsługuje hibernacji (SystemS4 = false) – nic nie zmieniono.",
+      "en": "This hardware or firmware doesn't support hibernation (SystemS4 = false) – nothing was changed."
+    },
+    {
+      "pl": "Po powercfg /hibernate off stan hibernacji to {0} zamiast Applied.",
+      "en": "After powercfg /hibernate off, the hibernation state is {0} instead of Applied."
+    },
+    {
+      "pl": "Hibernacja wyłączona.",
+      "en": "Hibernation turned off."
+    },
+    {
+      "pl": "Hibernacja jest już włączona – nic do przywrócenia.",
+      "en": "Hibernation is already turned on – nothing to restore."
+    },
+    {
+      "pl": "Po powercfg /hibernate on brak dowodu włączonej hibernacji (plik hibernacji i HibernateEnabled różne od 0).",
+      "en": "After powercfg /hibernate on, there's no evidence that hibernation is on (a hibernation file and HibernateEnabled other than 0)."
+    },
+    {
+      "pl": "Hibernacja przywrócona.",
+      "en": "Hibernation restored."
+    },
+    {
+      "pl": "Hibernacja była wyłączona przed zmianą – nic do przywrócenia.",
+      "en": "Hibernation was turned off before the change – nothing to restore."
+    },
+    {
+      "pl": "Sprzęt nie obsługiwał hibernacji przed zmianą – nic do przywrócenia.",
+      "en": "The hardware didn't support hibernation before the change – nothing to restore."
+    },
+    {
+      "pl": "Brak znanego snapshotu hibernacji (otrzymano: '{0}') – nie wiadomo, czy ją włączyć.",
+      "en": "No known hibernation snapshot (received: '{0}') – it's unclear whether to turn it on."
+    },
+    {
+      "pl": "Wyłącz zapisywanie czasu ostatniego dostępu do plików",
+      "en": "Turn off recording the last access time of files"
+    },
+    {
+      "pl": "Windows przestaje zapisywać, kiedy ostatnio otwarto każdy plik.",
+      "en": "Windows stops recording when each file was last opened."
+    },
+    {
+      "pl": "Dysk dostaje mniej drobnych zapisów przy każdym otwarciu pliku.",
+      "en": "The disk gets fewer small writes every time a file is opened."
+    },
+    {
+      "pl": "NtfsDisableLastAccessUpdate = 0x80000001 (tryb zarządzany przez użytkownika, aktualizacje wyłączone) zamiast domyślnego 0x80000002 (zarządzany przez system, aktualizacje włączone) w HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem – tę samą wartość zapisuje fsutil behavior set disablelastaccess 1. Stan jest odczytywany z dolnych 2 bitów wartości: tryby 1 i 3 oznaczają zastosowaną zmianę. Microsoft wymaga restartu, choć samo fsutil podaje, że zmiana działa od razu. Cofnięcie przywraca dokładnie poprzednią wartość albo jej brak.",
+      "en": "NtfsDisableLastAccessUpdate = 0x80000001 (user-managed mode, updates off) instead of the default 0x80000002 (system-managed, updates on) in HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem – fsutil behavior set disablelastaccess 1 writes the same value. The state is read from the lowest 2 bits of the value: modes 1 and 3 mean the change is applied. Microsoft requires a restart, although fsutil itself says the change takes effect right away. Undo restores exactly the previous value or its absence."
+    },
+    {
+      "pl": "Programy korzystające z czasu ostatniego dostępu (kopie zapasowe, skrypty porządkujące) dostaną nieaktualne dane.",
+      "en": "Programs that rely on the last access time (backups, cleanup scripts) will get outdated data."
+    },
+    {
+      "pl": "Brak klucza HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem.",
+      "en": "The key HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem is missing."
+    },
+    {
+      "pl": "NtfsDisableLastAccessUpdate ma typ {0} zamiast DWord – nic nie zmieniono.",
+      "en": "NtfsDisableLastAccessUpdate has the type {0} instead of DWord – nothing was changed."
+    },
+    {
+      "pl": "Aktualizacje czasu ostatniego dostępu są już wyłączone.",
+      "en": "Last access time updates are already turned off."
+    },
+    {
+      "pl": "Po zapisie NtfsDisableLastAccessUpdate stan to {0} zamiast Applied.",
+      "en": "After writing NtfsDisableLastAccessUpdate, the state is {0} instead of Applied."
+    },
+    {
+      "pl": "Wyłączono aktualizację czasu ostatniego dostępu (NtfsDisableLastAccessUpdate = 0x80000001); pełny skutek po restarcie.",
+      "en": "Turned off last access time updates (NtfsDisableLastAccessUpdate = 0x80000001); full effect after a restart."
+    },
+    {
+      "pl": "Brak poprawnego snapshotu NtfsDisableLastAccessUpdate (otrzymano: '{0}').",
+      "en": "No valid NtfsDisableLastAccessUpdate snapshot (received: '{0}')."
+    },
+    {
+      "pl": "NtfsDisableLastAccessUpdate nie istniał przed zmianą i nie istnieje – nic do przywrócenia.",
+      "en": "NtfsDisableLastAccessUpdate didn't exist before the change and doesn't exist now – nothing to restore."
+    },
+    {
+      "pl": "Po usunięciu NtfsDisableLastAccessUpdate wartość nadal istnieje.",
+      "en": "After deleting NtfsDisableLastAccessUpdate, the value still exists."
+    },
+    {
+      "pl": "NtfsDisableLastAccessUpdate usunięty (jak przed zmianą).",
+      "en": "NtfsDisableLastAccessUpdate deleted (as before the change)."
+    },
+    {
+      "pl": "NtfsDisableLastAccessUpdate ma już wartość {0} – nic do przywrócenia.",
+      "en": "NtfsDisableLastAccessUpdate already has the value {0} – nothing to restore."
+    },
+    {
+      "pl": "Po zapisie NtfsDisableLastAccessUpdate nie ma wartości {0}.",
+      "en": "After writing NtfsDisableLastAccessUpdate, it doesn't have the value {0}."
+    },
+    {
+      "pl": "NtfsDisableLastAccessUpdate przywrócony: {0}.",
+      "en": "NtfsDisableLastAccessUpdate restored: {0}."
+    },
+    {
+      "pl": "Wyłącz tworzenie krótkich nazw plików 8.3",
+      "en": "Turn off creating 8.3 short file names"
+    },
+    {
+      "pl": "Nowe pliki na dodatkowych dyskach i partycjach nie dostają krótkiej nazwy w stylu DOS (np. PROGRA~1).",
+      "en": "New files on additional drives and partitions don't get a DOS-style short name (for example PROGRA~1)."
+    },
+    {
+      "pl": "Windows nie utrzymuje już zgodności, z której korzystają tylko bardzo stare programy. Dysk C: zwykle ma to wyłączone od instalacji.",
+      "en": "Windows no longer keeps up compatibility that only very old programs use. The C: drive usually has this turned off since installation."
+    },
+    {
+      "pl": "NtfsDisable8dot3NameCreation = 1 (wyłączone dla wszystkich woluminów) zamiast domyślnego 2 (ustawienie osobno dla każdego woluminu) w HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem. Wolumin C: ma zwykle krótkie nazwy wyłączone już od instalacji (flaga woluminu), więc zmiana obejmuje głównie nowe i dodatkowe woluminy, także dyski podłączane później. Dotyczy tylko nowych nazw – istniejące nazwy 8.3 zostają. Cofnięcie przywraca poprzednią wartość.",
+      "en": "NtfsDisable8dot3NameCreation = 1 (off for all volumes) instead of the default 2 (set separately for each volume) in HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem. The C: volume usually has short names turned off since installation (a volume flag), so the change mainly covers new and additional volumes, including drives connected later. It only affects new names – existing 8.3 names stay. Undo restores the previous value."
+    },
+    {
+      "pl": "Stare instalatory (16-bitowe, część MSI) i programy, które używają krótkich nazw, mogą przestać działać.",
+      "en": "Old installers (16-bit, some MSI packages) and programs that use short names may stop working."
+    },
+    {
+      "pl": "Wyłącz rezerwę miejsca na aktualizacje",
+      "en": "Turn off reserved storage for updates"
+    },
+    {
+      "pl": "Windows przestaje trzymać na dysku C: zarezerwowane miejsce na aktualizacje.",
+      "en": "Windows stops keeping reserved space for updates on the C: drive."
+    },
+    {
+      "pl": "Odzyskujesz miejsce na dysku C:, które Windows trzyma na aktualizacje – kilka GB.",
+      "en": "You get back the space on the C: drive that Windows keeps for updates – several GB."
+    },
+    {
+      "pl": "Set-WindowsReservedStorageState -State Disabled; stan jest odczytywany przez (Get-WindowsReservedStorageState).ReservedStorageState. W trakcie serwisowania systemu (oczekująca aktualizacja) operacja kończy się błędem z komunikatem Microsoftu i niczego nie zmienia. Cofnięcie przywraca poprzedni stan rezerwy; w rejestrze zostaje wtedy wartość ReserveManager\\MiscPolicyInfo, której wcześniej nie było.",
+      "en": "Set-WindowsReservedStorageState -State Disabled; the state is read through (Get-WindowsReservedStorageState).ReservedStorageState. While the system is being serviced (an update is pending), the operation ends with an error with Microsoft's message and changes nothing. Undo restores the previous reserved storage state; the registry then keeps the ReserveManager\\MiscPolicyInfo value, which wasn't there before."
+    },
+    {
+      "pl": "Przy małej ilości wolnego miejsca aktualizacje mogą częściej kończyć się błędem.",
+      "en": "When free space is low, updates may fail more often."
+    },
+    {
+      "pl": "Nieznana wartość ReservedStorageState: '{0}'.",
+      "en": "Unknown ReservedStorageState value: '{0}'."
+    },
+    {
+      "pl": "Po Set-WindowsReservedStorageState stan rezerwy miejsca to {0} zamiast Disabled.",
+      "en": "After Set-WindowsReservedStorageState, the reserved storage state is {0} instead of Disabled."
+    },
+    {
+      "pl": "Rezerwa miejsca wyłączona.",
+      "en": "Reserved storage turned off."
+    },
+    {
+      "pl": "Brak poprawnego snapshotu rezerwy miejsca (otrzymano: '{0}').",
+      "en": "No valid reserved storage snapshot (received: '{0}')."
+    },
+    {
+      "pl": "Rezerwa miejsca ma już stan {0} – nic do przywrócenia.",
+      "en": "Reserved storage is already in the {0} state – nothing to restore."
+    },
+    {
+      "pl": "Po Set-WindowsReservedStorageState stan rezerwy miejsca to {0} zamiast {1}.",
+      "en": "After Set-WindowsReservedStorageState, the reserved storage state is {0} instead of {1}."
+    },
+    {
+      "pl": "Rezerwa miejsca przywrócona: {0}.",
+      "en": "Reserved storage restored: {0}."
+    }
+  ]
+}

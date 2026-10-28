@@ -1,0 +1,190 @@
+{
+  "language": "en",
+  "data": true,
+  "entries": [
+    {
+      "pl": "Preferuj IPv4 przed IPv6",
+      "en": "Prefer IPv4 over IPv6"
+    },
+    {
+      "pl": "Połączenia idą najpierw przez IPv4; IPv6 zostaje włączone jako zapas.",
+      "en": "Connections go over IPv4 first; IPv6 stays on as a fallback."
+    },
+    {
+      "pl": "Pomaga, gdy strony lub gry ładują się wolno albo zrywają przez źle działające IPv6 u dostawcy.",
+      "en": "Helps when websites or games load slowly or drop because IPv6 at your provider works badly."
+    },
+    {
+      "pl": "Ustawia DisabledComponents = 0x20 (Prefer IPv4 over IPv6) w HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters: w tablicy zasad prefiksów adresy IPv4 dostają pierwszeństwo przed IPv6, a IPv6 zostaje włączone. Microsoft zaleca to ustawienie zamiast wyłączania IPv6. Pozycja zapisuje całą wartość: rozpoznaje tylko dokładnie 0x20, a inne ustawione bity (np. 0x21) nadpisze. Nie da się jej zastosować razem z „Wyłącz IPv6” (ta sama wartość) – najpierw cofnij tamtą; wartości ustawionej ręcznie poza DSOptimizerem nie rozpoznaje jako konfliktu (zmiana ją nadpisze, a cofnięcie przywróci). Zmiana i jej cofnięcie działają po restarcie komputera. Cofnięcie przywraca poprzednią wartość, a jeśli jej nie było – usuwa ją.",
+      "en": "Sets DisabledComponents = 0x20 (Prefer IPv4 over IPv6) in HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters: in the prefix policy table, IPv4 addresses get priority over IPv6, and IPv6 stays on. Microsoft recommends this setting instead of turning off IPv6. The item writes the whole value: it recognizes only exactly 0x20 and overwrites other set bits (for example 0x21). It can't be applied together with \"Turn off IPv6\" (same value) – undo that one first; it doesn't recognize a value set by hand outside DSOptimizer as a conflict (the change overwrites it, and undo restores it). The change and its undo take effect after the computer restarts. Undo restores the previous value, or deletes it if there was none."
+    },
+    {
+      "pl": "Wyłącz IPv6",
+      "en": "Turn off IPv6"
+    },
+    {
+      "pl": "Wyłącza IPv6 – komputer łączy się tylko przez IPv4.",
+      "en": "Turns off IPv6 – the computer connects only over IPv4."
+    },
+    {
+      "pl": "IPv6 przestaje być używane. Jeśli chodzi tylko o kłopoty z IPv6 u dostawcy, lepiej wybrać „Preferuj IPv4 przed IPv6”.",
+      "en": "IPv6 is no longer used. If the only issue is IPv6 problems at your provider, \"Prefer IPv4 over IPv6\" is a better choice."
+    },
+    {
+      "pl": "Ustawia DisabledComponents = 0xFF (wartość „IPv6 disabled” z dokumentacji Microsoftu) w HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters. Nie używa 0xFFFFFFFF, bo według Microsoftu ta wartość opóźnia start systemu o pięć sekund. IPv6 nie da się wyłączyć całkowicie: adres pętli zwrotnej ::1 nadal odpowiada, a pole wyboru IPv6 we właściwościach karty sieciowej się nie zmienia. Microsoft zaleca zamiast tego Prefer IPv4 over IPv6 (pozycja „Preferuj IPv4 przed IPv6”). Nie da się jej zastosować razem z tamtą pozycją (ta sama wartość) – najpierw cofnij tamtą; wartości ustawionej ręcznie poza DSOptimizerem nie rozpoznaje jako konfliktu (zmiana ją nadpisze, a cofnięcie przywróci). Zmiana i jej cofnięcie działają po restarcie komputera. Cofnięcie przywraca poprzednią wartość, a jeśli jej nie było – usuwa ją.",
+      "en": "Sets DisabledComponents = 0xFF (the \"IPv6 disabled\" value from Microsoft's documentation) in HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters. It doesn't use 0xFFFFFFFF, because according to Microsoft that value delays system startup by five seconds. IPv6 can't be turned off completely: the loopback address ::1 still responds, and the IPv6 checkbox in the network adapter properties doesn't change. Microsoft recommends Prefer IPv4 over IPv6 instead (the \"Prefer IPv4 over IPv6\" item). It can't be applied together with that item (same value) – undo that one first; it doesn't recognize a value set by hand outside DSOptimizer as a conflict (the change overwrites it, and undo restores it). The change and its undo take effect after the computer restarts. Undo restores the previous value, or deletes it if there was none."
+    },
+    {
+      "pl": "Microsoft nie zaleca wyłączania IPv6: część funkcji Windows może przestać działać, np. usługa Routing and Remote Access.",
+      "en": "Microsoft doesn't recommend turning off IPv6: some Windows features may stop working, such as the Routing and Remote Access service."
+    },
+    {
+      "pl": "Zezwól na logowanie gościa do udziałów sieciowych",
+      "en": "Allow guest logons to network shares"
+    },
+    {
+      "pl": "Komputer może łączyć się bez hasła (jako gość) ze starym NAS-em albo dyskiem sieciowym.",
+      "en": "The computer can connect without a password (as a guest) to an old NAS or network drive."
+    },
+    {
+      "pl": "Odblokowujesz dostęp do starego NAS-a albo dysku sieciowego, który wpuszcza tylko jako gościa, bez hasła. To wygoda kosztem bezpieczeństwa.",
+      "en": "You unlock access to an old NAS or network drive that only lets you in as a guest, without a password. It's convenience at the cost of security."
+    },
+    {
+      "pl": "Ustawia AllowInsecureGuestAuth = 1 w HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters – ten sam zapis robi Set-SmbClientConfiguration -EnableInsecureGuestLogons $true. Stan to połączenie wpisu w rejestrze z odczytem EnableInsecureGuestLogons z Get-SmbClientConfiguration: pozycja jest zastosowana dopiero, gdy oba się zgadzają, a rozjazd daje stan częściowy. Na Windows 11 Home odczyt Get-SmbClientConfiguration domyślnie pokazuje gościa jako dozwolonego, więc przed zmianą pozycja pokazuje stan częściowy. Od Windows 11 24H2 wymagane podpisywanie SMB blokuje logowanie gościa, dlatego potrzebna jest też pozycja „Nie wymagaj podpisywania SMB po stronie klienta”, która dalej obniża ochronę. Microsoft zaleca łączenie się z hasłem zamiast gościa. Pozycja nie obiecuje widoczności komputerów w sieci ani udanego połączenia. Cofnięcie przywraca poprzednią wartość; jeśli jej nie było albo DSOptimizer nie ma zapisu sprzed zmiany, usuwa ją, co przywraca ustawienie domyślne edycji (Home: gość dozwolony, Pro: zablokowany).",
+      "en": "Sets AllowInsecureGuestAuth = 1 in HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters – Set-SmbClientConfiguration -EnableInsecureGuestLogons $true writes the same value. The state combines the registry entry with EnableInsecureGuestLogons read from Get-SmbClientConfiguration: the item counts as applied only when both match, and a mismatch gives a partial state. On Windows 11 Home, Get-SmbClientConfiguration shows guests as allowed by default, so before the change the item shows a partial state. Since Windows 11 24H2, required SMB signing blocks guest logons, so you also need the \"Don't require SMB signing on the client\" item, which lowers protection further. Microsoft recommends connecting with a password instead of as a guest. The item doesn't promise that computers show up on the network or that the connection works. Undo restores the previous value; if there was none, or DSOptimizer has no record from before the change, it deletes it, which restores the edition's default (Home: guest allowed, Pro: blocked)."
+    },
+    {
+      "pl": "Microsoft odradza tę zmianę: podstawiony serwer w sieci może przejąć połączenie bez pytania o hasło, a ruch nie jest szyfrowany.",
+      "en": "Microsoft advises against this: a fake server on the network can take over the connection without a password, and traffic isn't encrypted."
+    },
+    {
+      "pl": "Zwykle trzeba też zastosować „Nie wymagaj podpisywania SMB po stronie klienta” – bez tego Windows i tak zablokuje gościa.",
+      "en": "You usually also need to apply \"Don't require SMB signing on the client\" – without it, Windows still blocks the guest."
+    },
+    {
+      "pl": "Get-SmbClientConfiguration nie zwrócił wartości logicznej EnableInsecureGuestLogons – stan nieznany.",
+      "en": "Get-SmbClientConfiguration didn't return a Boolean value for EnableInsecureGuestLogons – the state is unknown."
+    },
+    {
+      "pl": "Nie wymagaj podpisywania SMB po stronie klienta",
+      "en": "Don't require SMB signing on the client"
+    },
+    {
+      "pl": "Komputer łączy się z udziałami sieciowymi, które nie obsługują podpisywania, np. ze starymi NAS-ami.",
+      "en": "The computer connects to network shares that don't support signing, such as old NAS devices."
+    },
+    {
+      "pl": "Odblokowujesz połączenia ze starym NAS-em albo serwerem plików, który nie obsługuje podpisywania SMB. To zgodność kosztem bezpieczeństwa.",
+      "en": "You unlock connections to an old NAS or file server that doesn't support SMB signing. It's compatibility at the cost of security."
+    },
+    {
+      "pl": "Ustawia RequireSecuritySignature = 0 w HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters – ten sam zapis robi Set-SmbClientConfiguration -RequireSecuritySignature $false. Dotyczy tylko klienta SMB (połączenia wychodzące z tego komputera); ustawień serwera SMB nie zmienia. Stan to połączenie wpisu w rejestrze z odczytem RequireSecuritySignature z Get-SmbClientConfiguration: pozycja jest zastosowana dopiero, gdy oba się zgadzają, a rozjazd daje stan częściowy. Od Windows 11 24H2 podpisywanie jest domyślnie wymagane, a to blokuje także logowanie gościa: do dostępu gościa potrzebna jest ta pozycja razem z „Zezwól na logowanie gościa do udziałów sieciowych” (sama gościa nie włącza). Cofnięcie przywraca poprzednią wartość; jeśli jej nie było albo DSOptimizer nie ma zapisu sprzed zmiany, usuwa ją, co przywraca domyślne wymaganie podpisywania.",
+      "en": "Sets RequireSecuritySignature = 0 in HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters – Set-SmbClientConfiguration -RequireSecuritySignature $false writes the same value. It only affects the SMB client (outgoing connections from this computer); it doesn't change the SMB server settings. The state combines the registry entry with RequireSecuritySignature read from Get-SmbClientConfiguration: the item counts as applied only when both match, and a mismatch gives a partial state. Since Windows 11 24H2, signing is required by default, which also blocks guest logons: guest access needs this item together with \"Allow guest logons to network shares\" (this one alone doesn't turn guest access on). Undo restores the previous value; if there was none, or DSOptimizer has no record from before the change, it deletes it, which restores the default signing requirement."
+    },
+    {
+      "pl": "Microsoft odradza wyłączanie podpisywania – to obniża bezpieczeństwo połączeń z udziałami sieciowymi.",
+      "en": "Microsoft advises against turning off signing – it lowers the security of connections to network shares."
+    },
+    {
+      "pl": "Get-SmbClientConfiguration nie zwrócił wartości logicznej RequireSecuritySignature – stan nieznany.",
+      "en": "Get-SmbClientConfiguration didn't return a Boolean value for RequireSecuritySignature – the state is unknown."
+    },
+    {
+      "pl": "Wyłącz logowanie gościa i wymagaj podpisywania SMB",
+      "en": "Turn off guest logons and require SMB signing"
+    },
+    {
+      "pl": "Wyłącza logowanie gościa i wymaga podpisywania przy łączeniu z udziałami sieciowymi.",
+      "en": "Turns off guest logons and requires signing when connecting to network shares."
+    },
+    {
+      "pl": "Komputer nie połączy się już z udziałem sieciowym jako gość bez hasła ani bez podpisywania – tak zaleca Microsoft.",
+      "en": "The computer no longer connects to a network share as a guest without a password or without signing – as Microsoft recommends."
+    },
+    {
+      "pl": "Przez Set-SmbClientConfiguration -Force ustawia w kliencie SMB EnableInsecureGuestLogons = False i RequireSecuritySignature = True, a potem sprawdza obie wartości w Get-SmbClientConfiguration; gdy się nie zgadzają, kończy się błędem. Cmdlet zapisuje jawne wartości w HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters. Dotyczy tylko klienta SMB: nie zmienia serwera SMB, usług odnajdywania ani profilu sieci. Microsoft domyślnie wyłącza logowanie gościa na Windows 11 Pro, Enterprise i Education; na Home gość jest domyślnie dozwolony, więc tam akcja zaostrza ustawienie domyślne. Podpisywanie jest domyślnie wymagane od Windows 11 24H2; tam, gdzie go nie było, urządzenia bez podpisywania mogą zgłaszać błąd STATUS_INVALID_SIGNATURE. Akcja nadpisuje zmiany pozycji „Zezwól na logowanie gościa do udziałów sieciowych” i „Nie wymagaj podpisywania SMB po stronie klienta”; ich późniejsze cofnięcie przywróci stan sprzed ich zastosowania i zdejmie to zabezpieczenie. Bez cofania – poprzednie ustawienia przywrócisz ręcznie poleceniem Set-SmbClientConfiguration -EnableInsecureGuestLogons $true -RequireSecuritySignature $false -Force (tylko dla wartości, które chcesz przywrócić).",
+      "en": "Uses Set-SmbClientConfiguration -Force to set EnableInsecureGuestLogons = False and RequireSecuritySignature = True in the SMB client, then checks both values in Get-SmbClientConfiguration; if they don't match, it ends with an error. The cmdlet writes explicit values in HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters. It only affects the SMB client: it doesn't change the SMB server, discovery services or the network profile. Microsoft turns off guest logons by default on Windows 11 Pro, Enterprise and Education; on Home, guests are allowed by default, so there the action tightens the default setting. Signing is required by default since Windows 11 24H2; where it wasn't, devices without signing may report the STATUS_INVALID_SIGNATURE error. The action overwrites the changes of the \"Allow guest logons to network shares\" and \"Don't require SMB signing on the client\" items; undoing them later restores the state from before they were applied and removes this protection. No undo – you restore the previous settings by hand with Set-SmbClientConfiguration -EnableInsecureGuestLogons $true -RequireSecuritySignature $false -Force (only for the values you want to restore)."
+    },
+    {
+      "pl": "Stare NAS-y i dyski sieciowe bez podpisywania albo wpuszczające tylko gościa mogą przestać się łączyć.",
+      "en": "Old NAS devices and network drives without signing, or that only let guests in, may stop connecting."
+    },
+    {
+      "pl": "Późniejsze cofnięcie pozycji logowania gościa albo podpisywania SMB zdejmie to zabezpieczenie.",
+      "en": "Undoing the guest logon or SMB signing item later removes this protection."
+    },
+    {
+      "pl": "Odczyt zwrotny: konfiguracja klienta SMB nie zwróciła wartości logicznych EnableInsecureGuestLogons i RequireSecuritySignature – nie wiadomo, czy zmiana zadziałała.",
+      "en": "Verification: the SMB client configuration didn't return Boolean values for EnableInsecureGuestLogons and RequireSecuritySignature – it's unknown whether the change worked."
+    },
+    {
+      "pl": "EnableInsecureGuestLogons = True (oczekiwano False)",
+      "en": "EnableInsecureGuestLogons = True (expected False)"
+    },
+    {
+      "pl": "RequireSecuritySignature = False (oczekiwano True)",
+      "en": "RequireSecuritySignature = False (expected True)"
+    },
+    {
+      "pl": "Odczyt zwrotny nie zgadza się z oczekiwanym: {0}. Możliwa przyczyna: polityka (np. Group Policy) przesłania ustawienie.",
+      "en": "Verification doesn't match the expected values: {0}. Possible cause: a policy (for example Group Policy) overrides the setting."
+    },
+    {
+      "pl": "Klient SMB: EnableInsecureGuestLogons = False, RequireSecuritySignature = True (odczyt zwrotny zgodny).",
+      "en": "SMB client: EnableInsecureGuestLogons = False, RequireSecuritySignature = True (verification matches)."
+    },
+    {
+      "pl": "Zmień aktywną sieć z publicznej na prywatną",
+      "en": "Change the active network from public to private"
+    },
+    {
+      "pl": "Aktywne połączenia w profilu publicznym przechodzą na profil prywatny.",
+      "en": "Active connections with the public network profile switch to the private profile."
+    },
+    {
+      "pl": "W zaufanej sieci domowej lub firmowej komputer staje się widoczny dla innych urządzeń i może udostępniać pliki oraz drukarki, jeśli to skonfigurujesz.",
+      "en": "On a trusted home or work network, the computer becomes visible to other devices and can share files and printers if you set that up."
+    },
+    {
+      "pl": "Dla każdego profilu połączenia w kategorii Public z łącznością IPv4 lub IPv6 wywołuje Set-NetConnectionProfile -NetworkCategory Private, a potem sprawdza kategorię w Get-NetConnectionProfile; gdy zmiana się nie potwierdzi, kończy się błędem. Profile Private i DomainAuthenticated (tej kategorii Microsoft nie pozwala ustawić tym cmdletem) oraz profile bez łączności nie są ruszane. Gdy nie ma aktywnego profilu Public, nic nie zmienia i zgłasza błąd „brak aktywnego połączenia w profilu publicznym – nic nie zmieniono”. W kategorii Private komputer jest wykrywalny w sieci (discoverable) i może udostępniać pliki oraz drukarki, jeśli to skonfigurujesz; zapora Windows przełącza się na reguły profilu Private. Zasady Network List Manager Policies mogą blokować zmianę – wtedy akcja zgłosi błąd. Wynik podaje nazwę, indeks interfejsu i poprzednią kategorię każdego zmienionego profilu. Bez cofania – poprzednią kategorię przywrócisz ręcznie poleceniem Set-NetConnectionProfile -InterfaceIndex <indeks> -NetworkCategory Public.",
+      "en": "For each connection profile in the Public category with IPv4 or IPv6 connectivity, runs Set-NetConnectionProfile -NetworkCategory Private, then checks the category in Get-NetConnectionProfile; if the change doesn't show up there, it ends with an error. Private and DomainAuthenticated profiles (Microsoft doesn't allow setting that category with this cmdlet) and profiles without connectivity are left alone. If there's no active Public profile, it changes nothing and reports the error \"no active connection with the public network profile – nothing was changed\". In the Private category, the computer is discoverable on the network and can share files and printers if you set that up; Windows Firewall switches to the Private profile rules. Network List Manager Policies can block the change – then the action reports an error. The result lists the name, interface index and previous category of each changed profile. No undo – you restore the previous category by hand with Set-NetConnectionProfile -InterfaceIndex <index> -NetworkCategory Public."
+    },
+    {
+      "pl": "Tylko w zaufanej sieci, w domu albo w firmie – w kawiarni, hotelu czy obcym biurze to osłabia ochronę komputera.",
+      "en": "Only on a trusted network, at home or at work – in a café, hotel or someone else's office, it weakens the computer's protection."
+    },
+    {
+      "pl": "brak aktywnego połączenia w profilu publicznym – nic nie zmieniono",
+      "en": "no active connection with the public network profile – nothing was changed"
+    },
+    {
+      "pl": "Nie zmieniono profilu '{0}': {1}",
+      "en": "Profile '{0}' wasn't changed: {1}"
+    },
+    {
+      "pl": "Odczyt zwrotny nie powiódł się: {0}",
+      "en": "Verification failed: {0}"
+    },
+    {
+      "pl": "Odczyt zwrotny nie potwierdził zmiany profilu '{0}' na Private.",
+      "en": "Verification didn't confirm that profile '{0}' changed to Private."
+    },
+    {
+      "pl": "'{0}' (poprzednio {1}, indeks {2})",
+      "en": "'{0}' (previously {1}, index {2})"
+    },
+    {
+      "pl": " Profile, na których wywołano zmianę (sprawdź i w razie potrzeby cofnij przez -InterfaceIndex i -NetworkCategory Public): {0}.",
+      "en": " Profiles the change was run on (check them and, if needed, undo with -InterfaceIndex and -NetworkCategory Public): {0}."
+    },
+    {
+      "pl": "Zmieniono profil '{0}' (interfejs {1}, indeks {2}): {3} -> Private. Ręczne cofnięcie: -InterfaceIndex {2} -NetworkCategory Public.",
+      "en": "Changed profile '{0}' (interface {1}, index {2}): {3} -> Private. Manual undo: -InterfaceIndex {2} -NetworkCategory Public."
+    },
+    {
+      "pl": "Zmieniono {0} profil(e) z Public na Private (odczyt zwrotny zgodny).",
+      "en": "Changed {0} profile(s) from Public to Private (verification matches)."
+    }
+  ]
+}

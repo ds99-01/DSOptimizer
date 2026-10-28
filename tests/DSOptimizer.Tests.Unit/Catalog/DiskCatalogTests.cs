@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Catalog;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Tests.Unit.Support;
 using Xunit;
@@ -213,6 +214,29 @@ public class DiskCatalogTests
         var run = PowerShellHarness.Run(Get("disk.reserved-storage").Script!.Undo!, ReservedMocks("Disabled"), "Enabled");
         Assert.Equal(0, run.ExitCode);
         Assert.Equal("Rezerwa miejsca przywrócona: Enabled.", run.LastLine);
+    }
+
+    [Fact]
+    public void DiskReservedStorage_English_Message()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var run = PowerShellHarness.Run(Get("disk.reserved-storage").Script!.Undo!, ReservedMocks("Disabled"), "Enabled");
+            Assert.Equal(0, run.ExitCode);
+            Assert.Equal("Reserved storage restored: Enabled.", run.LastLine);
+        }
+    }
+
+    [Fact]
+    public void DiskHibernation_English_Message()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var run = PowerShellHarness.Run(Get("disk.hibernation").Script!.Apply!, HibernationMocks(s4: false, file: false, enabled: null), string.Empty);
+            Assert.Equal(1, run.ExitCode);
+            Assert.Contains("This hardware or firmware doesn't support hibernation (SystemS4 = false) – nothing was changed.", run.Error, StringComparison.Ordinal);
+            Assert.DoesNotContain("nie obsługuje", run.Error, StringComparison.Ordinal);
+        }
     }
 
     [Fact]

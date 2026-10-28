@@ -454,6 +454,37 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | komunikat, że ustawieniami zarządza organizacja | Windows says that your organization manages the settings | Windows shows "Some of these settings are managed by your organization". **do audytu (Etap 5)** |
 | Sklep (Microsoft Store) | the Store | Short form after "Microsoft Store" was named in the same text |
 
+### Catalog – disk, network, security, tools
+
+| Polski | English | Notes/source |
+|---|---|---|
+| Wyłącz … (pozycja) | Turn off … | Item titles and messages use "turn on / turn off" for Windows features, as Microsoft does ("Turn off hibernation", "Turn off IPv6") |
+| hibernacja / uśpienie / hybrydowy stan uśpienia | hibernation / sleep / hybrid sleep | [Distinguishing fast startup from wake-from-hibernation](https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/distinguishing-fast-startup-from-wake-from-hibernation) |
+| Szybkie uruchamianie | fast startup | Lower case mid-sentence, as on Microsoft Learn (same source); Control Panel shows "Turn on fast startup (recommended)" |
+| rezerwa miejsca (na aktualizacje) | reserved storage | [How reserved storage works in Windows](https://support.microsoft.com/en-gb/windows/how-reserved-storage-works-in-windows-5bc98443-0711-8038-4621-6a18ddc904f2) |
+| czas ostatniego dostępu | last access time | [fsutil behavior](https://learn.microsoft.com/windows-server/administration/windows-commands/fsutil-behavior) (`disablelastaccess`) |
+| krótkie nazwy plików 8.3 | 8.3 short file names | Same source (`disable8dot3`); "DOS-style short name" in plain sentences |
+| wolumin / dysk / partycja | volume / drive / partition | "the C: drive", "the C: volume" (technical details) |
+| udział sieciowy / dysk sieciowy / NAS | network share / network drive / NAS | "old NAS devices" for the plural |
+| logowanie gościa / podpisywanie SMB | guest logon / SMB signing | [Enable insecure guest logons in SMB2 and SMB3](https://learn.microsoft.com/en-us/windows-server/storage/file-server/enable-insecure-guest-logons-smb2-and-smb3) |
+| po stronie klienta | on the client | "Don't require SMB signing on the client" |
+| profil publiczny / profil prywatny (sieci) | public network profile / private profile | Settings › Network & internet › Wi-Fi › Network profile type; [Make a Wi-Fi network public or private in Windows](https://support.microsoft.com/en-us/kb/4043043). Category names in technical details stay `Public` / `Private` / `DomainAuthenticated` |
+| wykrywalny w sieci | discoverable on the network | Same source |
+| zapora Windows | Windows Firewall | [Turn Windows Firewall on or off](https://support.microsoft.com/help/4028544/windows-turn-windows-firewall-on-or-off). **do audytu (Etap 5)** – see "Zapora Windows Defender" in Windows names |
+| automatyczne szyfrowanie (urządzenia, dysku) | automatic (device, drive) encryption | [Device Encryption in Windows](https://support.microsoft.com/en-us/windows/security/encryption/device-encryption-in-windows); the technical name "BitLocker automatic device encryption" stays as it is |
+| odszyfrowywanie / odszyfrowuje | decryption / decrypts | BitLocker; "Decryption of C: in progress" |
+| klucze automatycznego odblokowania | auto-unlock keys | BitLocker "Turn on auto-unlock"; [Clear-BitLockerAutoUnlock](https://learn.microsoft.com/en-us/powershell/module/bitlocker/clear-bitlockerautounlock) |
+| protektory klucza | key protectors | BitLocker term, same source family |
+| menu kontekstowe / menu prawego przycisku | context menu / right-click menu | |
+| Pokaż więcej opcji | Show more options | Classic Windows 11 context menu entry |
+| Przejmij na własność | take ownership | The menu text itself is a registry value written in Polish by the item (`MUIVerb`), so the English description names it as "Przejmij na własność" (take ownership). **do audytu (Etap 5)** |
+| Administratorzy (grupa) | Administrators | Built-in group, SID S-1-5-32-544 |
+| UAC (zgoda w UAC) | UAC prompt ("after you approve the UAC prompt") | |
+| powłoka (Eksploratora) / pulpit | shell / desktop | "the File Explorer shell (explorer.exe)" |
+| Menedżer zadań > Plik > Uruchom nowe zadanie | Task Manager > File > Run new task | "Run new task" as in Task Manager. **do audytu (Etap 5)** – the redesigned Windows 11 Task Manager shows "Run new task" in the command bar, not in a File menu (the Polish text says "Plik") |
+| wylogowanie | signing out | Style rule 11 |
+| wydanie testowe / szkic (GitHub) | test release / draft | WinUtil description |
+
 ## Windows names
 
 | Polski | English | Notes/source |

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Catalog;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Tests.Unit.Support;
@@ -168,6 +169,34 @@ public class ToolsCatalogTests
         Assert.NotEqual(0, run.ExitCode);
         Assert.Contains("brak SID zalogowanego użytkownika – nic nie zatrzymano", run.Error, StringComparison.Ordinal);
         Assert.False(Stopped(run));
+    }
+
+    [Fact]
+    public void ToolsRestartExplorer_English_Message()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var run = Run(Mocks("1", Proc(100, UserSid, 1, ShellCommand), Proc(250, UserSid, 1, ShellCommand)));
+
+            Assert.Equal(0, run.ExitCode);
+            Assert.Contains("File Explorer restarted by winlogon: PID 100 → 250", run.Output);
+        }
+    }
+
+    [Fact]
+    public void ToolsRestartExplorer_NoShell_English_Message()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var run = Run(Mocks("1", string.Empty, Proc(200, UserSid, 1, ShellCommand)));
+
+            Assert.NotEqual(0, run.ExitCode);
+            Assert.Contains(
+                "no File Explorer of user " + UserSid + " (shell without /factory); nothing was stopped. Open Task Manager > File > Run new task > explorer.exe (by hand; the program doesn't start anything).",
+                run.Error,
+                StringComparison.Ordinal);
+            Assert.False(Stopped(run));
+        }
     }
 
     [Fact]

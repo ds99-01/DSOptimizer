@@ -1,7 +1,3 @@
 # Pliki katalogu, których skrypty nie są jeszcze przerobione na Get-DsoText (CatalogScriptTextRulesTests): strażnik pomija w nich
 # polskie napisy poza Get-DsoText (błędne wywołanie Get-DsoText jest błędem zawsze). Linia = nazwa pliku z src/DSOptimizer.Catalog/catalog.
 # Plik po przerobieniu usuwa swoją linię (plik bez polskich napisów poza Get-DsoText na tej liście = błąd testu); na końcu lista jest pusta.
-disk.json
-net.json
-sec.json
-tools.json

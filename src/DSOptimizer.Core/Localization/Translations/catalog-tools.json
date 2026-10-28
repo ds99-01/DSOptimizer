@@ -1,0 +1,98 @@
+{
+  "language": "en",
+  "data": true,
+  "entries": [
+    {
+      "pl": "Uruchom ponownie pasek zadań i Eksploratora",
+      "en": "Restart the taskbar and File Explorer"
+    },
+    {
+      "pl": "Zamyka i uruchamia od nowa pasek zadań, pulpit i Eksploratora, bez wylogowania.",
+      "en": "Closes and starts the taskbar, desktop and File Explorer again, without signing out."
+    },
+    {
+      "pl": "Zawieszony pasek zadań albo pulpit wraca do działania bez wylogowania i restartu komputera.",
+      "en": "A frozen taskbar or desktop starts working again without signing out or restarting the computer."
+    },
+    {
+      "pl": "Zatrzymuje powłokę Eksploratora (explorer.exe) zalogowanego użytkownika i czeka do 10 s, aż winlogon sam ją wznowi (nowy proces, to samo konto i ta sama sesja). Akcja nigdy sama nie uruchamia explorer.exe, więc wznowiony Eksplorator działa z uprawnieniami użytkownika, a nie administratora. Przed zatrzymaniem tylko odczytuje wartość AutoRestartShell w HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon i jej nie zmienia: jeśli nie jest równa 1, niczego nie zatrzymuje i zgłasza błąd. Zatrzymywana jest tylko powłoka zalogowanego użytkownika w jednej sesji; procesy explorer.exe z /factory (hosty okien) i Eksplorator innych kont nie są ruszane. Gdy powłoka nie wróci w 10 s, uruchom ją ręcznie: Menedżer zadań > Plik > Uruchom nowe zadanie > explorer.exe.",
+      "en": "Stops the File Explorer shell (explorer.exe) of the signed-in user and waits up to 10 s for winlogon to restart it on its own (new process, same account and same session). The action never starts explorer.exe itself, so the restarted File Explorer runs with the user's permissions, not as administrator. Before stopping, it only reads the AutoRestartShell value in HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon and doesn't change it: if it isn't 1, it stops nothing and reports an error. Only the signed-in user's shell in one session is stopped; explorer.exe processes with /factory (window hosts) and File Explorer of other accounts are left alone. If the shell doesn't come back within 10 s, start it by hand: Task Manager > File > Run new task > explorer.exe."
+    },
+    {
+      "pl": "Otwarte okna Eksploratora plików mogą się zamknąć, a trwające w nich kopiowanie zostanie przerwane.",
+      "en": "Open File Explorer windows may close, and copying in progress in them will be interrupted."
+    },
+    {
+      "pl": "Pasek zadań i pulpit znikają na kilka sekund.",
+      "en": "The taskbar and desktop disappear for a few seconds."
+    },
+    {
+      "pl": "Uruchom Menedżer zadań > Plik > Uruchom nowe zadanie > explorer.exe (ręcznie; aplikacja niczego nie uruchamia).",
+      "en": "Open Task Manager > File > Run new task > explorer.exe (by hand; the program doesn't start anything)."
+    },
+    {
+      "pl": "brak SID zalogowanego użytkownika – nic nie zatrzymano",
+      "en": "no SID of the signed-in user – nothing was stopped"
+    },
+    {
+      "pl": "brak wartości",
+      "en": "no value"
+    },
+    {
+      "pl": "{0} (typ {1}, oczekiwano DWORD)",
+      "en": "{0} (type {1}, expected DWORD)"
+    },
+    {
+      "pl": "AutoRestartShell = {0} – winlogon nie wznowi Eksploratora; nic nie zatrzymano",
+      "en": "AutoRestartShell = {0} – winlogon won't restart File Explorer; nothing was stopped"
+    },
+    {
+      "pl": "brak Eksploratora użytkownika {0} (powłoki bez /factory); nic nie zatrzymano. {1}",
+      "en": "no File Explorer of user {0} (shell without /factory); nothing was stopped. {1}"
+    },
+    {
+      "pl": "powłoki użytkownika {0} działają w kilku sesjach ({1}); nie wiadomo, którą restartować – nic nie zatrzymano",
+      "en": "the shells of user {0} are running in several sessions ({1}); it's unclear which one to restart – nothing was stopped"
+    },
+    {
+      "pl": "Nie zatrzymano Eksploratora PID {0}: {1}",
+      "en": "File Explorer PID {0} wasn't stopped: {1}"
+    },
+    {
+      "pl": " Ostatni błąd odczytu: {0}.",
+      "en": " Last read error: {0}."
+    },
+    {
+      "pl": "Eksplorator (PID {0}) został zatrzymany, ale w 10 s nie wrócił.{1} {2}",
+      "en": "File Explorer (PID {0}) was stopped but didn't come back within 10 s.{1} {2}"
+    },
+    {
+      "pl": "Explorer zrestartowany przez winlogon: PID {0} → {1}",
+      "en": "File Explorer restarted by winlogon: PID {0} → {1}"
+    },
+    {
+      "pl": "Otwórz WinUtil (Chris Titus)",
+      "en": "Open WinUtil (Chris Titus)"
+    },
+    {
+      "pl": "Pobiera najnowsze wydanie WinUtil z GitHuba i otwiera je w osobnym oknie PowerShell.",
+      "en": "Downloads the latest WinUtil release from GitHub and opens it in a separate PowerShell window."
+    },
+    {
+      "pl": "Otwierasz WinUtil bez szukania polecenia, zawsze z oficjalnego wydania na GitHubie. Co zyskasz dalej, zależy od tego, co w nim wybierzesz.",
+      "en": "You open WinUtil without looking up the command, always from the official GitHub release. What you gain after that depends on what you choose in it."
+    },
+    {
+      "pl": "Pobiera z API GitHuba (releases/latest repozytorium ChrisTitusTech/winutil, bez wydań testowych i szkiców) plik winutil.ps1 do %ProgramData%\\DSOptimizer\\downloads, porównuje jego SHA256 z polem digest z API i otwiera go w osobnym oknie PowerShell 5.1 (powershell.exe -NoExit -NoProfile -ExecutionPolicy RemoteSigned -File) z uprawnieniami administratora, bez czekania na zamknięcie okna. SHA256 potwierdza tylko zgodność z wydaniem GitHuba, nie to, że kod jest bezpieczny; każde nowe wydanie WinUtil może działać inaczej niż poprzednie. Uruchamiane jest tylko najnowsze stabilne wydanie, bez presetów i bez gałęzi deweloperskiej. Bez połączenia z siecią nic się nie otwiera, a akcja kończy się komunikatem o braku połączenia. Skrypt zostaje w folderze pobrań i jest usuwany przy kolejnym pobraniu (WinUtil albo RustDesk), gdy ma ponad 24 h.",
+      "en": "Downloads the winutil.ps1 file through the GitHub API (releases/latest of the ChrisTitusTech/winutil repository, without test releases and drafts) to %ProgramData%\\DSOptimizer\\downloads, compares its SHA256 with the digest field from the API and opens it in a separate PowerShell 5.1 window (powershell.exe -NoExit -NoProfile -ExecutionPolicy RemoteSigned -File) with administrator permissions, without waiting for the window to close. SHA256 only confirms that the file matches the GitHub release, not that the code is safe; every new WinUtil release may work differently from the previous one. Only the latest stable release is run, without presets and without the development branch. Without a network connection nothing opens, and the action ends with a message about the missing connection. The script stays in the downloads folder and is deleted at the next download (WinUtil or RustDesk) once it's more than 24 h old."
+    },
+    {
+      "pl": "Uruchamiasz cudzy kod z internetu jako admin – DSOptimizer nie sprawdza treści skryptu.",
+      "en": "You run someone else's code from the internet as admin – DSOptimizer doesn't check what the script contains."
+    },
+    {
+      "pl": "DSOptimizer nie śledzi i nie cofa zmian zrobionych w oknie WinUtil.",
+      "en": "DSOptimizer doesn't track or undo changes made in the WinUtil window."
+    }
+  ]
+}
