@@ -19,6 +19,8 @@ public sealed class TranslationTable
         @"\{(\d+)(?:,[^}:]*)?(?::[^}]*)?\}",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
+    private static readonly char[] Braces = { '{', '}' };
+
     private static readonly string[] RequiredKeys = { "en", "pl" };
 
     private readonly Dictionary<string, string> english;
@@ -162,6 +164,12 @@ public sealed class TranslationTable
             ok = false;
         }
 
+        if (ok && (HasBrace(pl) || HasBrace(en)) && (!IsValidFormat(pl) || !IsValidFormat(en)))
+        {
+            errors.Add(where + ": \"pl\" lub \"en\" nie jest poprawnym napisem formatującym (zabłąkany nawias klamrowy) (" + Shorten(pl) + ").");
+            ok = false;
+        }
+
         if (!string.Equals(Leading(pl), Leading(en), StringComparison.Ordinal)
             || !string.Equals(Trailing(pl), Trailing(en), StringComparison.Ordinal))
         {
@@ -179,6 +187,23 @@ public sealed class TranslationTable
         if (ok)
         {
             table[pl] = en;
+        }
+    }
+
+    private static bool HasBrace(string text) => text.IndexOfAny(Braces) >= 0;
+
+    private static bool IsValidFormat(string text)
+    {
+        var numbers = PlaceholderNumbers(text);
+        var max = numbers.Count == 0 ? -1 : numbers.Max(n => int.Parse(n, CultureInfo.InvariantCulture));
+        try
+        {
+            _ = string.Format(CultureInfo.InvariantCulture, text, new object[max + 1]);
+            return true;
+        }
+        catch (FormatException)
+        {
+            return false;
         }
     }
 

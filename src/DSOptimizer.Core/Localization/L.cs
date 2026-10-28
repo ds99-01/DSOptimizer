@@ -122,18 +122,25 @@ public static class L
         {
             if (builtIn is null)
             {
-                try
-                {
-                    builtIn = TranslationTable.Load(BuiltInSources());
-                }
-                catch (Exception ex) when (ex is TranslationFormatException or IOException or InvalidOperationException)
-                {
-                    loadWarning = "Nie wczytano tłumaczeń: " + ex.Message;
-                    builtIn = TranslationTable.Empty;
-                }
+                builtIn = LoadBuiltIn(BuiltInSources, out loadWarning);
             }
 
             return builtIn;
+        }
+    }
+
+    /// <summary>Wczytuje tabelę ze źródeł; każdy niekrytyczny wyjątek daje pustą tabelę i ostrzeżenie (T nigdy nie rzuca).</summary>
+    internal static TranslationTable LoadBuiltIn(Func<IReadOnlyList<TranslationSource>> sources, out string? warning)
+    {
+        try
+        {
+            warning = null;
+            return TranslationTable.Load(sources());
+        }
+        catch (Exception ex) when (ex is not (OutOfMemoryException or StackOverflowException or ThreadAbortException or AccessViolationException))
+        {
+            warning = "Nie wczytano tłumaczeń: " + ex.Message;
+            return TranslationTable.Empty;
         }
     }
 

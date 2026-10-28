@@ -381,6 +381,13 @@ Describe 'Okno wyboru języka w smoke GUI' {
         $Script | Should -Match 'InvokePattern'
         $Script | Should -Match 'AddSeconds\(30\)'
     }
+    It 'skrypt sondy: odczyt okna w try/catch (okno znika w trakcie) i poprawna skladnia' {
+        $Script = Get-LanguageChoiceProbeScript
+        $Script | Should -Match 'catch \{ \$Window = \$null'
+        $Errors = $null
+        [void][System.Management.Automation.Language.Parser]::ParseInput($Script, [ref]$null, [ref]$Errors)
+        @($Errors).Count | Should -Be 0
+    }
     It 'Confirm-DsoLanguageChoice idzie przez sesję dso z argumentem -Language i zwraca wynik sondy' {
         Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {}
         Mock -ModuleName VmSmoke Invoke-Command -RemoveParameterValidation 'Session' { '{"Ok":true,"Error":null,"Shown":true,"Chosen":true}' }

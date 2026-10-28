@@ -136,4 +136,16 @@ public class LTests
         Assert.Throws<ArgumentNullException>(() => L.T(null!));
         Assert.Throws<ArgumentNullException>(() => L.F(null!));
     }
+
+    [Fact]
+    public void LoadBuiltIn_ThrowingSource_YieldsEmptyTableAndWarning()
+    {
+        var table = L.LoadBuiltIn(() => throw new UnauthorizedAccessException("brak dostepu"), out var warning);
+        Assert.NotNull(warning);
+        Assert.Equal(0, table.Count);
+        using (L.UseTable(table))
+        {
+            Assert.Equal("Ustawienia", L.T("Ustawienia"));
+        }
+    }
 }

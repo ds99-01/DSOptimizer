@@ -30,6 +30,19 @@ public class TranslationTableTests
     }
 
     [Fact]
+    public void Load_EnglishWithStrayBrace_Throws()
+    {
+        Assert.Throws<TranslationFormatException>(() => LoadOne(Json(("Plik {0}", "File {0} {"))));
+    }
+
+    [Fact]
+    public void Load_EnglishWithEscapedBraces_Passes()
+    {
+        var table = LoadOne(Json(("Plik {0}", "File {{x}} {0}")));
+        Assert.Equal("File {{x}} {0}", table.Find(UiLanguage.English, "Plik {0}"));
+    }
+
+    [Fact]
     public void Find_Polish_ReturnsNull()
     {
         var table = LoadOne(Json(("Ustawienia", "Settings")));

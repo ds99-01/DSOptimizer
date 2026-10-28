@@ -228,9 +228,14 @@ try {
     $Chooser = $null
     $Limit = (Get-Date).AddSeconds(30)
     do {
-        $Window = Get-ProcessWindowElement
+        $Window = $null
+        $WindowId = $null
+        try {
+            $Window = Get-ProcessWindowElement
+            if ($null -ne $Window) { $WindowId = $Window.Current.AutomationId }
+        } catch { $Window = $null }
         if ($null -ne $Window) {
-            if ($Window.Current.AutomationId -eq 'LanguageChoiceWindow') { $Chooser = $Window; break }
+            if ($WindowId -eq 'LanguageChoiceWindow') { $Chooser = $Window; break }
             # Okno glowne bez okna wyboru: wybor sie nie pokazal.
             $Out.MainWindowAppeared = $true
             break
@@ -251,8 +256,11 @@ try {
         $CloseLimit = (Get-Date).AddSeconds(15)
         do {
             Start-Sleep -Milliseconds 250
-            $Window = Get-ProcessWindowElement
-            $StillChooser = ($null -ne $Window) -and ($Window.Current.AutomationId -eq 'LanguageChoiceWindow')
+            $StillChooser = $false
+            try {
+                $Window = Get-ProcessWindowElement
+                $StillChooser = ($null -ne $Window) -and ($Window.Current.AutomationId -eq 'LanguageChoiceWindow')
+            } catch { $Window = $null; $StillChooser = $false }
             if ($null -ne $Window -and -not $StillChooser) { $Out.MainWindowAppeared = $true }
         } while (($StillChooser -or $null -eq $Window) -and (Get-Date) -lt $CloseLimit)
         $Out.Chosen = $Out.MainWindowAppeared
