@@ -82,12 +82,26 @@ public class StartupLanguageTests
     {
         var store = new FakeStore { FailWith = "Brak dostępu." };
 
+        var result = StartupLanguage.Choose(AppSettings.Default, UiLanguage.English, _ => UiLanguage.Polish, store);
+
+        Assert.Equal(UiLanguage.Polish, result.Language);
+        Assert.Equal(UiLanguage.Polish, result.Settings.Language);
+        Assert.Equal(
+            "Nie udało się zapisać wybranego języka: Brak dostępu. Okno wyboru pokaże się przy następnym uruchomieniu.",
+            result.Warning);
+    }
+
+    [Fact]
+    public void Choose_SaveFails_WarningInChosenLanguage()
+    {
+        var store = new FakeStore { FailWith = "Access denied." };
+
+        // Proces działa po polsku (domyślny język testów), a wybrano angielski: ostrzeżenie trafia do programu już po angielsku.
         var result = StartupLanguage.Choose(AppSettings.Default, UiLanguage.Polish, _ => UiLanguage.English, store);
 
         Assert.Equal(UiLanguage.English, result.Language);
-        Assert.Equal(UiLanguage.English, result.Settings.Language);
         Assert.Equal(
-            "Nie udało się zapisać wybranego języka: Brak dostępu. Okno wyboru pokaże się przy następnym uruchomieniu.",
+            "Could not save the selected language: Access denied. The language prompt will appear again the next time the program starts.",
             result.Warning);
     }
 

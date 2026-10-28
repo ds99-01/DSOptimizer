@@ -48,8 +48,12 @@ public static class StartupLanguage
         }
         catch (SettingsStoreException ex)
         {
-            var warning = L.F("Nie udało się zapisać wybranego języka: {0} Okno wyboru pokaże się przy następnym uruchomieniu.", ex.Message);
-            return new StartupLanguageResult(updated, chosen, warning);
+            // Ostrzeżenie trafia do programu działającego już w wybranym języku.
+            using (L.Use(chosen))
+            {
+                var warning = L.F("Nie udało się zapisać wybranego języka: {0} Okno wyboru pokaże się przy następnym uruchomieniu.", ex.Message);
+                return new StartupLanguageResult(updated, chosen, warning);
+            }
         }
 
         return new StartupLanguageResult(updated, chosen, null);

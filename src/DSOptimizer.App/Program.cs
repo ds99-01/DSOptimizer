@@ -121,7 +121,7 @@ internal static class Program
         var theme = new ThemeController(log);
         theme.ApplyAtStartup(settings.Settings.Theme);
         // Język: zapisany = bez pytania; brak = okno wyboru (motyw już zastosowany), zamknięte bez wyboru = język wykryty.
-        var language = StartupLanguage.Choose(settings.Settings, detected, LanguageChoiceWindow.Ask, settingsStore);
+        var language = StartupLanguage.Choose(settings.Settings, detected, proposed => AskLanguage(log, proposed), settingsStore);
         L.SetDefault(language.Language);
         if (language.Warning is { } languageWarning)
         {
@@ -163,6 +163,26 @@ internal static class Program
             prep,
             settingsPage);
         return app.Run(new MainWindow(viewModel, log, shell, theme, protectedRoot));
+    }
+
+    /// <summary>Okno wyboru języka; jego wyjątek nie blokuje startu: wpis w dzienniku i język wykryty (<c>null</c>).</summary>
+    private static UiLanguage? AskLanguage(ILog log, UiLanguage detected)
+    {
+        try
+        {
+            return LanguageChoiceWindow.Ask(detected);
+        }
+        catch (Exception ex)
+        {
+            TryLog(log, L.T("Nie udało się pokazać okna wyboru języka. Program używa języka systemu."), ex);
+            // Okno wyboru nie może zostać MainWindow aplikacji – nim ma być okno główne programu.
+            if (Application.Current is { MainWindow: LanguageChoiceWindow } app)
+            {
+                app.MainWindow = null;
+            }
+
+            return null;
+        }
     }
 
     /// <summary>

@@ -12,6 +12,10 @@
     {
       "pl": "Nie udało się ponownie uruchomić programu: {0}",
       "en": "Could not restart the program: {0}"
+    },
+    {
+      "pl": "Nie udało się pokazać okna wyboru języka. Program używa języka systemu.",
+      "en": "Could not show the language prompt. The program uses the system language."
     }
   ]
 }
