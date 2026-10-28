@@ -44,7 +44,7 @@ Not applicable: `kind=action` without detection and undo. `Executed` means the f
 - No presets and no development branch. Changes made in the WinUtil window aren't undone by DSOptimizer.
 
 ## VM test
-- `tools-winutil-offline` (`Flow=Execute`, `Catalog=BuiltIn`, VM without a network): expected `Failed` with code 1 and the message "no connection to GitHub"; `Check` = no `powershell.exe` with `-File` pointing to `C:\ProgramData\DSOptimizer\downloads\*.ps1` and no `*.ps1` files in `downloads`. Result of the run (`Invoke-VmTests.ps1`, VM without a network, HEAD `fb4bb9c`, 2026-10-26): **Passed on both editions** – Pro 799 / 0 / 25 skipped, Home 799 / 0 / 25 (`tools-winutil-offline` green on Pro and Home).
+- `tools-winutil-offline` (`Flow=Execute`, `Catalog=BuiltIn`, VM without a network): expected `Failed` with code 1 and the message "brak połączenia z GitHubem" (no connection to GitHub); `Check` = no `powershell.exe` with `-File` pointing to `C:\ProgramData\DSOptimizer\downloads\*.ps1` and no `*.ps1` files in `downloads`. Result of the run (`Invoke-VmTests.ps1`, VM without a network, HEAD `fb4bb9c`, 2026-10-26): **Passed on both editions** – Pro 799 / 0 / 25 skipped, Home 799 / 0 / 25 (`tools-winutil-offline` green on Pro and Home).
 - `tools-winutil-effect`: **Skipped** (reason: the effect with a network is covered by the `av` phase of the E5 exploration). The WinUtil window and GUI with a network were measured in Task 1 (above, variant B).
 - The former case `tools-winutil-launch` (batch C5, 2026-10-19, Passed on Home and Pro) was removed together with the `irm … | iex` command.
 
