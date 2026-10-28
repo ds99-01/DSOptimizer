@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Windows;
@@ -66,7 +67,7 @@ public sealed class ShellProcessLauncher : IProcessLauncher
         }
         catch (Win32Exception ex)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Nie można uruchomić {launch.File}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można uruchomić {0}: {1}", launch.File, ex.Message), ex);
         }
     }
 }

@@ -31,6 +31,9 @@ src/DSOptimizer.Core/ThirdPartyNotices.cs	"Brak osadzonego zasobu "	komunikat dl
 # Core – naruszenie kontraktu (komunikat wieloliniowego throw new ArgumentException, strażnik nie widzi go w jednej linii).
 src/DSOptimizer.Core/Abstractions/ToolRequest.cs	$"Niedozwolone narzędzie '{value}': dozwolona jest tylko nazwa pliku .exe z System32, bez interpreterów i hostów skryptów."	komunikat naruszenia kontraktu (throw new ArgumentException)
 
+# Windows – naruszenie kontraktu (komunikat wieloliniowego throw new ArgumentException, strażnik nie widzi go w jednej linii).
+src/DSOptimizer.Windows/SecureRoot.cs	$"Odmowa zabezpieczenia katalogu {full}: dozwolone są tylko bezpośrednie podkatalogi {FullPath}."	komunikat naruszenia kontraktu (throw new ArgumentException)
+
 # Core – teksty, które nie są komunikatami dla użytkownika.
 src/DSOptimizer.Core/ProductInfo.cs	"Dawid Świeboda"	nazwa własna (imię i nazwisko autora), nie tłumaczy się
 src/DSOptimizer.Core/Model/RegistryValueType.cs	"Nazwy typów wymusza format JSON katalogu."	uzasadnienie SuppressMessage dla analizatora kodu (dla programisty, nie trafia do programu)

@@ -7,6 +7,7 @@ using System.Security;
 using System.Text;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 using Newtonsoft.Json;
 
 namespace DSOptimizer.Windows;
@@ -52,7 +53,7 @@ public sealed class JsonFileJournalStore : IJournalStore
                 File.Move(FilePath, untrustedPath);
                 return new JournalLoadResult(
                     NewDocument(),
-                    $"Journal miał niezaufanego właściciela lub uprawnienia i został odłożony: {untrustedPath}. Utworzono nowy.");
+                    L.F("Journal miał niezaufanego właściciela lub uprawnienia i został odłożony: {0}. Utworzono nowy.", untrustedPath));
             }
 
             var json = File.ReadAllText(FilePath, Utf8NoBom);
@@ -64,36 +65,36 @@ public sealed class JsonFileJournalStore : IJournalStore
             {
                 var corruptPath = Path.Combine(_directory, $"journal.corrupt-{Stamp()}.json");
                 File.Move(FilePath, corruptPath);
-                return new JournalLoadResult(NewDocument(), $"Journal był uszkodzony ({ex.Message}). Przeniesiono go do {corruptPath} i utworzono nowy.");
+                return new JournalLoadResult(NewDocument(), L.F("Journal był uszkodzony ({0}). Przeniesiono go do {1} i utworzono nowy.", ex.Message, corruptPath));
             }
         }
         catch (IOException ex)
         {
-            throw new JournalStoreException($"Nie można odczytać journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Nie można odczytać journala {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new JournalStoreException($"Brak dostępu do journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Brak dostępu do journala {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (SecurityException ex)
         {
-            throw new JournalStoreException($"Brak uprawnień do journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Brak uprawnień do journala {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (InvalidOperationException ex)
         {
-            throw new JournalStoreException($"Błąd uprawnień journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Błąd uprawnień journala {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (ArgumentException ex)
         {
-            throw new JournalStoreException($"Niedozwolona ścieżka journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Niedozwolona ścieżka journala {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (NotSupportedException ex)
         {
-            throw new JournalStoreException($"Nieobsługiwana operacja na journalu {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Nieobsługiwana operacja na journalu {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (JsonException ex)
         {
-            throw new JournalStoreException($"Nie można zinterpretować journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Nie można zinterpretować journala {0}: {1}", FilePath, ex.Message), ex);
         }
     }
 
@@ -133,31 +134,31 @@ public sealed class JsonFileJournalStore : IJournalStore
         }
         catch (IOException ex)
         {
-            throw new JournalStoreException($"Nie można zapisać journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Nie można zapisać journala {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new JournalStoreException($"Brak dostępu do zapisu journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Brak dostępu do zapisu journala {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (SecurityException ex)
         {
-            throw new JournalStoreException($"Brak uprawnień do zapisu journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Brak uprawnień do zapisu journala {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (InvalidOperationException ex)
         {
-            throw new JournalStoreException($"Błąd uprawnień zapisu journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Błąd uprawnień zapisu journala {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (ArgumentException ex)
         {
-            throw new JournalStoreException($"Niedozwolona ścieżka journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Niedozwolona ścieżka journala {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (NotSupportedException ex)
         {
-            throw new JournalStoreException($"Nieobsługiwana operacja zapisu journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Nieobsługiwana operacja zapisu journala {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (JsonException ex)
         {
-            throw new JournalStoreException($"Nie można zserializować journala {FilePath}: {ex.Message}", ex);
+            throw new JournalStoreException(L.F("Nie można zserializować journala {0}: {1}", FilePath, ex.Message), ex);
         }
     }
 
@@ -189,7 +190,7 @@ public sealed class JsonFileJournalStore : IJournalStore
         var found = candidates.Where(File.Exists).ToList();
         return found.Count == 0
             ? null
-            : $"Katalog journala miał niezaufanego właściciela lub uprawnienia i został odłożony – poprzedni journal nie jest używany: {string.Join(", ", found)}. Utworzono nowy.";
+            : L.F("Katalog journala miał niezaufanego właściciela lub uprawnienia i został odłożony – poprzedni journal nie jest używany: {0}. Utworzono nowy.", string.Join(", ", found));
     }
 
     private string Stamp() => _clock.UtcNow.ToLocalTime().ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);

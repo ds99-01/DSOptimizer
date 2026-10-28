@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Windows.Native;
 
 namespace DSOptimizer.Windows;
@@ -27,7 +28,7 @@ internal static class RedirectedProcess
         var inheritable = Inheritable();
         if (!NativeMethods.CreatePipe(out var readPipe, out var writePipe, ref inheritable, 0))
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Nie można utworzyć potoku: {new Win32Exception(Marshal.GetLastWin32Error()).Message}");
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można utworzyć potoku: {0}", new Win32Exception(Marshal.GetLastWin32Error()).Message));
         }
 
         if (!NativeMethods.SetHandleInformation(readPipe, NativeMethods.HandleFlagInherit, 0))
@@ -35,7 +36,7 @@ internal static class RedirectedProcess
             var error = Marshal.GetLastWin32Error();
             NativeMethods.CloseHandle(readPipe);
             NativeMethods.CloseHandle(writePipe);
-            throw new OperationException(OperationErrorKind.Unexpected, $"Nie można zabezpieczyć potoku: {new Win32Exception(error).Message}");
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można zabezpieczyć potoku: {0}", new Win32Exception(error).Message));
         }
 
         return (readPipe, writePipe);
@@ -48,7 +49,7 @@ internal static class RedirectedProcess
         var nul = NativeMethods.CreateFile("NUL", GenericRead, FileShareReadWrite, ref inheritable, OpenExisting, 0, IntPtr.Zero);
         if (nul == NativeMethods.InvalidHandleValue)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Nie można otworzyć NUL: {new Win32Exception(Marshal.GetLastWin32Error()).Message}");
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można otworzyć NUL: {0}", new Win32Exception(Marshal.GetLastWin32Error()).Message));
         }
 
         return nul;
@@ -79,7 +80,8 @@ internal static class RedirectedProcess
             attributeList = Marshal.AllocHGlobal(size);
             if (!NativeMethods.InitializeProcThreadAttributeList(attributeList, 1, 0, ref size))
             {
-                throw Failure("przygotować atrybutów procesu", request, Marshal.GetLastWin32Error());
+                var error = Marshal.GetLastWin32Error();
+                throw Failure(error, L.F("Nie można przygotować atrybutów procesu {0}: {1}", request.FileName, Win32Message(error)));
             }
 
             attributeListInitialized = true;
@@ -92,7 +94,8 @@ internal static class RedirectedProcess
                     IntPtr.Zero,
                     IntPtr.Zero))
             {
-                throw Failure("ograniczyć dziedziczonych uchwytów", request, Marshal.GetLastWin32Error());
+                var error = Marshal.GetLastWin32Error();
+                throw Failure(error, L.F("Nie można ograniczyć dziedziczonych uchwytów {0}: {1}", request.FileName, Win32Message(error)));
             }
 
             var startupInfo = new NativeMethods.StartupInfoEx
@@ -121,7 +124,8 @@ internal static class RedirectedProcess
                     ref startupInfo,
                     out var information))
             {
-                throw Failure("uruchomić", request, Marshal.GetLastWin32Error());
+                var error = Marshal.GetLastWin32Error();
+                throw Failure(error, L.F("Nie można uruchomić {0}: {1}", request.FileName, Win32Message(error)));
             }
 
             return (information.Process, information.Thread);
@@ -169,9 +173,11 @@ internal static class RedirectedProcess
         InheritHandle = true,
     };
 
-    private static OperationException Failure(string action, ToolRequest request, int error)
+    private static OperationException Failure(int error, string message)
     {
         var kind = error is ErrorFileNotFound or ErrorPathNotFound ? OperationErrorKind.NotFound : OperationErrorKind.Unexpected;
-        return new OperationException(kind, $"Nie można {action} {request.FileName}: {new Win32Exception(error).Message}");
+        return new OperationException(kind, message);
     }
+
+    private static string Win32Message(int error) => new Win32Exception(error).Message;
 }

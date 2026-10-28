@@ -4,6 +4,7 @@ using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Install;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Repair;
 using DSOptimizer.Core.RestorePoints;
 using DSOptimizer.Core.Tools;
@@ -82,7 +83,7 @@ public sealed class AppComposition
         var warnings = new List<string>();
         foreach (var aside in setAside)
         {
-            warnings.Add($"Katalog roboczy {root.FullPath} miał niezaufanego właściciela lub uprawnienia i został odłożony: {aside}. Utworzono nowy.");
+            warnings.Add(L.F("Katalog roboczy {0} miał niezaufanego właściciela lub uprawnienia i został odłożony: {1}. Utworzono nowy.", root.FullPath, aside));
         }
 
         try
@@ -176,7 +177,7 @@ public sealed class AppComposition
     {
         foreach (var aside in root.EnsureLeaf(root.BackupsDirectory))
         {
-            log.Warn("Naprawy", $"Katalog {aside} miał niezaufanego właściciela lub uprawnienia i został odłożony. Utworzono nowy.");
+            log.Warn(L.T("Naprawy"), L.F("Katalog {0} miał niezaufanego właściciela lub uprawnienia i został odłożony. Utworzono nowy.", aside));
         }
 
         return root.BackupsDirectory;

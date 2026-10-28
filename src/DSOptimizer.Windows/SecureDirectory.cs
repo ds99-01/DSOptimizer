@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Windows;
 
@@ -31,7 +32,7 @@ internal static class SecureDirectory
         {
             if (IsReparsePoint(path))
             {
-                throw new IOException($"Katalog {path} jest punktem ponownej analizy (junction/link) - odmowa użycia.");
+                throw new IOException(L.F("Katalog {0} jest punktem ponownej analizy (junction/link) - odmowa użycia.", path));
             }
 
             if (IsTrustedDirectory(path))
@@ -45,12 +46,12 @@ internal static class SecureDirectory
         Directory.CreateDirectory(path, CreateTrustedDirectorySecurity());
         if (IsReparsePoint(path))
         {
-            throw new IOException($"Katalog {path} jest punktem ponownej analizy (junction/link) - odmowa użycia.");
+            throw new IOException(L.F("Katalog {0} jest punktem ponownej analizy (junction/link) - odmowa użycia.", path));
         }
 
         if (!IsTrustedDirectory(path))
         {
-            throw new IOException($"Katalog {path} nie ma zaufanego właściciela/uprawnień po utworzeniu - odmowa użycia.");
+            throw new IOException(L.F("Katalog {0} nie ma zaufanego właściciela/uprawnień po utworzeniu - odmowa użycia.", path));
         }
 
         return aside;
@@ -142,7 +143,7 @@ internal static class SecureDirectory
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new IOException($"Katalog {path} ma niezaufanego właściciela/uprawnienia i nie udało się go odłożyć: {ex.Message}", ex);
+            throw new IOException(L.F("Katalog {0} ma niezaufanego właściciela/uprawnienia i nie udało się go odłożyć: {1}", path, ex.Message), ex);
         }
     }
 

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Repair;
 using DSOptimizer.Windows.Native;
 using Microsoft.Win32.SafeHandles;
@@ -69,7 +70,7 @@ internal static class UnkilledProcess
 
         if (!File.Exists(executablePath))
         {
-            throw new OperationException(OperationErrorKind.NotFound, $"Nie znaleziono pliku {executablePath}.");
+            throw new OperationException(OperationErrorKind.NotFound, L.F("Nie znaleziono pliku {0}.", executablePath));
         }
 
         var collector = new LineCollector(encoding, onLine);
@@ -113,7 +114,7 @@ internal static class UnkilledProcess
 
             if (!NativeMethods.GetExitCodeProcess(process, out var code))
             {
-                throw new OperationException(OperationErrorKind.Unexpected, $"Nie można odczytać kodu wyjścia {request.FileName}: {new Win32Exception(Marshal.GetLastWin32Error()).Message}");
+                throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można odczytać kodu wyjścia {0}: {1}", request.FileName, new Win32Exception(Marshal.GetLastWin32Error()).Message));
             }
 
             // Ostatnie dane procesu; gdy potomek dalej trzyma koniec zapisu, resztę opróżni wątek tła.

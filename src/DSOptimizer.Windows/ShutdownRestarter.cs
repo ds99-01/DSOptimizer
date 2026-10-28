@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Windows;
 
@@ -51,7 +52,7 @@ public sealed class ShutdownRestarter : IRestarter
             WorkingDirectory = Environment.SystemDirectory,
         };
 
-        _log.Info(Component, "shutdown.exe /r /t 0 zlecony przez użytkownika.");
+        _log.Info(Component, L.T("shutdown.exe /r /t 0 zlecony przez użytkownika."));
         int? exitCode;
         try
         {
@@ -59,17 +60,17 @@ public sealed class ShutdownRestarter : IRestarter
         }
         catch (Win32Exception ex)
         {
-            throw Failure(OperationErrorKind.Unexpected, $"Nie udało się uruchomić ponownie komputera: {ex.Message}", ex);
+            throw Failure(OperationErrorKind.Unexpected, L.F("Nie udało się uruchomić ponownie komputera: {0}", ex.Message), ex);
         }
 
         if (exitCode is null)
         {
-            throw Failure(OperationErrorKind.Timeout, "Nie udało się uruchomić ponownie komputera: shutdown.exe nie zakończył się w ciągu 10 s.");
+            throw Failure(OperationErrorKind.Timeout, L.T("Nie udało się uruchomić ponownie komputera: shutdown.exe nie zakończył się w ciągu 10 s."));
         }
 
         if (exitCode != 0)
         {
-            throw Failure(OperationErrorKind.Unexpected, $"Nie udało się uruchomić ponownie komputera: shutdown.exe zakończył się kodem {exitCode}.");
+            throw Failure(OperationErrorKind.Unexpected, L.F("Nie udało się uruchomić ponownie komputera: shutdown.exe zakończył się kodem {0}.", exitCode));
         }
     }
 
@@ -82,7 +83,7 @@ public sealed class ShutdownRestarter : IRestarter
 
     private static int? RunProcess(ProcessStartInfo info, TimeSpan timeout)
     {
-        using var process = Process.Start(info) ?? throw new Win32Exception("Nie udało się uruchomić shutdown.exe.");
+        using var process = Process.Start(info) ?? throw new Win32Exception(L.T("Nie udało się uruchomić shutdown.exe."));
         return process.WaitForExit((int)timeout.TotalMilliseconds) ? process.ExitCode : null;
     }
 }

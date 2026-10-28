@@ -275,6 +275,13 @@ How to read the tables:
 | Strona sterowników {0} / Strona wsparcia {0} / Karta {0} | {0} drivers page / {0} support page / {0} card | "Intel drivers page", "Lenovo support page", "NVIDIA card" |
 | Szukaj sterownika / Szukaj strony wsparcia / Szukaj w Google | Search for a driver / Search for a support page / Search Google | Preparation links |
 | Urządzenia z problemem / brak sterownika / wyłączone / problem, kod {0} | Devices with a problem / no driver / disabled / problem, code {0} | Device Manager error codes 28 and 22, and any other code |
+| katalog (pozycji) / katalog (na dysku) | catalog / folder | Same Polish word, two meanings: the item catalog (`--catalog`, "external catalog") vs a folder on disk ("working folder", "journal folder") |
+| niezaufany właściciel lub uprawnienia / odłożony | untrusted owner or permissions / set aside | Program folders and files with a foreign owner or ACL are renamed (`.untrusted-*`) and replaced: "… was set aside. A new one was created." |
+| Nie można … / Brak dostępu do … / Brak uprawnień do … | Can't … / Access denied to … / No permission to … | Windows layer errors; "Błąd zapisu / odczytu / usuwania" = "Error writing / reading / deleting" |
+| klucz / podklucz / drzewo kluczy | key / subkey / key tree | Registry |
+| punkt ponownej analizy | reparse point | Junction or symbolic link (Windows term) |
+| potok / Job Object | pipe / Job Object | Process plumbing in Windows layer errors; "Job Object" kept as the Windows name |
+| Ponowne uruchomienie programu: {0} | Restarting the program: {0} | Startup log line before the program restarts itself |
 
 ## Windows names
 

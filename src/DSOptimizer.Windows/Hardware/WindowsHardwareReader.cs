@@ -5,6 +5,7 @@ using System.Linq;
 using System.Management;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Hardware;
+using DSOptimizer.Core.Localization;
 using Microsoft.Win32;
 
 namespace DSOptimizer.Windows.Hardware;
@@ -70,7 +71,7 @@ public sealed partial class WindowsHardwareReader : IHardwareReader
         int revision;
         using (var root = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
         using (var key = root.OpenSubKey(CurrentVersionPath, writable: false)
-            ?? throw new InvalidOperationException($@"Brak klucza HKLM\{CurrentVersionPath}."))
+            ?? throw new InvalidOperationException(L.F("Brak klucza HKLM\\{0}.", CurrentVersionPath)))
         {
             edition = CimReader.Clean(key.GetValue("EditionID") as string);
             displayVersion = CimReader.Clean(key.GetValue("DisplayVersion") as string);

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Windows;
 
@@ -41,7 +42,7 @@ public sealed class ShellUrlOpener : IUrlOpener
     {
         if (!ExternalLinkPolicy.IsAllowed(url))
         {
-            throw new OperationException(OperationErrorKind.Unexpected, "Ten adres nie jest dozwolony.");
+            throw new OperationException(OperationErrorKind.Unexpected, L.T("Ten adres nie jest dozwolony."));
         }
 
         // Cudzysłów obowiązkowy: niecytowany argument z „=” (wyszukiwanie „?q=…”) explorer bierze za przełącznik i otwiera Dokumenty
@@ -61,7 +62,7 @@ public sealed class ShellUrlOpener : IUrlOpener
         }
         catch (Win32Exception ex)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Nie można otworzyć strony: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można otworzyć strony: {0}", ex.Message), ex);
         }
     }
 }

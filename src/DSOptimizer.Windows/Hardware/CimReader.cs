@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Management;
 using System.Text;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Windows.Hardware;
 
@@ -35,7 +36,7 @@ internal static class CimReader
         var path = item.SystemProperties["__RELPATH"].Value as string;
         if (string.IsNullOrEmpty(path))
         {
-            throw new InvalidOperationException($"Obiekt {item.ClassPath.ClassName} nie ma ścieżki – zapytanie bez klucza klasy.");
+            throw new InvalidOperationException(L.F("Obiekt {0} nie ma ścieżki – zapytanie bez klucza klasy.", item.ClassPath.ClassName));
         }
 
         return Query(scope, new RelatedObjectQuery(path, resultClass), map);

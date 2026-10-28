@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Windows;
 
@@ -141,17 +142,17 @@ public sealed class WebDownloader : IWebDownloader
                 var location = response.Headers[HttpResponseHeader.Location];
                 if (string.IsNullOrEmpty(location) || !Uri.TryCreate(current, location, out var next))
                 {
-                    return new WebFile(WebFailure.RedirectRefused, status, 0, null, "Przekierowanie bez poprawnego adresu docelowego.");
+                    return new WebFile(WebFailure.RedirectRefused, status, 0, null, L.T("Przekierowanie bez poprawnego adresu docelowego."));
                 }
 
                 if (redirects >= MaxRedirects)
                 {
-                    return new WebFile(WebFailure.RedirectRefused, status, 0, next, $"Za dużo przekierowań (więcej niż {MaxRedirects}).");
+                    return new WebFile(WebFailure.RedirectRefused, status, 0, next, L.F("Za dużo przekierowań (więcej niż {0}).", MaxRedirects));
                 }
 
                 if (!IsHttp(next) || !allowRedirect(next))
                 {
-                    return new WebFile(WebFailure.RedirectRefused, status, 0, next, "Przekierowanie na niedozwolony adres: " + next.AbsoluteUri);
+                    return new WebFile(WebFailure.RedirectRefused, status, 0, next, L.F("Przekierowanie na niedozwolony adres: {0}", next.AbsoluteUri));
                 }
 
                 GuardRealNetwork(next);
@@ -204,7 +205,7 @@ public sealed class WebDownloader : IWebDownloader
         var remaining = timeout - clock.Elapsed;
         if (remaining <= TimeSpan.Zero)
         {
-            return Exchange.Failed(WebFailure.TimedOut, "Przekroczono limit czasu.");
+            return Exchange.Failed(WebFailure.TimedOut, L.T("Przekroczono limit czasu."));
         }
 
         var request = CreateRequest(url, accept, _userAgent, remaining);
@@ -242,7 +243,7 @@ public sealed class WebDownloader : IWebDownloader
             var remaining = timeout - clock.Elapsed;
             if (remaining <= TimeSpan.Zero)
             {
-                return new BodyRead(WebFailure.TimedOut, total, "Przekroczono limit czasu.");
+                return new BodyRead(WebFailure.TimedOut, total, L.T("Przekroczono limit czasu."));
             }
 
             int read;
@@ -268,7 +269,7 @@ public sealed class WebDownloader : IWebDownloader
             {
                 // Serwer zamknął połączenie przed końcem zapowiedzianego ciała: .NET Framework zwraca wtedy 0 bez wyjątku.
                 return response.ContentLength >= 0 && total != response.ContentLength
-                    ? new BodyRead(WebFailure.Network, total, $"Połączenie zerwane: odebrano {total} z {response.ContentLength} B.")
+                    ? new BodyRead(WebFailure.Network, total, L.F("Połączenie zerwane: odebrano {0} z {1} B.", total, response.ContentLength))
                     : new BodyRead(WebFailure.None, total, null);
             }
 
@@ -288,7 +289,7 @@ public sealed class WebDownloader : IWebDownloader
 
     private static string Describe(WebException ex) => $"{ex.Status}: {ex.Message}";
 
-    private static string TooLargeError(long maxBytes) => $"Odpowiedź większa niż {maxBytes} B.";
+    private static string TooLargeError(long maxBytes) => L.F("Odpowiedź większa niż {0} B.", maxBytes);
 
     private static bool IsRedirect(int status) => status is 301 or 302 or 303 or 307 or 308;
 

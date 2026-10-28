@@ -15,7 +15,7 @@ namespace DSOptimizer.Windows;
 /// </summary>
 public sealed class ProgramRelauncher : IProgramRelauncher
 {
-    private const string Component = "Uruchomienie";
+    private static string Component => L.T("Uruchomienie");
 
     private readonly ILog _log;
     private readonly Func<string> _exePath;
@@ -45,7 +45,7 @@ public sealed class ProgramRelauncher : IProgramRelauncher
             }
 
             var directory = Path.GetDirectoryName(exe) ?? string.Empty;
-            _log.Info(Component, "Ponowne uruchomienie programu: " + exe);
+            _log.Info(Component, L.F("Ponowne uruchomienie programu: {0}", exe));
             _start(exe, string.Empty, directory);
         }
         catch (Win32Exception ex)
@@ -65,7 +65,7 @@ public sealed class ProgramRelauncher : IProgramRelauncher
     private void Fail(Exception ex)
     {
         var message = L.F("Nie udało się ponownie uruchomić programu: {0}", ex.Message);
-        _log.Warn(Component, "Ponowne uruchomienie nie powiodło się: " + ex.Message);
+        _log.Warn(Component, L.F("Ponowne uruchomienie nie powiodło się: {0}", ex.Message));
         throw new OperationException(OperationErrorKind.Unexpected, message, ex);
     }
 

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Windows.Native;
 
@@ -44,12 +44,12 @@ public sealed class WindowsServiceManager : IServiceManager
         var start = _registry.Read(ServicesPath + name, "Start");
         if (start.Status == ReadStatus.AccessDenied)
         {
-            return ServiceQueryResult.AccessDenied(start.Error ?? "Brak dostępu do konfiguracji usługi.");
+            return ServiceQueryResult.AccessDenied(start.Error ?? L.T("Brak dostępu do konfiguracji usługi."));
         }
 
         if (start.Value.Data is not uint startValue)
         {
-            return ServiceQueryResult.Failed($"Brak wartości Start dla usługi {name}.");
+            return ServiceQueryResult.Failed(L.F("Brak wartości Start dla usługi {0}.", name));
         }
 
         var delayed = _registry.Read(ServicesPath + name, "DelayedAutostart").Value.Data is uint flag && flag == 1;
@@ -65,7 +65,7 @@ public sealed class WindowsServiceManager : IServiceManager
 
         return startType is { } type
             ? ServiceQueryResult.Found(type, running)
-            : ServiceQueryResult.Failed(string.Format(CultureInfo.InvariantCulture, "Nieznany typ startu {0} usługi {1}.", startValue, name));
+            : ServiceQueryResult.Failed(L.F("Nieznany typ startu {0} usługi {1}.", startValue, name));
     }
 
     public void SetStartType(string name, ServiceStartType startType)
@@ -75,7 +75,7 @@ public sealed class WindowsServiceManager : IServiceManager
             ServiceStartType.Automatic or ServiceStartType.AutomaticDelayed => 2u,
             ServiceStartType.Manual => 3u,
             ServiceStartType.Disabled => 4u,
-            _ => throw new OperationException(OperationErrorKind.Unexpected, $"Ustawianie typu startu {startType} nie jest obsługiwane."),
+            _ => throw new OperationException(OperationErrorKind.Unexpected, L.F("Ustawianie typu startu {0} nie jest obsługiwane.", startType)),
         };
 
         using var service = OpenServiceHandle(name, NativeMethods.ServiceChangeConfig | NativeMethods.ServiceQueryConfig);
@@ -170,7 +170,7 @@ public sealed class WindowsServiceManager : IServiceManager
 
         if (error == NativeMethods.ErrorDependentServicesRunning)
         {
-            return new OperationException(OperationErrorKind.Unexpected, $"Usługa {name} ma działające usługi zależne – nie zatrzymuję jej, żeby zmiana pozostała odwracalna.");
+            return new OperationException(OperationErrorKind.Unexpected, L.F("Usługa {0} ma działające usługi zależne – nie zatrzymuję jej, żeby zmiana pozostała odwracalna.", name));
         }
 
         return FromError(name, error);
@@ -204,7 +204,7 @@ public sealed class WindowsServiceManager : IServiceManager
         }
         catch (System.ServiceProcess.TimeoutException ex)
         {
-            throw new OperationException(OperationErrorKind.Timeout, $"Usługa {name} nie zmieniła stanu w wymaganym czasie.", ex);
+            throw new OperationException(OperationErrorKind.Timeout, L.F("Usługa {0} nie zmieniła stanu w wymaganym czasie.", name), ex);
         }
         catch (InvalidOperationException ex)
         {
@@ -214,7 +214,7 @@ public sealed class WindowsServiceManager : IServiceManager
                 NativeMethods.ErrorAccessDenied => OperationErrorKind.AccessDenied,
                 _ => OperationErrorKind.Unexpected,
             };
-            throw new OperationException(kind, $"Usługa {name}: {ex.Message}", ex);
+            throw new OperationException(kind, L.F("Usługa {0}: {1}", name, ex.Message), ex);
         }
     }
 
@@ -230,6 +230,6 @@ public sealed class WindowsServiceManager : IServiceManager
             NativeMethods.ErrorServiceDoesNotExist => OperationErrorKind.NotFound,
             _ => OperationErrorKind.Unexpected,
         };
-        return new OperationException(kind, string.Format(CultureInfo.InvariantCulture, "Usługa {0}: {1} (kod {2}).", name, new Win32Exception(error).Message, error));
+        return new OperationException(kind, L.F("Usługa {0}: {1} (kod {2}).", name, new Win32Exception(error).Message, error));
     }
 }

@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Windows.Native;
 using Microsoft.Win32.SafeHandles;
 
@@ -37,7 +38,7 @@ public static class UninstallerRunner
 
         if (!File.Exists(plan.FileName))
         {
-            throw new FileNotFoundException("Nie ma pliku deinstalatora.", plan.FileName);
+            throw new FileNotFoundException(L.T("Nie ma pliku deinstalatora."), plan.FileName);
         }
 
         var commandLine = (NativeProcessStarter.CommandLine(plan.FileName, plan.Arguments) + "\0").ToCharArray();

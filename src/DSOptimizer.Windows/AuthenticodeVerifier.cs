@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Windows.Native;
 
 namespace DSOptimizer.Windows;
@@ -30,7 +31,7 @@ public sealed class AuthenticodeVerifier : ISignatureVerifier
         var full = Path.GetFullPath(filePath);
         if (!File.Exists(full))
         {
-            throw new FileNotFoundException("Nie ma pliku do sprawdzenia podpisu.", full);
+            throw new FileNotFoundException(L.T("Nie ma pliku do sprawdzenia podpisu."), full);
         }
 
         var path = Marshal.StringToHGlobalUni(full);
@@ -102,19 +103,19 @@ public sealed class AuthenticodeVerifier : ISignatureVerifier
             : NativeMethods.WTHelperGetProvSignerFromChain(providerData, 0, counterSigner: false, 0);
         if (signer == IntPtr.Zero)
         {
-            return new SignatureCheck(SignatureStatus.Invalid, null, "brak danych podpisującego");
+            return new SignatureCheck(SignatureStatus.Invalid, null, L.T("brak danych podpisującego"));
         }
 
         var signerData = Marshal.PtrToStructure<NativeMethods.CryptProviderSigner>(signer);
         if (signerData.CertChainCount == 0 || signerData.CertChain == IntPtr.Zero)
         {
-            return new SignatureCheck(SignatureStatus.Invalid, null, "brak łańcucha certyfikatów");
+            return new SignatureCheck(SignatureStatus.Invalid, null, L.T("brak łańcucha certyfikatów"));
         }
 
         var leaf = Marshal.PtrToStructure<NativeMethods.CryptProviderCert>(signerData.CertChain);
         if (leaf.Certificate == IntPtr.Zero)
         {
-            return new SignatureCheck(SignatureStatus.Invalid, null, "brak certyfikatu podpisującego");
+            return new SignatureCheck(SignatureStatus.Invalid, null, L.T("brak certyfikatu podpisującego"));
         }
 
         using var certificate = new X509Certificate2(leaf.Certificate);

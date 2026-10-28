@@ -6,6 +6,7 @@ using System.Security.AccessControl;
 using System.Text;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Windows;
 
@@ -23,7 +24,7 @@ public sealed class WindowsRepairFileSystem : IRepairFileSystem
     private static readonly Encoding Utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
     public bool DirectoryExists(string path)
-        => Guard(() => Directory.Exists(path), $"sprawdzić folder {path}");
+        => Guard(() => Directory.Exists(path), (denied, error) => CheckFolderFailed(path, denied, error));
 
     /// <summary>
     /// <see cref="File.GetAttributes"/> zamiast <see cref="Directory.Exists"/> (to drugie zwraca <c>false</c> przy każdym błędzie):
@@ -46,7 +47,7 @@ public sealed class WindowsRepairFileSystem : IRepairFileSystem
 
                 return (attributes & FileAttributes.Directory) != 0;
             },
-            $"sprawdzić folder {path}");
+            (denied, error) => CheckFolderFailed(path, denied, error));
 
     public void MoveDirectory(string source, string destination)
         => Guard(
@@ -54,18 +55,20 @@ public sealed class WindowsRepairFileSystem : IRepairFileSystem
             {
                 if (!Directory.Exists(source))
                 {
-                    throw new DirectoryNotFoundException($"Folder źródłowy nie istnieje: {source}");
+                    throw new DirectoryNotFoundException(L.F("Folder źródłowy nie istnieje: {0}", source));
                 }
 
                 if (Directory.Exists(destination) || File.Exists(destination))
                 {
-                    throw new IOException($"Cel już istnieje: {destination}");
+                    throw new IOException(L.F("Cel już istnieje: {0}", destination));
                 }
 
                 Directory.Move(source, destination);
                 return true;
             },
-            $"przenieść folder {source} do {destination}");
+            (denied, error) => denied
+                ? L.F("Brak uprawnień, by przenieść folder {0} do {1}: {2}", source, destination, error)
+                : L.F("Nie można przenieść folder {0} do {1}: {2}", source, destination, error));
 
     public void DeleteDirectoryTree(string path)
         => Guard(
@@ -74,7 +77,9 @@ public sealed class WindowsRepairFileSystem : IRepairFileSystem
                 DeleteTree(path);
                 return true;
             },
-            $"usunąć folder {path}");
+            (denied, error) => denied
+                ? L.F("Brak uprawnień, by usunąć folder {0}: {1}", path, error)
+                : L.F("Nie można usunąć folder {0}: {1}", path, error));
 
     public IReadOnlyList<string> ListSiblingDirectories(string path, string prefix)
         => Guard<IReadOnlyList<string>>(
@@ -100,7 +105,9 @@ public sealed class WindowsRepairFileSystem : IRepairFileSystem
                 found.Sort(StringComparer.OrdinalIgnoreCase);
                 return found;
             },
-            $"wylistować foldery obok {path}");
+            (denied, error) => denied
+                ? L.F("Brak uprawnień, by wylistować foldery obok {0}: {1}", path, error)
+                : L.F("Nie można wylistować foldery obok {0}: {1}", path, error));
 
     public void WriteAllText(string path, string content)
         => Guard(
@@ -132,7 +139,9 @@ public sealed class WindowsRepairFileSystem : IRepairFileSystem
                 stream.Write(body, 0, body.Length);
                 return true;
             },
-            $"zapisać plik {path}");
+            (denied, error) => denied
+                ? L.F("Brak uprawnień, by zapisać plik {0}: {1}", path, error)
+                : L.F("Nie można zapisać plik {0}: {1}", path, error));
 
     public long? FileLength(string path)
         => Guard<long?>(
@@ -141,18 +150,20 @@ public sealed class WindowsRepairFileSystem : IRepairFileSystem
                 var info = new FileInfo(path);
                 return info.Exists ? info.Length : null;
             },
-            $"odczytać rozmiar pliku {path}");
+            (denied, error) => denied
+                ? L.F("Brak uprawnień, by odczytać rozmiar pliku {0}: {1}", path, error)
+                : L.F("Nie można odczytać rozmiar pliku {0}: {1}", path, error));
 
     /// <summary>Hak testowy: wołany po wyliczeniu każdego folderu w <see cref="DeleteOldFiles"/> (symulacja podmiany w trakcie).</summary>
     internal Action<string>? AfterDirectoryEnumerated { get; set; }
 
     /// <summary>Usuwanie przez uchwyt z kontrolą ostatecznej ścieżki – szczegóły w <see cref="OldFilesCleaner"/>.</summary>
     public OldFilesCleanup DeleteOldFiles(string root, DateTime olderThanUtc)
-        => Guard(() => new OldFilesCleaner(olderThanUtc, AfterDirectoryEnumerated).Run(root), $"wyczyścić folder {root}");
+        => Guard(() => new OldFilesCleaner(olderThanUtc, AfterDirectoryEnumerated).Run(root), (denied, error) => CleanFolderFailed(root, denied, error));
 
     /// <summary>Jak <see cref="DeleteOldFiles"/> (przez uchwyt), ale tylko pliki z nazwą pasującą do prefiksu i rozszerzenia, bez podfolderów.</summary>
     public OldFilesCleanup DeleteFilesByName(string directory, string prefix, string extension)
-        => Guard(() => new OldFilesCleaner(DateTime.MaxValue, AfterDirectoryEnumerated).RunNamed(directory, prefix, extension), $"wyczyścić folder {directory}");
+        => Guard(() => new OldFilesCleaner(DateTime.MaxValue, AfterDirectoryEnumerated).RunNamed(directory, prefix, extension), (denied, error) => CleanFolderFailed(directory, denied, error));
 
     public string? ReadSharedFrom(string path, long offset)
     {
@@ -208,7 +219,9 @@ public sealed class WindowsRepairFileSystem : IRepairFileSystem
                     return (string?)Utf8.GetString(bytes, index, count - index);
                 }
             },
-            $"odczytać plik {path}");
+            (denied, error) => denied
+                ? L.F("Brak uprawnień, by odczytać plik {0}: {1}", path, error)
+                : L.F("Nie można odczytać plik {0}: {1}", path, error));
     }
 
     private static void DeleteTree(string path)
@@ -225,7 +238,7 @@ public sealed class WindowsRepairFileSystem : IRepairFileSystem
 
         if ((attributes & FileAttributes.Directory) == 0)
         {
-            throw new IOException($"To nie jest folder: {path}");
+            throw new IOException(L.F("To nie jest folder: {0}", path));
         }
 
         if ((attributes & FileAttributes.ReparsePoint) == 0)
@@ -258,7 +271,19 @@ public sealed class WindowsRepairFileSystem : IRepairFileSystem
         }
     }
 
-    private static T Guard<T>(Func<T> action, string what)
+    private static string CheckFolderFailed(string path, bool denied, string error) => denied
+        ? L.F("Brak uprawnień, by sprawdzić folder {0}: {1}", path, error)
+        : L.F("Nie można sprawdzić folder {0}: {1}", path, error);
+
+    private static string CleanFolderFailed(string path, bool denied, string error) => denied
+        ? L.F("Brak uprawnień, by wyczyścić folder {0}: {1}", path, error)
+        : L.F("Nie można wyczyścić folder {0}: {1}", path, error);
+
+    /// <summary>
+    /// <paramref name="message"/> buduje całe zdanie błędu: (brak uprawnień?, komunikat wyjątku) → tekst; jedno zdanie na operację
+    /// i rodzaj błędu, żeby tłumaczenie nie sklejało kawałków.
+    /// </summary>
+    private static T Guard<T>(Func<T> action, Func<bool, string, string> message)
     {
         try
         {
@@ -266,15 +291,15 @@ public sealed class WindowsRepairFileSystem : IRepairFileSystem
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or SecurityException)
         {
-            throw new OperationException(OperationErrorKind.AccessDenied, $"Brak uprawnień, by {what}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.AccessDenied, message(true, ex.Message), ex);
         }
         catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
         {
-            throw new OperationException(OperationErrorKind.NotFound, $"Nie można {what}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.NotFound, message(false, ex.Message), ex);
         }
         catch (Exception ex) when (ex is IOException or ArgumentException or NotSupportedException)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Nie można {what}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.Unexpected, message(false, ex.Message), ex);
         }
     }
 }

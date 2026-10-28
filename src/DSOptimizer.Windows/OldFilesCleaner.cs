@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Windows.Native;
 using Microsoft.Win32.SafeHandles;
 
@@ -35,7 +36,7 @@ internal sealed class OldFilesCleaner
     private const int ErrorAccessDenied = 5;
     private const uint FileAttributeNormal = 0x80;
 
-    internal const string RootIsLinkReason = "folder jest linkiem (junction albo dowiązanie symboliczne) – program nie wchodzi do jego celu";
+    internal static string RootIsLinkReason => L.T("folder jest linkiem (junction albo dowiązanie symboliczne) – program nie wchodzi do jego celu");
 
     private readonly DateTime _olderThanUtc;
     private readonly Action<string>? _afterDirectoryEnumerated;
@@ -78,18 +79,18 @@ internal sealed class OldFilesCleaner
                 }
 
                 throw error == ErrorAccessDenied
-                    ? new UnauthorizedAccessException($"Brak dostępu do {root}.")
-                    : new IOException($"Nie można otworzyć {root}: {new Win32Exception(error).Message}");
+                    ? new UnauthorizedAccessException(L.F("Brak dostępu do {0}.", root))
+                    : new IOException(L.F("Nie można otworzyć {0}: {1}", root, new Win32Exception(error).Message));
             }
 
             if (!TryTagInfo(handle, out var info))
             {
-                throw new IOException($"Nie można odczytać atrybutów {root}.");
+                throw new IOException(L.F("Nie można odczytać atrybutów {0}.", root));
             }
 
             if (!Has(info, FileAttributes.Directory))
             {
-                throw new IOException($"To nie jest folder: {root}");
+                throw new IOException(L.F("To nie jest folder: {0}", root));
             }
 
             // Sam korzeń będący linkiem: nie wchodzimy (cel może być np. folderem Dokumenty konta).
@@ -101,7 +102,7 @@ internal sealed class OldFilesCleaner
             var final = FinalPath(handle);
             if (final is null || final.Length < 2)
             {
-                throw new IOException($"Nie można ustalić ostatecznej ścieżki {root}.");
+                throw new IOException(L.F("Nie można ustalić ostatecznej ścieżki {0}.", root));
             }
 
             // Link w członie pośrednim (np. junction w <profil>\AppData) przekierowuje cały korzeń do innego folderu.
@@ -109,7 +110,7 @@ internal sealed class OldFilesCleaner
             if (!string.Equals(finalPlain, RequestedPath(root), StringComparison.OrdinalIgnoreCase))
             {
                 return OldFilesCleanup.Skipped(
-                    $"ścieżka prowadzi przez link (junction albo dowiązanie symboliczne) do innego folderu ({finalPlain}) – program go nie czyści");
+                    L.F("ścieżka prowadzi przez link (junction albo dowiązanie symboliczne) do innego folderu ({0}) – program go nie czyści", finalPlain));
             }
 
             _rootPrefix = final.TrimEnd('\\') + "\\";

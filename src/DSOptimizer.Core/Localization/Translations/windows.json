@@ -1,0 +1,573 @@
+{
+  "language": "en",
+  "entries": [
+    {
+      "pl": "Katalog roboczy {0} miał niezaufanego właściciela lub uprawnienia i został odłożony: {1}. Utworzono nowy.",
+      "en": "The working folder {0} had an untrusted owner or permissions and was set aside: {1}. A new one was created."
+    },
+    {
+      "pl": "Katalog {0} miał niezaufanego właściciela lub uprawnienia i został odłożony. Utworzono nowy.",
+      "en": "The folder {0} had an untrusted owner or permissions and was set aside. A new one was created."
+    },
+    {
+      "pl": "Skrypt odczytu AppX zakończył się kodem {0}.",
+      "en": "The AppX read script exited with code {0}."
+    },
+    {
+      "pl": "Skrypt odczytu AppX nie zwrócił wyniku.",
+      "en": "The AppX read script returned no result."
+    },
+    {
+      "pl": "Nie ma pliku deinstalatora.",
+      "en": "The uninstaller file doesn't exist."
+    },
+    {
+      "pl": "Nie ma pliku do sprawdzenia podpisu.",
+      "en": "The file to check the signature of doesn't exist."
+    },
+    {
+      "pl": "brak danych podpisującego",
+      "en": "no signer data"
+    },
+    {
+      "pl": "brak łańcucha certyfikatów",
+      "en": "no certificate chain"
+    },
+    {
+      "pl": "brak certyfikatu podpisującego",
+      "en": "no signing certificate"
+    },
+    {
+      "pl": "Nieoczekiwany błąd: {0}: {1}",
+      "en": "Unexpected error: {0}: {1}"
+    },
+    {
+      "pl": "Nie można załadować katalogu {0}.",
+      "en": "Can't load the catalog {0}."
+    },
+    {
+      "pl": "Nie można przygotować środowiska ({0}): {1}: {2}",
+      "en": "Can't prepare the environment ({0}): {1}: {2}"
+    },
+    {
+      "pl": "Nieoczekiwany błąd wykonania ({0} {1}).",
+      "en": "Unexpected error while running ({0} {1})."
+    },
+    {
+      "pl": "Brak SID bieżącego procesu.",
+      "en": "The current process has no SID."
+    },
+    {
+      "pl": "Nie można odczytać listy aplikacji {0}: {1}",
+      "en": "Can't read the app list {0}: {1}"
+    },
+    {
+      "pl": "Błędna lista aplikacji wbudowana lista {0}: {1}",
+      "en": "Invalid built-in app list {0}: {1}"
+    },
+    {
+      "pl": "Błędna lista aplikacji {0}: {1}",
+      "en": "Invalid app list {0}: {1}"
+    },
+    {
+      "pl": "Usunięto osierocony pobrany plik {0} (starszy niż 24 h).",
+      "en": "Removed the orphaned downloaded file {0} (older than 24 h)."
+    },
+    {
+      "pl": "Nie udało się sprzątnąć starych plików w {0}: {1}",
+      "en": "Couldn't clean up old files in {0}: {1}"
+    },
+    {
+      "pl": "Nie udało się usunąć pobranego pliku {0}: {1}",
+      "en": "Couldn't delete the downloaded file {0}: {1}"
+    },
+    {
+      "pl": "Obiekt {0} nie ma ścieżki – zapytanie bez klucza klasy.",
+      "en": "Object {0} has no path – query without a class key."
+    },
+    {
+      "pl": "Brak klucza HKLM\\{0}.",
+      "en": "Missing key HKLM\\{0}."
+    },
+    {
+      "pl": "Nie udało się ustalić właściciela explorer.exe: {0}",
+      "en": "Couldn't determine the owner of explorer.exe: {0}"
+    },
+    {
+      "pl": "Nie znaleziono explorer.exe w sesji konsoli – zmiany HKCU trafią do konta bieżącego procesu.",
+      "en": "explorer.exe wasn't found in the console session – HKCU changes will go to the account of the current process."
+    },
+    {
+      "pl": "Journal miał niezaufanego właściciela lub uprawnienia i został odłożony: {0}. Utworzono nowy.",
+      "en": "The journal had an untrusted owner or permissions and was set aside: {0}. A new one was created."
+    },
+    {
+      "pl": "Journal był uszkodzony ({0}). Przeniesiono go do {1} i utworzono nowy.",
+      "en": "The journal was damaged ({0}). It was moved to {1} and a new one was created."
+    },
+    {
+      "pl": "Nie można odczytać journala {0}: {1}",
+      "en": "Can't read the journal {0}: {1}"
+    },
+    {
+      "pl": "Brak dostępu do journala {0}: {1}",
+      "en": "Access denied to the journal {0}: {1}"
+    },
+    {
+      "pl": "Brak uprawnień do journala {0}: {1}",
+      "en": "No permission for the journal {0}: {1}"
+    },
+    {
+      "pl": "Błąd uprawnień journala {0}: {1}",
+      "en": "Permission error on the journal {0}: {1}"
+    },
+    {
+      "pl": "Niedozwolona ścieżka journala {0}: {1}",
+      "en": "Invalid journal path {0}: {1}"
+    },
+    {
+      "pl": "Nieobsługiwana operacja na journalu {0}: {1}",
+      "en": "Unsupported operation on the journal {0}: {1}"
+    },
+    {
+      "pl": "Nie można zinterpretować journala {0}: {1}",
+      "en": "Can't parse the journal {0}: {1}"
+    },
+    {
+      "pl": "Nie można zapisać journala {0}: {1}",
+      "en": "Can't save the journal {0}: {1}"
+    },
+    {
+      "pl": "Brak dostępu do zapisu journala {0}: {1}",
+      "en": "Access denied saving the journal {0}: {1}"
+    },
+    {
+      "pl": "Brak uprawnień do zapisu journala {0}: {1}",
+      "en": "No permission to save the journal {0}: {1}"
+    },
+    {
+      "pl": "Błąd uprawnień zapisu journala {0}: {1}",
+      "en": "Permission error saving the journal {0}: {1}"
+    },
+    {
+      "pl": "Nieobsługiwana operacja zapisu journala {0}: {1}",
+      "en": "Unsupported operation saving the journal {0}: {1}"
+    },
+    {
+      "pl": "Nie można zserializować journala {0}: {1}",
+      "en": "Can't serialize the journal {0}: {1}"
+    },
+    {
+      "pl": "Katalog journala miał niezaufanego właściciela lub uprawnienia i został odłożony – poprzedni journal nie jest używany: {0}. Utworzono nowy.",
+      "en": "The journal folder had an untrusted owner or permissions and was set aside – the previous journal isn't used: {0}. A new one was created."
+    },
+    {
+      "pl": "Plik ustawień miał niezaufanego właściciela lub uprawnienia i został odłożony: {0}. Używam ustawień domyślnych.",
+      "en": "The settings file had an untrusted owner or permissions and was set aside: {0}. Using default settings."
+    },
+    {
+      "pl": "Plik ustawień {0} jest za duży ({1} B, limit {2} B). Używam ustawień domyślnych.",
+      "en": "The settings file {0} is too large ({1} B, limit {2} B). Using default settings."
+    },
+    {
+      "pl": "Plik ustawień {0} jest uszkodzony ({1}). Używam ustawień domyślnych; plik zostanie nadpisany przy następnej zmianie.",
+      "en": "The settings file {0} is damaged ({1}). Using default settings; the file will be overwritten on the next change."
+    },
+    {
+      "pl": "Nie można odczytać pliku ustawień {0}: {1}. Używam ustawień domyślnych.",
+      "en": "Can't read the settings file {0}: {1}. Using default settings."
+    },
+    {
+      "pl": "Nie można zapisać ustawień {0}: {1}",
+      "en": "Can't save the settings {0}: {1}"
+    },
+    {
+      "pl": "Brak dostępu do zapisu ustawień {0}: {1}",
+      "en": "Access denied saving the settings {0}: {1}"
+    },
+    {
+      "pl": "Brak uprawnień do zapisu ustawień {0}: {1}",
+      "en": "No permission to save the settings {0}: {1}"
+    },
+    {
+      "pl": "Błąd uprawnień zapisu ustawień {0}: {1}",
+      "en": "Permission error saving the settings {0}: {1}"
+    },
+    {
+      "pl": "Niedozwolona ścieżka ustawień {0}: {1}",
+      "en": "Invalid settings path {0}: {1}"
+    },
+    {
+      "pl": "Nieobsługiwana operacja zapisu ustawień {0}: {1}",
+      "en": "Unsupported operation saving the settings {0}: {1}"
+    },
+    {
+      "pl": "Nie można zserializować ustawień {0}: {1}",
+      "en": "Can't serialize the settings {0}: {1}"
+    },
+    {
+      "pl": "folder jest linkiem (junction albo dowiązanie symboliczne) – program nie wchodzi do jego celu",
+      "en": "the folder is a link (junction or symbolic link) – the program doesn't go into its target"
+    },
+    {
+      "pl": "Brak dostępu do {0}.",
+      "en": "Access denied to {0}."
+    },
+    {
+      "pl": "Nie można otworzyć {0}: {1}",
+      "en": "Can't open {0}: {1}"
+    },
+    {
+      "pl": "Nie można odczytać atrybutów {0}.",
+      "en": "Can't read the attributes of {0}."
+    },
+    {
+      "pl": "To nie jest folder: {0}",
+      "en": "This isn't a folder: {0}"
+    },
+    {
+      "pl": "Nie można ustalić ostatecznej ścieżki {0}.",
+      "en": "Can't determine the final path of {0}."
+    },
+    {
+      "pl": "ścieżka prowadzi przez link (junction albo dowiązanie symboliczne) do innego folderu ({0}) – program go nie czyści",
+      "en": "the path leads through a link (junction or symbolic link) to another folder ({0}) – the program doesn't clean it"
+    },
+    {
+      "pl": "Anulowano przed uruchomieniem skryptu.",
+      "en": "Canceled before the script started."
+    },
+    {
+      "pl": "Nie można zapisać skryptu: {0}",
+      "en": "Can't save the script: {0}"
+    },
+    {
+      "pl": "Zawartość pliku skryptu zmieniła się przed uruchomieniem.",
+      "en": "The script file content changed before it started."
+    },
+    {
+      "pl": "Nie można uruchomić powershell.exe: {0}",
+      "en": "Can't start powershell.exe: {0}"
+    },
+    {
+      "pl": "Nie można objąć procesu PowerShell Job Objectem: {0}",
+      "en": "Can't assign the PowerShell process to a Job Object: {0}"
+    },
+    {
+      "pl": "Skrypt anulowany.",
+      "en": "Script canceled."
+    },
+    {
+      "pl": "Skrypt przekroczył limit {0:0} s i został zatrzymany.",
+      "en": "The script exceeded the {0:0} s limit and was stopped."
+    },
+    {
+      "pl": "Nie udało się usunąć pliku skryptu {0}: {1}",
+      "en": "Couldn't delete the script file {0}: {1}"
+    },
+    {
+      "pl": "Uruchomienie",
+      "en": "Startup"
+    },
+    {
+      "pl": "Ponowne uruchomienie programu: {0}",
+      "en": "Restarting the program: {0}"
+    },
+    {
+      "pl": "Ponowne uruchomienie nie powiodło się: {0}",
+      "en": "Restart failed: {0}"
+    },
+    {
+      "pl": "Nie można utworzyć potoku: {0}",
+      "en": "Can't create the pipe: {0}"
+    },
+    {
+      "pl": "Nie można zabezpieczyć potoku: {0}",
+      "en": "Can't secure the pipe: {0}"
+    },
+    {
+      "pl": "Nie można otworzyć NUL: {0}",
+      "en": "Can't open NUL: {0}"
+    },
+    {
+      "pl": "Nie można przygotować atrybutów procesu {0}: {1}",
+      "en": "Can't prepare the process attributes for {0}: {1}"
+    },
+    {
+      "pl": "Nie można ograniczyć dziedziczonych uchwytów {0}: {1}",
+      "en": "Can't limit the inherited handles for {0}: {1}"
+    },
+    {
+      "pl": "Nie można uruchomić {0}: {1}",
+      "en": "Can't start {0}: {1}"
+    },
+    {
+      "pl": "Katalog {0} jest punktem ponownej analizy (junction/link) - odmowa użycia.",
+      "en": "The folder {0} is a reparse point (junction/link) - refusing to use it."
+    },
+    {
+      "pl": "Katalog {0} nie ma zaufanego właściciela/uprawnień po utworzeniu - odmowa użycia.",
+      "en": "The folder {0} has no trusted owner/permissions after creation - refusing to use it."
+    },
+    {
+      "pl": "Katalog {0} ma niezaufanego właściciela/uprawnienia i nie udało się go odłożyć: {1}",
+      "en": "The folder {0} has an untrusted owner/permissions and couldn't be set aside: {1}"
+    },
+    {
+      "pl": "Ten plik leży w katalogu programu – skopiuj ścieżkę zamiast otwierać.",
+      "en": "This file is in the program folder – copy the path instead of opening it."
+    },
+    {
+      "pl": "Nieprawidłowa ścieżka pliku: {0}",
+      "en": "Invalid file path: {0}"
+    },
+    {
+      "pl": "Plik nie istnieje: {0}",
+      "en": "The file doesn't exist: {0}"
+    },
+    {
+      "pl": "Nie można pokazać pliku w Eksploratorze: {0}",
+      "en": "Can't show the file in File Explorer: {0}"
+    },
+    {
+      "pl": "Nie można sprawdzić Eksploratora tego konta w bieżącej sesji – nie uruchamiam Eksploratora: {0}",
+      "en": "Can't check File Explorer for this account in the current session – not starting File Explorer: {0}"
+    },
+    {
+      "pl": "Ten adres nie jest dozwolony.",
+      "en": "This address isn't allowed."
+    },
+    {
+      "pl": "Nie można otworzyć strony: {0}",
+      "en": "Can't open the page: {0}"
+    },
+    {
+      "pl": "shutdown.exe /r /t 0 zlecony przez użytkownika.",
+      "en": "shutdown.exe /r /t 0 requested by the user."
+    },
+    {
+      "pl": "Nie udało się uruchomić ponownie komputera: {0}",
+      "en": "Couldn't restart the computer: {0}"
+    },
+    {
+      "pl": "Nie udało się uruchomić ponownie komputera: shutdown.exe nie zakończył się w ciągu 10 s.",
+      "en": "Couldn't restart the computer: shutdown.exe didn't finish within 10 s."
+    },
+    {
+      "pl": "Nie udało się uruchomić ponownie komputera: shutdown.exe zakończył się kodem {0}.",
+      "en": "Couldn't restart the computer: shutdown.exe exited with code {0}."
+    },
+    {
+      "pl": "Nie udało się uruchomić shutdown.exe.",
+      "en": "Couldn't start shutdown.exe."
+    },
+    {
+      "pl": "Anulowano przed uruchomieniem narzędzia.",
+      "en": "Canceled before the tool started."
+    },
+    {
+      "pl": "Nie można utworzyć Job Objectu: {0}",
+      "en": "Can't create a Job Object: {0}"
+    },
+    {
+      "pl": "Nie można objąć {0} Job Objectem: {1}",
+      "en": "Can't assign {0} to a Job Object: {1}"
+    },
+    {
+      "pl": "Nie można wznowić {0}: {1}",
+      "en": "Can't resume {0}: {1}"
+    },
+    {
+      "pl": "Nie można odczytać kodu wyjścia {0}.",
+      "en": "Can't read the exit code of {0}."
+    },
+    {
+      "pl": "Błąd oczekiwania na {0}: {1}",
+      "en": "Error while waiting for {0}: {1}"
+    },
+    {
+      "pl": "Narzędzie {0} anulowane.",
+      "en": "Tool {0} canceled."
+    },
+    {
+      "pl": "Narzędzie {0} przekroczyło limit {1:0.#} s i zostało zatrzymane.",
+      "en": "Tool {0} exceeded the {1:0.#} s limit and was stopped."
+    },
+    {
+      "pl": "Nie można odczytać kodu wyjścia {0}: {1}",
+      "en": "Can't read the exit code of {0}: {1}"
+    },
+    {
+      "pl": "Przekierowanie bez poprawnego adresu docelowego.",
+      "en": "Redirect without a valid target address."
+    },
+    {
+      "pl": "Za dużo przekierowań (więcej niż {0}).",
+      "en": "Too many redirects (more than {0})."
+    },
+    {
+      "pl": "Przekierowanie na niedozwolony adres: {0}",
+      "en": "Redirect to an address that isn't allowed: {0}"
+    },
+    {
+      "pl": "Przekroczono limit czasu.",
+      "en": "Timed out."
+    },
+    {
+      "pl": "Połączenie zerwane: odebrano {0} z {1} B.",
+      "en": "Connection dropped: received {0} of {1} B."
+    },
+    {
+      "pl": "Odpowiedź większa niż {0} B.",
+      "en": "Response larger than {0} B."
+    },
+    {
+      "pl": "Nie udało się odczytać czasu ostatniego startu systemu: {0}",
+      "en": "Couldn't read the last system startup time: {0}"
+    },
+    {
+      "pl": "Nie można utworzyć klucza {0}.",
+      "en": "Can't create the key {0}."
+    },
+    {
+      "pl": "Brak uprawnień do zapisu {0}\\{1}: {2}",
+      "en": "No permission to write {0}\\{1}: {2}"
+    },
+    {
+      "pl": "Błąd zapisu {0}\\{1}: {2}",
+      "en": "Error writing {0}\\{1}: {2}"
+    },
+    {
+      "pl": "Brak uprawnień do odczytu podkluczy {0}: {1}",
+      "en": "No permission to read the subkeys of {0}: {1}"
+    },
+    {
+      "pl": "Błąd odczytu podkluczy {0}: {1}",
+      "en": "Error reading the subkeys of {0}: {1}"
+    },
+    {
+      "pl": "Brak uprawnień do usunięcia klucza {0}: {1}",
+      "en": "No permission to delete the key {0}: {1}"
+    },
+    {
+      "pl": "Błąd usuwania klucza {0}: {1}",
+      "en": "Error deleting the key {0}: {1}"
+    },
+    {
+      "pl": "Brak uprawnień do usunięcia drzewa kluczy {0}: {1}",
+      "en": "No permission to delete the key tree {0}: {1}"
+    },
+    {
+      "pl": "Błąd usuwania drzewa kluczy {0}: {1}",
+      "en": "Error deleting the key tree {0}: {1}"
+    },
+    {
+      "pl": "Nieobsługiwany typ wartości {0} w {1}\\{2}.",
+      "en": "Unsupported value type {0} in {1}\\{2}."
+    },
+    {
+      "pl": "Folder źródłowy nie istnieje: {0}",
+      "en": "The source folder doesn't exist: {0}"
+    },
+    {
+      "pl": "Cel już istnieje: {0}",
+      "en": "The target already exists: {0}"
+    },
+    {
+      "pl": "Brak uprawnień, by przenieść folder {0} do {1}: {2}",
+      "en": "No permission to move the folder {0} to {1}: {2}"
+    },
+    {
+      "pl": "Nie można przenieść folder {0} do {1}: {2}",
+      "en": "Can't move the folder {0} to {1}: {2}"
+    },
+    {
+      "pl": "Brak uprawnień, by usunąć folder {0}: {1}",
+      "en": "No permission to delete the folder {0}: {1}"
+    },
+    {
+      "pl": "Nie można usunąć folder {0}: {1}",
+      "en": "Can't delete the folder {0}: {1}"
+    },
+    {
+      "pl": "Brak uprawnień, by wylistować foldery obok {0}: {1}",
+      "en": "No permission to list the folders next to {0}: {1}"
+    },
+    {
+      "pl": "Nie można wylistować foldery obok {0}: {1}",
+      "en": "Can't list the folders next to {0}: {1}"
+    },
+    {
+      "pl": "Brak uprawnień, by zapisać plik {0}: {1}",
+      "en": "No permission to save the file {0}: {1}"
+    },
+    {
+      "pl": "Nie można zapisać plik {0}: {1}",
+      "en": "Can't save the file {0}: {1}"
+    },
+    {
+      "pl": "Brak uprawnień, by odczytać rozmiar pliku {0}: {1}",
+      "en": "No permission to read the size of the file {0}: {1}"
+    },
+    {
+      "pl": "Nie można odczytać rozmiar pliku {0}: {1}",
+      "en": "Can't read the size of the file {0}: {1}"
+    },
+    {
+      "pl": "Brak uprawnień, by odczytać plik {0}: {1}",
+      "en": "No permission to read the file {0}: {1}"
+    },
+    {
+      "pl": "Nie można odczytać plik {0}: {1}",
+      "en": "Can't read the file {0}: {1}"
+    },
+    {
+      "pl": "Brak uprawnień, by sprawdzić folder {0}: {1}",
+      "en": "No permission to check the folder {0}: {1}"
+    },
+    {
+      "pl": "Nie można sprawdzić folder {0}: {1}",
+      "en": "Can't check the folder {0}: {1}"
+    },
+    {
+      "pl": "Brak uprawnień, by wyczyścić folder {0}: {1}",
+      "en": "No permission to clean the folder {0}: {1}"
+    },
+    {
+      "pl": "Nie można wyczyścić folder {0}: {1}",
+      "en": "Can't clean the folder {0}: {1}"
+    },
+    {
+      "pl": "Brak dostępu do konfiguracji usługi.",
+      "en": "Access denied to the service configuration."
+    },
+    {
+      "pl": "Brak wartości Start dla usługi {0}.",
+      "en": "No Start value for service {0}."
+    },
+    {
+      "pl": "Nieznany typ startu {0} usługi {1}.",
+      "en": "Unknown startup type {0} of service {1}."
+    },
+    {
+      "pl": "Ustawianie typu startu {0} nie jest obsługiwane.",
+      "en": "Setting startup type {0} isn't supported."
+    },
+    {
+      "pl": "Usługa {0} ma działające usługi zależne – nie zatrzymuję jej, żeby zmiana pozostała odwracalna.",
+      "en": "Service {0} has running dependent services – not stopping it, so that the change stays reversible."
+    },
+    {
+      "pl": "Usługa {0} nie zmieniła stanu w wymaganym czasie.",
+      "en": "Service {0} didn't change state in the required time."
+    },
+    {
+      "pl": "Usługa {0}: {1} (kod {2}).",
+      "en": "Service {0}: {1} (code {2})."
+    },
+    {
+      "pl": "Nie znaleziono pliku {0} (niepełna ścieżka).",
+      "en": "File {0} wasn't found (incomplete path)."
+    }
+  ]
+}

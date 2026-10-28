@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Management;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Windows.Hardware;
 
 namespace DSOptimizer.Windows;
@@ -38,7 +39,7 @@ public sealed class WindowsLastBootTime : ILastBootTime
         }
         catch (Exception ex)
         {
-            _log.Warn("Restart", $"Nie udało się odczytać czasu ostatniego startu systemu: {ex.Message}");
+            _log.Warn("Restart", L.F("Nie udało się odczytać czasu ostatniego startu systemu: {0}", ex.Message));
             return null;
         }
     }

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Storage;
 
 namespace DSOptimizer.Windows;
@@ -17,7 +18,7 @@ namespace DSOptimizer.Windows;
 /// </summary>
 public sealed class ShellFileRevealer : IFileRevealer
 {
-    private const string RefusalInsideProgramDirectory = "Ten plik leży w katalogu programu – skopiuj ścieżkę zamiast otwierać.";
+    private static string RefusalInsideProgramDirectory => L.T("Ten plik leży w katalogu programu – skopiuj ścieżkę zamiast otwierać.");
 
     private readonly Func<ProcessStartInfo, Process?> _start;
     private readonly IExplorerProcessQuery _explorers;
@@ -57,7 +58,7 @@ public sealed class ShellFileRevealer : IFileRevealer
     {
         if (!IsPlainAbsolutePath(path))
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Nieprawidłowa ścieżka pliku: {path}");
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nieprawidłowa ścieżka pliku: {0}", path));
         }
 
         // Leksykalne granice sprawdzenia własnego komputera: nie łapie adresu IP, długiej nazwy DNS, WebDAV ani junction/subst/dysku sieciowego
@@ -71,7 +72,7 @@ public sealed class ShellFileRevealer : IFileRevealer
         var full = Path.GetFullPath(path.Replace('/', '\\'));
         if (!_fileExists(full))
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Plik nie istnieje: {full}");
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Plik nie istnieje: {0}", full));
         }
 
         ShellSessionCheck.RequireOwnExplorer(_explorers, _sessionId, _ownerSid);
@@ -89,7 +90,7 @@ public sealed class ShellFileRevealer : IFileRevealer
         }
         catch (Win32Exception ex)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Nie można pokazać pliku w Eksploratorze: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można pokazać pliku w Eksploratorze: {0}", ex.Message), ex);
         }
     }
 

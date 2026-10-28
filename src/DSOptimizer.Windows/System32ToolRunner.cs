@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Windows.Native;
 using Microsoft.Win32.SafeHandles;
 
@@ -38,14 +38,14 @@ public sealed class System32ToolRunner : IToolRunner
 
         if (cancellationToken.IsCancellationRequested)
         {
-            throw new OperationException(OperationErrorKind.Cancelled, "Anulowano przed uruchomieniem narzędzia.");
+            throw new OperationException(OperationErrorKind.Cancelled, L.T("Anulowano przed uruchomieniem narzędzia."));
         }
 
         var systemDirectory = Environment.SystemDirectory;
         var toolPath = Path.Combine(systemDirectory, request.FileName);
         if (!File.Exists(toolPath))
         {
-            throw new OperationException(OperationErrorKind.NotFound, $"Nie znaleziono pliku {toolPath}.");
+            throw new OperationException(OperationErrorKind.NotFound, L.F("Nie znaleziono pliku {0}.", toolPath));
         }
 
         using var job = CreateJob();
@@ -61,7 +61,7 @@ public sealed class System32ToolRunner : IToolRunner
         }
         catch (Win32Exception ex)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Nie można utworzyć Job Objectu: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można utworzyć Job Objectu: {0}", ex.Message), ex);
         }
     }
 
@@ -95,14 +95,14 @@ public sealed class System32ToolRunner : IToolRunner
             catch (Win32Exception ex)
             {
                 NativeMethods.TerminateProcess(process, 1);
-                throw new OperationException(OperationErrorKind.Unexpected, $"Nie można objąć {request.FileName} Job Objectem: {ex.Message}", ex);
+                throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można objąć {0} Job Objectem: {1}", request.FileName, ex.Message), ex);
             }
 
             if (NativeMethods.ResumeThread(thread) == uint.MaxValue)
             {
                 var error = Marshal.GetLastWin32Error();
                 job.Terminate();
-                throw new OperationException(OperationErrorKind.Unexpected, $"Nie można wznowić {request.FileName}: {new Win32Exception(error).Message}");
+                throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można wznowić {0}: {1}", request.FileName, new Win32Exception(error).Message));
             }
 
             var stream = new FileStream(new SafeFileHandle(readPipe, ownsHandle: true), FileAccess.Read, 4096, isAsync: false);
@@ -125,7 +125,7 @@ public sealed class System32ToolRunner : IToolRunner
             // Kod wyjścia czytamy przed zabiciem drzewa; potomkowie z uchwytem potoku mogliby blokować EOF, więc job zabija resztę.
             if (!NativeMethods.GetExitCodeProcess(process, out var code))
             {
-                throw new OperationException(OperationErrorKind.Unexpected, $"Nie można odczytać kodu wyjścia {request.FileName}.");
+                throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można odczytać kodu wyjścia {0}.", request.FileName));
             }
 
             job.Terminate();
@@ -176,13 +176,13 @@ public sealed class System32ToolRunner : IToolRunner
             {
                 var error = Marshal.GetLastWin32Error();
                 job.Terminate();
-                throw new OperationException(OperationErrorKind.Unexpected, $"Błąd oczekiwania na {request.FileName}: {new Win32Exception(error).Message}");
+                throw new OperationException(OperationErrorKind.Unexpected, L.F("Błąd oczekiwania na {0}: {1}", request.FileName, new Win32Exception(error).Message));
             }
 
             if (cancellationToken.IsCancellationRequested)
             {
                 Kill(process, job);
-                throw new OperationException(OperationErrorKind.Cancelled, $"Narzędzie {request.FileName} anulowane.");
+                throw new OperationException(OperationErrorKind.Cancelled, L.F("Narzędzie {0} anulowane.", request.FileName));
             }
 
             if (stopwatch.Elapsed >= request.Timeout)
@@ -190,7 +190,7 @@ public sealed class System32ToolRunner : IToolRunner
                 Kill(process, job);
                 throw new OperationException(
                     OperationErrorKind.Timeout,
-                    string.Format(CultureInfo.InvariantCulture, "Narzędzie {0} przekroczyło limit {1:0.#} s i zostało zatrzymane.", request.FileName, request.Timeout.TotalSeconds));
+                    L.F("Narzędzie {0} przekroczyło limit {1:0.#} s i zostało zatrzymane.", request.FileName, request.Timeout.TotalSeconds));
             }
         }
     }

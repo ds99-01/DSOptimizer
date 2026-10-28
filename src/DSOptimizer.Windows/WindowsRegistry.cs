@@ -4,6 +4,7 @@ using System.IO;
 using System.Security;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using Microsoft.Win32;
 
@@ -78,20 +79,20 @@ public sealed class WindowsRegistry : IRegistry
             }
 
             using var key = root.CreateSubKey(subKey, writable: true)
-                ?? throw new OperationException(OperationErrorKind.Unexpected, $"Nie można utworzyć klucza {path}.");
+                ?? throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można utworzyć klucza {0}.", path));
             key.SetValue(name, ToRaw(value), ToKind(value.Type));
         }
         catch (SecurityException ex)
         {
-            throw new OperationException(OperationErrorKind.AccessDenied, $"Brak uprawnień do zapisu {path}\\{name}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.AccessDenied, L.F("Brak uprawnień do zapisu {0}\\{1}: {2}", path, name, ex.Message), ex);
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new OperationException(OperationErrorKind.AccessDenied, $"Brak uprawnień do zapisu {path}\\{name}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.AccessDenied, L.F("Brak uprawnień do zapisu {0}\\{1}: {2}", path, name, ex.Message), ex);
         }
         catch (IOException ex)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Błąd zapisu {path}\\{name}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Błąd zapisu {0}\\{1}: {2}", path, name, ex.Message), ex);
         }
     }
 
@@ -125,11 +126,11 @@ public sealed class WindowsRegistry : IRegistry
         }
         catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException)
         {
-            throw new OperationException(OperationErrorKind.AccessDenied, $"Brak uprawnień do odczytu podkluczy {path}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.AccessDenied, L.F("Brak uprawnień do odczytu podkluczy {0}: {1}", path, ex.Message), ex);
         }
         catch (IOException ex)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Błąd odczytu podkluczy {path}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Błąd odczytu podkluczy {0}: {1}", path, ex.Message), ex);
         }
     }
 
@@ -174,11 +175,11 @@ public sealed class WindowsRegistry : IRegistry
         }
         catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException)
         {
-            throw new OperationException(OperationErrorKind.AccessDenied, $"Brak uprawnień do usunięcia klucza {path}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.AccessDenied, L.F("Brak uprawnień do usunięcia klucza {0}: {1}", path, ex.Message), ex);
         }
         catch (IOException ex)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Błąd usuwania klucza {path}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Błąd usuwania klucza {0}: {1}", path, ex.Message), ex);
         }
     }
 
@@ -199,11 +200,11 @@ public sealed class WindowsRegistry : IRegistry
         }
         catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException)
         {
-            throw new OperationException(OperationErrorKind.AccessDenied, $"Brak uprawnień do usunięcia drzewa kluczy {path}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.AccessDenied, L.F("Brak uprawnień do usunięcia drzewa kluczy {0}: {1}", path, ex.Message), ex);
         }
         catch (Exception ex) when (ex is IOException or ArgumentException)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Błąd usuwania drzewa kluczy {path}: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Błąd usuwania drzewa kluczy {0}: {1}", path, ex.Message), ex);
         }
     }
 
@@ -233,7 +234,7 @@ public sealed class WindowsRegistry : IRegistry
         RegistryValueKind.QWord when raw is long qword => RegistryReadResult.Found(RegValue.FromQWord(unchecked((ulong)qword))),
         RegistryValueKind.MultiString => RegistryReadResult.Found(RegValue.FromMultiString((string[])raw)),
         RegistryValueKind.Binary => RegistryReadResult.Found(RegValue.FromBinary((byte[])raw)),
-        _ => RegistryReadResult.Failed($"Nieobsługiwany typ wartości {kind} w {path}\\{name}."),
+        _ => RegistryReadResult.Failed(L.F("Nieobsługiwany typ wartości {0} w {1}\\{2}.", kind, path, name)),
     };
 
     private static object ToRaw(RegValue value) => value.Data switch

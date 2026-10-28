@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Windows;
 
@@ -51,7 +52,7 @@ public sealed class WingetRunner : IWingetRunner
         // Profil bez LocalApplicationData daje ścieżkę względną: nigdy nie szukamy jej w katalogu bieżącym ani w PATH.
         if (!IsFullPath(_executablePath))
         {
-            throw new OperationException(OperationErrorKind.NotFound, $"Nie znaleziono pliku {_executablePath} (niepełna ścieżka).");
+            throw new OperationException(OperationErrorKind.NotFound, L.F("Nie znaleziono pliku {0} (niepełna ścieżka).", _executablePath));
         }
 
         var request = new ToolRequest { FileName = Path.GetFileName(_executablePath), Arguments = arguments };

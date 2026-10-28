@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Security.Principal;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Windows;
@@ -24,7 +25,7 @@ internal static class ShellSessionCheck
         {
             throw new OperationException(
                 OperationErrorKind.Unexpected,
-                $"Nie można sprawdzić Eksploratora tego konta w bieżącej sesji – nie uruchamiam Eksploratora: {ex.Message}",
+                L.F("Nie można sprawdzić Eksploratora tego konta w bieżącej sesji – nie uruchamiam Eksploratora: {0}", ex.Message),
                 ex);
         }
 
@@ -43,6 +44,6 @@ internal static class ShellSessionCheck
     public static string CurrentSid()
     {
         using var identity = WindowsIdentity.GetCurrent();
-        return identity.User?.Value ?? throw new InvalidOperationException("Brak SID bieżącego procesu.");
+        return identity.User?.Value ?? throw new InvalidOperationException(L.T("Brak SID bieżącego procesu."));
     }
 }

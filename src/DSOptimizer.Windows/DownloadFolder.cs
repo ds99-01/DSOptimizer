@@ -4,6 +4,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Windows;
 
@@ -41,7 +42,7 @@ public sealed class DownloadFolder : IDownloadFiles
 
         foreach (var aside in _root.EnsureLeaf(_root.DownloadsDirectory))
         {
-            _log.Warn("Instalacja", $"Katalog {aside} miał niezaufanego właściciela lub uprawnienia i został odłożony. Utworzono nowy.");
+            _log.Warn(L.T("Instalacja"), L.F("Katalog {0} miał niezaufanego właściciela lub uprawnienia i został odłożony. Utworzono nowy.", aside));
         }
 
         DeleteOrphans();
@@ -71,13 +72,13 @@ public sealed class DownloadFolder : IDownloadFiles
 
                 if (TryDelete(info.FullName))
                 {
-                    _log.Info("Instalacja", $"Usunięto osierocony pobrany plik {info.FullName} (starszy niż 24 h).");
+                    _log.Info(L.T("Instalacja"), L.F("Usunięto osierocony pobrany plik {0} (starszy niż 24 h).", info.FullName));
                 }
             }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)
         {
-            _log.Warn("Instalacja", $"Nie udało się sprzątnąć starych plików w {_root.DownloadsDirectory}: {ex.Message}");
+            _log.Warn(L.T("Instalacja"), L.F("Nie udało się sprzątnąć starych plików w {0}: {1}", _root.DownloadsDirectory, ex.Message));
         }
     }
 
@@ -121,7 +122,7 @@ public sealed class DownloadFolder : IDownloadFiles
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            _log.Warn("Instalacja", $"Nie udało się usunąć pobranego pliku {full}: {ex.Message}");
+            _log.Warn(L.T("Instalacja"), L.F("Nie udało się usunąć pobranego pliku {0}: {1}", full, ex.Message));
             return false;
         }
     }

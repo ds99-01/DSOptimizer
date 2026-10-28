@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Scripts;
 using DSOptimizer.Windows.Native;
 
@@ -50,7 +50,7 @@ public sealed class PowerShellScriptRunner : IScriptRunner
 
         if (cancellationToken.IsCancellationRequested)
         {
-            throw new OperationException(OperationErrorKind.Cancelled, "Anulowano przed uruchomieniem skryptu.");
+            throw new OperationException(OperationErrorKind.Cancelled, L.T("Anulowano przed uruchomieniem skryptu."));
         }
 
         var scriptPath = Path.Combine(_runDirectory, Guid.NewGuid().ToString("N") + ".ps1");
@@ -62,7 +62,7 @@ public sealed class PowerShellScriptRunner : IScriptRunner
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Nie można zapisać skryptu: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można zapisać skryptu: {0}", ex.Message), ex);
         }
 
         try
@@ -115,7 +115,7 @@ public sealed class PowerShellScriptRunner : IScriptRunner
 
             if (read != expected.Length || !PrefixEquals(actual, expected))
             {
-                throw new IOException("Zawartość pliku skryptu zmieniła się przed uruchomieniem.");
+                throw new IOException(L.T("Zawartość pliku skryptu zmieniła się przed uruchomieniem."));
             }
 
             return holder;
@@ -193,7 +193,7 @@ public sealed class PowerShellScriptRunner : IScriptRunner
         }
         catch (Win32Exception ex)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, $"Nie można uruchomić powershell.exe: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można uruchomić powershell.exe: {0}", ex.Message), ex);
         }
 
         try
@@ -203,7 +203,7 @@ public sealed class PowerShellScriptRunner : IScriptRunner
         catch (Win32Exception ex)
         {
             process.Kill();
-            throw new OperationException(OperationErrorKind.Unexpected, $"Nie można objąć procesu PowerShell Job Objectem: {ex.Message}", ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można objąć procesu PowerShell Job Objectem: {0}", ex.Message), ex);
         }
 
         process.BeginOutputReadLine();
@@ -215,7 +215,7 @@ public sealed class PowerShellScriptRunner : IScriptRunner
             {
                 job.Terminate();
                 process.WaitForExit();
-                throw new OperationException(OperationErrorKind.Cancelled, "Skrypt anulowany.");
+                throw new OperationException(OperationErrorKind.Cancelled, L.T("Skrypt anulowany."));
             }
 
             if (request.Timeout is { } limit && stopwatch.Elapsed > limit)
@@ -224,7 +224,7 @@ public sealed class PowerShellScriptRunner : IScriptRunner
                 process.WaitForExit();
                 throw new OperationException(
                     OperationErrorKind.Timeout,
-                    string.Format(CultureInfo.InvariantCulture, "Skrypt przekroczył limit {0:0} s i został zatrzymany.", limit.TotalSeconds));
+                    L.F("Skrypt przekroczył limit {0:0} s i został zatrzymany.", limit.TotalSeconds));
             }
         }
 
@@ -249,7 +249,7 @@ public sealed class PowerShellScriptRunner : IScriptRunner
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
         {
-            _log.Warn(Component, $"Nie udało się usunąć pliku skryptu {path}: {ex.Message}");
+            _log.Warn(Component, L.F("Nie udało się usunąć pliku skryptu {0}: {1}", path, ex.Message));
         }
     }
 }

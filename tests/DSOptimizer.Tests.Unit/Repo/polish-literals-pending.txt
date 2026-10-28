@@ -2,9 +2,6 @@
 # Wpis z „/” na końcu = folder (wszystko pod nim), bez „/” = dokładnie ten plik. „#” = komentarz.
 # Każdy obszar po przetłumaczeniu usuwa swoje linie; na końcu plik zostaje bez wpisów.
 
-# Task 10: Windows
-src/DSOptimizer.Windows/
-
 # Task 11: App – okno główne, wspólne elementy, start programu
 src/DSOptimizer.App/Gui/
 src/DSOptimizer.App/MainWindow.xaml

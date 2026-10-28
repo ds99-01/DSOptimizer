@@ -5,6 +5,7 @@ using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Windows.Apps;
 
@@ -59,9 +60,9 @@ public sealed class AppxReader
         if (result.ExitCode != 0)
         {
             var reason = string.Join(" ", result.Errors.Where(line => !string.IsNullOrWhiteSpace(line)).Select(line => line.Trim()));
-            throw new InvalidOperationException(reason.Length > 0 ? reason : "Skrypt odczytu AppX zakończył się kodem " + result.ExitCode + ".");
+            throw new InvalidOperationException(reason.Length > 0 ? reason : L.F("Skrypt odczytu AppX zakończył się kodem {0}.", result.ExitCode));
         }
 
-        return result.LastLine ?? throw new InvalidOperationException("Skrypt odczytu AppX nie zwrócił wyniku.");
+        return result.LastLine ?? throw new InvalidOperationException(L.T("Skrypt odczytu AppX nie zwrócił wyniku."));
     }
 }

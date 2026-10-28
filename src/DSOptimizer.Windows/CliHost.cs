@@ -103,7 +103,7 @@ public static class CliHost
         catch (Exception ex)
         {
             var report = CliRunner.Failure(
-                CliExitCode.InternalError, options, new[] { $"Nieoczekiwany błąd: {ex.GetType().Name}: {ex.Message}" },
+                CliExitCode.InternalError, options, new[] { L.F("Nieoczekiwany błąd: {0}: {1}", ex.GetType().Name, ex.Message) },
                 Array.Empty<string>(), startedAt, DateTimeOffset.UtcNow);
             return outPath is null ? (int)CliExitCode.InternalError : FinishSafely(report, outPath, serialize);
         }
@@ -117,7 +117,7 @@ public static class CliHost
         var catalog = CliCatalog.Load(options.CatalogPath, readAllText, sources);
         if (catalog.Errors.Count > 0 || catalog.Catalog is null)
         {
-            var errors = catalog.Errors.Count > 0 ? catalog.Errors : new[] { $"Nie można załadować katalogu {catalog.Source}." };
+            var errors = catalog.Errors.Count > 0 ? catalog.Errors : new[] { L.F("Nie można załadować katalogu {0}.", catalog.Source) };
             return Finish(
                 CliRunner.Failure(CliExitCode.CatalogError, options, errors, Array.Empty<string>(), startedAt, DateTimeOffset.UtcNow),
                 options.OutPath, serialize);
@@ -147,7 +147,7 @@ public static class CliHost
         {
             return Finish(
                 CliRunner.Failure(
-                    CliExitCode.InternalError, options, new[] { $"Nie można przygotować środowiska ({root.FullPath}): {ex.GetType().Name}: {ex.Message}" },
+                    CliExitCode.InternalError, options, new[] { L.F("Nie można przygotować środowiska ({0}): {1}: {2}", root.FullPath, ex.GetType().Name, ex.Message) },
                     warnings, startedAt, DateTimeOffset.UtcNow),
                 options.OutPath, serialize);
         }
@@ -161,11 +161,11 @@ public static class CliHost
         }
         catch (Exception ex)
         {
-            composition.Log.Fail("CLI", $"Nieoczekiwany błąd wykonania ({options.Command} {options.TweakId}).", ex);
+            composition.Log.Fail("CLI", L.F("Nieoczekiwany błąd wykonania ({0} {1}).", options.Command, options.TweakId), ex);
             var all = new List<string>(composition.StartupWarnings);
             all.AddRange(warnings);
             report = CliRunner.Failure(
-                CliExitCode.InternalError, options, new[] { $"Nieoczekiwany błąd: {ex.GetType().Name}: {ex.Message}" }, all, startedAt, DateTimeOffset.UtcNow);
+                CliExitCode.InternalError, options, new[] { L.F("Nieoczekiwany błąd: {0}: {1}", ex.GetType().Name, ex.Message) }, all, startedAt, DateTimeOffset.UtcNow);
         }
 
         return Finish(report, options.OutPath, serialize);
@@ -181,7 +181,7 @@ public static class CliHost
             Reader = new InstalledAppsReader(composition.Services.Scripts),
             Remover = new AppxRemover(composition.Services.Scripts),
             Catalog = AppsBloatCatalog.Load(BuiltInCatalog.AppsBloatSource.Json),
-            ProcessSid = WindowsIdentity.GetCurrent().User?.Value ?? throw new InvalidOperationException("Brak SID bieżącego procesu."),
+            ProcessSid = WindowsIdentity.GetCurrent().User?.Value ?? throw new InvalidOperationException(L.T("Brak SID bieżącego procesu.")),
             AccountName = new WindowsAccountNames().NameOf,
             FileExists = File.Exists,
             System32 = Environment.SystemDirectory,
@@ -200,7 +200,7 @@ public static class CliHost
             Logs = composition.WingetLogs,
             Reader = new InstalledAppsReader(composition.Services.Scripts),
             Catalog = catalog,
-            ProcessSid = WindowsIdentity.GetCurrent().User?.Value ?? throw new InvalidOperationException("Brak SID bieżącego procesu."),
+            ProcessSid = WindowsIdentity.GetCurrent().User?.Value ?? throw new InvalidOperationException(L.T("Brak SID bieżącego procesu.")),
             AccountName = new WindowsAccountNames().NameOf,
             GitHub = composition.GitHub,
         };
@@ -209,22 +209,19 @@ public static class CliHost
     private static AppsInstallCatalog? LoadAppsCatalog(string? path, Func<string, string> readAllText, out string? error)
     {
         string json;
-        string source;
         if (path is null)
         {
             json = BuiltInCatalog.AppsInstallSource.Json;
-            source = "wbudowana lista " + BuiltInCatalog.AppsInstallFileName;
         }
         else
         {
-            source = path;
             try
             {
                 json = readAllText(path);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException or SecurityException)
             {
-                error = $"Nie można odczytać listy aplikacji {path}: {ex.Message}";
+                error = L.F("Nie można odczytać listy aplikacji {0}: {1}", path, ex.Message);
                 return null;
             }
         }
@@ -236,7 +233,9 @@ public static class CliHost
         }
         catch (InstallCatalogException ex)
         {
-            error = $"Błędna lista aplikacji {source}: {ex.Message}";
+            error = path is null
+                ? L.F("Błędna lista aplikacji wbudowana lista {0}: {1}", BuiltInCatalog.AppsInstallFileName, ex.Message)
+                : L.F("Błędna lista aplikacji {0}: {1}", path, ex.Message);
             return null;
         }
     }
@@ -244,7 +243,7 @@ public static class CliHost
     private static string[] ExternalCatalogWarnings(CliCatalogResult catalog)
         => string.Equals(catalog.Source, CliCatalog.BuiltInSource, StringComparison.Ordinal)
             ? Array.Empty<string>()
-            : new[] { $"Użyto zewnętrznego katalogu: {catalog.Source} ({catalog.Catalog!.Hash})." };
+            : new[] { L.F("Użyto zewnętrznego katalogu: {0} ({1}).", catalog.Source, catalog.Catalog!.Hash) };
 
     /// <summary>Zapisuje raport i zwraca kod wyjścia raportu albo 6, gdy zapis się nie udał.</summary>
     private static int Finish(CliReport report, string outPath, Func<CliReport, string> serialize)

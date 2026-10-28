@@ -4,6 +4,7 @@ using System.Management;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Windows.Native;
 
 namespace DSOptimizer.Windows;
@@ -60,12 +61,12 @@ public sealed class InteractiveUserContext : IUserContext
         }
         catch (Exception ex) when (ex is ManagementException or COMException)
         {
-            log.Warn(Component, $"Nie udało się ustalić właściciela explorer.exe: {ex.Message}");
+            log.Warn(Component, L.F("Nie udało się ustalić właściciela explorer.exe: {0}", ex.Message));
         }
 
         var current = WindowsIdentity.GetCurrent().User?.Value
-            ?? throw new InvalidOperationException("Brak SID bieżącego procesu.");
-        log.Warn(Component, "Nie znaleziono explorer.exe w sesji konsoli – zmiany HKCU trafią do konta bieżącego procesu.");
+            ?? throw new InvalidOperationException(L.T("Brak SID bieżącego procesu."));
+        log.Warn(Component, L.T("Nie znaleziono explorer.exe w sesji konsoli – zmiany HKCU trafią do konta bieżącego procesu."));
         return new InteractiveUserContext(current, isCertain: false);
     }
 }

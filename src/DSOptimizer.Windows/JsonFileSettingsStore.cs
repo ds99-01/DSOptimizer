@@ -22,8 +22,6 @@ public sealed class JsonFileSettingsStore : ISettingsStore
 
     internal const int MaxFileBytes = 65536;
 
-    private const string DefaultsSuffix = "Używam ustawień domyślnych.";
-
     private static readonly Encoding Utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
     private readonly SecureRoot _root;
@@ -51,13 +49,13 @@ public sealed class JsonFileSettingsStore : ISettingsStore
             {
                 var untrustedPath = Path.Combine(_root.FullPath, $"{FileName}.untrusted-{Stamp()}");
                 File.Move(FilePath, untrustedPath);
-                return Defaults($"Plik ustawień miał niezaufanego właściciela lub uprawnienia i został odłożony: {untrustedPath}. {DefaultsSuffix}");
+                return Defaults(L.F("Plik ustawień miał niezaufanego właściciela lub uprawnienia i został odłożony: {0}. Używam ustawień domyślnych.", untrustedPath));
             }
 
             var length = new FileInfo(FilePath).Length;
             if (length > MaxFileBytes)
             {
-                return Defaults($"Plik ustawień {FilePath} jest za duży ({length} B, limit {MaxFileBytes} B). {DefaultsSuffix}");
+                return Defaults(L.F("Plik ustawień {0} jest za duży ({1} B, limit {2} B). Używam ustawień domyślnych.", FilePath, length, MaxFileBytes));
             }
 
             // ReadAllText (.NET Framework) wykrywa i zdejmuje BOM, więc plik zapisany w Notatniku z BOM się wczytuje;
@@ -70,13 +68,13 @@ public sealed class JsonFileSettingsStore : ISettingsStore
             catch (SettingsFormatException ex)
             {
                 return Defaults(
-                    $"Plik ustawień {FilePath} jest uszkodzony ({ex.Message}). Używam ustawień domyślnych; plik zostanie nadpisany przy następnej zmianie.");
+                    L.F("Plik ustawień {0} jest uszkodzony ({1}). Używam ustawień domyślnych; plik zostanie nadpisany przy następnej zmianie.", FilePath, ex.Message));
             }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException
             or InvalidOperationException or ArgumentException or NotSupportedException or JsonException)
         {
-            return Defaults($"Nie można odczytać pliku ustawień {FilePath}: {ex.Message}. {DefaultsSuffix}");
+            return Defaults(L.F("Nie można odczytać pliku ustawień {0}: {1}. Używam ustawień domyślnych.", FilePath, ex.Message));
         }
     }
 
@@ -147,31 +145,31 @@ public sealed class JsonFileSettingsStore : ISettingsStore
         }
         catch (IOException ex)
         {
-            throw new SettingsStoreException($"Nie można zapisać ustawień {FilePath}: {ex.Message}", ex);
+            throw new SettingsStoreException(L.F("Nie można zapisać ustawień {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new SettingsStoreException($"Brak dostępu do zapisu ustawień {FilePath}: {ex.Message}", ex);
+            throw new SettingsStoreException(L.F("Brak dostępu do zapisu ustawień {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (SecurityException ex)
         {
-            throw new SettingsStoreException($"Brak uprawnień do zapisu ustawień {FilePath}: {ex.Message}", ex);
+            throw new SettingsStoreException(L.F("Brak uprawnień do zapisu ustawień {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (InvalidOperationException ex)
         {
-            throw new SettingsStoreException($"Błąd uprawnień zapisu ustawień {FilePath}: {ex.Message}", ex);
+            throw new SettingsStoreException(L.F("Błąd uprawnień zapisu ustawień {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (ArgumentException ex)
         {
-            throw new SettingsStoreException($"Niedozwolona ścieżka ustawień {FilePath}: {ex.Message}", ex);
+            throw new SettingsStoreException(L.F("Niedozwolona ścieżka ustawień {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (NotSupportedException ex)
         {
-            throw new SettingsStoreException($"Nieobsługiwana operacja zapisu ustawień {FilePath}: {ex.Message}", ex);
+            throw new SettingsStoreException(L.F("Nieobsługiwana operacja zapisu ustawień {0}: {1}", FilePath, ex.Message), ex);
         }
         catch (JsonException ex)
         {
-            throw new SettingsStoreException($"Nie można zserializować ustawień {FilePath}: {ex.Message}", ex);
+            throw new SettingsStoreException(L.F("Nie można zserializować ustawień {0}: {1}", FilePath, ex.Message), ex);
         }
     }
 
