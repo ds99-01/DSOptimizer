@@ -70,7 +70,7 @@ public class MainViewModelTests
         });
     }
 
-    private static MainViewModel Create(TempDirectory temp)
+    internal static MainViewModel Create(TempDirectory temp)
     {
         var composition = AppComposition.Create(temp.AppRoot, null);
         var services = composition.Services;
@@ -138,7 +138,7 @@ public class MainViewModelTests
             settings);
     }
 
-    private static void RunOnSta(Action body)
+    internal static void RunOnSta(Action body)
     {
         ExceptionDispatchInfo? failure = null;
         var thread = new Thread(() =>

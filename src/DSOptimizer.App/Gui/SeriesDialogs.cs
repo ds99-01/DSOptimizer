@@ -9,6 +9,7 @@ using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.App.Gui;
 
@@ -18,9 +19,9 @@ namespace DSOptimizer.App.Gui;
 /// </summary>
 public sealed class SeriesDialogs : ISeriesDialogs
 {
-    public const string Component = "Seria";
+    public static string Component => L.T("Seria");
 
-    public const string CopiedMessage = "Skopiowano wynik do schowka.";
+    public static string CopiedMessage => L.T("Skopiowano wynik do schowka.");
 
     private readonly ILog _log;
     private readonly Action<GuiLogLevel, string, string?> _panel;
@@ -36,7 +37,14 @@ public sealed class SeriesDialogs : ISeriesDialogs
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
     }
 
-    public static string CopyFailedMessage(string reason) => $"Nie skopiowano wyniku do schowka: {reason}";
+    public static string CopyFailedMessage(string reason) => L.F("Nie skopiowano wyniku do schowka: {0}", reason);
+
+    /// <summary>Linia pliku logu po odpowiedzi na pytanie o kontynuację bez punktu przywracania.</summary>
+    public static string RestorePointAnsweredMessage(string reason, string answer)
+        => L.F("Punkt przywracania nie powstał ({0}). Odpowiedź: {1}.", reason, answer);
+
+    /// <summary>Linia dziennika okna po odpowiedzi na pytanie o kontynuację bez punktu przywracania.</summary>
+    public static string ContinueAnsweredMessage(string answer) => L.F("Kontynuować bez punktu przywracania? Odpowiedź: {0}.", answer);
 
     public Task<bool> ConfirmAsync(SeriesConfirmation confirmation)
     {
@@ -102,14 +110,14 @@ public sealed class SeriesDialogs : ISeriesDialogs
         var running = _running;
         if (running is null || !running.IsRunning)
         {
-            _log.Warn(Component, $"Punkt przywracania nie powstał ({reason}), a okno serii nie trwa – przyjęto „Nie”.");
+            _log.Warn(Component, L.F("Punkt przywracania nie powstał ({0}), a okno serii nie trwa – przyjęto „Nie”.", reason));
             return false;
         }
 
         var proceed = await running.AskContinueWithoutRestorePointAsync().ConfigureAwait(true);
         var answer = proceed ? AppsPageText.ContinueButton : AppsPageText.DeclineButton;
-        _log.Info(Component, $"Punkt przywracania nie powstał ({reason}). Odpowiedź: {answer}.");
-        _panel(GuiLogLevel.Info, $"Kontynuować bez punktu przywracania? Odpowiedź: {answer}.", null);
+        _log.Info(Component, RestorePointAnsweredMessage(reason, answer));
+        _panel(GuiLogLevel.Info, ContinueAnsweredMessage(answer), null);
         return proceed;
     }
 

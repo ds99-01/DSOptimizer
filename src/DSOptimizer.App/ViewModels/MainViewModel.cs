@@ -17,6 +17,7 @@ using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Errors;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using TextFolding = DSOptimizer.Core.Gui.SearchText;
 
@@ -29,9 +30,11 @@ namespace DSOptimizer.App.ViewModels;
 /// </summary>
 public sealed class MainViewModel : ObservableObject
 {
-    public const string CheckingText = "Sprawdzanie stanu…";
-    public const string NotCheckedText = "Stan nie został jeszcze sprawdzony";
-    public const string RestartingText = "Uruchamianie ponownie komputera…";
+    public static string CheckingText => L.T("Sprawdzanie stanu…");
+
+    public static string NotCheckedText => L.T("Stan nie został jeszcze sprawdzony");
+
+    public static string RestartingText => L.T("Uruchamianie ponownie komputera…");
 
     /// <summary>Cel „Przejdź do: Napraw winget” (strona „Instalacja”): kategoria „Naprawy” i pozycja naprawy winget.</summary>
     private const string RepairCategoryId = "repair";
@@ -522,11 +525,25 @@ public sealed class MainViewModel : ObservableObject
                 return _operationText;
             }
 
-            return _lastCheck is { } at
-                ? "Ostatnie sprawdzenie: " + at.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture)
-                : NotCheckedText;
+            return _lastCheck is { } at ? LastCheckText(at.ToLocalTime()) : NotCheckedText;
         }
     }
+
+    /// <summary>„Ostatnie sprawdzenie: HH:mm” – godzina podana (czas lokalny), 24-godzinna w obu językach.</summary>
+    public static string LastCheckText(DateTimeOffset localTime)
+        => L.F("Ostatnie sprawdzenie: {0}", localTime.ToString("HH:mm", CultureInfo.InvariantCulture));
+
+    /// <summary>Linia dziennika po anulowaniu potwierdzenia jednej pozycji: „Anulowano: Zastosuj – tytuł.”.</summary>
+    public static string CanceledText(GuiOperation operation, string title)
+        => L.F("Anulowano: {0} – {1}.", GuiText.OperationName(operation), title);
+
+    /// <summary>Tekst pod tytułem w trakcie serii zaznaczonych pozycji: „Zastosuj: zaznaczone (3)…”.</summary>
+    public static string SelectedOperationText(GuiOperation operation, int count)
+        => L.F("{0}: zaznaczone ({1})…", GuiText.OperationName(operation), count);
+
+    /// <summary>Tekst pod tytułem w trakcie serii aplikacji: „Usuń: zaznaczone aplikacje (2)…”.</summary>
+    public static string SelectedAppsOperationText(GuiOperation operation, int count)
+        => L.F("{0}: zaznaczone aplikacje ({1})…", GuiText.OperationName(operation), count);
 
     /// <summary>Baner „Wymagany restart” pod paskiem marki: widoczny, gdy coś z journala czeka na restart (<see cref="GuiSession.PendingReboot"/>).</summary>
     public bool IsRebootBannerVisible => _pendingRebootTitles.Count > 0;
@@ -628,9 +645,9 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Druga linia paska: restarty i punkt przywracania; pusta przy 0 zaznaczonych.</summary>
     public string SelectionBarDetails => _selectionBarDetails;
 
-    public string ApplySelectedText => $"Zastosuj ({ApplicableCount})";
+    public string ApplySelectedText => L.F("Zastosuj ({0})", ApplicableCount);
 
-    public string UndoSelectedText => $"Cofnij ({UndoableCount})";
+    public string UndoSelectedText => L.F("Cofnij ({0})", UndoableCount);
 
     /// <summary>Odświeżenie strony pod F5 (<see cref="RefreshCurrentPageCommand"/>); poza operacją, ścieżkami istniejących odświeżeń.</summary>
     private Task RefreshCurrentPageAsync()
@@ -742,7 +759,7 @@ public sealed class MainViewModel : ObservableObject
         var confirmed = await ConfirmAsync(
             () => _session.ConfirmationForItem(id, operation, userName),
             confirmation => _seriesDialogs.ConfirmAsync(confirmation),
-            _ => $"Anulowano: {GuiText.OperationName(operation)} – {item.Title}.").ConfigureAwait(true);
+            _ => CanceledText(operation, item.Title)).ConfigureAwait(true);
         if (confirmed is null)
         {
             return;
@@ -828,7 +845,7 @@ public sealed class MainViewModel : ObservableObject
             restartRequested = result.RestartRequested;
             if (result.Report is null)
             {
-                _sink.Add(GuiLogLevel.Info, $"Anulowano: {GuiText.OperationName(GuiOperation.Execute)} – {item.Title}.");
+                _sink.Add(GuiLogLevel.Info, CanceledText(GuiOperation.Execute, item.Title));
                 return;
             }
 
@@ -1049,7 +1066,7 @@ public sealed class MainViewModel : ObservableObject
             return true;
         }
 
-        _sink.Add(GuiLogLevel.Warning, "Trwa operacja – zamknij okno po jej zakończeniu.");
+        _sink.Add(GuiLogLevel.Warning, L.T("Trwa operacja – zamknij okno po jej zakończeniu."));
         return false;
     }
 
@@ -1112,7 +1129,7 @@ public sealed class MainViewModel : ObservableObject
             return;
         }
 
-        await RunOperationAsync($"{GuiText.OperationName(operation)}: zaznaczone ({ids.Count})…", async () =>
+        await RunOperationAsync(SelectedOperationText(operation, ids.Count), async () =>
         {
             GuiOperationReport report;
             using (_sink.BeginOperation(ids))
@@ -1159,7 +1176,7 @@ public sealed class MainViewModel : ObservableObject
                 return;
             }
 
-            var operationText = $"{GuiText.OperationName(operation)}: zaznaczone ({ids.Count})…";
+            var operationText = SelectedOperationText(operation, ids.Count);
             var applied = false;
             var result = await _seriesDialogs.RunSeriesAsync(confirmation, async (steps, stop) =>
             {
@@ -1250,7 +1267,7 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             var confirmation = await Task.Run(() => _apps.ConfirmationFor(rows, restorePointSetting)).ConfigureAwait(true);
-            var operationText = $"{GuiText.OperationName(GuiOperation.RemoveApps)}: zaznaczone aplikacje ({rows.Count})…";
+            var operationText = SelectedAppsOperationText(GuiOperation.RemoveApps, rows.Count);
             var applied = false;
             var result = await _seriesDialogs.RunSeriesAsync(confirmation, async (steps, stop) =>
             {
@@ -1349,7 +1366,7 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             var confirmation = await Task.Run(() => _install.ConfirmationFor(targets)).ConfigureAwait(true);
-            var operationText = $"{GuiText.OperationName(GuiOperation.InstallApps)}: zaznaczone aplikacje ({targets.Count})…";
+            var operationText = SelectedAppsOperationText(GuiOperation.InstallApps, targets.Count);
             var titles = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var item in confirmation.Items)
             {
@@ -1624,7 +1641,7 @@ public sealed class MainViewModel : ObservableObject
     }
 
     private void ReportUnexpected(Exception ex)
-        => _sink.Add(GuiLogLevel.Error, $"Nieoczekiwany błąd: {ex.GetType().Name}: {ex.Message}");
+        => _sink.Add(GuiLogLevel.Error, L.F("Nieoczekiwany błąd: {0}: {1}", ex.GetType().Name, ex.Message));
 
     /// <summary>Jeden postęp do kilku odbiorców (okno i dziennik); każdy sam przenosi zdarzenie na wątek UI.</summary>
     private sealed class FanOutProgress<T> : IProgress<T>

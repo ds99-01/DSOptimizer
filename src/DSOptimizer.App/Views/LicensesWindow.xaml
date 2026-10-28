@@ -2,7 +2,8 @@
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-                 Title="Licencje komponentów" Width="720" Height="640" MinWidth="420" MinHeight="300"
+                 xmlns:l="clr-namespace:DSOptimizer.App.Gui"
+                 Title="{l:T 'Licencje komponentów'}" Width="720" Height="640" MinWidth="420" MinHeight="300"
                  WindowStartupLocation="CenterOwner" ShowInTaskbar="False" TextOptions.TextFormattingMode="Display"
                  ExtendsContentIntoTitleBar="True" WindowBackdropType="None" WindowCornerPreference="Round"
                  FontFamily="{StaticResource BrandFont}"
@@ -47,11 +48,11 @@
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <ui:TitleBar Title="Licencje komponentów" ShowMinimize="False" ShowMaximize="False" FontFamily="{StaticResource BrandFont}" />
+    <ui:TitleBar Title="{l:T 'Licencje komponentów'}" ShowMinimize="False" ShowMaximize="False" FontFamily="{StaticResource BrandFont}" />
     <TextBox x:Name="NoticesBox" Grid.Row="1" Margin="20,4,20,0" Style="{StaticResource NoticesTextBox}"
-             AutomationProperties.Name="Licencje komponentów" />
+             AutomationProperties.Name="{l:T 'Licencje komponentów'}" />
     <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,14,20,16">
-      <Button Style="{StaticResource SecondaryButton}" Content="Zamknij" IsCancel="True" IsDefault="True" Click="OnCloseClick" />
+      <Button Style="{StaticResource SecondaryButton}" Content="{l:T 'Zamknij'}" IsCancel="True" IsDefault="True" Click="OnCloseClick" />
     </StackPanel>
   </Grid>
 </ui:FluentWindow>

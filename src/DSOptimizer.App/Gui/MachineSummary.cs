@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Hardware;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Windows;
 
 namespace DSOptimizer.App.Gui;
@@ -49,7 +50,7 @@ public static class MachineSummary
 
     /// <summary>Tekst z <see cref="Format"/> uzupełniony o „użytkownik X”; bez nazwy zwraca tekst bez zmian.</summary>
     public static string WithUser(string machineText, string? userName)
-        => string.IsNullOrWhiteSpace(userName) ? machineText : $"{machineText}, użytkownik {userName}";
+        => string.IsNullOrWhiteSpace(userName) ? machineText : L.F("{0}, użytkownik {1}", machineText, userName);
 
     /// <summary>
     /// Nazwa konta zalogowanego użytkownika albo null (sesja niepewna, SID nieprzetłumaczalny, błąd LSA/domeny).

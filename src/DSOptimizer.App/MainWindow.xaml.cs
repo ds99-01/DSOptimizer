@@ -12,6 +12,7 @@ using DSOptimizer.App.ViewModels;
 using DSOptimizer.Core;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.App;
 
@@ -158,7 +159,7 @@ public partial class MainWindow
         var workArea = TryReadMonitorWorkArea() ?? FallbackWorkArea();
         if (workArea.Width <= 0 || workArea.Height <= 0 || double.IsNaN(workArea.Width) || double.IsNaN(workArea.Height))
         {
-            _log.Warn("Gui", "Obszar roboczy ma niepoprawny rozmiar – zostają domyślne wymiary okna.");
+            _log.Warn("Gui", L.T("Obszar roboczy ma niepoprawny rozmiar – zostają domyślne wymiary okna."));
             return;
         }
 
@@ -220,14 +221,14 @@ public partial class MainWindow
             var info = new NativeMethods.MonitorInfo { Size = Marshal.SizeOf<NativeMethods.MonitorInfo>() };
             if (monitor == IntPtr.Zero || !NativeMethods.GetMonitorInfo(monitor, ref info))
             {
-                _log.Warn("Gui", $"Nie udało się odczytać obszaru roboczego monitora (błąd Win32 {Marshal.GetLastWin32Error()}) – używam obszaru monitora głównego.");
+                _log.Warn("Gui", L.F("Nie udało się odczytać obszaru roboczego monitora (błąd Win32 {0}) – używam obszaru monitora głównego.", Marshal.GetLastWin32Error()));
                 return null;
             }
 
             var target = PresentationSource.FromVisual(this)?.CompositionTarget;
             if (target is null)
             {
-                _log.Warn("Gui", "Brak źródła prezentacji do przeliczenia pikseli na DIP – używam obszaru monitora głównego.");
+                _log.Warn("Gui", L.T("Brak źródła prezentacji do przeliczenia pikseli na DIP – używam obszaru monitora głównego."));
                 return null;
             }
 
@@ -237,7 +238,7 @@ public partial class MainWindow
         }
         catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or InvalidOperationException or System.ComponentModel.Win32Exception)
         {
-            _log.Warn("Gui", $"Odczyt obszaru roboczego monitora nie powiódł się ({ex.GetType().Name}) – używam obszaru monitora głównego.");
+            _log.Warn("Gui", L.F("Odczyt obszaru roboczego monitora nie powiódł się ({0}) – używam obszaru monitora głównego.", ex.GetType().Name));
             return null;
         }
     }

@@ -8,7 +8,6 @@
                     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                     xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
                     xmlns:model="clr-namespace:DSOptimizer.Core.Model;assembly=DSOptimizer.Core"
-                    xmlns:gui="clr-namespace:DSOptimizer.Core.Gui;assembly=DSOptimizer.Core"
                     xmlns:views="clr-namespace:DSOptimizer.App.Views">
 
   <!-- Czcionka marki (SIL OFL 1.1, THIRD_PARTY_NOTICES.md) -->
@@ -443,8 +442,9 @@
 
   <!-- Znacznik akcji i panelu: trójkąt „uruchom” -->
   <DataTemplate x:Key="RunMarkerTemplate">
-    <!-- Nazwa „RunIcon” rozpoznaje MainWindow.ClassifyClickTarget: klik w ▶ uruchamia akcję. Przezroczyste tło = większy cel kliknięcia. -->
-    <Grid x:Name="RunIcon" Background="Transparent" Cursor="Hand" MinHeight="22" ToolTip="Uruchom">
+    <!-- Nazwa „RunIcon” rozpoznaje MainWindow.ClassifyClickTarget: klik w ▶ uruchamia akcję. Przezroczyste tło = większy cel kliknięcia.
+         Podpowiedź z zasobu ustawianego po wyborze języka (Gui/ThemeTexts). -->
+    <Grid x:Name="RunIcon" Background="Transparent" Cursor="Hand" MinHeight="22" ToolTip="{DynamicResource ThemeRunToolTip}">
       <Path Data="M0,0 L9,5 L0,10 Z" Fill="{DynamicResource TextFillColorSecondaryBrush}" Margin="1,0,0,0"
             VerticalAlignment="Center" HorizontalAlignment="Left" />
     </Grid>
@@ -571,10 +571,10 @@
     Pole wyszukiwania (zwykły TextBox): wysokość 30, promień 3, obrys 1 px; fokus = obrys akcentu.
     Z lewej lupa, przy pustym polu tekst zastępczy i podpowiedź „Ctrl+F”, przy niepustym przycisk czyszczenia.
     Przycisk czyszczenia woła ClearSearchCommand z DataContext pola (MainViewModel albo AppsViewModel); Esc robi to samo (KeyBinding w polu).
+    Tag = tekst zastępczy, podaje go każde pole (okno główne, „Aplikacje”, „Instalacja”); „Ctrl+F” i teksty przycisku czyszczenia
+    z zasobów ustawianych po wyborze języka (Gui/ThemeTexts) – styl powstaje, zanim jest wybrany język.
   -->
   <Style x:Key="SearchTextBox" TargetType="TextBox">
-    <!-- Tag = tekst zastępczy (strona „Aplikacje” podaje własny) -->
-    <Setter Property="Tag" Value="{x:Static gui:GuiText.SearchPlaceholder}" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
@@ -606,9 +606,10 @@
                               HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
               </Grid>
               <TextBlock x:Name="Shortcut" Grid.Column="2" Margin="6,0,2,0" FontSize="12" VerticalAlignment="Center"
-                         Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="Ctrl+F" Visibility="Collapsed" />
+                         Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{DynamicResource ThemeSearchShortcut}" Visibility="Collapsed" />
               <Button x:Name="ClearButton" Grid.Column="2" Margin="6,0,0,0" Focusable="False" Cursor="Arrow"
-                      Command="{Binding ClearSearchCommand}" ToolTip="Wyczyść (Esc)" AutomationProperties.Name="Wyczyść wyszukiwanie">
+                      Command="{Binding ClearSearchCommand}" ToolTip="{DynamicResource ThemeSearchClearToolTip}"
+                      AutomationProperties.Name="{DynamicResource ThemeSearchClearName}">
                 <Button.Template>
                   <ControlTemplate TargetType="Button">
                     <Border x:Name="Face" Width="22" Height="22" CornerRadius="2" Background="Transparent">

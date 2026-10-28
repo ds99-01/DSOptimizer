@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Settings;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
@@ -55,7 +56,7 @@ public sealed class ThemeController
         catch (Exception ex)
         {
             // Motyw startowy z App.xaml (jasny) zostaje – okno działa dalej.
-            _log.Fail(Component, "Nie udało się ustawić motywu.", ex);
+            _log.Fail(Component, L.T("Nie udało się ustawić motywu."), ex);
         }
     }
 
@@ -75,7 +76,7 @@ public sealed class ThemeController
             catch (Exception ex)
             {
                 // Bez śledzenia motyw zostaje taki, jak przy starcie – okno działa dalej.
-                _log.Fail(Component, "Nie udało się włączyć śledzenia motywu systemu.", ex);
+                _log.Fail(Component, L.T("Nie udało się włączyć śledzenia motywu systemu."), ex);
             }
         }
     }
@@ -113,7 +114,7 @@ public sealed class ThemeController
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, "Nie udało się zmienić motywu.", ex);
+            _log.Fail(Component, L.T("Nie udało się zmienić motywu."), ex);
         }
     }
 
@@ -156,7 +157,7 @@ public sealed class ThemeController
         catch (Exception ex)
         {
             // Akcent zostaje poprzedni – okno działa dalej.
-            _log.Fail(Component, "Nie udało się ustawić akcentu motywu.", ex);
+            _log.Fail(Component, L.T("Nie udało się ustawić akcentu motywu."), ex);
         }
     }
 

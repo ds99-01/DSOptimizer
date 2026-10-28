@@ -14,6 +14,9 @@
     <PackageReference Include="WPF-UI" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="DSOptimizer.Tests.Windows" />
+  </ItemGroup>
   <!--
     Wariant jednego exe (Etap 5, tools\release\Build-Release.ps1 -Variant SingleExe): /p:DsoSingleExe=true dokłada Costura.Fody,
     która osadza biblioteki w DSOptimizer.exe jako zwykłe, nieskompresowane zasoby (FodyWeavers.xml) – bez zaciemniania, szyfrowania

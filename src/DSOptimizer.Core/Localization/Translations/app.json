@@ -1,0 +1,357 @@
+{
+  "language": "en",
+  "entries": [
+    {
+      "pl": "DSOptimizer – uwaga",
+      "en": "DSOptimizer – warning"
+    },
+    {
+      "pl": "DSOptimizer – błąd",
+      "en": "DSOptimizer – error"
+    },
+    {
+      "pl": "Wbudowany katalog jest nieprawidłowy:{0}{1}",
+      "en": "The built-in catalog is invalid:{0}{1}"
+    },
+    {
+      "pl": "Nie można przygotować katalogu roboczego DSOptimizer: {0}",
+      "en": "Can't prepare the DSOptimizer working folder: {0}"
+    },
+    {
+      "pl": "Nie można odczytać ustawień: {0} Używam ustawień domyślnych.",
+      "en": "Can't read the settings: {0} Using default settings."
+    },
+    {
+      "pl": "Wbudowana lista aplikacji jest nieprawidłowa:{0}{1}",
+      "en": "The built-in app list is invalid:{0}{1}"
+    },
+    {
+      "pl": "Wbudowana lista instalacji jest nieprawidłowa:{0}{1}",
+      "en": "The built-in install list is invalid:{0}{1}"
+    },
+    {
+      "pl": "Nieobsłużony wyjątek w oknie.",
+      "en": "Unhandled exception in the window."
+    },
+    {
+      "pl": "Nieobsłużony wyjątek – program zostanie zamknięty.",
+      "en": "Unhandled exception – the program will close."
+    },
+    {
+      "pl": "Nieobsłużony wyjątek w tle.",
+      "en": "Unhandled exception in the background."
+    },
+    {
+      "pl": "Wystąpił nieoczekiwany błąd okna:{0}{1}{0}{0}Szczegóły zapisano w pliku logu. Okno może działać niepoprawnie – zamknij program po zakończeniu bieżącej operacji i uruchom go ponownie.",
+      "en": "An unexpected window error occurred:{0}{1}{0}{0}Details were saved in the log file. The window may not work correctly – close the program after the current operation finishes and start it again."
+    },
+    {
+      "pl": "Nieoczekiwany błąd – program zostanie zamknięty:{0}{1}{0}{0}Szczegóły zapisano w pliku logu. Sprawdź stan zmienionych pozycji po ponownym uruchomieniu.",
+      "en": "Unexpected error – the program will close:{0}{1}{0}{0}Details were saved in the log file. Check the status of changed items after you start it again."
+    },
+    {
+      "pl": "Ustawienia",
+      "en": "Settings"
+    },
+    {
+      "pl": "Wyczyść (Esc)",
+      "en": "Clear (Esc)"
+    },
+    {
+      "pl": "Wyczyść wyszukiwanie",
+      "en": "Clear search"
+    },
+    {
+      "pl": "Administrator",
+      "en": "Administrator"
+    },
+    {
+      "pl": "Minimalizuj",
+      "en": "Minimize"
+    },
+    {
+      "pl": "Maksymalizuj",
+      "en": "Maximize"
+    },
+    {
+      "pl": "Przywróć",
+      "en": "Restore"
+    },
+    {
+      "pl": "Zamknij",
+      "en": "Close"
+    },
+    {
+      "pl": "Pokaż które",
+      "en": "Show which"
+    },
+    {
+      "pl": "Uruchom ponownie",
+      "en": "Restart"
+    },
+    {
+      "pl": "Menu",
+      "en": "Menu"
+    },
+    {
+      "pl": "Szukaj",
+      "en": "Search"
+    },
+    {
+      "pl": "Ryzyko",
+      "en": "Risk"
+    },
+    {
+      "pl": "Pozycje",
+      "en": "Items"
+    },
+    {
+      "pl": "Pokaż wszystkie",
+      "en": "Show all"
+    },
+    {
+      "pl": "Co zyskasz",
+      "en": "What you gain"
+    },
+    {
+      "pl": "Co zmienia",
+      "en": "What it changes"
+    },
+    {
+      "pl": "Restart po zmianie",
+      "en": "Restart after change"
+    },
+    {
+      "pl": "Identyfikator",
+      "en": "ID"
+    },
+    {
+      "pl": "Odznacz wszystko",
+      "en": "Clear selection"
+    },
+    {
+      "pl": "Wysokość dziennika",
+      "en": "Log height"
+    },
+    {
+      "pl": "Dziennik",
+      "en": "Log"
+    },
+    {
+      "pl": "Kopiuj wszystko",
+      "en": "Copy all"
+    },
+    {
+      "pl": "Anuluj",
+      "en": "Cancel"
+    },
+    {
+      "pl": "Kopiuj wynik",
+      "en": "Copy result"
+    },
+    {
+      "pl": "Licencje komponentów",
+      "en": "Component licenses"
+    },
+    {
+      "pl": "Obszar roboczy ma niepoprawny rozmiar – zostają domyślne wymiary okna.",
+      "en": "The work area has an invalid size – keeping the default window size."
+    },
+    {
+      "pl": "Nie udało się odczytać obszaru roboczego monitora (błąd Win32 {0}) – używam obszaru monitora głównego.",
+      "en": "Couldn't read the monitor's work area (Win32 error {0}) – using the primary monitor's work area."
+    },
+    {
+      "pl": "Brak źródła prezentacji do przeliczenia pikseli na DIP – używam obszaru monitora głównego.",
+      "en": "No presentation source to convert pixels to DIPs – using the primary monitor's work area."
+    },
+    {
+      "pl": "Odczyt obszaru roboczego monitora nie powiódł się ({0}) – używam obszaru monitora głównego.",
+      "en": "Reading the monitor's work area didn't succeed ({0}) – using the primary monitor's work area."
+    },
+    {
+      "pl": "Sprawdzanie…",
+      "en": "Checking…"
+    },
+    {
+      "pl": "Akcje",
+      "en": "Actions"
+    },
+    {
+      "pl": "Otwiera okno systemowe",
+      "en": "Opens a system window"
+    },
+    {
+      "pl": "Tej operacji nie można cofnąć",
+      "en": "This operation can't be undone"
+    },
+    {
+      "pl": "Wymagany",
+      "en": "Required"
+    },
+    {
+      "pl": "Niewymagany",
+      "en": "Not required"
+    },
+    {
+      "pl": "Nie dotyczy",
+      "en": "Not applicable"
+    },
+    {
+      "pl": "Dostępne",
+      "en": "Available"
+    },
+    {
+      "pl": "Niedostępne",
+      "en": "Not available"
+    },
+    {
+      "pl": "Sprawdzanie stanu…",
+      "en": "Checking status…"
+    },
+    {
+      "pl": "Stan nie został jeszcze sprawdzony",
+      "en": "Status not checked yet"
+    },
+    {
+      "pl": "Uruchamianie ponownie komputera…",
+      "en": "Restarting the computer…"
+    },
+    {
+      "pl": "Ostatnie sprawdzenie: {0}",
+      "en": "Last check: {0}"
+    },
+    {
+      "pl": "Anulowano: {0} – {1}.",
+      "en": "Canceled: {0} – {1}."
+    },
+    {
+      "pl": "{0}: zaznaczone ({1})…",
+      "en": "{0}: selected ({1})…"
+    },
+    {
+      "pl": "{0}: zaznaczone aplikacje ({1})…",
+      "en": "{0}: selected apps ({1})…"
+    },
+    {
+      "pl": "Zastosuj ({0})",
+      "en": "Apply ({0})"
+    },
+    {
+      "pl": "Cofnij ({0})",
+      "en": "Undo ({0})"
+    },
+    {
+      "pl": "Trwa operacja – zamknij okno po jej zakończeniu.",
+      "en": "An operation is in progress – close the window after it finishes."
+    },
+    {
+      "pl": "Zatrzymaj",
+      "en": "Stop"
+    },
+    {
+      "pl": "Zatrzymywanie…",
+      "en": "Stopping…"
+    },
+    {
+      "pl": "Zatrzymanie kończy bieżący krok i nie zaczyna następnych.",
+      "en": "Stopping finishes the current step and doesn't start the next ones."
+    },
+    {
+      "pl": "Ukryj szczegóły techniczne",
+      "en": "Hide technical details"
+    },
+    {
+      "pl": "Kopiuj",
+      "en": "Copy"
+    },
+    {
+      "pl": "Kopiuj ścieżkę",
+      "en": "Copy path"
+    },
+    {
+      "pl": "Kopiuj cały dziennik",
+      "en": "Copy entire log"
+    },
+    {
+      "pl": "Otwórz lokalizację pliku",
+      "en": "Open file location"
+    },
+    {
+      "pl": "Otwórz w Eksploratorze",
+      "en": "Open in File Explorer"
+    },
+    {
+      "pl": "Plik nie istnieje",
+      "en": "The file doesn't exist"
+    },
+    {
+      "pl": "Nie udało się otworzyć lokalizacji pliku.",
+      "en": "Couldn't open the file location."
+    },
+    {
+      "pl": "Nie udało się skopiować dziennika do schowka.",
+      "en": "Couldn't copy the log to the clipboard."
+    },
+    {
+      "pl": "Nie udało się skopiować zaznaczonego fragmentu dziennika do schowka.",
+      "en": "Couldn't copy the selected part of the log to the clipboard."
+    },
+    {
+      "pl": "Nie udało się skopiować ścieżki do schowka.",
+      "en": "Couldn't copy the path to the clipboard."
+    },
+    {
+      "pl": "Nie udało się skopiować adresu do schowka.",
+      "en": "Couldn't copy the address to the clipboard."
+    },
+    {
+      "pl": "Seria",
+      "en": "Batch"
+    },
+    {
+      "pl": "Skopiowano wynik do schowka.",
+      "en": "Result copied to the clipboard."
+    },
+    {
+      "pl": "Nie skopiowano wyniku do schowka: {0}",
+      "en": "Couldn't copy the result to the clipboard: {0}"
+    },
+    {
+      "pl": "Punkt przywracania nie powstał ({0}), a okno serii nie trwa – przyjęto „Nie”.",
+      "en": "The restore point wasn't created ({0}) and the batch window isn't open – \"No\" was assumed."
+    },
+    {
+      "pl": "Punkt przywracania nie powstał ({0}). Odpowiedź: {1}.",
+      "en": "The restore point wasn't created ({0}). Answer: {1}."
+    },
+    {
+      "pl": "Kontynuować bez punktu przywracania? Odpowiedź: {0}.",
+      "en": "Continue without a restore point? Answer: {0}."
+    },
+    {
+      "pl": "Nie udało się ustawić motywu.",
+      "en": "Couldn't set the theme."
+    },
+    {
+      "pl": "Nie udało się włączyć śledzenia motywu systemu.",
+      "en": "Couldn't start following the system theme."
+    },
+    {
+      "pl": "Nie udało się zmienić motywu.",
+      "en": "Couldn't change the theme."
+    },
+    {
+      "pl": "Nie udało się ustawić akcentu motywu.",
+      "en": "Couldn't set the theme accent color."
+    },
+    {
+      "pl": "Poprzednia operacja okna nie została zamknięta.",
+      "en": "The previous window operation wasn't closed."
+    },
+    {
+      "pl": "{0}, użytkownik {1}",
+      "en": "{0}, user {1}"
+    }
+  ]
+}

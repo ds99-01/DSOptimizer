@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using DSOptimizer.Core;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.App.Gui;
 
@@ -49,7 +50,7 @@ public sealed class ShellActions
             var refusal = await RunAsync(() => _revealer.Reveal(path)).ConfigureAwait(true);
             if (refusal is not null)
             {
-                var copied = Copy(path, "Nie udało się skopiować ścieżki do schowka.");
+                var copied = Copy(path, L.T("Nie udało się skopiować ścieżki do schowka."));
                 _log.Warn(Component, LogLineText.RevealFailed(refusal, copied));
             }
         }
@@ -85,7 +86,7 @@ public sealed class ShellActions
             // Przełącznik awaryjny: bez otwieracza adres tylko trafia do schowka. Zostawiony celowo, nieużywany, dopóki pomiar na VM się utrzymuje.
             if (opener is null)
             {
-                if (Copy(url, "Nie udało się skopiować adresu do schowka."))
+                if (Copy(url, L.T("Nie udało się skopiować adresu do schowka.")))
                 {
                     _log.Info(Component, GuiText.UrlCopied(url));
                 }
@@ -96,7 +97,7 @@ public sealed class ShellActions
             var refusal = await RunAsync(() => opener.Open(url)).ConfigureAwait(true);
             if (refusal is not null)
             {
-                var copied = Copy(url, "Nie udało się skopiować adresu do schowka.");
+                var copied = Copy(url, L.T("Nie udało się skopiować adresu do schowka."));
                 _log.Warn(Component, GuiText.OpenUrlFailed(refusal, copied));
             }
         }

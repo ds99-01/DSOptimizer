@@ -5,6 +5,7 @@ using System.Threading;
 using System.Windows.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.App.Gui;
 
@@ -62,7 +63,7 @@ public sealed class UiLogSink : ILog
         var operation = new Operation(new EngineWarningBuffer(), operationIds);
         if (Interlocked.CompareExchange(ref _operation, operation, null) is not null)
         {
-            throw new InvalidOperationException("Poprzednia operacja okna nie została zamknięta.");
+            throw new InvalidOperationException(L.T("Poprzednia operacja okna nie została zamknięta."));
         }
 
         return new OperationScope(this, operation);

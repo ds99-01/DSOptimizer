@@ -2,18 +2,6 @@
 # Wpis z „/” na końcu = folder (wszystko pod nim), bez „/” = dokładnie ten plik. „#” = komentarz.
 # Każdy obszar po przetłumaczeniu usuwa swoje linie; na końcu plik zostaje bez wpisów.
 
-# Task 11: App – okno główne, wspólne elementy, start programu
-src/DSOptimizer.App/Gui/
-src/DSOptimizer.App/MainWindow.xaml
-src/DSOptimizer.App/MainWindow.xaml.cs
-src/DSOptimizer.App/Program.cs
-src/DSOptimizer.App/Themes/Tokens.xaml
-src/DSOptimizer.App/ViewModels/ItemViewModel.cs
-src/DSOptimizer.App/ViewModels/MainViewModel.cs
-src/DSOptimizer.App/ViewModels/SeriesWindowViewModel.cs
-src/DSOptimizer.App/Views/LicensesWindow.xaml
-src/DSOptimizer.App/Views/SeriesWindow.xaml
-
 # Task 12: App – strony
 src/DSOptimizer.App/ViewModels/AppRowViewModel.cs
 src/DSOptimizer.App/ViewModels/AppsViewModel.cs

@@ -42,15 +42,16 @@ internal static class Program
             return CliHost.Run(args, SecureRoot.ProgramData, FileLog.DefaultMirrorDirectory);
         }
 
-        // Komunikaty sprzed odczytu ustawień (katalog, korzeń) w języku systemu; zapisany albo wybrany język ustawia się niżej.
+        // Komunikaty sprzed okna wyboru (katalog, korzeń, journal, ustawienia) w zapisanym języku, a bez niego w języku systemu.
+        // PeekLanguage tylko czyta (nie tworzy korzenia, nie rzuca); ostateczny język (zapisany albo wybrany) ustawia się niżej.
         var detected = LanguageDetector.DetectCurrent();
-        L.SetDefault(detected);
+        L.SetDefault(new JsonFileSettingsStore(SecureRoot.ProgramData, new SystemClock()).PeekLanguage() ?? detected);
 
         var sink = new UiLogSink(Dispatcher.CurrentDispatcher, new SystemClock());
         var catalog = CliCatalog.Load(null, path => File.ReadAllText(path, Encoding.UTF8), BuiltInCatalog.Sources);
         if (catalog.Catalog is null)
         {
-            MessageBox.Show($"Wbudowany katalog jest nieprawidłowy:{Environment.NewLine}{string.Join(Environment.NewLine, catalog.Errors)}", "DSOptimizer", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(StartupText.CatalogInvalid(catalog.Errors), "DSOptimizer", MessageBoxButton.OK, MessageBoxImage.Error);
             return (int)CliExitCode.CatalogError;
         }
 
@@ -61,7 +62,7 @@ internal static class Program
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Nie można przygotować katalogu roboczego DSOptimizer: {ex.Message}", "DSOptimizer", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(StartupText.WorkingFolderFailed(ex.Message), "DSOptimizer", MessageBoxButton.OK, MessageBoxImage.Error);
             return (int)CliExitCode.InternalError;
         }
 
@@ -70,7 +71,7 @@ internal static class Program
 
         if (composition.StartupWarnings.Count > 0)
         {
-            MessageBox.Show(string.Join(Environment.NewLine + Environment.NewLine, composition.StartupWarnings), "DSOptimizer – uwaga", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(string.Join(Environment.NewLine + Environment.NewLine, composition.StartupWarnings), StartupText.WarningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         // Ustawienia po AppComposition.Create (korzeń już zabezpieczony). Load z założenia nie rzuca, ale niespodziewany wyjątek też daje domyślne; ostrzeżenie tylko do dziennika.
@@ -82,36 +83,12 @@ internal static class Program
         }
         catch (Exception ex)
         {
-            settings = new SettingsLoadResult(AppSettings.Default, $"Nie można odczytać ustawień: {ex.Message} Używam ustawień domyślnych.");
+            settings = new SettingsLoadResult(AppSettings.Default, StartupText.SettingsReadFailed(ex.Message));
         }
 
         if (settings.Warning is { } settingsWarning)
         {
-            log.Warn("Ustawienia", settingsWarning);
-        }
-
-        var session = new GuiSession(catalog.Catalog, composition.Services) { CreateRestorePoint = settings.Settings.CreateRestorePoint };
-        var accountNames = new CachedAccountNames(new WindowsAccountNames());
-        AppsSession apps;
-        try
-        {
-            apps = CreateApps(composition, session, accountNames);
-        }
-        catch (AppsCatalogException ex)
-        {
-            MessageBox.Show($"Wbudowana lista aplikacji jest nieprawidłowa:{Environment.NewLine}{ex.Message}", "DSOptimizer", MessageBoxButton.OK, MessageBoxImage.Error);
-            return (int)CliExitCode.CatalogError;
-        }
-
-        InstallSession install;
-        try
-        {
-            install = CreateInstall(composition, session, accountNames);
-        }
-        catch (InstallCatalogException ex)
-        {
-            MessageBox.Show($"Wbudowana lista instalacji jest nieprawidłowa:{Environment.NewLine}{ex.Message}", "DSOptimizer", MessageBoxButton.OK, MessageBoxImage.Error);
-            return (int)CliExitCode.CatalogError;
+            log.Warn(L.T("Ustawienia"), settingsWarning);
         }
 
         var app = new App();
@@ -128,12 +105,41 @@ internal static class Program
         L.SetDefault(language.Language);
         if (language.Warning is { } languageWarning)
         {
-            log.Warn("Ustawienia", languageWarning);
+            log.Warn(L.T("Ustawienia"), languageWarning);
         }
 
         if (L.LoadWarning is { } translationsWarning)
         {
-            log.Warn("Ustawienia", translationsWarning);
+            log.Warn(L.T("Ustawienia"), translationsWarning);
+        }
+
+        // Teksty stylów jako zasoby dynamiczne: Themes/*.xaml nie mają tłumaczeń, bo powstają przed wyborem języka.
+        ThemeTexts.Apply(app.Resources);
+
+        // Od tego miejsca wszystko, co liczy teksty przy tworzeniu (nazwy kategorii w GuiSession, sesje stron „Aplikacje”
+        // i „Instalacja” z komunikatami listy), powstaje już w ostatecznym języku.
+        var session = new GuiSession(catalog.Catalog, composition.Services) { CreateRestorePoint = settings.Settings.CreateRestorePoint };
+        var accountNames = new CachedAccountNames(new WindowsAccountNames());
+        AppsSession apps;
+        try
+        {
+            apps = CreateApps(composition, session, accountNames);
+        }
+        catch (AppsCatalogException ex)
+        {
+            MessageBox.Show(StartupText.AppsListInvalid(ex.Message), "DSOptimizer", MessageBoxButton.OK, MessageBoxImage.Error);
+            return (int)CliExitCode.CatalogError;
+        }
+
+        InstallSession install;
+        try
+        {
+            install = CreateInstall(composition, session, accountNames);
+        }
+        catch (InstallCatalogException ex)
+        {
+            MessageBox.Show(StartupText.InstallListInvalid(ex.Message), "DSOptimizer", MessageBoxButton.OK, MessageBoxImage.Error);
+            return (int)CliExitCode.CatalogError;
         }
 
         var machine = MachineSummary.Format(composition.Services.SystemInfo);
@@ -317,7 +323,7 @@ internal static class Program
             // Zegar niedostępny: zostaje domyślna ścieżka (panel).
         }
 
-        TryLog(route == WindowExceptionRoute.Panel ? composition.Log : composition.FileLog, "Nieobsłużony wyjątek w oknie.", exception);
+        TryLog(route == WindowExceptionRoute.Panel ? composition.Log : composition.FileLog, StartupText.WindowExceptionLog, exception);
         if (route == WindowExceptionRoute.FileOnlyWithNotice)
         {
             try
@@ -335,22 +341,16 @@ internal static class Program
             return;
         }
 
-        TryShow(
-            $"Wystąpił nieoczekiwany błąd okna:{Environment.NewLine}{exception.Message}{Environment.NewLine}{Environment.NewLine}" +
-            "Szczegóły zapisano w pliku logu. Okno może działać niepoprawnie – zamknij program po zakończeniu bieżącej operacji i uruchom go ponownie.",
-            MessageBoxImage.Error);
+        TryShow(StartupText.WindowError(exception.Message), MessageBoxImage.Error);
     }
 
     /// <summary>Wyjątek spoza wątku UI: .NET Framework i tak zamyka proces, więc tylko ślad w logu i (gdy się da) komunikat.</summary>
     private static void OnFatalException(ILog log, Exception? exception, bool isTerminating)
     {
-        TryLog(log, isTerminating ? "Nieobsłużony wyjątek – program zostanie zamknięty." : "Nieobsłużony wyjątek w tle.", exception);
+        TryLog(log, StartupText.FatalExceptionLog(isTerminating), exception);
         if (isTerminating)
         {
-            TryShow(
-                $"Nieoczekiwany błąd – program zostanie zamknięty:{Environment.NewLine}{exception?.Message}{Environment.NewLine}{Environment.NewLine}" +
-                "Szczegóły zapisano w pliku logu. Sprawdź stan zmienionych pozycji po ponownym uruchomieniu.",
-                MessageBoxImage.Error);
+            TryShow(StartupText.FatalError(exception?.Message), MessageBoxImage.Error);
         }
     }
 
@@ -370,7 +370,7 @@ internal static class Program
     {
         try
         {
-            MessageBox.Show(text, "DSOptimizer – błąd", MessageBoxButton.OK, image);
+            MessageBox.Show(text, StartupText.ErrorTitle, MessageBoxButton.OK, image);
         }
         catch (Exception)
         {

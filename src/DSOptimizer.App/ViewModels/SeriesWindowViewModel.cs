@@ -12,6 +12,7 @@ using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.App.ViewModels;
@@ -34,9 +35,11 @@ public enum SeriesWindowPhase
 /// </summary>
 public sealed class SeriesWindowViewModel : ObservableObject
 {
-    public const string StopText = "Zatrzymaj";
-    public const string StoppingText = "Zatrzymywanie…";
-    public const string StopNote = "Zatrzymanie kończy bieżący krok i nie zaczyna następnych.";
+    public static string StopText => L.T("Zatrzymaj");
+
+    public static string StoppingText => L.T("Zatrzymywanie…");
+
+    public static string StopNote => L.T("Zatrzymanie kończy bieżący krok i nie zaczyna następnych.");
 
     private readonly SeriesConfirmation? _confirmation;
     private readonly Func<IProgress<BatchStepEvent>, BatchStop, Task<GuiOperationReport>>? _run;
@@ -140,7 +143,7 @@ public sealed class SeriesWindowViewModel : ObservableObject
 
     /// <summary>Potwierdzenie ponownego uruchomienia: tytuł „Uruchom ponownie”, treść <see cref="GuiText.RestartConfirmText"/>.</summary>
     public static SeriesWindowViewModel ForRestart(IClock clock)
-        => new("Uruchom ponownie", string.Empty, GuiText.RestartConfirmText, Array.Empty<SeriesFact>(), Array.Empty<SeriesItemViewModel>(), "Uruchom ponownie", clock);
+        => new(L.T("Uruchom ponownie"), string.Empty, GuiText.RestartConfirmText, Array.Empty<SeriesFact>(), Array.Empty<SeriesItemViewModel>(), L.T("Uruchom ponownie"), clock);
 
     public SeriesWindowPhase Phase
     {
@@ -415,7 +418,7 @@ public sealed class SeriesWindowViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            var message = $"Nieoczekiwany błąd: {ex.GetType().Name}: {ex.Message}";
+            var message = L.F("Nieoczekiwany błąd: {0}: {1}", ex.GetType().Name, ex.Message);
             batch.Fail(message);
             Report = FailureReport(message);
         }
@@ -450,7 +453,7 @@ public sealed class SeriesWindowViewModel : ObservableObject
             }
             catch (Exception ex)
             {
-                var message = $"Nieoczekiwany błąd: {ex.GetType().Name}: {ex.Message}";
+                var message = L.F("Nieoczekiwany błąd: {0}: {1}", ex.GetType().Name, ex.Message);
                 action.Fail(message);
                 Report = FailureReport(message);
             }
@@ -673,7 +676,7 @@ public sealed class SeriesItemViewModel : ObservableObject
         }
     }
 
-    public string ToggleText => IsExpanded ? "Ukryj szczegóły techniczne" : "Szczegóły techniczne";
+    public string ToggleText => IsExpanded ? L.T("Ukryj szczegóły techniczne") : L.T("Szczegóły techniczne");
 
     public IRelayCommand ToggleCommand { get; }
 }

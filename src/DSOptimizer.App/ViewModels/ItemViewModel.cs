@@ -14,9 +14,11 @@ namespace DSOptimizer.App.ViewModels;
 /// </summary>
 public sealed class ItemViewModel : ObservableObject
 {
-    public const string CheckingText = "Sprawdzanie…";
-    public const string SettingsSection = "Ustawienia";
-    public const string ActionsSection = "Akcje";
+    public static string CheckingText => L.T("Sprawdzanie…");
+
+    public static string SettingsSection => L.T("Ustawienia");
+
+    public static string ActionsSection => L.T("Akcje");
 
     private readonly MainViewModel _owner;
     private DetectionState? _state;
@@ -94,7 +96,7 @@ public sealed class ItemViewModel : ObservableObject
         {
             if (!IsTweak)
             {
-                return Definition.Kind == TweakKind.Panel ? "Otwiera okno systemowe" : "Tej operacji nie można cofnąć";
+                return Definition.Kind == TweakKind.Panel ? L.T("Otwiera okno systemowe") : L.T("Tej operacji nie można cofnąć");
             }
 
             return _isChecking ? StateText : GuiText.ItemRowSubtitle(StateText, _pendingReboot);
@@ -133,9 +135,9 @@ public sealed class ItemViewModel : ObservableObject
     /// <summary>Nazwa ryzyka z <see cref="GuiText.RiskName"/>, w tabeli zaczęta wielką literą jak pozostałe wartości.</summary>
     public string DetailRiskText => L.Culture.TextInfo.ToUpper(RiskName[0]) + RiskName.Substring(1);
 
-    public string DetailRebootText => Definition.RequiresReboot ? "Wymagany" : "Niewymagany";
+    public string DetailRebootText => Definition.RequiresReboot ? L.T("Wymagany") : L.T("Niewymagany");
 
-    public string DetailUndoText => !IsTweak ? "Nie dotyczy" : Definition.Reversible ? "Dostępne" : "Niedostępne";
+    public string DetailUndoText => !IsTweak ? L.T("Nie dotyczy") : Definition.Reversible ? L.T("Dostępne") : L.T("Niedostępne");
 
     /// <summary>Zaznaczenie do serii (dwuklik wiersza tweaka, Spacja albo pole wyboru; krawędź w kolorze akcentu). Przeżywa zmianę kategorii.</summary>
     public bool IsSelected

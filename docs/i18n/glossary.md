@@ -117,6 +117,9 @@ How to read the tables:
 | Anuluj | Cancel | |
 | Zamknij | Close | |
 | Minimalizuj | Minimize | US spelling (Style rule 7) |
+| Maksymalizuj / Przywróć | Maximize / Restore | Window caption buttons (tooltip and screen reader name). **do audytu (Etap 5)** – Windows 11 itself says "Restore Down" |
+| Kopiuj ścieżkę / Kopiuj cały dziennik / Otwórz lokalizację pliku | Copy path / Copy entire log / Open file location | Log panel context menu and link buttons |
+| Wyczyść (Esc) / Wyczyść wyszukiwanie | Clear (Esc) / Clear search | Search box clear button (tooltip / screen reader name) |
 | Kopiuj / Kopiuj wszystko / Kopiuj wynik | Copy / Copy all / Copy result | |
 | Zapisz raport | Save report | Specification page |
 | Odśwież / Odśwież stan / Odśwież listę | Refresh / Refresh status / Refresh list | |
@@ -282,6 +285,15 @@ How to read the tables:
 | punkt ponownej analizy | reparse point | Junction or symbolic link (Windows term) |
 | potok / Job Object | pipe / Job Object | Process plumbing in Windows layer errors; "Job Object" kept as the Windows name |
 | Ponowne uruchomienie programu: {0} | Restarting the program: {0} | Startup log line before the program restarts itself |
+| Ostatnie sprawdzenie: {0} | Last check: {0} | Category subtitle after a status check: "Last check: 14:05" (24-hour time in both languages) |
+| Ustawienia / Akcje (sekcje listy) | Settings / Actions | Section headers in the item list (settings vs. actions and panels) |
+| Identyfikator | ID | Detail panel label (item ID) |
+| Dostępne / Niedostępne / Nie dotyczy | Available / Not available / Not applicable | Detail panel "Undo" values |
+| Administrator | Administrator | Brand bar badge: the program runs as administrator |
+| {0}, użytkownik {1} | {0}, user {1} | Brand bar: "PC-1, Windows 11 Pro 26100.1, user Dawid" |
+| DSOptimizer – uwaga / DSOptimizer – błąd | DSOptimizer – warning / DSOptimizer – error | Startup and error message box titles |
+| Nieobsłużony wyjątek | Unhandled exception | Log lines before the error message box |
+| obszar roboczy (monitora) | work area | Startup window size log lines ("the primary monitor's work area"), as in the Windows API |
 
 ## Windows names
 

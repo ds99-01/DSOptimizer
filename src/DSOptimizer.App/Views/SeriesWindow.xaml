@@ -5,6 +5,7 @@
                  xmlns:vm="clr-namespace:DSOptimizer.App.ViewModels"
                  xmlns:views="clr-namespace:DSOptimizer.App.Views"
                  xmlns:gui="clr-namespace:DSOptimizer.Core.Gui;assembly=DSOptimizer.Core"
+                 xmlns:l="clr-namespace:DSOptimizer.App.Gui"
                  Title="{Binding HeaderTitle}" Width="600" MinHeight="0" SizeToContent="Height" ResizeMode="NoResize"
                  WindowStartupLocation="CenterOwner" ShowInTaskbar="False" TextOptions.TextFormattingMode="Display"
                  ExtendsContentIntoTitleBar="True" WindowBackdropType="None" WindowCornerPreference="Round"
@@ -189,7 +190,7 @@
                    TextTrimming="CharacterEllipsis" />
       </DockPanel>
       <Button x:Name="CloseButton" Grid.Column="1" Style="{StaticResource SeriesCloseButton}" Content="&#xE8BB;"
-              AutomationProperties.Name="Zamknij" IsEnabled="{Binding CanClose}" Click="OnCloseClick" />
+              AutomationProperties.Name="{l:T 'Zamknij'}" IsEnabled="{Binding CanClose}" Click="OnCloseClick" />
     </Grid>
 
     <!-- Postęp: cienka linia akcentu pod paskiem, długość = ukończone kroki (tylko w trakcie serii; okno długiej naprawy ma pasek
@@ -210,7 +211,7 @@
         <!-- Potwierdzenie -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                     Visibility="{Binding IsConfirm, Converter={StaticResource BoolToVisibility}}">
-          <Button Content="Anuluj" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Command="{Binding CancelCommand}" />
+          <Button Content="{l:T 'Anuluj'}" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Command="{Binding CancelCommand}" />
           <Button Content="{Binding PrimaryText}" Style="{StaticResource PrimaryButton}" Command="{Binding PrimaryCommand}" />
         </StackPanel>
         <!-- Postęp -->
@@ -238,11 +239,11 @@
         <!-- Wynik -->
         <DockPanel Visibility="{Binding IsResult, Converter={StaticResource BoolToVisibility}}">
           <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-            <Button Content="Uruchom ponownie teraz" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Command="{Binding RestartCommand}"
+            <Button Content="{l:T 'Uruchom ponownie teraz'}" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Command="{Binding RestartCommand}"
                     Visibility="{Binding ShowRestartButton, Converter={StaticResource BoolToVisibility}}" />
-            <Button x:Name="CloseResultButton" Content="Zamknij" Style="{StaticResource PrimaryButton}" Command="{Binding CloseCommand}" />
+            <Button x:Name="CloseResultButton" Content="{l:T 'Zamknij'}" Style="{StaticResource PrimaryButton}" Command="{Binding CloseCommand}" />
           </StackPanel>
-          <Button Content="Kopiuj wynik" Style="{StaticResource TextLinkButton}" HorizontalAlignment="Left" Margin="-2,0,0,0"
+          <Button Content="{l:T 'Kopiuj wynik'}" Style="{StaticResource TextLinkButton}" HorizontalAlignment="Left" Margin="-2,0,0,0"
                   Command="{Binding CopyResultCommand}" />
         </DockPanel>
       </Grid>

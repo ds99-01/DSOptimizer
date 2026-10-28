@@ -5,6 +5,7 @@
                  xmlns:vm="clr-namespace:DSOptimizer.App.ViewModels"
                  xmlns:views="clr-namespace:DSOptimizer.App.Views"
                  xmlns:gui="clr-namespace:DSOptimizer.Core.Gui;assembly=DSOptimizer.Core"
+                 xmlns:l="clr-namespace:DSOptimizer.App.Gui"
                  Title="DSOptimizer" MinWidth="800" MinHeight="520"
                  WindowStartupLocation="Manual" TextOptions.TextFormattingMode="Display"
                  ExtendsContentIntoTitleBar="True" WindowBackdropType="None" WindowCornerPreference="Round"
@@ -414,28 +415,28 @@
                  Foreground="{StaticResource HeadForegroundBrush}" Opacity=".8" Margin="22,1,14,0" VerticalAlignment="Center"
                  TextTrimming="CharacterEllipsis" />
       <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
-        <TextBlock Text="Administrator" FontSize="12" FontWeight="Normal" Foreground="{StaticResource HeadForegroundBrush}"
+        <TextBlock Text="{l:T 'Administrator'}" FontSize="12" FontWeight="Normal" Foreground="{StaticResource HeadForegroundBrush}"
                    Opacity=".8" VerticalAlignment="Center" Margin="14,0,14,0" />
         <Button x:Name="MinimizeButton" Style="{StaticResource CaptionButton}" Content="&#xE921;"
-                AutomationProperties.Name="Minimalizuj" ToolTip="Minimalizuj" Click="OnMinimizeClick" />
+                AutomationProperties.Name="{l:T 'Minimalizuj'}" ToolTip="{l:T 'Minimalizuj'}" Click="OnMinimizeClick" />
         <Button x:Name="MaximizeButton" Click="OnMaximizeClick">
           <Button.Style>
             <Style TargetType="Button" BasedOn="{StaticResource CaptionButton}">
               <Setter Property="Content" Value="&#xE922;" />
-              <Setter Property="AutomationProperties.Name" Value="Maksymalizuj" />
-              <Setter Property="ToolTip" Value="Maksymalizuj" />
+              <Setter Property="AutomationProperties.Name" Value="{l:T 'Maksymalizuj'}" />
+              <Setter Property="ToolTip" Value="{l:T 'Maksymalizuj'}" />
               <Style.Triggers>
                 <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
                   <Setter Property="Content" Value="&#xE923;" />
-                  <Setter Property="AutomationProperties.Name" Value="Przywróć" />
-                  <Setter Property="ToolTip" Value="Przywróć" />
+                  <Setter Property="AutomationProperties.Name" Value="{l:T 'Przywróć'}" />
+                  <Setter Property="ToolTip" Value="{l:T 'Przywróć'}" />
                 </DataTrigger>
               </Style.Triggers>
             </Style>
           </Button.Style>
         </Button>
         <Button x:Name="CloseButton" Style="{StaticResource CaptionCloseButton}" Content="&#xE8BB;"
-                AutomationProperties.Name="Zamknij" ToolTip="Zamknij" Click="OnCloseClick" />
+                AutomationProperties.Name="{l:T 'Zamknij'}" ToolTip="{l:T 'Zamknij'}" Click="OnCloseClick" />
       </StackPanel>
     </Grid>
 
@@ -450,8 +451,8 @@
         <views:BrandIcon Kind="Warning" Size="16" Foreground="{DynamicResource SystemFillColorCautionBrush}" VerticalAlignment="Center"
                          Margin="0,0,10,0" />
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-          <Button Content="Pokaż które" Style="{StaticResource TextLinkButton}" Margin="0,0,14,0" Command="{Binding ShowPendingCommand}" />
-          <Button Content="Uruchom ponownie" Style="{StaticResource SecondaryButton}" Command="{Binding RestartCommand}" />
+          <Button Content="{l:T 'Pokaż które'}" Style="{StaticResource TextLinkButton}" Margin="0,0,14,0" Command="{Binding ShowPendingCommand}" />
+          <Button Content="{l:T 'Uruchom ponownie'}" Style="{StaticResource SecondaryButton}" Command="{Binding RestartCommand}" />
         </StackPanel>
         <TextBlock Style="{StaticResource BodyText}" VerticalAlignment="Center">
           <Run FontWeight="SemiBold" Text="{x:Static gui:GuiText.RebootTitle}" />
@@ -471,7 +472,7 @@
       </Grid.RowDefinitions>
       <ListBox x:Name="NavList" Margin="0,10,0,0" Style="{StaticResource NavListBox}"
                ItemsSource="{Binding NavItems}" SelectedItem="{Binding SelectedNavItem, Mode=TwoWay}"
-               AutomationProperties.Name="Menu" PreviewMouseLeftButtonUp="OnNavClick" />
+               AutomationProperties.Name="{l:T 'Menu'}" PreviewMouseLeftButtonUp="OnNavClick" />
       <StackPanel Grid.Row="1" Margin="0,6,0,6">
         <!-- Linia wcięta po 16 px z obu stron, jak w renderze 09; w zwiniętym menu po 12 px -->
         <Border Height="1" Background="{StaticResource SideDividerBrush}">
@@ -488,7 +489,7 @@
         </Border>
         <ListBox x:Name="SettingsNavList" Style="{StaticResource NavListBox}"
                  ItemsSource="{Binding PinnedNavItems}" SelectedItem="{Binding SelectedPinnedItem, Mode=TwoWay}"
-                 AutomationProperties.Name="Ustawienia" />
+                 AutomationProperties.Name="{l:T 'Ustawienia'}" />
       </StackPanel>
     </Grid>
 
@@ -549,7 +550,7 @@
             <TextBlock Style="{StaticResource SubText}" Text="{Binding PageSubtitle}" ToolTip="{Binding PageSubtitle}" />
           </StackPanel>
           <Button Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
-                  Content="Odśwież stan" Tag="Refresh" Command="{Binding RefreshCommand}" KeyboardNavigation.TabIndex="3" />
+                  Content="{l:T 'Odśwież stan'}" Tag="Refresh" Command="{Binding RefreshCommand}" KeyboardNavigation.TabIndex="3" />
         </Grid>
 
         <!-- Wyszukiwarka (wszystkie kategorie, Esc czyści) i filtr ryzyka -->
@@ -559,15 +560,16 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
-          <TextBox x:Name="SearchBox" Style="{StaticResource SearchTextBox}" AutomationProperties.Name="Szukaj" KeyboardNavigation.TabIndex="1"
+          <TextBox x:Name="SearchBox" Style="{StaticResource SearchTextBox}" Tag="{x:Static gui:GuiText.SearchPlaceholder}"
+                   AutomationProperties.Name="{l:T 'Szukaj'}" KeyboardNavigation.TabIndex="1"
                    AutomationProperties.HelpText="{x:Static gui:GuiText.SearchPlaceholder}"
                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
             <TextBox.InputBindings>
               <KeyBinding Key="Escape" Command="{Binding ClearSearchCommand}" />
             </TextBox.InputBindings>
           </TextBox>
-          <TextBlock Grid.Column="1" Style="{StaticResource SubText}" Margin="14,0,8,0" VerticalAlignment="Center" Text="Ryzyko" />
-          <ComboBox Grid.Column="2" Style="{StaticResource BrandComboBox}" AutomationProperties.Name="Ryzyko" KeyboardNavigation.TabIndex="2"
+          <TextBlock Grid.Column="1" Style="{StaticResource SubText}" Margin="14,0,8,0" VerticalAlignment="Center" Text="{l:T 'Ryzyko'}" />
+          <ComboBox Grid.Column="2" Style="{StaticResource BrandComboBox}" AutomationProperties.Name="{l:T 'Ryzyko'}" KeyboardNavigation.TabIndex="2"
                     ItemsSource="{Binding RiskFilterOptions}" SelectedValuePath="Value" SelectedValue="{Binding RiskFilter}" />
         </Grid>
 
@@ -580,7 +582,7 @@
           <TextBlock VerticalAlignment="Top" Style="{StaticResource BodyText}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                      Text="{Binding EmptyText}" />
           <ListBox x:Name="ItemList" IsSynchronizedWithCurrentItem="True" ItemTemplate="{StaticResource ItemRowTemplate}"
-                   AutomationProperties.Name="Pozycje" PreviewMouseLeftButtonDown="OnItemListMouseDown" PreviewMouseLeftButtonUp="OnItemListMouseUp" PreviewKeyDown="OnItemListKeyDown">
+                   AutomationProperties.Name="{l:T 'Pozycje'}" PreviewMouseLeftButtonDown="OnItemListMouseDown" PreviewMouseLeftButtonUp="OnItemListMouseUp" PreviewKeyDown="OnItemListKeyDown">
             <ListBox.Style>
               <Style TargetType="ListBox" BasedOn="{StaticResource ItemListBox}">
                 <Setter Property="ItemsSource" Value="{Binding SelectedCategory.ItemsView}" />
@@ -598,7 +600,7 @@
           <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,8"
                       Visibility="{Binding HasFilterNote, Converter={StaticResource BoolToVisibility}}">
             <TextBlock Style="{StaticResource SubText}" VerticalAlignment="Center" Text="{Binding FilterNoteText}" />
-            <Button Style="{StaticResource TextLinkButton}" Margin="12,0,0,0" Content="Pokaż wszystkie" Command="{Binding ShowAllCommand}" />
+            <Button Style="{StaticResource TextLinkButton}" Margin="12,0,0,0" Content="{l:T 'Pokaż wszystkie'}" Command="{Binding ShowAllCommand}" />
           </StackPanel>
         </Grid>
       </DockPanel>
@@ -621,7 +623,7 @@
         <StackPanel DockPanel.Dock="Bottom" Visibility="{Binding IsExecutable, Converter={StaticResource BoolToVisibility}}">
           <Border Height="1" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
           <StackPanel Orientation="Horizontal" Margin="0,12,0,14">
-            <Button x:Name="RunButton" Style="{StaticResource PrimaryButton}" Content="Uruchom" Command="{Binding ExecuteCommand}"
+            <Button x:Name="RunButton" Style="{StaticResource PrimaryButton}" Content="{l:T 'Uruchom'}" Command="{Binding ExecuteCommand}"
                     KeyboardNavigation.TabIndex="2" />
           </StackPanel>
         </StackPanel>
@@ -637,11 +639,11 @@
                     Background="{DynamicResource SubtleFillColorSecondaryBrush}"
                     Visibility="{Binding HasBenefit, Converter={StaticResource BoolToVisibility}}">
               <StackPanel>
-                <TextBlock Style="{StaticResource SectionHeaderText}" Margin="0,0,0,4" Text="Co zyskasz" />
+                <TextBlock Style="{StaticResource SectionHeaderText}" Margin="0,0,0,4" Text="{l:T 'Co zyskasz'}" />
                 <TextBlock Style="{StaticResource DetailSummaryText}" Text="{Binding Benefit}" />
               </StackPanel>
             </Border>
-            <TextBlock Style="{StaticResource SectionHeaderText}" Margin="0,16,0,4" Text="Co zmienia"
+            <TextBlock Style="{StaticResource SectionHeaderText}" Margin="0,16,0,4" Text="{l:T 'Co zmienia'}"
                        Visibility="{Binding HasBenefit, Converter={StaticResource BoolToVisibility}}" />
             <TextBlock Text="{Binding Summary}">
               <TextBlock.Style>
@@ -674,10 +676,10 @@
                 <RowDefinition />
                 <RowDefinition />
               </Grid.RowDefinitions>
-              <TextBlock Style="{StaticResource DetailKeyText}" Text="Stan" />
+              <TextBlock Style="{StaticResource DetailKeyText}" Text="{l:T 'Stan'}" />
               <TextBlock Grid.Column="1" Style="{StaticResource DetailValueText}" FontWeight="SemiBold"
                          TextWrapping="Wrap" TextTrimming="None" Text="{Binding DetailStateText}" ToolTip="{Binding DetailStateText}" />
-              <TextBlock Grid.Row="1" Style="{StaticResource DetailKeyText}" Text="Ryzyko" />
+              <TextBlock Grid.Row="1" Style="{StaticResource DetailKeyText}" Text="{l:T 'Ryzyko'}" />
               <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                 <TextBlock Style="{StaticResource DetailValueText}" VerticalAlignment="Center" Text="{Binding DetailRiskText}" />
                 <Grid Margin="8,1,0,0" VerticalAlignment="Center" Background="Transparent" AutomationProperties.Name="{Binding RiskToolTip}">
@@ -687,12 +689,12 @@
                   <ContentPresenter Content="{Binding Risk}" ContentTemplate="{StaticResource RiskMeterTemplate}" />
                 </Grid>
               </StackPanel>
-              <TextBlock Grid.Row="2" Style="{StaticResource DetailKeyText}" Text="Restart po zmianie" />
+              <TextBlock Grid.Row="2" Style="{StaticResource DetailKeyText}" Text="{l:T 'Restart po zmianie'}" />
               <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource DetailValueText}" Text="{Binding DetailRebootText}" />
             </Grid>
             <!-- Rozwinięcie zapamiętane w MainViewModel do zamknięcia programu (DataContext panelu = pozycja, więc wiązanie do okna) -->
-            <Expander Style="{StaticResource TechnicalDetailsExpander}" Margin="0,12,0,0" Header="Szczegóły techniczne"
-                      AutomationProperties.Name="Szczegóły techniczne" Expanded="OnTechnicalDetailsExpanded"
+            <Expander Style="{StaticResource TechnicalDetailsExpander}" Margin="0,12,0,0" Header="{l:T 'Szczegóły techniczne'}"
+                      AutomationProperties.Name="{l:T 'Szczegóły techniczne'}" Expanded="OnTechnicalDetailsExpanded"
                       IsExpanded="{Binding DataContext.TechnicalDetailsExpanded, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}">
               <StackPanel>
                 <Grid>
@@ -704,9 +706,9 @@
                     <RowDefinition />
                     <RowDefinition />
                   </Grid.RowDefinitions>
-                  <TextBlock Style="{StaticResource DetailKeyText}" Text="Cofanie" />
+                  <TextBlock Style="{StaticResource DetailKeyText}" Text="{l:T 'Cofanie'}" />
                   <TextBlock Grid.Column="1" Style="{StaticResource DetailValueText}" Text="{Binding DetailUndoText}" />
-                  <TextBlock Grid.Row="1" Style="{StaticResource DetailKeyText}" Text="Identyfikator" />
+                  <TextBlock Grid.Row="1" Style="{StaticResource DetailKeyText}" Text="{l:T 'Identyfikator'}" />
                   <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource DetailValueText}" Text="{Binding Id}"
                              ToolTip="{Binding Id}" />
                 </Grid>
@@ -752,7 +754,7 @@
             </TextBlock.Style>
           </TextBlock>
         </StackPanel>
-        <Button Grid.Column="1" Margin="12,0,12,0" Style="{StaticResource TextLinkButton}" Content="Odznacz wszystko"
+        <Button Grid.Column="1" Margin="12,0,12,0" Style="{StaticResource TextLinkButton}" Content="{l:T 'Odznacz wszystko'}"
                 Command="{Binding ClearSelectionCommand}" />
         <Button Grid.Column="2" Margin="0,0,8,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
                 Content="{Binding UndoSelectedText}" Command="{Binding UndoSelectedCommand}" />
@@ -763,7 +765,7 @@
 
     <!-- Uchwyt wysokości dziennika (linia podziału nad nagłówkiem); wysokość nie jest zapamiętywana -->
     <GridSplitter Grid.Row="3" Grid.Column="1" Margin="22,0,16,0" Style="{StaticResource LogSplitter}"
-                  AutomationProperties.Name="Wysokość dziennika" />
+                  AutomationProperties.Name="{l:T 'Wysokość dziennika'}" />
 
     <!-- Dziennik: zawsze widoczny, tekst do zaznaczania (LogView), przewija do najnowszej linii -->
     <DockPanel Grid.Row="4" Grid.Column="1" Margin="22,8,16,10">
@@ -773,13 +775,13 @@
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <TextBlock Style="{StaticResource SectionHeaderText}" Text="Dziennik" />
+        <TextBlock Style="{StaticResource SectionHeaderText}" Text="{l:T 'Dziennik'}" />
         <TextBlock Grid.Column="1" Style="{StaticResource SubText}" VerticalAlignment="Center" Text="{Binding LogSummary}" />
-        <Button Grid.Column="2" Margin="16,0,0,0" Style="{StaticResource TextLinkButton}" Content="Kopiuj wszystko"
+        <Button Grid.Column="2" Margin="16,0,0,0" Style="{StaticResource TextLinkButton}" Content="{l:T 'Kopiuj wszystko'}"
                 Tag="Copy" Click="OnCopyLogClick" />
       </Grid>
       <!-- Prawy klik: Kopiuj, Kopiuj cały dziennik, na linii ze ścieżką Kopiuj ścieżkę, na linku Otwórz lokalizację pliku -->
-      <RichTextBox x:Name="LogBox" Style="{StaticResource LogTextBox}" AutomationProperties.Name="Dziennik" />
+      <RichTextBox x:Name="LogBox" Style="{StaticResource LogTextBox}" AutomationProperties.Name="{l:T 'Dziennik'}" />
     </DockPanel>
   </Grid>
 </ui:FluentWindow>

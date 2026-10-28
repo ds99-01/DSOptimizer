@@ -12,6 +12,7 @@ using System.Windows.Media;
 using DSOptimizer.App.Views;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.App.Gui;
 
@@ -63,9 +64,9 @@ internal sealed class LogView
         CommandManager.AddPreviewCanExecuteHandler(_box, OnPreviewCanExecute);
         CommandManager.AddPreviewExecutedHandler(_box, OnPreviewExecuted);
 
-        _copyPathItem = new MenuItem { Header = "Kopiuj ścieżkę" };
+        _copyPathItem = new MenuItem { Header = L.T("Kopiuj ścieżkę") };
         _copyPathItem.Click += (_, _) => CopyPath(_menuPath);
-        _revealItem = new MenuItem { Header = "Otwórz lokalizację pliku", Icon = CreateMenuIcon("OpenLocation") };
+        _revealItem = new MenuItem { Header = L.T("Otwórz lokalizację pliku"), Icon = CreateMenuIcon("OpenLocation") };
         _revealItem.Click += (_, _) => RevealFromMenu();
         _box.ContextMenu = CreateContextMenu();
         // handledEventsToo: wbudowana obsługa menu w RichTextBox może oznaczyć zdarzenie jako obsłużone (np. prawy klik w zaznaczenie),
@@ -77,7 +78,10 @@ internal sealed class LogView
     }
 
     /// <summary>„Kopiuj cały dziennik” / „Kopiuj wszystko”: wszystkie linie (godzina, poziom, tekst).</summary>
-    public void CopyAll() => Copy(LogLineText.ForClipboard(_lines), "Nie udało się skopiować dziennika do schowka.");
+    public void CopyAll() => Copy(LogLineText.ForClipboard(_lines), L.T("Nie udało się skopiować dziennika do schowka."));
+
+    /// <summary>Błąd „Otwórz lokalizację pliku” (wyjątek przy otwieraniu Eksploratora) w dzienniku.</summary>
+    public static string OpenLocationFailedMessage => L.T("Nie udało się otworzyć lokalizacji pliku.");
 
     private ContextMenu CreateContextMenu()
     {
@@ -85,12 +89,12 @@ internal sealed class LogView
         menu.SetResourceReference(Control.FontFamilyProperty, "BrandFont");
         menu.Items.Add(new MenuItem
         {
-            Header = "Kopiuj",
+            Header = L.T("Kopiuj"),
             Command = ApplicationCommands.Copy,
             CommandTarget = _box,
             Icon = CreateMenuIcon("Copy"),
         });
-        var copyAll = new MenuItem { Header = "Kopiuj cały dziennik" };
+        var copyAll = new MenuItem { Header = L.T("Kopiuj cały dziennik") };
         copyAll.Click += (_, _) => CopyAll();
         menu.Items.Add(copyAll);
         menu.Items.Add(_copyPathItem);
@@ -164,7 +168,7 @@ internal sealed class LogView
         e.Handled = true;
         if (!_box.Selection.IsEmpty)
         {
-            Copy(_box.Selection.Text, "Nie udało się skopiować zaznaczonego fragmentu dziennika do schowka.");
+            Copy(_box.Selection.Text, L.T("Nie udało się skopiować zaznaczonego fragmentu dziennika do schowka."));
         }
     }
 
@@ -282,7 +286,7 @@ internal sealed class LogView
         {
             Tag = path,
             IsEnabled = exists,
-            ToolTip = exists ? "Otwórz w Eksploratorze" : "Plik nie istnieje",
+            ToolTip = exists ? L.T("Otwórz w Eksploratorze") : L.T("Plik nie istnieje"),
         };
         link.Inlines.Add(new Run(path));
         link.SetResourceReference(TextElement.ForegroundProperty, exists ? "TextFillColorPrimaryBrush" : "TextFillColorDisabledBrush");
@@ -297,9 +301,10 @@ internal sealed class LogView
 
     private Button CreateCopyButton(string path)
     {
-        var button = new Button { Content = CopyGlyph, ToolTip = "Kopiuj ścieżkę", Margin = new Thickness(4, 0, 0, 0) };
+        var copyPath = L.T("Kopiuj ścieżkę");
+        var button = new Button { Content = CopyGlyph, ToolTip = copyPath, Margin = new Thickness(4, 0, 0, 0) };
         button.SetResourceReference(FrameworkElement.StyleProperty, "InlineIconButton");
-        AutomationProperties.SetName(button, "Kopiuj ścieżkę");
+        AutomationProperties.SetName(button, copyPath);
         button.Click += (_, _) => CopyPath(path);
         return button;
     }
@@ -316,7 +321,7 @@ internal sealed class LogView
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, "Nie udało się otworzyć lokalizacji pliku.", ex);
+            _log.Fail(Component, OpenLocationFailedMessage, ex);
         }
     }
 
@@ -324,7 +329,7 @@ internal sealed class LogView
     {
         if (!string.IsNullOrEmpty(path))
         {
-            Copy(path!, "Nie udało się skopiować ścieżki do schowka.");
+            Copy(path!, L.T("Nie udało się skopiować ścieżki do schowka."));
         }
     }
 
