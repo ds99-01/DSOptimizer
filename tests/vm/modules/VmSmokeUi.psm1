@@ -38,45 +38,213 @@ Opis działania:
          przycisku „Zainstaluj (N)”; host sprawdza wszystkie kategorie i tytuły z apps.json i nieaktywne „Zainstaluj (0)” (InstallPage,
          Get-GuiInstallTitle). Bez zaznaczania, instalowania i wyszukiwania (VM bez sieci).
     Kroki 1-4 bez kliknięć myszą (wzorce UIA i SendMessageTimeout). Dotyka wyłącznie VM; na hoście nic nie zmienia.
+    Język: nazwy w opisie powyżej są polskie, ale sonda szuka tekstów okna w języku smoke (-Language pl|en). Host składa słownik
+    Get-GuiProbeTexts (polski: stałe modułu zgodne z C# i tytuły z JSON katalogu; angielski: wyłącznie tabele tłumaczeń repo przez
+    Get-DsoUiText, brak = wyjątek, nigdy polski zastępczo; nazwy własne bez tłumaczenia jawnie w $script:UntranslatedTexts) i zapisuje
+    go do VM jako JSON UTF-8; skrypt sondy (czyste ASCII) czyta go z -TextsFile. Get-GuiUiCheck ocenia wynik tym samym słownikiem.
 #>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-# Pozycja stosowana przez sondę: ux.menu-delay (risk=safe, scope=user, bez restartu) – jedna bezpieczna pozycja bez potwierdzenia.
-$script:UiProbeCategory = 'Explorer i wygoda'
-$script:UiProbeTweakTitle = 'Szybsze otwieranie podmenu'
 $script:HtClient = 1
 $script:HtCaption = 2
+$script:RepoRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
+# Teksty okna, których szuka sonda UI, po polsku. Polski tekst = klucz tłumaczenia w C# (L.T/L.F, {l:T} w XAML); zgodność ze źródłami
+# pilnuje VmSmokeUi.Tests.ps1. Po angielsku Get-GuiProbeTexts bierze każdy z tabel tłumaczeń repo (Get-DsoUiText), brak = błąd.
+$script:ProbeTextsPolish = [ordered]@{
+    HistoryPage = 'Historia zmian'                    # HistoryText.PageTitle: pozycja menu i nazwa listy wpisów
+    HistoryFilter = 'Filtr'                           # HistoryText.FilterLabel
+    HistoryActive = 'Aktywna'                         # HistoryText.StateText(Active): stan w nazwie wiersza historii
+    ProbeCategory = 'Explorer i wygoda'               # GuiText.CategoryName("ux"): kategoria pozycji ux.menu-delay
+    PanelsCategory = 'Panele systemowe'               # GuiText.CategoryName("panels")
+    PrivacyCategory = 'Prywatność i AI'               # GuiText.CategoryName("privacy")
+    RepairCategory = 'Naprawy'                        # GuiText.CategoryName("repair")
+    RefreshState = 'Odśwież stan'                     # MainWindow.xaml: przycisk aktywny, gdy aplikacja nie jest zajęta
+    ApplyFormat = 'Zastosuj ({0})'                    # MainViewModel.ApplySelectedText
+    RiskCombo = 'Ryzyko'                              # MainWindow.xaml: filtr ryzyka
+    Minimize = 'Minimalizuj'                          # MainWindow.xaml: przycisk paska marki
+    Menu = 'Menu'                                     # MainWindow.xaml: lista menu
+    Items = 'Pozycje'                                 # MainWindow.xaml: lista pozycji kategorii
+    AppsPage = 'Aplikacje'                            # AppsPageText.PageTitle
+    AppsRefresh = 'Odśwież listę'                     # AppsPageText.RefreshButton
+    AppsReading = 'Odczyt listy w toku'               # AppsPageText.Reading
+    AppsNotRead = 'Lista nie została jeszcze odczytana' # AppsPageText.NotRead
+    RemoveFormat = 'Usuń ({0})'                       # AppsViewModel.RemoveText
+    PrepPage = 'Przygotowanie'                        # PrepText.PageTitle
+    PrepLoading = 'Wczytywanie…'                      # SpecificationFormatter.LoadingText (też strona „Przygotowanie”)
+    PrepOpenWindowsUpdate = 'Otwórz Windows Update'   # PrepText.OpenWindowsUpdate
+    PrepWindowsUpdateNote = 'Otwórz Ustawienia › Windows Update.' # PrepText.WindowsUpdateNote (PrepLinks.SettingsOpenable = false)
+    # Linia z etykietą „Karty graficzne” (PrepText.GraphicsCardsLabel) to stan kroku 5 (odczyt w toku, błąd, brak karty), nigdy linia karty.
+    PrepCardsStateLabel = 'Karty graficzne'
+    PrepGraphicsTitle = 'Grafika'                     # PrepText.GraphicsTitle
+    InstallPage = 'Instalacja'                        # InstallText.PageTitle
+    InstallRefresh = 'Odśwież'                        # InstallText.RefreshButton
+    InstallFormat = 'Zainstaluj ({0})'                # InstallText.InstallButton
+    InstallCategoryList = 'Kategorie'                 # InstallView.xaml
+    InstallAppList = 'Aplikacje do instalacji'        # InstallView.xaml
+    InstallAll = 'Wszystkie'                          # InstallText.AllCategoriesName (D1 planu RustDesk): pierwsza pozycja listy kategorii
+    InstallSelected = 'Zaznaczone'                    # InstallText.SelectedGroupName: druga pozycja; bez zaznaczania pusta
+    # Podtytuły strony (InstallText.PageSummary/PageUnavailable). Oczekiwany: winget działa i lista repo z RustDeskiem (M6 planu RustDesk).
+    InstallSummaryGitHub = 'Źródła: winget (Microsoft) i GitHub (RustDesk) · {0} · zainstalowane: {1}'
+    InstallSummaryWinget = 'Źródło: winget (Microsoft) · {0} · zainstalowane: {1}'
+    InstallSummaryWingetDown = 'Źródła: GitHub (RustDesk) · winget (Microsoft) niedostępny · {0} · zainstalowane: {1}'
+    InstallUnavailable = 'Źródło: winget (Microsoft) · niedostępne'
+}
+# Opcje filtrów w kolejności listy (GuiText.RiskFilterName, HistoryText.FilterName).
+$script:RiskOptionsPolish = @('Wszystkie', 'Bez eksperymentalnych', 'Tylko bezpieczne')
+$script:HistoryOptionsPolish = @('Wszystkie wpisy', 'Aktywne', 'Czekające na restart', 'Cofnięte i przerwane')
+# Pozycje z katalogu, na których działa sonda (tytuły z JSON katalogu repo): ux.menu-delay (risk=safe, scope=user, bez restartu, bez okna
+# potwierdzenia) i panel „Zarządzanie komputerem” (mmc.exe).
+$script:ProbeTweakId = 'ux.menu-delay'
+$script:ProbePanelId = 'panels.computer-management'
+# Teksty pokazywane bez tłumaczenia (nazwy własne poza L.T): PrepText.WindowsUpdateTitle to const.
+$script:UntranslatedTexts = @('Windows Update')
 # Strona „Przygotowanie” (krok 9 sondy): tytuły kroków = PrepText.*Title, SettingsOpenable = PrepLinks.SettingsOpenable (zgodność pilnują
-# testy VmSmokeUi.Tests.ps1, czytając źródła Core). Linia z etykietą „Karty graficzne” (PrepText.GraphicsCardsLabel) to stan kroku 5
-# (odczyt w toku, błąd odczytu, brak karty), nigdy linia karty.
+# testy VmSmokeUi.Tests.ps1, czytając źródła Core).
 $script:PrepStepTitles = @('Komputer', 'Windows Update', 'Opcjonalne aktualizacje sterowników', 'Sterowniki chipsetu', 'Grafika', 'Wsparcie producenta', 'Urządzenia bez sterownika')
 $script:PrepSettingsOpenable = $true
-$script:PrepCardsStateLabel = 'Karty graficzne'
 # Strona „Instalacja” (krok 11 sondy): kategoria apps.json -> nazwa w UI (InstallText.CategoryName), w kolejności strony (InstallCategory);
 # zgodność z Core pilnuje VmSmokeUi.Tests.ps1. Przycisk serii bez zaznaczenia (sonda niczego nie zaznacza).
 $script:InstallCategoryNames = [ordered]@{
     'browsers' = 'Przeglądarki'; 'messengers' = 'Komunikatory'; 'multimedia' = 'Multimedia'; 'documents' = 'Dokumenty'
     'tools' = 'Narzędzia'; 'remote-help' = 'Zdalna pomoc'; 'games' = 'Gry'; 'runtimes' = 'Środowiska uruchomieniowe'
 }
-# Pierwsza pozycja listy kategorii (D1 planu RustDesk, InstallText.AllCategoriesName): cała lista z nagłówkami kategorii.
-$script:InstallAllCategoriesName = 'Wszystkie'
-# Druga pozycja listy kategorii (InstallText.SelectedGroupName): zaznaczone aplikacje; bez zaznaczania sonda widzi ja pusta.
-$script:InstallSelectedCategoryName = 'Zaznaczone'
-$script:InstallButtonIdle = 'Zainstaluj (0)'
-# Podtytuł przy działającym winget i liście repo z RustDeskiem (InstallText.PageSummary z GitHubem, M6 review Tasku 5 planu RustDesk).
-$script:InstallSourcePrefix = 'Źródła: winget (Microsoft) i GitHub (RustDesk) · '
+# Tabele tłumaczeń wczytane raz na korzeń repo (słownik z rozróżnieniem wielkości liter).
+$script:TranslationCache = @{}
 
-function Get-GuiUiProbeTarget {
-    # Kategoria i tytuł pozycji, którą stosuje sonda UI (jedno źródło dla sondy i sprawdzeń).
+function Get-DsoTranslationTable {
+    # Wszystkie tabele src\DSOptimizer.Core\Localization\Translations\*.json repo -> słownik polski -> angielski (Ordinal).
+    # Ten sam polski tekst z dwoma różnymi tłumaczeniami = błąd (sonda nie zgadywałaby, które pokazuje okno).
     [CmdletBinding()]
-    [OutputType([hashtable])]
-    param()
-    return @{ Category = $script:UiProbeCategory; TweakTitle = $script:UiProbeTweakTitle }
+    param([Parameter(Mandatory)][string]$Root)
+    $Full = [System.IO.Path]::GetFullPath($Root)
+    if ($script:TranslationCache.ContainsKey($Full)) { return , $script:TranslationCache[$Full] }
+    $Directory = Join-Path $Full 'src\DSOptimizer.Core\Localization\Translations'
+    if (-not (Test-Path -LiteralPath $Directory -PathType Container)) { throw "Brak folderu tabel tłumaczeń '$Directory'." }
+    $Table = New-Object 'System.Collections.Generic.Dictionary[string,string]' ([System.StringComparer]::Ordinal)
+    foreach ($File in @(Get-ChildItem -LiteralPath $Directory -Filter '*.json' -File | Sort-Object Name)) {
+        $Json = [System.IO.File]::ReadAllText($File.FullName, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+        foreach ($Entry in @($Json.entries)) {
+            if ($null -eq $Entry) { continue }
+            $Pl = [string]$Entry.pl
+            $En = [string]$Entry.en
+            if ($Table.ContainsKey($Pl)) {
+                if ($Table[$Pl] -cne $En) { throw "Tekst '$Pl' ma w tabelach dwa różne tłumaczenia: '$($Table[$Pl])' i '$En' ($($File.Name))." }
+                continue
+            }
+            $Table[$Pl] = $En
+        }
+    }
+    $script:TranslationCache[$Full] = $Table
+    return , $Table
+}
+
+function Get-DsoUiText {
+    # Tekst okna w języku sondy: pl = polski tekst (klucz tłumaczenia) bez zmian; en = wpis z tabel tłumaczeń repo. Brak wpisu (albo pusty
+    # angielski) = wyjątek „brak tłumaczenia” – sonda nigdy nie spada po cichu na polski.
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)][string]$Polish,
+        [Parameter(Mandatory)][ValidateSet('pl', 'en')][string]$Language,
+        [string]$Root = $script:RepoRoot
+    )
+    if ($Language -eq 'pl') { return $Polish }
+    $Table = Get-DsoTranslationTable -Root $Root
+    $English = $null
+    if (-not $Table.TryGetValue($Polish, [ref]$English) -or [string]::IsNullOrEmpty($English)) { throw "brak tłumaczenia: '$Polish' (tabele w '$Root')." }
+    return $English
+}
+
+function ConvertTo-GuiProbeLanguage {
+    # Jak Get-DsoUiText, ale teksty z $script:UntranslatedTexts (nazwy własne poza L.T) zostają bez zmian w każdym języku.
+    [CmdletBinding()]
+    [OutputType([string])]
+    param([Parameter(Mandatory)][string]$Polish, [Parameter(Mandatory)][string]$Language, [Parameter(Mandatory)][string]$Root)
+    if ($script:UntranslatedTexts -ccontains $Polish) { return $Polish }
+    return (Get-DsoUiText -Polish $Polish -Language $Language -Root $Root)
+}
+
+function Get-GuiCatalogTitle {
+    # Tytuł pozycji katalogu o danym id z plików src\DSOptimizer.Catalog\catalog repo (bez apps-bloat.json i apps.json). Brak = błąd.
+    [CmdletBinding()]
+    [OutputType([string])]
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string]$Id)
+    $Directory = Join-Path $Root 'src\DSOptimizer.Catalog\catalog'
+    foreach ($File in @(Get-ChildItem -LiteralPath $Directory -Filter '*.json' -File | Where-Object { $_.Name -notin @('apps-bloat.json', 'apps.json') } | Sort-Object Name)) {
+        # ConvertFrom-Json w PowerShell 5.1 oddaje tablicę JSON jako jeden obiekt – najpierw zmienna, potem @() ją rozwija.
+        $Items = [System.IO.File]::ReadAllText($File.FullName, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+        foreach ($Item in @($Items)) {
+            if ([string]$Item.id -eq $Id) { return [string]$Item.title }
+        }
+    }
+    throw "Brak pozycji '$Id' w katalogu '$Directory'."
+}
+
+function ConvertTo-GuiCountPattern {
+    # Format przycisku z liczbą („Zastosuj ({0})”) -> wyrażenie regularne całej nazwy z N w grupie 1 (^Zastosuj \((\d+)\)$).
+    [CmdletBinding()]
+    [OutputType([string])]
+    param([Parameter(Mandatory)][string]$Format)
+    $Parts = $Format.Split([string[]]@('{0}'), [System.StringSplitOptions]::None)
+    if ($Parts.Count -ne 2) { throw "Format '$Format' ma mieć dokładnie jedno {0}." }
+    return '^' + [regex]::Escape($Parts[0]) + '(\d+)' + [regex]::Escape($Parts[1]) + '$'
+}
+
+function Get-GuiCommonPrefix {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param([Parameter(Mandatory)][string[]]$Text)
+    $Prefix = $Text[0]
+    foreach ($T in $Text) {
+        $N = 0
+        while ($N -lt $Prefix.Length -and $N -lt $T.Length -and $Prefix[$N] -ceq $T[$N]) { $N++ }
+        $Prefix = $Prefix.Substring(0, $N)
+    }
+    return $Prefix
+}
+
+function Get-GuiProbeTexts {
+    # Słownik nazwa -> tekst wszystkich tekstów sondy UI w języku okna (-Language pl|en): menu, przyciski z liczbą (format, tekst „(1)”/„(0)”
+    # i wzorzec N), opcje filtrów, stan wiersza Historii, tytuły kroków Przygotowania, kategorie Instalacji, podtytuł, tytuły pozycji katalogu
+    # (ux.menu-delay, panel „Zarządzanie komputerem”). Polskie źródła: stałe modułu (zgodne z C#) i JSON katalogu; angielskie: wyłącznie
+    # tabele tłumaczeń repo – brak = wyjątek (poza nazwami własnymi z $script:UntranslatedTexts). Host zapisuje słownik jako JSON do VM.
+    [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
+    param(
+        [Parameter(Mandatory)][ValidateSet('pl', 'en')][string]$Language,
+        [string]$Root = $script:RepoRoot
+    )
+    $Tr = { param([string]$Polish) ConvertTo-GuiProbeLanguage -Polish $Polish -Language $Language -Root $Root }
+    $Texts = [ordered]@{}
+    foreach ($Key in $script:ProbeTextsPolish.Keys) { $Texts[$Key] = & $Tr $script:ProbeTextsPolish[$Key] }
+    $Texts['TweakTitle'] = & $Tr (Get-GuiCatalogTitle -Root $Root -Id $script:ProbeTweakId)
+    $Texts['PanelTitle'] = & $Tr (Get-GuiCatalogTitle -Root $Root -Id $script:ProbePanelId)
+    $Texts['RiskOptions'] = @($script:RiskOptionsPolish | ForEach-Object { & $Tr $_ })
+    $Texts['HistoryOptions'] = @($script:HistoryOptionsPolish | ForEach-Object { & $Tr $_ })
+    $Texts['PrepTitles'] = @($script:PrepStepTitles | ForEach-Object { & $Tr $_ })
+    $Categories = [ordered]@{}
+    foreach ($Key in $script:InstallCategoryNames.Keys) { $Categories[$Key] = & $Tr $script:InstallCategoryNames[$Key] }
+    $Texts['InstallCategoryNames'] = $Categories
+    # Teksty pochodne: przycisk z jedną pozycją, bez zaznaczenia, wzorce N, prefiksy podtytułu.
+    $Texts['ApplyOne'] = $Texts.ApplyFormat.Replace('{0}', '1')
+    $Texts['ApplyPattern'] = ConvertTo-GuiCountPattern -Format $Texts.ApplyFormat
+    $Texts['RemovePattern'] = ConvertTo-GuiCountPattern -Format $Texts.RemoveFormat
+    $Texts['InstallIdle'] = $Texts.InstallFormat.Replace('{0}', '0')
+    $Texts['InstallPattern'] = ConvertTo-GuiCountPattern -Format $Texts.InstallFormat
+    $Summary = [string]$Texts.InstallSummaryGitHub
+    if ($Summary.IndexOf('{0}') -lt 1) { throw "Podtytuł strony Instalacja '$Summary' nie ma {0} po prefiksie źródła." }
+    $Texts['InstallSourcePrefix'] = $Summary.Substring(0, $Summary.IndexOf('{0}'))
+    # Sonda łapie każdy podtytuł źródła („Źródło: …”/„Źródła: …”), dokładny tekst ocenia host.
+    $Texts['InstallSourceProbePrefix'] = Get-GuiCommonPrefix -Text @($Texts.InstallSummaryGitHub, $Texts.InstallSummaryWinget, $Texts.InstallSummaryWingetDown, $Texts.InstallUnavailable)
+    if ($Texts.InstallSourceProbePrefix.Length -lt 3) { throw "Podtytuły strony Instalacja nie mają wspólnego prefiksu ('$($Texts.InstallSourceProbePrefix)')." }
+    $Unavailable = [string]$Texts.InstallUnavailable
+    $Texts['InstallUnavailableSuffix'] = $Unavailable.Substring($Unavailable.LastIndexOf(' · ') + 3)
+    return $Texts
 }
 
 function Get-GuiPrepExpected {
-    # Oczekiwania sprawdzenia PrepPage: tytuły 7 kroków (w kolejności) i to, czy krok 2 ma przycisk (true) czy notatkę zastępczą (false).
+    # Oczekiwania sprawdzenia PrepPage po polsku: tytuły 7 kroków (w kolejności) i to, czy krok 2 ma przycisk (true) czy notatkę zastępczą (false).
     [CmdletBinding()]
     [OutputType([hashtable])]
     param()
@@ -85,14 +253,16 @@ function Get-GuiPrepExpected {
 
 function Get-GuiUiProbeScript {
     # Skrypt sondy UI uruchamiany W VM w sesji użytkownika 'dso' (tylko ASCII, PowerShell 5.1). Zapisuje JSON do -ResultFile.
-    # Skrypt trzymamy w czystym ASCII (polskie znaki w nazwach UIA składane z kodów znaków), żeby nie zależeć od kodowania pliku
-    # zapisanego w VM ani od strony kodowej, z którą PowerShell 5.1 go czyta.
+    # Skrypt trzymamy w czystym ASCII, żeby nie zależeć od kodowania pliku zapisanego w VM ani od strony kodowej, z którą PowerShell 5.1
+    # go czyta. Nazwy elementów okna (w języku -Language smoke) czyta z -TextsFile: JSON UTF-8 ze słownikiem Get-GuiProbeTexts,
+    # zapisany przez host do VM; nazwy w skrypcie to $T.<nazwa>, a lista $RequiredTexts = wszystkie użyte (pilnuje test).
     [CmdletBinding()]
     [OutputType([string])]
     param()
     return @'
-param([Parameter(Mandatory)][string]$ResultFile, [Parameter(Mandatory)][string]$Category, [Parameter(Mandatory)][string]$TweakTitle)
+param([Parameter(Mandatory)][string]$ResultFile, [Parameter(Mandatory)][string]$TextsFile)
 $ErrorActionPreference = 'Stop'
+$RequiredTexts = @('AppsNotRead', 'AppsPage', 'AppsReading', 'AppsRefresh', 'ApplyOne', 'ApplyPattern', 'HistoryFilter', 'HistoryOptions', 'HistoryPage', 'InstallAppList', 'InstallCategoryList', 'InstallPage', 'InstallPattern', 'InstallRefresh', 'InstallSourceProbePrefix', 'Items', 'Menu', 'Minimize', 'PanelTitle', 'PanelsCategory', 'PrepGraphicsTitle', 'PrepLoading', 'PrepOpenWindowsUpdate', 'PrepPage', 'PrepTitles', 'PrepWindowsUpdateNote', 'PrivacyCategory', 'ProbeCategory', 'RefreshState', 'RemovePattern', 'RepairCategory', 'RiskCombo', 'RiskOptions', 'TweakTitle')
 $Out = [ordered]@{
     Ok = $false; Error = $null; Steps = @(); Dpi = $null
     HistoryMenuFound = $false; ApplyInvoked = $false; ApplyBusySeen = $false; ApplySeconds = $null; ApplyError = $null
@@ -109,6 +279,10 @@ $Out = [ordered]@{
 }
 function Add-Step([string]$Text) { $script:Out.Steps += ('{0:HH:mm:ss.fff} {1}' -f (Get-Date), $Text) }
 try {
+    # Teksty okna w jezyku smoke (JSON UTF-8 od hosta); brak ktoregokolwiek = blad sondy, nie ciche szukanie pustej nazwy.
+    $T = [System.IO.File]::ReadAllText($TextsFile, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+    $MissingTexts = @($RequiredTexts | Where-Object { $null -eq $T.PSObject.Properties[$_] -or [string]::IsNullOrEmpty([string]$T.PSObject.Properties[$_].Value) })
+    if ($MissingTexts.Count -gt 0) { throw "Brak tekstow w pliku $TextsFile`: $($MissingTexts -join ', ')." }
     Add-Type -AssemblyName UIAutomationClient
     Add-Type -AssemblyName UIAutomationTypes
     Add-Type -TypeDefinition @"
@@ -181,28 +355,28 @@ public static class DsoUser32 {
     Add-Step "okno $Hwnd, DPI $($Out.Dpi)"
 
     # 1. Pozycja menu "Historia zmian"
-    $HistoryItem = Find-Element $Root 'Historia zmian' $ListItem
+    $HistoryItem = Find-Element $Root $T.HistoryPage $ListItem
     $Out.HistoryMenuFound = ($null -ne $HistoryItem)
-    Add-Step "menu Historia zmian: $($Out.HistoryMenuFound)"
+    Add-Step "menu '$($T.HistoryPage)': $($Out.HistoryMenuFound)"
 
-    # 2. Jedna bezpieczna pozycja: kategoria -> pole wyboru -> "Zastosuj (1)" -> koniec operacji
+    # 2. Jedna bezpieczna pozycja (ux.menu-delay): kategoria -> pole wyboru -> "Zastosuj (1)" -> koniec operacji
     try {
-        $RefreshName = 'Od' + [char]0x015B + 'wie' + [char]0x017C + ' stan'
-        $CategoryItem = Find-Element $Root $Category $ListItem
-        if ($null -eq $CategoryItem) { throw "Brak pozycji menu '$Category'." }
+        $RefreshName = [string]$T.RefreshState
+        $CategoryItem = Find-Element $Root $T.ProbeCategory $ListItem
+        if ($null -eq $CategoryItem) { throw "Brak pozycji menu '$($T.ProbeCategory)'." }
         $CategoryItem.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
-        $Box = Wait-Element $Root $TweakTitle ([System.Windows.Automation.ControlType]::CheckBox) 15
-        if ($null -eq $Box) { throw "Brak pola wyboru '$TweakTitle'." }
+        $Box = Wait-Element $Root $T.TweakTitle ([System.Windows.Automation.ControlType]::CheckBox) 15
+        if ($null -eq $Box) { throw "Brak pola wyboru '$($T.TweakTitle)'." }
         $Toggle = $Box.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern)
         if ($Toggle.Current.ToggleState -ne [System.Windows.Automation.ToggleState]::On) { $Toggle.Toggle() }
-        $Apply = Wait-Element $Root 'Zastosuj (1)' ([System.Windows.Automation.ControlType]::Button) 10
-        if ($null -eq $Apply) { throw 'Brak przycisku "Zastosuj (1)" (pozycja juz zastosowana albo nie trafila do serii).' }
+        $Apply = Wait-Element $Root $T.ApplyOne ([System.Windows.Automation.ControlType]::Button) 10
+        if ($null -eq $Apply) { throw "Brak przycisku '$($T.ApplyOne)' (pozycja juz zastosowana albo nie trafila do serii)." }
         $Refresh = Find-Element $Root $RefreshName ([System.Windows.Automation.ControlType]::Button)
         if ($null -eq $Refresh) { throw 'Brak przycisku odswiezania stanu.' }
         $Started = Get-Date
         $Apply.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
         $Out.ApplyInvoked = $true
-        Add-Step 'Zastosuj (1): Invoke'
+        Add-Step "$($T.ApplyOne): Invoke"
         $Limit = $Started.AddSeconds(10)
         while ((Get-Date) -lt $Limit -and $Refresh.Current.IsEnabled) { Start-Sleep -Milliseconds 50 }
         $Out.ApplyBusySeen = (-not $Refresh.Current.IsEnabled)
@@ -218,8 +392,8 @@ public static class DsoUser32 {
     try {
         if ($null -eq $HistoryItem) { throw 'Brak pozycji menu Historia zmian.' }
         $HistoryItem.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
-        $EntryList = Wait-Element $Root 'Historia zmian' ([System.Windows.Automation.ControlType]::List) 15
-        $Filter = Wait-Element $Root 'Filtr' ([System.Windows.Automation.ControlType]::ComboBox) 5
+        $EntryList = Wait-Element $Root $T.HistoryPage ([System.Windows.Automation.ControlType]::List) 15
+        $Filter = Wait-Element $Root $T.HistoryFilter ([System.Windows.Automation.ControlType]::ComboBox) 5
         $Out.HistoryPageOpened = ($null -ne $EntryList -and $null -ne $Filter)
         Add-Step "strona historii: lista=$($null -ne $EntryList), filtr=$($null -ne $Filter)"
         if ($null -ne $EntryList) {
@@ -228,7 +402,7 @@ public static class DsoUser32 {
                 $Rows = $EntryList.FindAll([System.Windows.Automation.TreeScope]::Children,
                     (New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $ListItem)))
                 $Out.EntryNames = @($Rows | ForEach-Object { [string]$_.Current.Name })
-                if (@($Out.EntryNames | Where-Object { $_ -like "$TweakTitle, *" }).Count -gt 0) { break }
+                if (@($Out.EntryNames | Where-Object { $_.StartsWith("$($T.TweakTitle), ", [System.StringComparison]::Ordinal) }).Count -gt 0) { break }
                 Start-Sleep -Milliseconds 500
             } while ((Get-Date) -lt $Limit)
             Add-Step "wiersze historii: $($Out.EntryNames.Count)"
@@ -243,9 +417,9 @@ public static class DsoUser32 {
             Start-Sleep -Milliseconds 2000
             $Rect = New-Object DsoUser32+RECT
             [void][DsoUser32]::GetWindowRect($Hwnd, [ref]$Rect)
-            $Minimize = Find-Element $Root 'Minimalizuj' ([System.Windows.Automation.ControlType]::Button)
-            $Menu = Find-Element $Root 'Menu' ([System.Windows.Automation.ControlType]::List)
-            if ($null -eq $Minimize -or $null -eq $Menu) { throw 'Brak przycisku Minimalizuj albo listy Menu (UIA).' }
+            $Minimize = Find-Element $Root $T.Minimize ([System.Windows.Automation.ControlType]::Button)
+            $Menu = Find-Element $Root $T.Menu ([System.Windows.Automation.ControlType]::List)
+            if ($null -eq $Minimize -or $null -eq $Menu) { throw "Brak przycisku '$($T.Minimize)' albo listy '$($T.Menu)' (UIA)." }
             $Bar = $Minimize.Current.BoundingRectangle
             $BarTop = [int][math]::Round($Bar.Top)
             $BarBottom = [int][math]::Round($Bar.Bottom)
@@ -345,7 +519,7 @@ public static class DsoUser32 {
         try {
             $Nav = $null
             $Items = $Root.FindAll($Scope, (New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $ListItem)))
-            foreach ($I in $Items) { if ($I.Current.Name -like "$NavPrefix*") { $Nav = $I; break } }
+            foreach ($I in $Items) { if ([string]$I.Current.Name -and ([string]$I.Current.Name).StartsWith($NavPrefix, [System.StringComparison]::Ordinal)) { $Nav = $I; break } }
             if ($null -eq $Nav) { throw "Brak pozycji menu '$NavPrefix'." }
             $Nav.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
             $Combo = Wait-Element $Root $ComboName ([System.Windows.Automation.ControlType]::ComboBox) 15
@@ -386,20 +560,20 @@ public static class DsoUser32 {
             if ($null -ne $Combo) { Reset-FilterCombo $Combo $ComboName $Before $ExpectedNames }
         }
     }
-    # Oczekiwane nazwy opcji (GuiText.RiskFilterName, HistoryText.FilterName); polskie znaki z kodow znakow (skrypt tylko ASCII).
-    $RiskOptionNames = @('Wszystkie', 'Bez eksperymentalnych', 'Tylko bezpieczne')
-    $HistoryOptionNames = @('Wszystkie wpisy', 'Aktywne', ('Czekaj' + [char]0x0105 + 'ce na restart'), ('Cofni' + [char]0x0119 + 'te i przerwane'))
-    # Kazde pole osobno: blad jednego nie pomija drugiego, a opis bledu niesie nazwe pola.
+    # Oczekiwane nazwy opcji (GuiText.RiskFilterName, HistoryText.FilterName) z pliku tekstow, w kolejnosci listy.
+    $RiskOptionNames = @($T.RiskOptions)
+    $HistoryOptionNames = @($T.HistoryOptions)
+    # Kazde pole osobno: blad jednego nie pomija drugiego, a opis bledu niesie nazwe pola (Ryzyko/Filtr - nazwy pol wyniku, nie okna).
     $FilterErrors = @()
     $R1 = @{ Opened = $false; Selected = $false; Note = $null }
-    try { Test-FilterCombo $Category 'Ryzyko' $RiskOptionNames $R1 }
-    catch { $FilterErrors += "Ryzyko: $($_.Exception.Message)"; Add-Step "filtr 'Ryzyko': BLAD $($_.Exception.Message)" }
+    try { Test-FilterCombo $T.ProbeCategory $T.RiskCombo $RiskOptionNames $R1 }
+    catch { $FilterErrors += "Ryzyko: $($_.Exception.Message)"; Add-Step "filtr '$($T.RiskCombo)': BLAD $($_.Exception.Message)" }
     if ($R1.Note) { $FilterErrors += "Ryzyko: $($R1.Note)" }
     $Out.FilterRiskOpened = [bool]$R1.Opened
     $Out.FilterRiskSelected = [bool]$R1.Selected
     $R2 = @{ Opened = $false; Selected = $false; Note = $null }
-    try { Test-FilterCombo 'Historia zmian' 'Filtr' $HistoryOptionNames $R2 }
-    catch { $FilterErrors += "Filtr: $($_.Exception.Message)"; Add-Step "filtr 'Filtr': BLAD $($_.Exception.Message)" }
+    try { Test-FilterCombo $T.HistoryPage $T.HistoryFilter $HistoryOptionNames $R2 }
+    catch { $FilterErrors += "Filtr: $($_.Exception.Message)"; Add-Step "filtr '$($T.HistoryFilter)': BLAD $($_.Exception.Message)" }
     if ($R2.Note) { $FilterErrors += "Filtr: $($R2.Note)" }
     $Out.FilterHistoryOpened = [bool]$R2.Opened
     $Out.FilterHistorySelected = [bool]$R2.Selected
@@ -410,8 +584,8 @@ public static class DsoUser32 {
         $Nav = Find-Element $Root $NavName $ListItem
         if ($null -eq $Nav) { throw "Brak pozycji menu '$NavName'." }
         $Nav.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
-        $List = Wait-Element $Root 'Pozycje' ([System.Windows.Automation.ControlType]::List) 15
-        if ($null -eq $List) { throw 'Brak listy Pozycje.' }
+        $List = Wait-Element $Root $T.Items ([System.Windows.Automation.ControlType]::List) 15
+        if ($null -eq $List) { throw "Brak listy '$($T.Items)'." }
         $Text = Wait-Element $List $Title ([System.Windows.Automation.ControlType]::Text) 15
         if ($null -eq $Text) { throw "Brak tytulu wiersza '$Title' na liscie." }
         $Walker = [System.Windows.Automation.TreeWalker]::ControlViewWalker
@@ -425,8 +599,7 @@ public static class DsoUser32 {
     function Wait-AppIdle([int]$Seconds) {
         # Po uruchomieniu panelu aplikacja jest zajeta (IsBusy: "Odswiez stan" nieaktywne, ok. 8 s na VM) i ignoruje kolejny klik w znacznik
         # uruchomienia. Kolejny krok sondy czeka na koniec zajetosci - inaczej dwuklik trafialby w zajeta aplikacje i dawal 0 okien.
-        $Name = 'Od' + [char]0x015B + 'wie' + [char]0x017C + ' stan'
-        $Btn = Find-Element $Root $Name ([System.Windows.Automation.ControlType]::Button)
+        $Btn = Find-Element $Root $T.RefreshState ([System.Windows.Automation.ControlType]::Button)
         if ($null -eq $Btn) { throw 'Brak przycisku odswiezania stanu.' }
         $T0 = Get-Date
         $Limit = $T0.AddSeconds($Seconds)
@@ -459,9 +632,9 @@ public static class DsoUser32 {
     $TweakBox = $null
     $InitialToggle = $null
     try {
-        $Tw = Get-ListRow $Category $TweakTitle
-        $TweakBox = Find-Element $Tw.List $TweakTitle ([System.Windows.Automation.ControlType]::CheckBox)
-        if ($null -eq $TweakBox) { throw "Brak pola wyboru '$TweakTitle' na liscie." }
+        $Tw = Get-ListRow $T.ProbeCategory $T.TweakTitle
+        $TweakBox = Find-Element $Tw.List $T.TweakTitle ([System.Windows.Automation.ControlType]::CheckBox)
+        if ($null -eq $TweakBox) { throw "Brak pola wyboru '$($T.TweakTitle)' na liscie." }
         $Toggle = $TweakBox.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern)
         $InitialToggle = $Toggle.Current.ToggleState
         [void][DsoUser32]::SetForegroundWindow($Hwnd)
@@ -489,15 +662,14 @@ public static class DsoUser32 {
         # sprzatanie: zaznaczenie do serii wraca do stanu poczatkowego (tylko zaznaczenie, nic nie jest stosowane)
         try {
             if ($null -ne $TweakBox -and $null -ne $InitialToggle) {
-                $T = $TweakBox.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern)
-                if ($T.Current.ToggleState -ne $InitialToggle) { $T.Toggle(); Add-Step 'wiersz tweaka: sprzatanie - przywrocono pole wyboru' }
+                $Tg = $TweakBox.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern)
+                if ($Tg.Current.ToggleState -ne $InitialToggle) { $Tg.Toggle(); Add-Step 'wiersz tweaka: sprzatanie - przywrocono pole wyboru' }
             }
         } catch { Add-Step "wiersz tweaka: sprzatanie BLAD $($_.Exception.Message)" }
     }
-    $PanelTitle = 'Zarz' + [char]0x0105 + 'dzanie komputerem'
     $BaseMmc = @(Get-MmcWindowId)
     try {
-        $Pn = Get-ListRow 'Panele systemowe' $PanelTitle
+        $Pn = Get-ListRow $T.PanelsCategory $T.PanelTitle
         [void][DsoUser32]::SetForegroundWindow($Hwnd)
         Start-Sleep -Milliseconds 300
         $Scale = $Out.Dpi / 96.0
@@ -529,13 +701,13 @@ public static class DsoUser32 {
     #    Nic nie jest stosowane ani przelaczane: sonda czyta tylko N z przycisku serii. Sugestie zaznaczaja sie raz, gdy wszystkie sugerowane
     #    pozycje maja znany stan, wiec N czytamy przy bezczynnej aplikacji i po 3 s tej samej wartosci (najdluzej 60 s).
     try {
-        $PrivacyName = 'Prywatno' + [char]0x015B + [char]0x0107 + ' i AI'
+        $PrivacyName = [string]$T.PrivacyCategory
         $PrivacyNav = Find-Element $Root $PrivacyName $ListItem
         if ($null -eq $PrivacyNav) { throw "Brak pozycji menu '$PrivacyName'." }
         $PrivacyNav.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
         Start-Sleep -Milliseconds 1000
         Wait-AppIdle 120
-        $ApplyPattern = '^Zastosuj \((\d+)\)$'
+        $ApplyPattern = $T.ApplyPattern
         $ByButton = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)
         $Last = $null
         $StableSince = $null
@@ -561,17 +733,16 @@ public static class DsoUser32 {
     #    listy ("Odswiez liste" aktywne, podtytul bez "Odczyt listy w toku" i "Lista nie zostala jeszcze odczytana") i po 3 s tej samej
     #    wartosci (najdluzej 180 s - odczyt AppX idzie przez PowerShell).
     try {
-        $AppsNav = Find-Element $Root 'Aplikacje' $ListItem
-        if ($null -eq $AppsNav) { throw "Brak pozycji menu 'Aplikacje'." }
+        $AppsNav = Find-Element $Root $T.AppsPage $ListItem
+        if ($null -eq $AppsNav) { throw "Brak pozycji menu '$($T.AppsPage)'." }
         $AppsNav.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
         Start-Sleep -Milliseconds 1000
-        $AppsRefreshName = 'Od' + [char]0x015B + 'wie' + [char]0x017C + ' list' + [char]0x0119
-        $AppsRefresh = Wait-Element $Root $AppsRefreshName ([System.Windows.Automation.ControlType]::Button) 15
+        $AppsRefresh = Wait-Element $Root $T.AppsRefresh ([System.Windows.Automation.ControlType]::Button) 15
         if ($null -eq $AppsRefresh) { throw 'Brak przycisku odswiezania listy aplikacji.' }
         $TextType = [System.Windows.Automation.ControlType]::Text
-        $ReadingName = 'Odczyt listy w toku'
-        $NotReadName = 'Lista nie zosta' + [char]0x0142 + 'a jeszcze odczytana'
-        $RemovePattern = '^Usu' + [char]0x0144 + ' \((\d+)\)$'
+        $ReadingName = [string]$T.AppsReading
+        $NotReadName = [string]$T.AppsNotRead
+        $RemovePattern = $T.RemovePattern
         $ByButton = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)
         $Last = $null
         $StableSince = $null
@@ -602,14 +773,13 @@ public static class DsoUser32 {
     #    krokow; potem przycisk "Otworz Windows Update" albo notatka zastepcza (PrepLinks.SettingsOpenable) i teksty kroku "Grafika" do
     #    nastepnego tytulu (bez numerow krokow i napisow przyciskow linkow). Teksty w kolejnosci drzewa UIA (FindAll, Descendants).
     try {
-        $PrepNav = Find-Element $Root 'Przygotowanie' $ListItem
+        $PrepNav = Find-Element $Root $T.PrepPage $ListItem
         $Out.PrepMenuFound = ($null -ne $PrepNav)
-        if ($null -eq $PrepNav) { throw "Brak pozycji menu 'Przygotowanie'." }
+        if ($null -eq $PrepNav) { throw "Brak pozycji menu '$($T.PrepPage)'." }
         $PrepNav.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
         Start-Sleep -Milliseconds 1000
-        $PrepTitleNames = @('Komputer', 'Windows Update', ('Opcjonalne aktualizacje sterownik' + [char]0x00F3 + 'w'), 'Sterowniki chipsetu', 'Grafika',
-            'Wsparcie producenta', ('Urz' + [char]0x0105 + 'dzenia bez sterownika'))
-        $PrepLoadingName = 'Wczytywanie' + [char]0x2026
+        $PrepTitleNames = @($T.PrepTitles)
+        $PrepLoadingName = [string]$T.PrepLoading
         $ByText = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Text)
         $Walker = [System.Windows.Automation.TreeWalker]::ControlViewWalker
         $ButtonId = [System.Windows.Automation.ControlType]::Button.Id
@@ -627,18 +797,18 @@ public static class DsoUser32 {
             Start-Sleep -Milliseconds 500
         } while ((Get-Date) -lt $Limit)
         $Out.PrepTitles = @($Found)
-        $WuButtonName = 'Otw' + [char]0x00F3 + 'rz Windows Update'
-        $WuNoteName = 'Otw' + [char]0x00F3 + 'rz Ustawienia ' + [char]0x203A + ' Windows Update.'
+        $WuButtonName = [string]$T.PrepOpenWindowsUpdate
+        $WuNoteName = [string]$T.PrepWindowsUpdateNote
         $Out.PrepWindowsUpdateButton = ($null -ne (Find-Element $Root $WuButtonName ([System.Windows.Automation.ControlType]::Button)))
         $Out.PrepWindowsUpdateNote = ($PrepTexts -contains $WuNoteName)
-        $GraphicsAt = [array]::IndexOf($PrepTexts, 'Grafika')
+        $GraphicsAt = [array]::IndexOf($PrepTexts, [string]$T.PrepGraphicsTitle)
         $Lines = @()
         if ($GraphicsAt -ge 0) {
             for ($I = $GraphicsAt + 1; $I -lt $PrepTexts.Count; $I++) {
-                $T = $PrepTexts[$I]
-                if ($PrepTitleNames -contains $T) { break }
-                if ([string]::IsNullOrWhiteSpace($T) -or $T -match '^\d+$') { continue }
-                $Lines += $T
+                $Line = $PrepTexts[$I]
+                if ($PrepTitleNames -contains $Line) { break }
+                if ([string]::IsNullOrWhiteSpace($Line) -or $Line -match '^\d+$') { continue }
+                $Lines += $Line
             }
         }
         $Out.PrepGraphicsLines = @($Lines)
@@ -646,18 +816,18 @@ public static class DsoUser32 {
     }
     catch { $Out.PrepError = $_.Exception.Message; Add-Step "przygotowanie: BLAD $($Out.PrepError)" }
     # 10. Strona "Naprawy" (Etap 4b partia 1) - przed "Instalacja". Nic nie jest zaznaczane, klikane ani uruchamiane: wejscie wzorcem
-    #     SelectionItemPattern na pozycje menu, lista 'Pozycje' i nazwy jej tekstow (tytuly, opisy). Odczyt powtarzany co 0,5 s (najwyzej
+    #     SelectionItemPattern na pozycje menu, lista pozycji ($T.Items) i nazwy jej tekstow (tytuly, opisy). Odczyt powtarzany co 0,5 s (najwyzej
     #     20 s), az dwa kolejne sa takie same i niepuste; potem lista przewijana wzorcem ScrollPattern do konca (wirtualizacja wierszy)
     #     i z powrotem. Host porownuje teksty z tytulami pozycji kategorii repair z katalogu.
     try {
-        $RepairNav = Find-Element $Root 'Naprawy' $ListItem
+        $RepairNav = Find-Element $Root $T.RepairCategory $ListItem
         $Out.RepairMenuFound = ($null -ne $RepairNav)
-        if ($null -eq $RepairNav) { throw "Brak pozycji menu 'Naprawy'." }
+        if ($null -eq $RepairNav) { throw "Brak pozycji menu '$($T.RepairCategory)'." }
         $RepairNav.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
         Start-Sleep -Milliseconds 1000
-        $RepairList = Wait-Element $Root 'Pozycje' ([System.Windows.Automation.ControlType]::List) 15
+        $RepairList = Wait-Element $Root $T.Items ([System.Windows.Automation.ControlType]::List) 15
         $Out.RepairListFound = ($null -ne $RepairList)
-        if ($null -eq $RepairList) { throw 'Brak listy Pozycje na stronie Naprawy.' }
+        if ($null -eq $RepairList) { throw "Brak listy '$($T.Items)' na stronie Naprawy." }
         $RepairByText = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Text)
         $RepairNames = New-Object System.Collections.Generic.List[string]
         $ReadRepairTexts = { @($RepairList.FindAll($Scope, $RepairByText) | ForEach-Object { [string]$_.Current.Name } | Where-Object { $_ }) }
@@ -686,32 +856,32 @@ public static class DsoUser32 {
     catch { $Out.RepairError = $_.Exception.Message; Add-Step "naprawy: BLAD $($Out.RepairError)" }
     # 11. Strona "Instalacja" (Etap 4c) - na samym koncu. Nic nie jest zaznaczane, instalowane ani wyszukiwane (VM bez sieci): wejscie
     #     wzorcem SelectionItemPattern na pozycje menu, czekanie najwyzej 180 s na koniec odczytu ("Odswiez" strony aktywne, podtytul
-    #     "Zrodlo: ..."/"Zrodla: ...", lista 'Kategorie' niepusta, przycisk serii staly przez 3 s), potem kazda kategoria wybierana
-    #     wzorcem SelectionItemPattern (nawigacja, nie zaznaczenie do serii) i teksty listy 'Aplikacje do instalacji' czytane z przewijaniem
+    #     "Zrodlo: ..."/"Zrodla: ...", lista kategorii niepusta, przycisk serii staly przez 3 s), potem kazda kategoria wybierana
+    #     wzorcem SelectionItemPattern (nawigacja, nie zaznaczenie do serii) i teksty listy aplikacji ($T.InstallAppList) czytane z przewijaniem
     #     wzorcem ScrollPattern. Na koniec napis i IsEnabled przycisku 'Zainstaluj (N)'. Host porownuje z apps.json repo.
     try {
-        $InstallNav = Find-Element $Root 'Instalacja' $ListItem
+        $InstallNav = Find-Element $Root $T.InstallPage $ListItem
         $Out.InstallMenuFound = ($null -ne $InstallNav)
-        if ($null -eq $InstallNav) { throw "Brak pozycji menu 'Instalacja'." }
+        if ($null -eq $InstallNav) { throw "Brak pozycji menu '$($T.InstallPage)'." }
         $InstallNav.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
         Start-Sleep -Milliseconds 1000
-        $InstallRefreshName = 'Od' + [char]0x015B + 'wie' + [char]0x017C
-        # "Zrodlo: ..." albo "Zrodla: ..." (M6 planu RustDesk) - sonda czyta kazdy podtytul zrodla, dokladny tekst ocenia host.
-        $SourcePrefix = [char]0x0179 + 'r' + [char]0x00F3 + 'd' + [char]0x0142
-        $InstallPattern = '^Zainstaluj \((\d+)\)$'
+        $InstallRefreshName = [string]$T.InstallRefresh
+        # "Zrodlo: ..." albo "Zrodla: ..." (M6 planu RustDesk) - sonda czyta kazdy podtytul zrodla (wspolny prefiks), dokladny tekst ocenia host.
+        $SourcePrefix = [string]$T.InstallSourceProbePrefix
+        $InstallPattern = $T.InstallPattern
         $TextType = [System.Windows.Automation.ControlType]::Text
         $ByInstallText = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $TextType)
         $ByInstallButton = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)
         $ByInstallItem = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $ListItem)
-        $CategoryList = Wait-Element $Root 'Kategorie' ([System.Windows.Automation.ControlType]::List) 30
-        if ($null -eq $CategoryList) { throw 'Brak listy Kategorie na stronie Instalacja.' }
+        $CategoryList = Wait-Element $Root $T.InstallCategoryList ([System.Windows.Automation.ControlType]::List) 30
+        if ($null -eq $CategoryList) { throw "Brak listy '$($T.InstallCategoryList)' na stronie Instalacja." }
         $InstallButton = $null
         $Last = $null
         $StableSince = $null
         $Limit = (Get-Date).AddSeconds(180)
         do {
             $Refresh = Find-Element $Root $InstallRefreshName ([System.Windows.Automation.ControlType]::Button)
-            $Subtitle = @($Root.FindAll($Scope, $ByInstallText) | ForEach-Object { [string]$_.Current.Name } | Where-Object { $_.StartsWith($SourcePrefix) }) | Select-Object -First 1
+            $Subtitle = @($Root.FindAll($Scope, $ByInstallText) | ForEach-Object { [string]$_.Current.Name } | Where-Object { $_.StartsWith($SourcePrefix, [System.StringComparison]::Ordinal) }) | Select-Object -First 1
             $Items = @($CategoryList.FindAll($Scope, $ByInstallItem))
             $InstallButton = $null
             foreach ($Button in $Root.FindAll($Scope, $ByInstallButton)) { if ([string]$Button.Current.Name -match $InstallPattern) { $InstallButton = $Button; break } }
@@ -730,8 +900,8 @@ public static class DsoUser32 {
             $CategoryNames.Add([string]$Item.Current.Name)
             $Item.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
             Start-Sleep -Milliseconds 500
-            $AppList = Wait-Element $Root 'Aplikacje do instalacji' ([System.Windows.Automation.ControlType]::List) 10
-            if ($null -eq $AppList) { throw "Brak listy Aplikacje do instalacji na stronie Instalacja (kategoria '$($Item.Current.Name)')." }
+            $AppList = Wait-Element $Root $T.InstallAppList ([System.Windows.Automation.ControlType]::List) 10
+            if ($null -eq $AppList) { throw "Brak listy '$($T.InstallAppList)' na stronie Instalacja (kategoria '$($Item.Current.Name)')." }
             $ReadInstallTexts = { foreach ($N in @($AppList.FindAll($Scope, $ByInstallText) | ForEach-Object { [string]$_.Current.Name } | Where-Object { $_ })) { if (-not $InstallNames.Contains($N)) { $InstallNames.Add($N) } } }
             & $ReadInstallTexts
             try {
@@ -747,7 +917,7 @@ public static class DsoUser32 {
             }
             catch { Add-Step "instalacja: przewijanie listy pominiete ($($_.Exception.Message))" }
         }
-        # Sonda konczy na widoku 'Wszystkie' (pierwsza pozycja), nie na pustym 'Zaznaczone'.
+        # Sonda konczy na widoku wszystkich aplikacji (pierwsza pozycja), nie na pustej grupie zaznaczonych.
         $FirstItem = @($CategoryList.FindAll($Scope, $ByInstallItem)) | Select-Object -First 1
         if ($null -ne $FirstItem) { $FirstItem.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select(); Start-Sleep -Milliseconds 500 }
         $Out.InstallCategories = @($CategoryNames)
@@ -808,15 +978,16 @@ function Get-GuiPrivacySuggestedId {
 function Get-GuiRepairTitle {
     # Tytuły pozycji kategorii „Naprawy” (category=repair) z plików katalogu (wbudowany katalog repo: src\DSOptimizer.Catalog\catalog),
     # w kolejności plików i wpisów; apps-bloat.json i apps.json pomijane jawnie jak w Get-GuiPrivacySuggestedId. Pusty wynik = błąd.
+    # -Language en: tytuły z tabel tłumaczeń repo (Get-DsoUiText; brak = wyjątek).
     [CmdletBinding()]
     [OutputType([string[]])]
-    param([Parameter(Mandatory)][string]$CatalogDirectory)
+    param([Parameter(Mandatory)][string]$CatalogDirectory, [ValidateSet('pl', 'en')][string]$Language = 'pl')
     $Titles = New-Object System.Collections.Generic.List[string]
     $Files = @(Get-ChildItem -LiteralPath $CatalogDirectory -Filter '*.json' -File | Where-Object { $_.Name -notin @('apps-bloat.json', 'apps.json') } | Sort-Object Name)
     foreach ($File in $Files) {
         $Items = [System.IO.File]::ReadAllText($File.FullName, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         foreach ($Item in @($Items)) {
-            if ([string]$Item.category -eq 'repair') { $Titles.Add([string]$Item.title) }
+            if ([string]$Item.category -eq 'repair') { $Titles.Add((Get-DsoUiText -Polish ([string]$Item.title) -Language $Language)) }
         }
     }
     if ($Titles.Count -eq 0) { throw "Brak pozycji kategorii repair w '$CatalogDirectory'." }
@@ -827,9 +998,10 @@ function Get-GuiInstallTitle {
     # Oczekiwania strony „Instalacja” (krok 11 sondy) z apps.json (wbudowana lista repo: src\DSOptimizer.Catalog\catalog\apps.json):
     # Titles = tytuły wpisów w kolejności pliku, Categories = „Wszystkie” (D1), „Zaznaczone”, potem nazwy kategorii w UI (InstallText.CategoryName)
     # w kolejności strony (InstallCategory), tylko te, które mają wpisy. Brak pliku, pusta lista albo nieznana kategoria = błąd.
+    # -Language en: nazwy kategorii z tabel tłumaczeń repo (brak = wyjątek); tytuły to nazwy produktów – w obu językach te same.
     [CmdletBinding()]
     [OutputType([pscustomobject])]
-    param([Parameter(Mandatory)][string]$CatalogDirectory)
+    param([Parameter(Mandatory)][string]$CatalogDirectory, [ValidateSet('pl', 'en')][string]$Language = 'pl')
     $Path = Join-Path $CatalogDirectory 'apps.json'
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw "Brak pliku apps.json w '$CatalogDirectory'." }
     $Entries = @(([System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8) | ConvertFrom-Json).entries | Where-Object { $null -ne $_ })
@@ -842,7 +1014,8 @@ function Get-GuiInstallTitle {
         $Titles.Add([string]$Entry.title)
         $null = $Used.Add($Category)
     }
-    $Categories = @($script:InstallAllCategoriesName, $script:InstallSelectedCategoryName) + @($script:InstallCategoryNames.Keys | Where-Object { $Used.Contains($_) } | ForEach-Object { $script:InstallCategoryNames[$_] })
+    $Polish = @($script:ProbeTextsPolish.InstallAll, $script:ProbeTextsPolish.InstallSelected) + @($script:InstallCategoryNames.Keys | Where-Object { $Used.Contains($_) } | ForEach-Object { $script:InstallCategoryNames[$_] })
+    $Categories = @($Polish | ForEach-Object { Get-DsoUiText -Polish $_ -Language $Language })
     return [pscustomobject]@{ Titles = $Titles.ToArray(); Categories = $Categories }
 }
 
@@ -906,13 +1079,16 @@ function Get-GuiUiCheck {
     # -SettingsOpenable: PrepLinks.SettingsOpenable (domyślnie stała modułu); true = krok 2 strony „Przygotowanie” ma przycisk, false = notatkę.
     # -RepairTitles: wynik Get-GuiRepairTitle (tytuły kategorii repair z katalogu); brak albo pusta lista = RepairPage niezaliczone.
     # -InstallExpected: wynik Get-GuiInstallTitle ({ Titles, Categories } z apps.json); brak albo puste tytuły = InstallPage niezaliczone.
+    # -Texts: wynik Get-GuiProbeTexts w języku okna (ten sam słownik, który dostała sonda); domyślnie polski.
     [CmdletBinding()]
     param(
         [AllowNull()]$Probe, [AllowNull()]$PrivacyExpected, [AllowNull()]$AppsExpected, [bool]$SettingsOpenable = $script:PrepSettingsOpenable,
-        [AllowNull()][AllowEmptyCollection()][string[]]$RepairTitles, [AllowNull()]$InstallExpected
+        [AllowNull()][AllowEmptyCollection()][string[]]$RepairTitles, [AllowNull()]$InstallExpected,
+        [AllowNull()][System.Collections.IDictionary]$Texts
     )
     $Names = 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage'
     if ($null -eq $Probe) { return , @($Names | ForEach-Object { New-GuiUiCheck -Name $_ -Passed $false -Detail 'brak odczytu sondy UI' }) }
+    if ($null -eq $Texts) { $Texts = Get-GuiProbeTexts -Language pl }
     $Props = $Probe.PSObject.Properties
     $Get = { param($N, $Default) if ($null -ne $Props[$N] -and $null -ne $Props[$N].Value) { $Props[$N].Value } else { $Default } }
     $ProbeError = & $Get 'Error' $null
@@ -924,11 +1100,13 @@ function Get-GuiUiCheck {
     if ($ProbeError) { $MenuDetail += "; sonda: $ProbeError" }
     $Checks += New-GuiUiCheck -Name 'HistoryMenu' -Passed ($MenuFound -and $Opened) -Detail $MenuDetail
 
-    $Title = $script:UiProbeTweakTitle
+    # Nazwa wiersza historii = HistoryText.RowName: „Tytuł, rodzaj wpisu (kategoria), Stan[ – powód], data”.
+    $Title = [string]$Texts.TweakTitle
+    $ActiveWord = [System.Management.Automation.WildcardPattern]::Escape([string]$Texts.HistoryActive)
     $Rows = @(& $Get 'EntryNames' @())
-    $Active = @($Rows | Where-Object { [string]$_ -like "$Title, *, Aktywna, *" })
+    $Active = @($Rows | Where-Object { [string]$_ -like "$([System.Management.Automation.WildcardPattern]::Escape($Title)), *, $ActiveWord, *" })
     $ApplyError = & $Get 'ApplyError' $null
-    $EntryDetail = if ($Active.Count -gt 0) { "wiersz: $($Active[0])" } else { "brak wiersza '$Title, <rodzaj wpisu>, Aktywna, …' (wiersze: $($Rows.Count)$(if ($Rows.Count) { ': ' + ($Rows -join ' | ') }))" }
+    $EntryDetail = if ($Active.Count -gt 0) { "wiersz: $($Active[0])" } else { "brak wiersza '$Title, <rodzaj wpisu>, $($Texts.HistoryActive), …' (wiersze: $($Rows.Count)$(if ($Rows.Count) { ': ' + ($Rows -join ' | ') }))" }
     if ($ApplyError) { $EntryDetail += "; zastosowanie: $ApplyError" }
     $HistoryError = & $Get 'HistoryError' $null
     if ($HistoryError) { $EntryDetail += "; historia: $HistoryError" }
@@ -1039,7 +1217,7 @@ function Get-GuiUiCheck {
         $Checks += New-GuiUiCheck -Name 'PrepPage' -Passed $false -Detail 'brak pola PrepMenuFound w wyniku sondy'
     }
     else {
-        $Checks += Get-GuiPrepPageCheck -Get $Get -SettingsOpenable $SettingsOpenable
+        $Checks += Get-GuiPrepPageCheck -Get $Get -SettingsOpenable $SettingsOpenable -Texts $Texts
     }
 
     # „Naprawy” (krok 10 sondy): pozycja menu, lista „Pozycje” i każdy tytuł kategorii repair z katalogu wśród tekstów listy.
@@ -1057,7 +1235,7 @@ function Get-GuiUiCheck {
         $Checks += New-GuiUiCheck -Name 'InstallPage' -Passed $false -Detail 'brak pola InstallMenuFound w wyniku sondy'
     }
     else {
-        $Checks += Get-GuiInstallPageCheck -Get $Get -InstallExpected $InstallExpected
+        $Checks += Get-GuiInstallPageCheck -Get $Get -InstallExpected $InstallExpected -Texts $Texts
     }
     return , $Checks
 }
@@ -1065,7 +1243,10 @@ function Get-GuiUiCheck {
 function Get-GuiInstallPageCheck {
     # Sprawdzenie InstallPage (krok 11 sondy) z odczytu pól sondy przez -Get (blok z Get-GuiUiCheck).
     [CmdletBinding()]
-    param([Parameter(Mandatory)][scriptblock]$Get, [AllowNull()]$InstallExpected)
+    param([Parameter(Mandatory)][scriptblock]$Get, [AllowNull()]$InstallExpected, [Parameter(Mandatory)][System.Collections.IDictionary]$Texts)
+    $SourcePrefix = [string]$Texts.InstallSourcePrefix
+    $UnavailableSuffix = [string]$Texts.InstallUnavailableSuffix
+    $ButtonIdle = [string]$Texts.InstallIdle
     $ExpectedTitles = @()
     $ExpectedCategories = @()
     if ($null -ne $InstallExpected) {
@@ -1075,14 +1256,14 @@ function Get-GuiInstallPageCheck {
     $Menu = [bool](& $Get 'InstallMenuFound' $false)
     $Loaded = [bool](& $Get 'InstallLoaded' $false)
     $Subtitle = [string](& $Get 'InstallSubtitle' '')
-    $SubtitleOk = $Subtitle.StartsWith($script:InstallSourcePrefix, [System.StringComparison]::Ordinal) -and -not $Subtitle.EndsWith('niedostępne', [System.StringComparison]::Ordinal)
+    $SubtitleOk = $Subtitle.StartsWith($SourcePrefix, [System.StringComparison]::Ordinal) -and -not $Subtitle.EndsWith($UnavailableSuffix, [System.StringComparison]::Ordinal)
     $Categories = @(@(& $Get 'InstallCategories' @()) | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ })
-    $Texts = @(@(& $Get 'InstallTexts' @()) | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ })
+    $ListTexts = @(@(& $Get 'InstallTexts' @()) | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ })
     $MissingCategories = @($ExpectedCategories | Where-Object { $Categories -notcontains $_ })
-    $MissingTitles = @($ExpectedTitles | Where-Object { $Texts -notcontains $_ })
+    $MissingTitles = @($ExpectedTitles | Where-Object { $ListTexts -notcontains $_ })
     $ButtonText = & $Get 'InstallButtonText' $null
     $ButtonEnabled = & $Get 'InstallButtonEnabled' $null
-    $ButtonOk = [string]$ButtonText -eq $script:InstallButtonIdle -and $null -ne $ButtonEnabled -and -not [bool]$ButtonEnabled
+    $ButtonOk = [string]$ButtonText -ceq $ButtonIdle -and $null -ne $ButtonEnabled -and -not [bool]$ButtonEnabled
     $InstallError = & $Get 'InstallError' $null
     $Parts = @()
     $Parts += if ($Menu) { 'pozycja menu' } else { 'NIE: pozycja menu' }
@@ -1099,7 +1280,7 @@ function Get-GuiInstallPageCheck {
     }
     $Parts += if ($null -eq $ButtonText) { 'brak przycisku serii' } else { "przycisk '$ButtonText'" }
     # Cudzysłowy „ ” to w PowerShellu ograniczniki napisu – tylko w napisach w apostrofach.
-    $ButtonIdleText = '„' + $script:InstallButtonIdle + '” nieaktywny'
+    $ButtonIdleText = '„' + $ButtonIdle + '” nieaktywny'
     $Parts += if ($ButtonOk) { $ButtonIdleText } else { 'NIE: ' + $ButtonIdleText }
     $Detail = $Parts -join '; '
     if ($InstallError) { $Detail += "; sonda: $InstallError" }
@@ -1135,25 +1316,26 @@ function Get-GuiRepairPageCheck {
 function Get-GuiPrepPageCheck {
     # Sprawdzenie PrepPage (krok 9 sondy) z odczytu pól sondy przez -Get (blok z Get-GuiUiCheck). Bez zmian względem partii 3 Etapu 4a.
     [CmdletBinding()]
-    param([Parameter(Mandatory)][scriptblock]$Get, [bool]$SettingsOpenable)
+    param([Parameter(Mandatory)][scriptblock]$Get, [bool]$SettingsOpenable, [Parameter(Mandatory)][System.Collections.IDictionary]$Texts)
+    $StepTitles = @($Texts.PrepTitles)
     $PrepMenu = [bool](& $Get 'PrepMenuFound' $false)
     $PrepLoaded = [bool](& $Get 'PrepLoaded' $false)
     $PrepTitles = @(& $Get 'PrepTitles' @())
-    $PrepMissing = @($script:PrepStepTitles | Where-Object { $PrepTitles -notcontains $_ })
+    $PrepMissing = @($StepTitles | Where-Object { $PrepTitles -cnotcontains $_ })
     $WuButton = [bool](& $Get 'PrepWindowsUpdateButton' $false)
     $WuNote = [bool](& $Get 'PrepWindowsUpdateNote' $false)
     $WuOk = if ($SettingsOpenable) { $WuButton } else { $WuNote }
     $Graphics = @(@(& $Get 'PrepGraphicsLines' @()) | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ })
-    $CardOk = $Graphics.Count -gt 0 -and $Graphics -notcontains $script:PrepCardsStateLabel
+    $CardOk = $Graphics.Count -gt 0 -and $Graphics -notcontains [string]$Texts.PrepCardsStateLabel
     $PrepError = & $Get 'PrepError' $null
     $PrepPassed = $PrepMenu -and $PrepLoaded -and $PrepMissing.Count -eq 0 -and $WuOk -and $CardOk -and -not $PrepError
     $PrepParts = @()
     $PrepParts += if ($PrepMenu) { 'pozycja menu' } else { 'NIE: pozycja menu' }
     $PrepParts += if ($PrepLoaded) { 'odczyt skończony' } else { 'NIE: odczyt skończony (nadal „Wczytywanie…” albo brak tytułów po 60 s)' }
-    $TitleText = "tytuły $($script:PrepStepTitles.Count - $PrepMissing.Count)/$($script:PrepStepTitles.Count)"
+    $TitleText = "tytuły $($StepTitles.Count - $PrepMissing.Count)/$($StepTitles.Count)"
     if ($PrepMissing.Count -gt 0) { $TitleText += " (brak: $($PrepMissing -join ', '))" }
     $PrepParts += $TitleText
-    $WuText = if ($SettingsOpenable) { 'przycisk „Otwórz Windows Update”' } else { 'notatka „Otwórz Ustawienia › Windows Update.”' }
+    $WuText = if ($SettingsOpenable) { 'przycisk „' + $Texts.PrepOpenWindowsUpdate + '”' } else { 'notatka „' + $Texts.PrepWindowsUpdateNote + '”' }
     $PrepParts += if ($WuOk) { $WuText } else { "NIE: $WuText" }
     $GraphicsText = if ($Graphics.Count -gt 0) { $Graphics -join ' | ' } else { 'pusto' }
     $PrepParts += if ($CardOk) { "Grafika: $GraphicsText" } else { "Grafika: brak linii karty ($GraphicsText)" }
@@ -1162,4 +1344,4 @@ function Get-GuiPrepPageCheck {
     return (New-GuiUiCheck -Name 'PrepPage' -Passed $PrepPassed -Detail $PrepDetail)
 }
 
-Export-ModuleMember -Function Get-GuiUiProbeTarget, Get-GuiPrepExpected, Get-GuiUiProbeScript, ConvertTo-DsoHitTestRange, Get-GuiPrivacySuggestedId, Get-GuiRepairTitle, Get-GuiInstallTitle, Get-GuiPrivacyExpectedCount, Get-GuiAppsExpectedCount, Get-GuiUiCheck
+Export-ModuleMember -Function Get-DsoUiText, Get-GuiProbeTexts, Get-GuiPrepExpected, Get-GuiUiProbeScript, ConvertTo-DsoHitTestRange, Get-GuiPrivacySuggestedId, Get-GuiRepairTitle, Get-GuiInstallTitle, Get-GuiPrivacyExpectedCount, Get-GuiAppsExpectedCount, Get-GuiUiCheck

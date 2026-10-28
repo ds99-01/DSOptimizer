@@ -18,6 +18,9 @@ Opis działania:
     Na czystym checkpoincie (brak settings.json) pierwsze okno to wybór języka: Confirm-DsoLanguageChoice (UIA w sesji dso) czeka
     do 30 s na okno LanguageChoiceWindow i klika kafelek wybranego języka (-Language pl|en); sprawdzenie LanguageChoice jest zielone
     tylko, gdy okno się pokazało i po wyborze pojawiło się okno główne. CLI w runnerze dostaje --lang pl (VmRun\Invoke-DsoCli).
+    Teksty okna, których szuka sonda UI, są w języku -Language: host składa słownik (VmSmokeUi\Get-GuiProbeTexts – po polsku stałe
+    zgodne z C# i tytuły z JSON katalogu, po angielsku wyłącznie z tabel tłumaczeń repo; brak tłumaczenia = błąd przed startem VM),
+    zapisuje go do VM jako JSON UTF-8 (GuiSmoke-Ui-texts.json) i podaje sondzie w -TextsFile; tym samym słownikiem ocenia wynik.
     Potem sonda wchodzi na „Przygotowanie” (7 tytułów kroków po odczycie, przycisk „Otwórz Windows Update”, linia karty w kroku
     „Grafika” – PrepPage; bez klikania linków), potem na „Naprawy” (lista ma wszystkie tytuły kategorii repair z katalogu –
     RepairPage, Get-GuiRepairTitle; niczego nie uruchamia), a jako ostatnie na „Instalacja” (Etap 4c: wszystkie kategorie i tytuły
@@ -121,6 +124,8 @@ function Start-DsoGuiInUserSession {
 function Invoke-DsoUserSessionScript {
     # W VM: zadanie Harmonogramu w sesji 'dso' (Interactive + Highest) uruchamia skrypt PowerShell z -ResultFile <json> i dodatkowymi
     # argumentami; host czeka na plik wyniku i zwraca jego tekst (albo $null). Zadanie jest wyrejestrowywane po odczycie.
+    # -DataFiles: nazwa pliku (*.json, bez ścieżki) -> treść; zapisane w katalogu wyników VM jako UTF-8 przed startem zadania
+    # (np. słownik tekstów sondy UI, którego nie da się podać w argumentach ASCII).
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
@@ -129,17 +134,24 @@ function Invoke-DsoUserSessionScript {
         [Parameter(Mandatory)][string]$ScriptText,
         [ValidatePattern('^[ -~]*\z')][string]$ArgumentText = '',
         [ValidatePattern('^[A-Za-z0-9_-]+\z')][string]$UserName = 'dso',
-        [ValidateRange(10, 900)][int]$TimeoutSeconds = 90
+        [ValidateRange(10, 900)][int]$TimeoutSeconds = 90,
+        [hashtable]$DataFiles = @{}
     )
+    foreach ($DataName in $DataFiles.Keys) {
+        if ([string]$DataName -notmatch '^[A-Za-z0-9-]+\.json\z') { throw "Niedozwolona nazwa pliku danych '$DataName' (tylko <nazwa>.json bez ścieżki)." }
+    }
     Assert-DsoVmLiveAllowed
-    $Json = Invoke-Command -Session $Session -ArgumentList @($Layout.Out, $ScriptText, $Name, $ArgumentText, $UserName, $TimeoutSeconds) -ScriptBlock {
-        param([string]$OutDir, [string]$ProbeText, [string]$ProbeName, [string]$ExtraArguments, [string]$User, [int]$Timeout)
+    $Json = Invoke-Command -Session $Session -ArgumentList @($Layout.Out, $ScriptText, $Name, $ArgumentText, $UserName, $TimeoutSeconds, $DataFiles) -ScriptBlock {
+        param([string]$OutDir, [string]$ProbeText, [string]$ProbeName, [string]$ExtraArguments, [string]$User, [int]$Timeout, [hashtable]$Data)
         $ErrorActionPreference = 'Stop'
         $ScriptPath = Join-Path $OutDir "$ProbeName.ps1"
         $ResultPath = Join-Path $OutDir "$ProbeName.json"
         $TaskName = "DSO-$ProbeName"
         $null = New-Item -ItemType Directory -Path $OutDir -Force
         Set-Content -LiteralPath $ScriptPath -Value $ProbeText -Encoding UTF8
+        foreach ($DataName in @($Data.Keys)) {
+            [System.IO.File]::WriteAllText((Join-Path $OutDir $DataName), [string]$Data[$DataName], (New-Object System.Text.UTF8Encoding($false)))
+        }
         if (Test-Path -LiteralPath $ResultPath) { Remove-Item -LiteralPath $ResultPath -Force }
         $PowerShellPath = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
         $Action = New-ScheduledTaskAction -Execute $PowerShellPath -Argument "-NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File $ScriptPath -ResultFile $ResultPath $ExtraArguments"
@@ -185,19 +197,23 @@ function Get-DsoGuiProbe {
 
 function Get-DsoGuiUiProbe {
     # W VM: sonda UI (VmSmokeUi\Get-GuiUiProbeScript) w sesji 'dso': menu „Historia zmian”, zastosowanie jednej bezpiecznej pozycji,
-    # wiersze historii i WM_NCHITTEST (stan normalny i po maksymalizacji). Zwraca sparsowany obiekt.
+    # wiersze historii i WM_NCHITTEST (stan normalny i po maksymalizacji) oraz kolejne strony. -Texts = słownik Get-GuiProbeTexts w języku
+    # okna: zapisany do VM jako JSON UTF-8 (GuiSmoke-Ui-texts.json w katalogu wyników), sonda dostaje jego ścieżkę w -TextsFile.
+    # Zwraca sparsowany obiekt.
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
         [Parameter(Mandatory)][hashtable]$Layout,
+        [Parameter(Mandatory)][System.Collections.IDictionary]$Texts,
         [ValidatePattern('^[A-Za-z0-9_-]+\z')][string]$UserName = 'dso',
         # 600 s: krok 11 („Instalacja”, Etap 4c) czeka na odczyt strony najwyżej 180 s ponad dotychczasowe kroki.
         [ValidateRange(60, 900)][int]$TimeoutSeconds = 600
     )
     Assert-DsoVmLiveAllowed
-    $Target = Get-GuiUiProbeTarget
+    $TextsName = 'GuiSmoke-Ui-texts.json'
+    $TextsJson = ConvertTo-Json -InputObject $Texts -Depth 5
     $Text = Invoke-DsoUserSessionScript -Session $Session -Layout $Layout -Name 'GuiSmoke-Ui' -ScriptText (Get-GuiUiProbeScript) `
-        -ArgumentText "-Category ""$($Target.Category)"" -TweakTitle ""$($Target.TweakTitle)""" -UserName $UserName -TimeoutSeconds $TimeoutSeconds
+        -ArgumentText "-TextsFile $($Layout.Out)\$TextsName" -DataFiles @{ $TextsName = $TextsJson } -UserName $UserName -TimeoutSeconds $TimeoutSeconds
     if ([string]::IsNullOrWhiteSpace($Text)) { throw 'Sonda UI nie zwróciła wyniku.' }
     return ($Text | ConvertFrom-Json)
 }
@@ -531,6 +547,8 @@ function Invoke-DsoGuiSmoke {
     if (-not (Test-Path -LiteralPath (Join-Path $BuildDirectory 'DSOptimizer.exe') -PathType Leaf)) {
         throw "Brak DSOptimizer.exe w '$BuildDirectory'. Zbuduj aplikację: dotnet build DSOptimizer.sln -c Release"
     }
+    # Teksty okna w języku przebiegu (sonda UI i sprawdzenia): brak angielskiego tekstu = błąd od razu, zanim cokolwiek dotknie VM.
+    $Texts = Get-GuiProbeTexts -Language $Language
     $null = New-Item -ItemType Directory -Path $OutDirectory -Force
     $ScreenshotPath = Join-Path $OutDirectory "gui-smoke-$VmName.png"
     $UiScreenshotPath = Join-Path $OutDirectory "gui-smoke-$VmName-historia.png"
@@ -588,12 +606,12 @@ function Invoke-DsoGuiSmoke {
         }
         catch { $AppsListError = "lista aplikacji: $($_.Exception.Message)" }
         # Oczekiwane tytuły strony „Naprawy” (krok 10 sondy UI, na samym końcu): kategoria repair z wbudowanego katalogu repo.
-        try { $RepairTitles = @(Get-GuiRepairTitle -CatalogDirectory (Join-Path (Get-DsoRepoRoot) 'src\DSOptimizer.Catalog\catalog')) }
+        try { $RepairTitles = @(Get-GuiRepairTitle -CatalogDirectory (Join-Path (Get-DsoRepoRoot) 'src\DSOptimizer.Catalog\catalog') -Language $Language) }
         catch { $RepairTitlesError = "tytuły Napraw: $($_.Exception.Message)" }
         # Oczekiwania strony „Instalacja” (krok 11 sondy UI, na samym końcu): tytuły i kategorie z apps.json repo.
-        try { $InstallExpected = Get-GuiInstallTitle -CatalogDirectory (Join-Path (Get-DsoRepoRoot) 'src\DSOptimizer.Catalog\catalog') }
+        try { $InstallExpected = Get-GuiInstallTitle -CatalogDirectory (Join-Path (Get-DsoRepoRoot) 'src\DSOptimizer.Catalog\catalog') -Language $Language }
         catch { $InstallTitlesError = "lista instalacji: $($_.Exception.Message)" }
-        try { $UiProbe = Get-DsoGuiUiProbe -Session $Session -Layout $Layout }
+        try { $UiProbe = Get-DsoGuiUiProbe -Session $Session -Layout $Layout -Texts $Texts }
         catch { $UiError = "sonda UI: $($_.Exception.Message)" }
         try { $UiShot = Save-DsoVmThumbnail -VmName $VmName -Path $UiScreenshotPath -Width $Resolution.Width -Height $Resolution.Height }
         catch { $UiShotError = "zrzut ekranu po sondzie UI: $($_.Exception.Message)" }
@@ -608,7 +626,7 @@ function Invoke-DsoGuiSmoke {
         }
     }
     $BaseChecks = Get-GuiSmokeCheck -Probe $Probe -ScreenshotPath $Shot
-    $UiChecks = Get-GuiUiCheck -Probe $UiProbe -PrivacyExpected $PrivacyExpected -AppsExpected $AppsExpected -RepairTitles $RepairTitles -InstallExpected $InstallExpected
+    $UiChecks = Get-GuiUiCheck -Probe $UiProbe -PrivacyExpected $PrivacyExpected -AppsExpected $AppsExpected -RepairTitles $RepairTitles -InstallExpected $InstallExpected -Texts $Texts
     $LanguageCheck = Get-GuiLanguageCheck -Choice $LanguageChoice -Language $Language
     $Checks = @($BaseChecks) + @($LanguageCheck) + @($UiChecks)
     $Errors = @($PrimaryError, $LanguageError, $ShotError, $DetectionError, $AppsListError, $RepairTitlesError, $InstallTitlesError, $UiError, $UiShotError, $RevertError) | Where-Object { $_ }
@@ -636,6 +654,7 @@ function Invoke-DsoGuiSmoke {
         appsExpected     = $AppsExpected
         repairTitles     = @($RepairTitles)
         installExpected  = $InstallExpected
+        probeTexts       = $Texts
     }
     [System.IO.File]::WriteAllText($ResultPath, ($Result | ConvertTo-Json -Depth 12), (New-Object System.Text.UTF8Encoding($true)))
     return [pscustomobject]$Result
