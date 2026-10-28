@@ -10,7 +10,7 @@ namespace DSOptimizer.Tests.Unit.Prep;
 
 public class PrepStepsTests
 {
-    private const string Loading = SpecificationFormatter.LoadingText;
+    private static readonly string Loading = SpecificationFormatter.LoadingText;
     private const string Failed = "Nie udało się odczytać";
     private const string SystemDrive = "C:";
 

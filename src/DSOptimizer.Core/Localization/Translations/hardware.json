@@ -1,0 +1,449 @@
+{
+  "language": "en",
+  "entries": [
+    {
+      "pl": "Wczytywanie…",
+      "en": "Loading…"
+    },
+    {
+      "pl": "brak danych",
+      "en": "no data"
+    },
+    {
+      "pl": "brak",
+      "en": "none"
+    },
+    {
+      "pl": "DSOptimizer {0} – specyfikacja komputera",
+      "en": "DSOptimizer {0} – computer specification"
+    },
+    {
+      "pl": "Komputer: {0}",
+      "en": "Computer: {0}"
+    },
+    {
+      "pl": "Data: {0}",
+      "en": "Date: {0}"
+    },
+    {
+      "pl": "Procesor i pamięć",
+      "en": "Processor and memory"
+    },
+    {
+      "pl": "Grafika, ekran i dźwięk",
+      "en": "Graphics, display and sound"
+    },
+    {
+      "pl": "Dyski",
+      "en": "Disks"
+    },
+    {
+      "pl": "Sieć",
+      "en": "Network"
+    },
+    {
+      "pl": "System i zabezpieczenia",
+      "en": "System and security"
+    },
+    {
+      "pl": "Procesor",
+      "en": "Processor"
+    },
+    {
+      "pl": "Pamięć",
+      "en": "Memory"
+    },
+    {
+      "pl": "Płyta główna",
+      "en": "Motherboard"
+    },
+    {
+      "pl": "Komputer",
+      "en": "Computer"
+    },
+    {
+      "pl": "Karta graficzna",
+      "en": "Graphics card"
+    },
+    {
+      "pl": "Dźwięk",
+      "en": "Sound"
+    },
+    {
+      "pl": "Dysk",
+      "en": "Disk"
+    },
+    {
+      "pl": "Dysk {0}",
+      "en": "Disk {0}"
+    },
+    {
+      "pl": "Karta sieciowa",
+      "en": "Network adapter"
+    },
+    {
+      "pl": "VBS i HVCI",
+      "en": "VBS and HVCI"
+    },
+    {
+      "pl": "Monitory",
+      "en": "Monitors"
+    },
+    {
+      "pl": "{0} rdzeń",
+      "en": "{0} core"
+    },
+    {
+      "pl": "{0} rdzenie",
+      "en": "{0} cores"
+    },
+    {
+      "pl": "{0} rdzeni",
+      "en": "{0} cores"
+    },
+    {
+      "pl": "{0} wątek",
+      "en": "{0} thread"
+    },
+    {
+      "pl": "{0} wątki",
+      "en": "{0} threads"
+    },
+    {
+      "pl": "{0} wątków",
+      "en": "{0} threads"
+    },
+    {
+      "pl": "{0} z {1} gniazda",
+      "en": "{0} of {1} slot"
+    },
+    {
+      "pl": "{0} z {1} gniazd",
+      "en": "{0} of {1} slots"
+    },
+    {
+      "pl": "BIOS Legacy",
+      "en": "Legacy BIOS"
+    },
+    {
+      "pl": "sterownik {0}",
+      "en": "driver {0}"
+    },
+    {
+      "pl": "{0} cal",
+      "en": "{0} inch"
+    },
+    {
+      "pl": "{0} cale",
+      "en": "{0} inches"
+    },
+    {
+      "pl": "{0} cali",
+      "en": "{0} inches"
+    },
+    {
+      "pl": "Numer seryjny: {0}",
+      "en": "Serial number: {0}"
+    },
+    {
+      "pl": "Stan: {0}",
+      "en": "Status: {0}"
+    },
+    {
+      "pl": "zdrowy",
+      "en": "healthy"
+    },
+    {
+      "pl": "ostrzeżenie",
+      "en": "warning"
+    },
+    {
+      "pl": "uszkodzony",
+      "en": "unhealthy"
+    },
+    {
+      "pl": "połączona",
+      "en": "connected"
+    },
+    {
+      "pl": "rozłączona",
+      "en": "disconnected"
+    },
+    {
+      "pl": "zainstalowany {0}",
+      "en": "installed {0}"
+    },
+    {
+      "pl": "włączony",
+      "en": "enabled"
+    },
+    {
+      "pl": "wyłączony",
+      "en": "disabled"
+    },
+    {
+      "pl": "Włączony",
+      "en": "On"
+    },
+    {
+      "pl": "Wyłączony",
+      "en": "Off"
+    },
+    {
+      "pl": "Niedostępny (BIOS Legacy)",
+      "en": "Not available (Legacy BIOS)"
+    },
+    {
+      "pl": "VBS działa, HVCI działa",
+      "en": "VBS running, HVCI running"
+    },
+    {
+      "pl": "VBS działa, HVCI nie działa",
+      "en": "VBS running, HVCI not running"
+    },
+    {
+      "pl": "VBS włączone, nie działa",
+      "en": "VBS enabled, not running"
+    },
+    {
+      "pl": "VBS wyłączone",
+      "en": "VBS disabled"
+    },
+    {
+      "pl": "niezaszyfrowany",
+      "en": "not encrypted"
+    },
+    {
+      "pl": "zaszyfrowany",
+      "en": "encrypted"
+    },
+    {
+      "pl": "szyfrowanie w toku",
+      "en": "encryption in progress"
+    },
+    {
+      "pl": "odszyfrowywanie w toku",
+      "en": "decryption in progress"
+    },
+    {
+      "pl": "szyfrowanie wstrzymane",
+      "en": "encryption paused"
+    },
+    {
+      "pl": "odszyfrowywanie wstrzymane",
+      "en": "decryption paused"
+    },
+    {
+      "pl": ", ochrona włączona",
+      "en": ", protection on"
+    },
+    {
+      "pl": ", ochrona wyłączona",
+      "en": ", protection off"
+    },
+    {
+      "pl": "Odczyt „{0}” trwał ponad {1} s – pokazuję „brak danych”.",
+      "en": "Reading \"{0}\" took more than {1} s – showing \"no data\"."
+    },
+    {
+      "pl": "Odczyt „{0}” nie powiódł się: {1}",
+      "en": "Couldn't read \"{0}\": {1}"
+    },
+    {
+      "pl": "Odświeżenie ekranu specyfikacji nie powiodło się: {0}",
+      "en": "Couldn't refresh the Specification screen: {0}"
+    },
+    {
+      "pl": "Odświeżenie ekranu przygotowania nie powiodło się: {0}",
+      "en": "Couldn't refresh the Preparation screen: {0}"
+    },
+    {
+      "pl": "Produkt",
+      "en": "Product"
+    },
+    {
+      "pl": "Aktywacja",
+      "en": "Activation"
+    },
+    {
+      "pl": "Urządzenia",
+      "en": "Devices"
+    },
+    {
+      "pl": "Przygotowanie",
+      "en": "Preparation"
+    },
+    {
+      "pl": "Co sprawdzić po instalacji Windows. Program niczego tu nie instaluje ani nie zmienia.",
+      "en": "What to check after installing Windows. The program doesn't install or change anything here."
+    },
+    {
+      "pl": "Odśwież stan",
+      "en": "Refresh status"
+    },
+    {
+      "pl": "Nie udało się odczytać",
+      "en": "Couldn't read"
+    },
+    {
+      "pl": "Nie wiadomo",
+      "en": "Unknown"
+    },
+    {
+      "pl": "Opcjonalne aktualizacje sterowników",
+      "en": "Optional driver updates"
+    },
+    {
+      "pl": "Sterowniki chipsetu",
+      "en": "Chipset drivers"
+    },
+    {
+      "pl": "Grafika",
+      "en": "Graphics"
+    },
+    {
+      "pl": "Wsparcie producenta",
+      "en": "Manufacturer support"
+    },
+    {
+      "pl": "Urządzenia bez sterownika",
+      "en": "Devices without a driver"
+    },
+    {
+      "pl": "Producent i model",
+      "en": "Manufacturer and model"
+    },
+    {
+      "pl": "Aktywacja Windows",
+      "en": "Windows activation"
+    },
+    {
+      "pl": "Szyfrowanie w toku",
+      "en": "Encryption in progress"
+    },
+    {
+      "pl": "Dysk zaszyfrowany, ochrona wyłączona",
+      "en": "Drive encrypted, protection off"
+    },
+    {
+      "pl": "Odszyfrowywanie w toku",
+      "en": "Decryption in progress"
+    },
+    {
+      "pl": "Zapisz klucz odzyskiwania, zanim zmienisz BIOS albo dysk.",
+      "en": "Save the recovery key before you change the BIOS or the drive."
+    },
+    {
+      "pl": "Aktywowany",
+      "en": "Active"
+    },
+    {
+      "pl": "Nieaktywowany",
+      "en": "Not active"
+    },
+    {
+      "pl": "Okres próbny",
+      "en": "Grace period"
+    },
+    {
+      "pl": "Wymaga aktywacji",
+      "en": "Activation required"
+    },
+    {
+      "pl": "Brak klucza produktu",
+      "en": "No product key"
+    },
+    {
+      "pl": "Otwórz Windows Update",
+      "en": "Open Windows Update"
+    },
+    {
+      "pl": "Otwórz aktualizacje opcjonalne",
+      "en": "Open optional updates"
+    },
+    {
+      "pl": "Otwórz Ustawienia › Windows Update.",
+      "en": "Open Settings › Windows Update."
+    },
+    {
+      "pl": "Otwórz Ustawienia › Windows Update › Opcje zaawansowane › Aktualizacje opcjonalne.",
+      "en": "Open Settings › Windows Update › Advanced options › Optional updates."
+    },
+    {
+      "pl": "Sterowniki chipsetu przyjdą z Windows Update.",
+      "en": "Chipset drivers will come from Windows Update."
+    },
+    {
+      "pl": "Strona sterowników {0}",
+      "en": "{0} drivers page"
+    },
+    {
+      "pl": "Karty graficzne",
+      "en": "Graphics cards"
+    },
+    {
+      "pl": "Nie znaleziono karty graficznej",
+      "en": "No graphics card found"
+    },
+    {
+      "pl": "Brak sterownika (Podstawowa karta graficzna Microsoft)",
+      "en": "No driver (Microsoft Basic Display Adapter)"
+    },
+    {
+      "pl": "Szukaj sterownika",
+      "en": "Search for a driver"
+    },
+    {
+      "pl": "Karta {0}",
+      "en": "{0} card"
+    },
+    {
+      "pl": "Producent",
+      "en": "Manufacturer"
+    },
+    {
+      "pl": "Numer seryjny",
+      "en": "Serial number"
+    },
+    {
+      "pl": "Maszyna wirtualna – brak strony producenta.",
+      "en": "Virtual machine – no manufacturer page."
+    },
+    {
+      "pl": "Szukaj strony wsparcia",
+      "en": "Search for a support page"
+    },
+    {
+      "pl": "Strona wsparcia {0}",
+      "en": "{0} support page"
+    },
+    {
+      "pl": "Urządzenia z problemem",
+      "en": "Devices with a problem"
+    },
+    {
+      "pl": "Nieznane urządzenie",
+      "en": "Unknown device"
+    },
+    {
+      "pl": "brak sterownika",
+      "en": "no driver"
+    },
+    {
+      "pl": "wyłączone",
+      "en": "disabled"
+    },
+    {
+      "pl": "problem, kod {0}",
+      "en": "problem, code {0}"
+    },
+    {
+      "pl": "Wszystkie urządzenia mają sterownik.",
+      "en": "All devices have a driver."
+    },
+    {
+      "pl": "Szukaj w Google",
+      "en": "Search Google"
+    }
+  ]
+}

@@ -217,7 +217,7 @@ public static class PrepSteps
 
         var version = Clean(gpu.DriverVersion);
         var value = Comma(
-            version is null ? null : "sterownik " + version,
+            version is null ? null : L.F("sterownik {0}", version),
             gpu.DriverDate?.ToString(L.DatePattern, L.Culture),
             Clean(gpu.DriverProvider));
         return new PrepLine(Clean(gpu.Name) ?? PrepText.GraphicsCardLabel, OrUnknown(value), PrepTone.Normal, Action: action);

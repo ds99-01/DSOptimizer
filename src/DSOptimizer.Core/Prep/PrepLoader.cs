@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Hardware;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Prep;
 
@@ -11,7 +12,8 @@ namespace DSOptimizer.Core.Prep;
 /// </summary>
 public sealed class PrepLoader
 {
-    private const string Component = "Przygotowanie";
+    /// <summary>Nazwa komponentu w logu (tłumaczona, jak nazwa strony).</summary>
+    private static string Component => L.T("Przygotowanie");
 
     public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
 
@@ -37,12 +39,12 @@ public sealed class PrepLoader
         var run = new LoadRun(onUpdate ?? (static _ => { }), _log);
 
         await Task.WhenAll(
-            RunPartAsync(run, "Komputer", _hardware.ReadBoard, static (s, r) => s with { Board = r }),
-            RunPartAsync(run, "Produkt", _prep.ReadProduct, static (s, r) => s with { Product = r }),
+            RunPartAsync(run, L.T("Komputer"), _hardware.ReadBoard, static (s, r) => s with { Board = r }),
+            RunPartAsync(run, L.T("Produkt"), _prep.ReadProduct, static (s, r) => s with { Product = r }),
             RunPartAsync(run, "BitLocker", _hardware.ReadBitLocker, static (s, r) => s with { BitLocker = r }),
-            RunPartAsync(run, "Aktywacja", _prep.ReadActivation, static (s, r) => s with { Activation = r }),
-            RunPartAsync(run, "Grafika", _prep.ReadGraphics, static (s, r) => s with { Graphics = r }),
-            RunPartAsync(run, "Urządzenia", _prep.ReadProblemDevices, static (s, r) => s with { Devices = r })).ConfigureAwait(false);
+            RunPartAsync(run, L.T("Aktywacja"), _prep.ReadActivation, static (s, r) => s with { Activation = r }),
+            RunPartAsync(run, L.T("Grafika"), _prep.ReadGraphics, static (s, r) => s with { Graphics = r }),
+            RunPartAsync(run, L.T("Urządzenia"), _prep.ReadProblemDevices, static (s, r) => s with { Devices = r })).ConfigureAwait(false);
 
         return run.Current;
     }
@@ -97,7 +99,7 @@ public sealed class PrepLoader
                     if (!_onUpdateFailed)
                     {
                         _onUpdateFailed = true;
-                        _log.Warn(Component, $"Odświeżenie ekranu przygotowania nie powiodło się: {ex.Message}");
+                        _log.Warn(Component, L.F("Odświeżenie ekranu przygotowania nie powiodło się: {0}", ex.Message));
                     }
                 }
             }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Hardware;
 
@@ -11,9 +12,10 @@ namespace DSOptimizer.Core.Hardware;
 /// </summary>
 public sealed class SpecificationLoader
 {
-    private const string Component = "Specyfikacja";
-
     public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
+
+    /// <summary>Nazwa komponentu w logu (tłumaczona, jak nazwa strony).</summary>
+    private static string Component => L.T("Specyfikacja");
 
     private readonly IHardwareReader _reader;
     private readonly ILog _log;
@@ -28,18 +30,18 @@ public sealed class SpecificationLoader
 
     public static string PartName(HardwarePart part) => part switch
     {
-        HardwarePart.Processor => "Procesor",
-        HardwarePart.Memory => "Pamięć",
-        HardwarePart.Board => "Płyta główna",
-        HardwarePart.Graphics => "Karta graficzna",
-        HardwarePart.Displays => "Monitory",
-        HardwarePart.Sound => "Dźwięk",
-        HardwarePart.Disks => "Dyski",
-        HardwarePart.Network => "Sieć",
+        HardwarePart.Processor => L.T("Procesor"),
+        HardwarePart.Memory => L.T("Pamięć"),
+        HardwarePart.Board => L.T("Płyta główna"),
+        HardwarePart.Graphics => L.T("Karta graficzna"),
+        HardwarePart.Displays => L.T("Monitory"),
+        HardwarePart.Sound => L.T("Dźwięk"),
+        HardwarePart.Disks => L.T("Dyski"),
+        HardwarePart.Network => L.T("Sieć"),
         HardwarePart.Windows => "Windows",
         HardwarePart.Tpm => "TPM",
         HardwarePart.SecureBoot => "Secure Boot",
-        HardwarePart.Vbs => "VBS i HVCI",
+        HardwarePart.Vbs => L.T("VBS i HVCI"),
         HardwarePart.BitLocker => "BitLocker",
         _ => part.ToString(),
     };
@@ -120,7 +122,7 @@ public sealed class SpecificationLoader
                     if (!_onUpdateFailed)
                     {
                         _onUpdateFailed = true;
-                        _log.Warn(Component, $"Odświeżenie ekranu specyfikacji nie powiodło się: {ex.Message}");
+                        _log.Warn(Component, L.F("Odświeżenie ekranu specyfikacji nie powiodło się: {0}", ex.Message));
                     }
                 }
             }

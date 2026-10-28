@@ -46,7 +46,7 @@ public class CultureFormattingTests
     {
         using (L.Use(UiLanguage.English))
         {
-            Assert.Equal("sterownik 31.0.1, 02/01/2024, Intel", GpuLine());
+            Assert.Equal("driver 31.0.1, 02/01/2024, Intel", GpuLine());
         }
     }
 
@@ -59,7 +59,8 @@ public class CultureFormattingTests
                 new DiskInfo(3, "Y", 1_500_000_000_000UL, 99, 0, null, null, null),
             }),
         };
-        return SpecificationFormatter.Groups(snapshot).SelectMany(g => g.Fields).Single(f => f.Key == "Dysk 3").Value;
+        // Grupa „Dyski” (trzecia) ma jedno pole; wybór po pozycji, bo klucz „Dysk 3” jest po angielsku „Disk 3”.
+        return SpecificationFormatter.Groups(snapshot)[2].Fields.Single().Value;
     }
 
     [Fact]

@@ -258,6 +258,23 @@ How to read the tables:
 | Sprawdzenie | Check | Step name after Disk Cleanup in the Windows.old repair |
 | DSOptimizer – punkt ręczny | DSOptimizer – manual restore point | Description of the restore point created on demand; shown by System Restore |
 | Zresetuj Windows Update i usuń blokady | Reset Windows Update and remove blocks | Repair item title quoted in the Windows Update reset result. **do audytu (Etap 5)** – must match the catalog's English title |
+| Procesor i pamięć / Grafika, ekran i dźwięk / Dyski / Sieć / System i zabezpieczenia | Processor and memory / Graphics, display and sound / Disks / Network / System and security | Specification groups (screen and report) |
+| Procesor / Pamięć / Płyta główna / Karta sieciowa / Dźwięk / Dysk {0} | Processor / Memory / Motherboard / Network adapter / Sound / Disk {0} | Specification keys; "Karta graficzna" = Graphics card |
+| {0} rdzeń / {0} wątek / {0} cal | {0} core / {0} thread / {0} inch | Plural rule 8: "1 core", "8 cores", "16 threads", "27 inches" |
+| {0} z {1} gniazd | {0} of {1} slots | Memory slots: "2 of 4 slots", "1 of 1 slot" |
+| Wczytywanie… / brak danych / brak | Loading… / no data / none | Reading states in Specification and Preparation |
+| Nie udało się odczytać / Nie wiadomo | Couldn't read / Unknown | Preparation reading states |
+| Włączony / Wyłączony | On / Off | Secure Boot and BitLocker state, as Windows shows them ("Secure Boot State: On") |
+| włączony / wyłączony (TPM, VBS) | enabled / disabled | "2.0, enabled", "VBS enabled, not running" (System Information: "Enabled but not running") |
+| BIOS Legacy | Legacy BIOS | Firmware mode; "Not available (Legacy BIOS)" for Secure Boot |
+| zdrowy / ostrzeżenie / uszkodzony / nieznany | healthy / warning / unhealthy / unknown | Disk health after "Status: ", as in Windows storage health (Healthy / Warning / Unhealthy) |
+| połączona / rozłączona | connected / disconnected | Network adapter |
+| zaszyfrowany / niezaszyfrowany / szyfrowanie w toku / szyfrowanie wstrzymane / ochrona włączona | encrypted / not encrypted / encryption in progress / encryption paused / protection on | BitLocker per drive (also "decryption …", "protection off") |
+| Aktywowany / Nieaktywowany / Okres próbny / Wymaga aktywacji | Active / Not active / Grace period / Activation required | Windows activation state, as in Settings › System › Activation ("Active"); "Okres próbny" = license grace period. **do audytu (Etap 5)** |
+| Komputer / Opcjonalne aktualizacje sterowników / Sterowniki chipsetu / Grafika / Wsparcie producenta / Urządzenia bez sterownika | Computer / Optional driver updates / Chipset drivers / Graphics / Manufacturer support / Devices without a driver | Preparation steps 1 and 3–7 (step 2 is Windows Update); English README |
+| Strona sterowników {0} / Strona wsparcia {0} / Karta {0} | {0} drivers page / {0} support page / {0} card | "Intel drivers page", "Lenovo support page", "NVIDIA card" |
+| Szukaj sterownika / Szukaj strony wsparcia / Szukaj w Google | Search for a driver / Search for a support page / Search Google | Preparation links |
+| Urządzenia z problemem / brak sterownika / wyłączone / problem, kod {0} | Devices with a problem / no driver / disabled / problem, code {0} | Device Manager error codes 28 and 22, and any other code |
 
 ## Windows names
 
