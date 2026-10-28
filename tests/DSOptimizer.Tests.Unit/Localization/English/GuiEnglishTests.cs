@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Journal;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Core.Operations;
@@ -495,6 +496,134 @@ public class GuiEnglishTests
             var refused = Session(new EngineFixture(), TestTweaks.TwoValues("a") with { Risk = RiskLevel.Caution })
                 .Run("a", GuiOperation.Apply, confirmed: false);
             Assert.Equal("The operation requires confirmation – nothing was changed.", Assert.Single(refused.Lines).Text);
+        }
+    }
+
+    [Fact]
+    public void Session_StoppedLine_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var session = Session(new EngineFixture(), TestTweaks.TwoValues("t.one"), TestTweaks.TwoValues("t.two"));
+            session.CreateRestorePoint = false;
+            var stop = new BatchStop();
+            var steps = new ListProgress<BatchStepEvent>
+            {
+                OnReport = step =>
+                {
+                    if (step.Kind == BatchStepKind.Item && step.TweakId == "t.one" && step.Phase == BatchStepPhase.Started)
+                    {
+                        stop.Request();
+                    }
+                },
+            };
+
+            var report = session.RunBatch(new[] { "t.one", "t.two" }, GuiOperation.Apply, confirmed: true, steps, stop);
+
+            Assert.Contains(report.Lines, line => line.Level == GuiLogLevel.Warning && line.Text == "Dwie wartości: Skipped – stopped.");
+            Assert.Contains(report.Lines, line => line.Text == "Batch: 1 of 2 succeeded.");
+        }
+    }
+
+    [Fact]
+    public void Session_FullResultInLogFile_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var f = new EngineFixture();
+            f.Scripts.On("RUN", 0, "line 1", "line 2", "line 3");
+            var session = Session(f, TestTweaks.Action());
+
+            var report = session.Run("test.action", GuiOperation.Execute, confirmed: true);
+
+            Assert.Contains(report.Lines, line => line.Text == "Akcja: Done – line 1 | line 2 | line 3 (full result in the log file)");
+            Assert.Contains(
+                f.Log.Lines,
+                line => line.StartsWith("INFO [Gui] test.action: full result:" + Environment.NewLine, StringComparison.Ordinal));
+        }
+    }
+
+    [Fact]
+    public void Session_DetectAfterOperationFailed_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var f = new EngineFixture();
+            f.Registry.Set(@"HKLM\SOFTWARE\DSO\Inna", "X", RegValue.FromDWord(1));
+            var other = TestTweaks.TwoValues("t.other") with
+            {
+                Title = "Other item",
+                Registry = new[]
+                {
+                    new RegistryEntry { Path = @"HKLM\SOFTWARE\DSO\Inna", Name = "X", Value = RegValue.FromDWord(1), Original = RegValue.FromDWord(0) },
+                },
+            };
+            f.Scripts.On("RUN", _ =>
+            {
+                f.Journal.LoadException = new InvalidOperationException("journal broken");
+                return FakeScriptRunner.Result(0);
+            });
+            var session = Session(f, TestTweaks.Action(), other);
+
+            var report = session.Run("test.action", GuiOperation.Execute, confirmed: true);
+
+            var error = Assert.Single(report.Lines, line => line.Level == GuiLogLevel.Error);
+            Assert.Equal("Other item: couldn't check the status after the operation – journal broken", error.Text);
+        }
+    }
+
+    [Fact]
+    public void Session_UnexpectedError_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var f = new EngineFixture();
+            var services = new EngineServices
+            {
+                Registry = f.Registry,
+                Services = f.Services,
+                Scripts = f.Scripts,
+                Launcher = f.Launcher,
+                Journal = f.Journal,
+                RestorePoints = f.RestorePoints,
+                SystemInfo = f.SystemInfo,
+                User = f.User,
+                Log = new ThrowingInfoLog(),
+                Clock = f.Clock,
+            };
+            var session = new GuiSession(new LoadedCatalog(new[] { TestTweaks.Panel() }, "sha256:test"), services);
+
+            var report = session.Run("test.panel", GuiOperation.Execute, confirmed: false);
+
+            Assert.Equal("Panel: Error – Unexpected error: log broken", Assert.Single(report.Lines).Text);
+            Assert.Equal("Unexpected error: log broken", report.Result!.Message);
+        }
+    }
+
+    [Fact]
+    public void Session_PendingRebootReadFailed_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var f = new EngineFixture();
+            f.Journal.LoadException = new JournalStoreException("access denied");
+
+            var status = Session(f, TestTweaks.TwoValues("a")).PendingReboot(T0, T0);
+
+            Assert.Equal("Couldn't check whether a restart is pending: access denied", status.Warning);
+        }
+    }
+
+    private sealed class ThrowingInfoLog : Core.Abstractions.ILog
+    {
+        public void Info(string component, string message) => throw new InvalidOperationException("log broken");
+
+        public void Warn(string component, string message)
+        {
+        }
+
+        public void Fail(string component, string message, Exception? exception = null)
+        {
         }
     }
 

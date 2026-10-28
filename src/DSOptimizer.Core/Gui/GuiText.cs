@@ -105,11 +105,8 @@ public static class GuiText
             throw new ArgumentOutOfRangeException(nameof(warnings), warnings, null);
         }
 
-        // Bez L.P: licznik dziennika bywa ≥ 1000, a L.P wstawia separator tysięcy („1 000”) – polski tekst ma zostać „1000 błędów”.
-        // Forma wybierana polską regułą (1 → one, poza 1 zawsze forma mnoga), więc po angielsku „1 error”, „2 errors”, „5 errors”.
-        var errorsText = PolishPlural.Choose(errors, L.F("{0} błąd", errors), L.F("{0} błędy", errors), L.F("{0} błędów", errors));
-        var warningsText = PolishPlural.Choose(
-            warnings, L.F("{0} ostrzeżenie", warnings), L.F("{0} ostrzeżenia", warnings), L.F("{0} ostrzeżeń", warnings));
+        var errorsText = L.P("{0} błąd", "{0} błędy", "{0} błędów", errors);
+        var warningsText = L.P("{0} ostrzeżenie", "{0} ostrzeżenia", "{0} ostrzeżeń", warnings);
         return $"{errorsText}, {warningsText}";
     }
 

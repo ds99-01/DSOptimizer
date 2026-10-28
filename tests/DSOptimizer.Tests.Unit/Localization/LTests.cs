@@ -162,8 +162,8 @@ public class LTests
             Assert.Equal("22 pozycje", Items(22));
             Assert.Equal("12 pozycji", Items(12));
             Assert.Equal("0 pozycji", Items(0));
-            Assert.Equal("1 234 pozycje", Items(1234));
-            Assert.Equal("1 235 pozycji", Items(1235));
+            Assert.Equal("1234 pozycje", Items(1234));
+            Assert.Equal("1235 pozycji", Items(1235));
         }
     }
 
@@ -187,7 +187,7 @@ public class LTests
             Assert.Equal("2 items", Items(2));
             Assert.Equal("5 items", Items(5));
             Assert.Equal("22 items", Items(22));
-            Assert.Equal("1,234 items", Items(1234));
+            Assert.Equal("1234 items", Items(1234));
         }
     }
 
@@ -200,7 +200,7 @@ public class LTests
             Assert.Equal("1 pozycja", Items(1));
             Assert.Equal("2 pozycje", Items(2));
             Assert.Equal("5 pozycji", Items(5));
-            Assert.Equal("1,235 pozycji", Items(1235));
+            Assert.Equal("1235 pozycji", Items(1235));
         }
     }
 

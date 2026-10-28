@@ -87,7 +87,7 @@ public static class L
         string.Format(Culture, T(polishFormat), args);
 
     /// <summary>
-    /// Liczba z odmianą: każda forma zawiera <c>{0}</c> (= <paramref name="count"/> w formacie <c>N0</c> kultury <see cref="Culture"/>).
+    /// Liczba z odmianą: każda forma zawiera <c>{0}</c> (= <paramref name="count"/> jako zwykłe <c>{0}</c> w kulturze <see cref="Culture"/>, bez separatora tysięcy – „1000 pozycji”, „1000 items”).
     /// Po polsku forma z <see cref="PolishPlural.Choose"/>; po angielsku 1 → tłumaczenie <paramref name="one"/>, inaczej tłumaczenie
     /// <paramref name="many"/> (<paramref name="few"/> nie jest kluczem angielskim). Brak tłumaczenia wybranej formy = polska forma
     /// dla tej liczby, nigdy błędna polska odmiana.
@@ -100,7 +100,7 @@ public static class L
         var form = Current == UiLanguage.English
             ? Table().Find(UiLanguage.English, count == 1 ? one : many)
             : null;
-        return string.Format(Culture, form ?? PolishPlural.Choose(count, one, few, many), count.ToString("N0", Culture));
+        return string.Format(Culture, form ?? PolishPlural.Choose(count, one, few, many), count);
     }
 
     /// <summary>Wbudowane pliki tłumaczeń (zasoby <c>DSOptimizer.Core.Translations.*.json</c> zestawu Core).</summary>
