@@ -101,7 +101,7 @@ public class StartupLanguageTests
 
         Assert.Equal(UiLanguage.English, result.Language);
         Assert.Equal(
-            "Could not save the selected language: Access denied. The language prompt will appear again the next time the program starts.",
+            "Couldn't save the selected language: Access denied. The language prompt will appear again the next time the program starts.",
             result.Warning);
     }
 

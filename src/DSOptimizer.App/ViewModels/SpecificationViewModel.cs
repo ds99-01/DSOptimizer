@@ -9,6 +9,7 @@ using DSOptimizer.App.Gui;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Hardware;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Windows;
 
 namespace DSOptimizer.App.ViewModels;
@@ -71,7 +72,7 @@ public sealed class SpecificationViewModel : ObservableObject
     public bool IsComplete => _page.IsComplete;
 
     /// <summary>Nazwa pozycji w menu (etykieta, podpowiedź w zwiniętym menu, nazwa dla czytnika ekranu).</summary>
-    public string Name { get; } = "Specyfikacja";
+    public string Name { get; } = L.T("Specyfikacja");
 
     /// <summary>„Odśwież stan” na tej stronie: ponowny odczyt.</summary>
     public IAsyncRelayCommand RefreshCommand { get; }
@@ -92,7 +93,7 @@ public sealed class SpecificationViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _log.Fail("Gui", "Nie udało się otworzyć strony repozytorium.", ex);
+            _log.Fail("Gui", L.T("Nie udało się otworzyć strony repozytorium."), ex);
         }
     }
 
@@ -143,9 +144,12 @@ public sealed class SpecificationViewModel : ObservableObject
         catch (Exception ex)
         {
             // Writer zwraca błędy zapisu jako wyniki; tu zostaje np. odmowa zabezpieczenia katalogu – okno działa dalej.
-            _log.Warn(SpecificationText.Component, $"Nie zapisano raportu: {ex.Message}");
+            _log.Warn(SpecificationText.Component, ReportNotSavedText(ex.Message));
         }
     }
+
+    /// <summary>Linia dziennika, gdy zapis raportu rzucił (np. odmowa zabezpieczenia katalogu).</summary>
+    internal static string ReportNotSavedText(string detail) => L.F("Nie zapisano raportu: {0}", detail);
 
     /// <summary>„Kopiuj”: ten sam tekst co plik raportu.</summary>
     private void Copy()

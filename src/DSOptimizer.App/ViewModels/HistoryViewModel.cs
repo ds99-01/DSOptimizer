@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.App.ViewModels;
 
@@ -275,7 +276,7 @@ public sealed class HistoryViewModel : ObservableObject
 
         try
         {
-            _log(GuiLogLevel.Error, $"Nieoczekiwany błąd: {ex.GetType().Name}: {ex.Message}");
+            _log(GuiLogLevel.Error, L.F("Nieoczekiwany błąd: {0}: {1}", ex.GetType().Name, ex.Message));
         }
         catch (Exception)
         {
@@ -311,7 +312,7 @@ public sealed class HistoryViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _log(GuiLogLevel.Error, $"Nieoczekiwany błąd: {ex.GetType().Name}: {ex.Message}");
+            _log(GuiLogLevel.Error, L.F("Nieoczekiwany błąd: {0}: {1}", ex.GetType().Name, ex.Message));
         }
     }
 }

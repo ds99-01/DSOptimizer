@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:DSOptimizer.App.ViewModels"
              xmlns:views="clr-namespace:DSOptimizer.App.Views"
+             xmlns:l="clr-namespace:DSOptimizer.App.Gui"
              xmlns:apps="clr-namespace:DSOptimizer.Core.Apps;assembly=DSOptimizer.Core"
              xmlns:gui="clr-namespace:DSOptimizer.Core.Gui;assembly=DSOptimizer.Core">
   <!-- Strona „Aplikacje” (render Tasku 1, wariant B wybrany przez Dawida 2026-10-21): nagłówek z „Odśwież listę”, wyszukiwarka
@@ -124,7 +125,7 @@
 
         <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
           <TextBox x:Name="SearchBox" Style="{StaticResource SearchTextBox}" Tag="{Binding SearchPlaceholder}" KeyboardNavigation.TabIndex="1"
-                   AutomationProperties.Name="Szukaj aplikacji" AutomationProperties.HelpText="{Binding SearchPlaceholder}"
+                   AutomationProperties.Name="{l:T 'Szukaj aplikacji'}" AutomationProperties.HelpText="{Binding SearchPlaceholder}"
                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
             <TextBox.InputBindings>
               <KeyBinding Key="Escape" Command="{Binding ClearSearchCommand}" />
@@ -135,7 +136,7 @@
         <StackPanel DockPanel.Dock="Top" Margin="0,0,12,0">
           <ListBox x:Name="GroupList" ItemsSource="{Binding Groups}" SelectedValuePath="Value" SelectedValue="{Binding SelectedGroup}"
                    ItemContainerStyle="{StaticResource GroupSwitchItem}" Background="Transparent" BorderThickness="0" Padding="0"
-                   AutomationProperties.Name="Grupy aplikacji" KeyboardNavigation.TabIndex="3"
+                   AutomationProperties.Name="{l:T 'Grupy aplikacji'}" KeyboardNavigation.TabIndex="3"
                    ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
             <ListBox.Template>
               <ControlTemplate TargetType="ListBox">
@@ -155,7 +156,7 @@
           <TextBlock VerticalAlignment="Top" Margin="0,10,0,0" Style="{StaticResource BodyText}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                      Text="{Binding EmptyText}" />
           <ListBox x:Name="AppList" Style="{StaticResource ItemListBox}" ItemTemplate="{StaticResource AppRowTemplate}" KeyboardNavigation.TabIndex="4"
-                   ItemsSource="{Binding VisibleRows}" SelectedItem="{Binding SelectedRow, Mode=TwoWay}" AutomationProperties.Name="Aplikacje"
+                   ItemsSource="{Binding VisibleRows}" SelectedItem="{Binding SelectedRow, Mode=TwoWay}" AutomationProperties.Name="{l:T 'Aplikacje'}"
                    MouseDoubleClick="OnAppListDoubleClick" PreviewKeyDown="OnAppListKeyDown" />
         </Grid>
       </DockPanel>
@@ -211,19 +212,19 @@
                 <RowDefinition />
                 <RowDefinition />
               </Grid.RowDefinitions>
-              <TextBlock Style="{StaticResource DetailKeyText}" Text="Grupa" />
+              <TextBlock Style="{StaticResource DetailKeyText}" Text="{l:T 'Grupa'}" />
               <TextBlock Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding GroupText}" />
-              <TextBlock Grid.Row="1" Style="{StaticResource DetailKeyText}" Text="Rodzaj" />
+              <TextBlock Grid.Row="1" Style="{StaticResource DetailKeyText}" Text="{l:T 'Rodzaj'}" />
               <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding KindLongText}" />
-              <TextBlock Grid.Row="2" Style="{StaticResource DetailKeyText}" Text="Wydawca" />
+              <TextBlock Grid.Row="2" Style="{StaticResource DetailKeyText}" Text="{l:T 'Wydawca'}" />
               <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding PublisherDetail}" />
-              <TextBlock Grid.Row="3" Style="{StaticResource DetailKeyText}" Text="Wersja" />
+              <TextBlock Grid.Row="3" Style="{StaticResource DetailKeyText}" Text="{l:T 'Wersja'}" />
               <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding VersionText}" />
-              <TextBlock Grid.Row="4" Style="{StaticResource DetailKeyText}" Text="Konto" />
+              <TextBlock Grid.Row="4" Style="{StaticResource DetailKeyText}" Text="{l:T 'Konto'}" />
               <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding AccountText}" />
-              <TextBlock Grid.Row="5" Style="{StaticResource DetailKeyText}" Text="Usuwanie" />
+              <TextBlock Grid.Row="5" Style="{StaticResource DetailKeyText}" Text="{l:T 'Usuwanie'}" />
               <TextBlock Grid.Row="5" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding RemovalText}" />
-              <TextBlock Grid.Row="6" Style="{StaticResource DetailKeyText}" Text="Cofanie" />
+              <TextBlock Grid.Row="6" Style="{StaticResource DetailKeyText}" Text="{l:T 'Cofanie'}" />
               <TextBlock Grid.Row="6" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding UndoText}" />
             </Grid>
             <TextBlock Style="{StaticResource SectionHeaderText}" Margin="0,16,0,4" Text="{x:Static apps:AppsPageText.TechnicalHeader}" />
@@ -259,7 +260,7 @@
             </TextBlock.Style>
           </TextBlock>
         </StackPanel>
-        <Button Grid.Column="1" Margin="12,0,12,0" Style="{StaticResource TextLinkButton}" Content="Odznacz wszystko"
+        <Button Grid.Column="1" Margin="12,0,12,0" Style="{StaticResource TextLinkButton}" Content="{l:T 'Odznacz wszystko'}"
                 Command="{Binding ClearSelectionCommand}" />
         <Button x:Name="RemoveButton" Grid.Column="2" VerticalAlignment="Center" Style="{StaticResource PrimaryButton}"
                 Content="{Binding RemoveText}" Command="{Binding RemoveCommand}" />

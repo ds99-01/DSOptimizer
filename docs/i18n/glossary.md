@@ -294,6 +294,15 @@ How to read the tables:
 | DSOptimizer – uwaga / DSOptimizer – błąd | DSOptimizer – warning / DSOptimizer – error | Startup and error message box titles |
 | Nieobsłużony wyjątek | Unhandled exception | Log lines before the error message box |
 | obszar roboczy (monitora) | work area | Startup window size log lines ("the primary monitor's work area"), as in the Windows API |
+| Szukaj aplikacji / Grupy aplikacji / Aplikacje do instalacji | Search apps / App groups / Apps to install | Screen reader names of the search box and lists on the Apps and Install pages |
+| Grupa / Rodzaj / Wydawca / Wersja / Konto / Usuwanie / Cofanie | Group / Type / Publisher / Version / Account / Removal / Undo | Apps page detail labels; "Rodzaj" = Type (Program or Store) |
+| Pakiet / Wpis odinstalowania / Tryb / Polecenie: {0} | Package / Uninstall entry / Mode / Command: {0} | Apps page technical details |
+| Narzędzie producenta do resztek | Manufacturer's cleanup tool | Apps page technical details: the manufacturer's tool that removes leftovers |
+| Zmiany zapisują się od razu. | Changes are saved right away. | Settings page subtitle |
+| Twórz punkt przywracania przed zmianami | Create a restore point before changes | Settings checkbox |
+| Autor / Licencja / Wersja {0} | Author / License / Version {0} | "About" column in Settings |
+| Otwórz github.com/… | Open github.com/… | Screen reader name of the repository link |
+| grafitowy (pasek marki, menu) | graphite | Theme hint: "The brand bar and the menu stay graphite." |
 
 ## Windows names
 

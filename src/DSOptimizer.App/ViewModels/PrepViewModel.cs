@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DSOptimizer.App.Gui;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Prep;
 
 namespace DSOptimizer.App.ViewModels;
@@ -82,7 +83,7 @@ public sealed class PrepViewModel : ObservableObject
     {
         try
         {
-            _log(GuiLogLevel.Error, $"Nieoczekiwany błąd: {ex.GetType().Name}: {ex.Message}");
+            _log(GuiLogLevel.Error, L.F("Nieoczekiwany błąd: {0}: {1}", ex.GetType().Name, ex.Message));
         }
         catch (Exception)
         {

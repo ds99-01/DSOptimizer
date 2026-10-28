@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Localization;
 using TextFolding = DSOptimizer.Core.Gui.SearchText;
 
 namespace DSOptimizer.App.ViewModels;
@@ -125,23 +126,23 @@ public sealed class AppRowViewModel : ObservableObject
         var app = row.App;
         if (app.Appx is { } appx)
         {
-            lines.Add("Pakiet: " + appx.PackageFullName);
+            lines.Add(L.F("Pakiet: {0}", appx.PackageFullName));
         }
 
         if (app.Win32 is { } win32)
         {
-            lines.Add("Wpis odinstalowania: " + win32.KeyPath);
+            lines.Add(L.F("Wpis odinstalowania: {0}", win32.KeyPath));
         }
 
         if (row.Plan is { } plan)
         {
-            lines.Add("Tryb: " + AppsPageText.ProgramRemovalBrief(plan.Mode));
-            lines.Add("Polecenie: " + AppsPageText.CommandLine(plan));
+            lines.Add(L.F("Tryb: {0}", AppsPageText.ProgramRemovalBrief(plan.Mode)));
+            lines.Add(L.F("Polecenie: {0}", AppsPageText.CommandLine(plan)));
         }
 
         if (!string.IsNullOrWhiteSpace(row.CleanupUrl))
         {
-            lines.Add("Narzędzie producenta do resztek: " + row.CleanupUrl);
+            lines.Add(L.F("Narzędzie producenta do resztek: {0}", row.CleanupUrl));
         }
 
         return string.Join(Environment.NewLine, lines);

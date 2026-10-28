@@ -42,3 +42,10 @@ src/DSOptimizer.Core/Scripts/ScriptWrapper.cs	"# --- koniec treści ---"	komenta
 
 # Core – aplikacje: kod skryptów PowerShell (AppX), nie tekst programu.
 src/DSOptimizer.Core/Apps/AppxScript.cs	"if ([string]::IsNullOrWhiteSpace($name)) { throw 'Brak nazwy pakietu w żądaniu.' }"	treść skryptu PowerShell (kod, nie tekst programu; C# nie wysyła pustej nazwy pakietu)
+
+# Okno wyboru języka przy pierwszym starcie: teksty po polsku i po angielsku naraz (decyzja Etapu 1).
+src/DSOptimizer.App/Views/LanguageChoiceWindow.xaml	Zamknij / Close	okno wyboru języka – teksty dwujęzyczne
+src/DSOptimizer.App/Views/LanguageChoiceWindow.xaml	Język / Language	okno wyboru języka – teksty dwujęzyczne
+src/DSOptimizer.App/Views/LanguageChoiceWindow.xaml	Wybierz język programu · Choose the program language	okno wyboru języka – teksty dwujęzyczne
+src/DSOptimizer.App/Views/LanguageChoiceWindow.xaml	Możesz to zmienić później w Ustawieniach.	okno wyboru języka – teksty dwujęzyczne
+src/DSOptimizer.App/Views/LanguageChoiceWindow.xaml	You can change this later in Settings.	okno wyboru języka – teksty dwujęzyczne

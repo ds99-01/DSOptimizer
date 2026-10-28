@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
 using InstallStrings = DSOptimizer.Core.Install.InstallText;
 
 namespace DSOptimizer.App.ViewModels;
@@ -1019,7 +1020,7 @@ public sealed class InstallViewModel : ObservableObject
     {
         try
         {
-            _log(GuiLogLevel.Error, $"Nieoczekiwany błąd: {ex.GetType().Name}: {ex.Message}");
+            _log(GuiLogLevel.Error, L.F("Nieoczekiwany błąd: {0}: {1}", ex.GetType().Name, ex.Message));
         }
         catch (Exception)
         {

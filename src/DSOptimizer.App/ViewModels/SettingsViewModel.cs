@@ -22,7 +22,7 @@ namespace DSOptimizer.App.ViewModels;
 /// </summary>
 public sealed class SettingsViewModel : ObservableObject
 {
-    private const string Component = "Ustawienia";
+    private static string Component => L.T("Ustawienia");
 
     private readonly ISettingsStore _store;
     private readonly GuiSession _session;
@@ -144,10 +144,10 @@ public sealed class SettingsViewModel : ObservableObject
         }
     }
 
-    public string VersionText { get; } = "Wersja " + ProductInfo.Version;
+    public string VersionText { get; } = L.F("Wersja {0}", ProductInfo.Version);
 
     /// <summary>Nazwa pozycji w menu (etykieta, podpowiedź w zwiniętym menu, nazwa dla czytnika ekranu).</summary>
-    public string Name { get; } = "Ustawienia";
+    public string Name { get; } = L.T("Ustawienia");
 
     public IAsyncRelayCommand OpenRepositoryPageCommand { get; }
 
@@ -181,7 +181,7 @@ public sealed class SettingsViewModel : ObservableObject
         }
         catch (SettingsStoreException ex)
         {
-            _log.Warn(Component, $"Nie udało się zapisać ustawień: {ex.Message} Zmiana obowiązuje do zamknięcia programu.");
+            _log.Warn(Component, L.F("Nie udało się zapisać ustawień: {0} Zmiana obowiązuje do zamknięcia programu.", ex.Message));
         }
     }
 
@@ -194,7 +194,7 @@ public sealed class SettingsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _log.Fail("Gui", "Nie udało się otworzyć strony repozytorium.", ex);
+            _log.Fail("Gui", L.T("Nie udało się otworzyć strony repozytorium."), ex);
         }
     }
 
@@ -251,7 +251,7 @@ public sealed class SettingsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _log.Fail("Gui", "Nie udało się pokazać licencji komponentów.", ex);
+            _log.Fail("Gui", L.T("Nie udało się pokazać licencji komponentów."), ex);
         }
     }
 }

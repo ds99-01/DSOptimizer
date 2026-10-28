@@ -3,7 +3,7 @@
   "entries": [
     {
       "pl": "Nie udało się zapisać wybranego języka: {0} Okno wyboru pokaże się przy następnym uruchomieniu.",
-      "en": "Could not save the selected language: {0} The language prompt will appear again the next time the program starts."
+      "en": "Couldn't save the selected language: {0} The language prompt will appear again the next time the program starts."
     },
     {
       "pl": "Nie znaleziono pliku programu.",
@@ -11,11 +11,11 @@
     },
     {
       "pl": "Nie udało się ponownie uruchomić programu: {0}",
-      "en": "Could not restart the program: {0}"
+      "en": "Couldn't restart the program: {0}"
     },
     {
       "pl": "Nie udało się pokazać okna wyboru języka. Program używa języka systemu.",
-      "en": "Could not show the language prompt. The program uses the system language."
+      "en": "Couldn't show the language prompt. The program uses the system language."
     },
     {
       "pl": "Język",
@@ -31,11 +31,11 @@
     },
     {
       "pl": "Nie udało się zapisać wybranego języka: {0} Program nie został uruchomiony ponownie.",
-      "en": "Could not save the selected language: {0} The program was not restarted."
+      "en": "Couldn't save the selected language: {0} The program was not restarted."
     },
     {
       "pl": "Nie udało się zamknąć okna wyboru języka.",
-      "en": "Could not close the language prompt."
+      "en": "Couldn't close the language prompt."
     }
   ]
 }

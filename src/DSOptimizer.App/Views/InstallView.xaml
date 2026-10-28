@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:DSOptimizer.App.ViewModels"
              xmlns:views="clr-namespace:DSOptimizer.App.Views"
+             xmlns:l="clr-namespace:DSOptimizer.App.Gui"
              xmlns:install="clr-namespace:DSOptimizer.Core.Install;assembly=DSOptimizer.Core">
   <!-- Strona „Instalacja” (render Tasku 1 Etapu 4c, wariant A – ruling R5; poprawki po przeklikaniu 2026-10-25): nagłówek
        z „Odśwież”, jedno pole wyszukiwania (każdy znak filtruje listę; Enter albo „Szukaj też w winget” dokłada wyniki winget),
@@ -231,7 +232,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <TextBox x:Name="SearchBox" Style="{StaticResource SearchTextBox}" Tag="{Binding SearchPlaceholder}" KeyboardNavigation.TabIndex="1"
-                 AutomationProperties.Name="Szukaj aplikacji" AutomationProperties.HelpText="{Binding SearchPlaceholder}"
+                 AutomationProperties.Name="{l:T 'Szukaj aplikacji'}" AutomationProperties.HelpText="{Binding SearchPlaceholder}"
                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
           <TextBox.InputBindings>
             <KeyBinding Key="Return" Command="{Binding SearchCommand}" />
@@ -302,7 +303,7 @@
           <!-- „Wszystkie”, „Zaznaczone”, kategorie; w trybie wyszukiwania nic nie jest wybrane (lista pokazuje wyniki filtra) -->
           <Border BorderThickness="0,0,1,0" BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}">
             <ListBox x:Name="CategoryList" Style="{StaticResource CategoryListBox}" ItemsSource="{Binding Categories}"
-                     SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" AutomationProperties.Name="Kategorie" KeyboardNavigation.TabIndex="4"
+                     SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" AutomationProperties.Name="{l:T 'Kategorie'}" KeyboardNavigation.TabIndex="4"
                      SelectionChanged="OnCategorySelectionChanged" />
           </Border>
 
@@ -334,7 +335,7 @@
               <ListBox x:Name="InstallList" Style="{StaticResource ItemListBox}" KeyboardNavigation.TabIndex="6"
                        ItemContainerStyle="{x:Null}" ItemContainerStyleSelector="{StaticResource InstallListContainers}"
                        ItemsSource="{Binding VisibleItems}" IsSynchronizedWithCurrentItem="False" SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
-                       AutomationProperties.Name="Aplikacje do instalacji"
+                       AutomationProperties.Name="{l:T 'Aplikacje do instalacji'}"
                        MouseDoubleClick="OnInstallListDoubleClick" PreviewKeyDown="OnInstallListKeyDown" />
             </Grid>
           </DockPanel>
@@ -374,7 +375,7 @@
             </TextBlock.Style>
           </TextBlock>
         </StackPanel>
-        <Button Grid.Column="1" Margin="12,0,12,0" Style="{StaticResource TextLinkButton}" Content="Odznacz wszystko"
+        <Button Grid.Column="1" Margin="12,0,12,0" Style="{StaticResource TextLinkButton}" Content="{l:T 'Odznacz wszystko'}"
                 Command="{Binding ClearSelectionCommand}" />
         <Button x:Name="InstallButton" Grid.Column="2" VerticalAlignment="Center" Style="{StaticResource PrimaryButton}"
                 Content="{Binding InstallText}" Command="{Binding InstallCommand}" />

@@ -1,0 +1,137 @@
+{
+  "language": "en",
+  "entries": [
+    {
+      "pl": "Szukaj aplikacji",
+      "en": "Search apps"
+    },
+    {
+      "pl": "Grupy aplikacji",
+      "en": "App groups"
+    },
+    {
+      "pl": "Grupa",
+      "en": "Group"
+    },
+    {
+      "pl": "Rodzaj",
+      "en": "Type"
+    },
+    {
+      "pl": "Wydawca",
+      "en": "Publisher"
+    },
+    {
+      "pl": "Wersja",
+      "en": "Version"
+    },
+    {
+      "pl": "Usuwanie",
+      "en": "Removal"
+    },
+    {
+      "pl": "Pakiet: {0}",
+      "en": "Package: {0}"
+    },
+    {
+      "pl": "Wpis odinstalowania: {0}",
+      "en": "Uninstall entry: {0}"
+    },
+    {
+      "pl": "Tryb: {0}",
+      "en": "Mode: {0}"
+    },
+    {
+      "pl": "Polecenie: {0}",
+      "en": "Command: {0}"
+    },
+    {
+      "pl": "Narzędzie producenta do resztek: {0}",
+      "en": "Manufacturer's cleanup tool: {0}"
+    },
+    {
+      "pl": "Kategorie",
+      "en": "Categories"
+    },
+    {
+      "pl": "Aplikacje do instalacji",
+      "en": "Apps to install"
+    },
+    {
+      "pl": "Zmiany zapisują się od razu.",
+      "en": "Changes are saved right away."
+    },
+    {
+      "pl": "Zmiany w systemie",
+      "en": "System changes"
+    },
+    {
+      "pl": "Twórz punkt przywracania przed zmianami",
+      "en": "Create a restore point before changes"
+    },
+    {
+      "pl": "Przed pierwszą zmianą każdego „Zastosuj” (pojedynczego i w serii) program próbuje utworzyć punkt przywracania Windows. Gdy się nie uda, na przykład przy wyłączonej ochronie systemu, zmiany i tak zostaną wprowadzone, a dziennik pokaże ostrzeżenie. Nie dotyczy „Cofnij” ani akcji.",
+      "en": "Before the first change of every \"Apply\" (single or in a batch), the program tries to create a Windows restore point. If that fails, for example when System Protection is off, the changes are still made and the log shows a warning. This doesn't apply to \"Undo\" or to actions."
+    },
+    {
+      "pl": "Wygląd i język",
+      "en": "Appearance and language"
+    },
+    {
+      "pl": "Motyw",
+      "en": "Theme"
+    },
+    {
+      "pl": "Systemowy",
+      "en": "System"
+    },
+    {
+      "pl": "Jasny",
+      "en": "Light"
+    },
+    {
+      "pl": "Ciemny",
+      "en": "Dark"
+    },
+    {
+      "pl": "Systemowy zmienia się razem z motywem Windows. Pasek marki i menu zostają grafitowe.",
+      "en": "System follows the Windows theme. The brand bar and the menu stay graphite."
+    },
+    {
+      "pl": "Autor",
+      "en": "Author"
+    },
+    {
+      "pl": "Licencja",
+      "en": "License"
+    },
+    {
+      "pl": "Otwórz github.com/ds99-01/DSOptimizer",
+      "en": "Open github.com/ds99-01/DSOptimizer"
+    },
+    {
+      "pl": "Wersja {0}",
+      "en": "Version {0}"
+    },
+    {
+      "pl": "Nie udało się zapisać ustawień: {0} Zmiana obowiązuje do zamknięcia programu.",
+      "en": "Couldn't save the settings: {0} The change applies until the program is closed."
+    },
+    {
+      "pl": "Nie udało się otworzyć strony repozytorium.",
+      "en": "Couldn't open the repository page."
+    },
+    {
+      "pl": "Nie udało się pokazać licencji komponentów.",
+      "en": "Couldn't show the component licenses."
+    },
+    {
+      "pl": "Zapisz raport",
+      "en": "Save report"
+    },
+    {
+      "pl": "Nie zapisano raportu: {0}",
+      "en": "Couldn't save the report: {0}"
+    }
+  ]
+}

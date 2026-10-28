@@ -192,7 +192,7 @@ public sealed class AppsViewModel : ObservableObject
         ? string.Empty
         : AppsPageText.SelectionBarDetails(_rows.Any(row => row.IsSelected && row.Row.App.Kind == AppKind.Program), _restorePointSetting());
 
-    public string RemoveText => $"Usuń ({SelectedCount})";
+    public string RemoveText => L.F("Usuń ({0})", SelectedCount);
 
     public IAsyncRelayCommand RefreshCommand { get; }
 
@@ -372,7 +372,7 @@ public sealed class AppsViewModel : ObservableObject
     {
         try
         {
-            _log(GuiLogLevel.Error, $"Nieoczekiwany błąd: {ex.GetType().Name}: {ex.Message}");
+            _log(GuiLogLevel.Error, L.F("Nieoczekiwany błąd: {0}: {1}", ex.GetType().Name, ex.Message));
         }
         catch (Exception)
         {

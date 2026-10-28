@@ -101,24 +101,24 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
       <StackPanel Margin="0,0,20,16">
-        <TextBlock Style="{StaticResource PageTitleText}" Text="Ustawienia" />
-        <TextBlock Style="{StaticResource SubText}" Text="Zmiany zapisują się od razu." />
+        <TextBlock Style="{StaticResource PageTitleText}" Text="{l:T 'Ustawienia'}" />
+        <TextBlock Style="{StaticResource SubText}" Text="{l:T 'Zmiany zapisują się od razu.'}" />
 
         <!-- W trakcie operacji nieaktywne: seria nie zmienia polityki punktu przywracania w połowie -->
         <StackPanel Margin="0,22,0,0" IsEnabled="{Binding IsEditable}">
-          <TextBlock Style="{StaticResource SectionHeaderText}" Text="Zmiany w systemie" />
+          <TextBlock Style="{StaticResource SectionHeaderText}" Text="{l:T 'Zmiany w systemie'}" />
           <Border Style="{StaticResource SettingSectionLine}" />
           <!-- Etykieta zawija się w wąskiej kolumnie zamiast ucinać się na krawędzi. Kolor i rozmiar jawnie: TextBlock z treści
                nie brał koloru z ContentPresenter szablonu (w ciemnym motywie był czarny na ciemnym tle, render Task 10). -->
           <CheckBox Style="{StaticResource SettingCheckBox}" IsChecked="{Binding CreateRestorePoint, Mode=TwoWay}"
-                    AutomationProperties.Name="Twórz punkt przywracania przed zmianami">
+                    AutomationProperties.Name="{l:T 'Twórz punkt przywracania przed zmianami'}">
             <TextBlock TextWrapping="Wrap" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                       Text="Twórz punkt przywracania przed zmianami" />
+                       Text="{l:T 'Twórz punkt przywracania przed zmianami'}" />
           </CheckBox>
           <TextBlock Style="{StaticResource SettingHint}" Margin="30,4,0,0"
-                     Text="Przed pierwszą zmianą każdego „Zastosuj” (pojedynczego i w serii) program próbuje utworzyć punkt przywracania Windows. Gdy się nie uda, na przykład przy wyłączonej ochronie systemu, zmiany i tak zostaną wprowadzone, a dziennik pokaże ostrzeżenie. Nie dotyczy „Cofnij” ani akcji." />
+                     Text="{l:T 'Przed pierwszą zmianą każdego „Zastosuj” (pojedynczego i w serii) program próbuje utworzyć punkt przywracania Windows. Gdy się nie uda, na przykład przy wyłączonej ochronie systemu, zmiany i tak zostaną wprowadzone, a dziennik pokaże ostrzeżenie. Nie dotyczy „Cofnij” ani akcji.'}" />
 
-          <TextBlock Style="{StaticResource SectionHeaderText}" Margin="0,26,0,0" Text="Wygląd i język" />
+          <TextBlock Style="{StaticResource SectionHeaderText}" Margin="0,26,0,0" Text="{l:T 'Wygląd i język'}" />
           <Border Style="{StaticResource SettingSectionLine}" />
           <Grid>
             <Grid.ColumnDefinitions>
@@ -130,15 +130,15 @@
               <RowDefinition Height="Auto" />
               <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <TextBlock Style="{StaticResource BodyText}" FontSize="13.5" Margin="0,1,16,0" VerticalAlignment="Top" Text="Motyw" />
+            <TextBlock Style="{StaticResource BodyText}" FontSize="13.5" Margin="0,1,16,0" VerticalAlignment="Top" Text="{l:T 'Motyw'}" />
             <StackPanel Grid.Column="1">
               <WrapPanel>
-                <RadioButton Style="{StaticResource SettingRadioButton}" GroupName="Theme" Content="Systemowy" IsChecked="{Binding IsSystemTheme, Mode=TwoWay}" />
-                <RadioButton Style="{StaticResource SettingRadioButton}" GroupName="Theme" Content="Jasny" IsChecked="{Binding IsLightTheme, Mode=TwoWay}" />
-                <RadioButton Style="{StaticResource SettingRadioButton}" GroupName="Theme" Content="Ciemny" IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" Margin="0" />
+                <RadioButton Style="{StaticResource SettingRadioButton}" GroupName="Theme" Content="{l:T 'Systemowy'}" IsChecked="{Binding IsSystemTheme, Mode=TwoWay}" />
+                <RadioButton Style="{StaticResource SettingRadioButton}" GroupName="Theme" Content="{l:T 'Jasny'}" IsChecked="{Binding IsLightTheme, Mode=TwoWay}" />
+                <RadioButton Style="{StaticResource SettingRadioButton}" GroupName="Theme" Content="{l:T 'Ciemny'}" IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" Margin="0" />
               </WrapPanel>
               <TextBlock Style="{StaticResource SettingHint}" Margin="0,8,0,0"
-                         Text="Systemowy zmienia się razem z motywem Windows. Pasek marki i menu zostają grafitowe." />
+                         Text="{l:T 'Systemowy zmienia się razem z motywem Windows. Pasek marki i menu zostają grafitowe.'}" />
             </StackPanel>
 
             <TextBlock Grid.Row="1" Style="{StaticResource BodyText}" FontSize="13.5" Margin="0,28,16,0" VerticalAlignment="Top" Text="{l:T 'Język'}" />
@@ -181,9 +181,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
-          <TextBlock Style="{StaticResource DetailKeyText}" Text="Autor" />
+          <TextBlock Style="{StaticResource DetailKeyText}" Text="{l:T 'Autor'}" />
           <TextBlock Grid.Column="1" Style="{StaticResource DetailValueText}" FontWeight="SemiBold" Text="{x:Static core:ProductInfo.AuthorName}" />
-          <TextBlock Grid.Row="1" Style="{StaticResource DetailKeyText}" Text="Licencja" />
+          <TextBlock Grid.Row="1" Style="{StaticResource DetailKeyText}" Text="{l:T 'Licencja'}" />
           <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource DetailValueText}" TextWrapping="Wrap"
                      Text="{x:Static core:ProductInfo.LicenseName}" />
         </Grid>
@@ -194,9 +194,9 @@
         <StackPanel Orientation="Horizontal">
           <views:BrandIcon Kind="GitHub" Size="16" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
           <Button Style="{StaticResource TextLinkButton}" Margin="6,0,0,0" Content="{x:Static core:ProductInfo.RepositoryUrlText}"
-                  AutomationProperties.Name="Otwórz github.com/ds99-01/DSOptimizer" Command="{Binding OpenRepositoryPageCommand}" />
+                  AutomationProperties.Name="{l:T 'Otwórz github.com/ds99-01/DSOptimizer'}" Command="{Binding OpenRepositoryPageCommand}" />
         </StackPanel>
-        <Button Style="{StaticResource TextLinkButton}" Margin="0,6,0,0" HorizontalAlignment="Left" Content="Licencje komponentów"
+        <Button Style="{StaticResource TextLinkButton}" Margin="0,6,0,0" HorizontalAlignment="Left" Content="{l:T 'Licencje komponentów'}"
                 Command="{Binding ShowLicensesCommand}" />
       </StackPanel>
     </ScrollViewer>

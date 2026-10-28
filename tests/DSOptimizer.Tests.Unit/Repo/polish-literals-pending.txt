@@ -1,17 +1,3 @@
 # Obszary jeszcze nie przetłumaczone (PolishLiteralRulesTests): pliki pod tymi ścieżkami strażnik pomija.
 # Wpis z „/” na końcu = folder (wszystko pod nim), bez „/” = dokładnie ten plik. „#” = komentarz.
 # Każdy obszar po przetłumaczeniu usuwa swoje linie; na końcu plik zostaje bez wpisów.
-
-# Task 12: App – strony
-src/DSOptimizer.App/ViewModels/AppRowViewModel.cs
-src/DSOptimizer.App/ViewModels/AppsViewModel.cs
-src/DSOptimizer.App/ViewModels/HistoryViewModel.cs
-src/DSOptimizer.App/ViewModels/InstallViewModel.cs
-src/DSOptimizer.App/ViewModels/PrepViewModel.cs
-src/DSOptimizer.App/ViewModels/SettingsViewModel.cs
-src/DSOptimizer.App/ViewModels/SpecificationViewModel.cs
-src/DSOptimizer.App/Views/AppsView.xaml
-src/DSOptimizer.App/Views/InstallView.xaml
-src/DSOptimizer.App/Views/LanguageChoiceWindow.xaml
-src/DSOptimizer.App/Views/SettingsView.xaml
-src/DSOptimizer.App/Views/SpecificationView.xaml
