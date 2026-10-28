@@ -105,7 +105,7 @@ Script `tests/vm/explore/Invoke-E4A3Exploration.ps1`, raw results outside git. C
   going around online (Dell `…/product-support/servicetag/<tag>`, Lenovo `pcsupport.lenovo.com/products/<number>`) come from forums and third-party sites;
   the search engines on dell.com and lenovo.com returned no documentation, and Dell and Lenovo tell you to enter the number in the search field on the support
   page. To be checked on a real laptop with a serial number.
-- **Intel, pages in Polish**: `intel.com/content/www/pl/pl/...` redirects to `intel.pl`, and that one to a 404 page (status 2026-10-21).
+- **Intel, pages in Polish**: `intel.com/content/www/pl/pl/...` redirects to `intel.pl`, and that one to a 404 page (as of 2026-10-21).
 - **AMD, page in Polish**: `amd.com/pl/support/download/drivers.html` gives 404.
 - **Intel graphics – Arc driver page**: the "Intel® Arc™ Graphics – Windows" page (`/download/785597/...`) today covers
   only Arc and Core Ultra (downloaded page 2026-10-21), not Iris Xe and older ones, so it isn't suitable as one address for every Intel card.

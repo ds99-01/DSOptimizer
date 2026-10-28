@@ -152,7 +152,7 @@ The "CLI run" column = the item's result in the batch `DSOptimizer.exe --install
 Task Scheduler task (`tests/vm/explore/Invoke-E4CExploration.ps1 -Phase cli-install`, network `Default Switch` only for the duration of the phase), time
 = from the `Started` event to the result event in the journal (download, installation and verification). Raw results: outside git.
 
-- **Pro, the whole list (32) in one batch:** 31 × `Installed` ("Installed and verified."), 1 × `Failed` (HWMonitor), CLI code 1,
+- **Pro, the whole list (32) in one batch:** 31 × `Installed` ("Zainstalowano i sprawdzono." (Installed and verified.)), 1 × `Failed` (HWMonitor), CLI code 1,
   17 min 13 s. `--list-install` after the batch: 32/32 `installed = true`. Journal: 32 `app-install` entries, each `Started` → result.
   App Installer updated itself during the batch (winget v1.11.510 before, v1.29.380 after); Notepad++ still came as EXE.
 - **HWMonitor on Pro:** after "Starting package install…" winget printed "Cancelling operation", "Installation abandoned" and ended with
@@ -166,7 +166,7 @@ Task Scheduler task (`tests/vm/explore/Invoke-E4CExploration.ps1 -Phase cli-inst
 - **Home (one item from each category, different from the Task 2 measurement) + `winget:PuTTY.PuTTY`:** 9/9 `Installed`, CLI code 0,
   3 min 34 s; PuTTY confirmed by `winget list --id --exact` (`Installed`, not `InstalledUnverified`). `--list-install`:
   8 list items from this batch = `installed = true`. winget without an update (v1.11.510).
-- **Discord (R16):** the HKU entry appeared after winget exited – "Installed and verified." about 14 s (Home) and 20 s (Pro) after the line
+- **Discord (R16):** the HKU entry appeared after winget exited – "Zainstalowano i sprawdzono." (Installed and verified.) about 14 s (Home) and 20 s (Pro) after the line
   "Successfully installed", so within the 60 s window. Only Adobe Acrobat Reader waited longer (about 30 s, Pro).
 - **VC++ as a component of another installer:** on Home one of the batch installers (with no winget dependency in the output; the logs can't tell which one) installed
   `Microsoft Visual C++ 2015-2022 Redistributable (x64)` and `(x86)` – 14.51.36231 (older entry name). The rule from T11 didn't
@@ -176,11 +176,11 @@ Task Scheduler task (`tests/vm/explore/Invoke-E4CExploration.ps1 -Phase cli-inst
 
 - **Foxit PDF Reader (2026-10-24, after Task 11 was closed, Pro only):** `--install-apps install.foxit-reader` as `dso` from a Task
   Scheduler task (a one-off script on the `Invoke-E4CExploration.ps1` helpers: the `cli-install` phase with the list limited to this item):
-  `Installed` ("Installed and verified.", version 2026.2.1.39815), CLI code 0, 80 s from `Started` to the result (whole CLI process 90 s),
+  `Installed` ("Zainstalowano i sprawdzono." (Installed and verified.), version 2026.2.1.39815), CLI code 0, 80 s from `Started` to the result (whole CLI process 90 s),
   winget v1.11.510 without an update. `--list-install`: `install.foxit-reader` = `installed = true`, the other 32 = `false`. Journal: one
   `app-install` entry (`Started` → `Installed`). New after installation: one Uninstall entry (HKLM 64, MSI, without `QuietUninstallString`),
   the `FoxitReaderUpdateService` service ("Foxit PDF Reader Update Service", `Auto`, `LocalSystem`, running), no new AppX packages
-  (apart from the `Microsoft.Winget.Source` source downloaded by winget) and no `Run` entries (HKLM 64/32, the account's HKU). Language: multilingual package (`packagelang` = `ml`, folders `Lang\<kultura>` (culture) including `pl-PL`),
+  (apart from the `Microsoft.Winget.Source` source downloaded by winget) and no `Run` entries (HKLM 64/32, the account's HKU). Language: multilingual package (`packagelang` = `ml`, folders `Lang\<culture>` including `pl-PL`),
   the app description in the registry (`Capabilities\ApplicationDescription`) in Polish; the window language wasn't checked (the program wasn't started).
 
 ### RustDesk: CLI run with network (RustDesk plan, Task 7, 2026-10-24)
@@ -197,18 +197,18 @@ process start), not `startedAt` → `finishedAt` of the CLI report. `msiexec` ti
 `raw/cli-list.json`, `raw/journal.json`, MSI log).
 
 - **Pro – mixed batch `install.7zip,install.rustdesk`:** 7-Zip `Installed` (winget `0x00000000`, 26.05, 10.1 s), RustDesk
-  `Installed` "Installed and verified." (`source = github`, `msiCode` 0, `wingetCode` null, `version` 1.5.0, 7.6 s; `msiexec`
+  `Installed` "Zainstalowano i sprawdzono." (Installed and verified.) (`source = github`, `msiCode` 0, `wingetCode` null, `version` 1.5.0, 7.6 s; `msiexec`
   12:16:16.8 → 12:16:20.5 local VM time (UTC+2) = 3.7 s), CLI code 0, whole process 27.7 s (`Seconds` from `raw/cli-install.result.json`;
   CLI report `startedAt` → `finishedAt` = 25.3 s). `--list-install`: `install.rustdesk` `installed = true`,
-  `source = github`, `gitHub = rustdesk/rustdesk`. Second batch (`-CliRepeat`): both items `AlreadyInstalled` "It was already
-  installed – nothing was run.", code 0, 4.6 s (`Seconds` from `raw/cli-install-again.result.json`; no new journal entry and no new MSI log; that there's no GitHub query on this path is checked by the test
+  `source = github`, `gitHub = rustdesk/rustdesk`. Second batch (`-CliRepeat`): both items `AlreadyInstalled` "Była już
+  zainstalowana – nic nie uruchomiono." (It was already installed – nothing was run.), code 0, 4.6 s (`Seconds` from `raw/cli-install-again.result.json`; no new journal entry and no new MSI log; that there's no GitHub query on this path is checked by the test
   `AppInstallEngineGitHubTests.MatchedBeforeRun_AlreadyInstalled_NoHttp` – the VM's network traffic wasn't measured).
 - **Home – `install.rustdesk` alone:** `Installed` (`msiCode` 0, 1.5.0, 7.2 s; `msiexec` 12:13:53.8 → 12:13:57.3 local VM time
   = 3.5 s), CLI code 0, process 17 s (`Seconds` from `raw/cli-install.result.json`; CLI report `startedAt` → `finishedAt` = 12.9 s);
   `--list-install` `installed = true`, `source = github`; second batch `AlreadyInstalled`, code 0, 3.6 s (`Seconds` from
   `raw/cli-install-again.result.json`).
 - **Journal (both VMs):** one `app-install` entry for RustDesk – `Started` "github: rustdesk/rustdesk" → `Installed` "github:
-  rustdesk/rustdesk, version 1.5.0, log: C:\ProgramData\DSOptimizer\logs\winget\rustdesk-msi-<time>.log", status `Active`
+  rustdesk/rustdesk, wersja 1.5.0, log: C:\ProgramData\DSOptimizer\logs\winget\rustdesk-msi-<czas>.log" (github: rustdesk/rustdesk, version 1.5.0, log: …\rustdesk-msi-<time>.log), status `Active`
   (on Pro preceded by the 7-Zip entry). The second run didn't add an entry.
 - **After the batch (read only in the VM):** `C:\ProgramData\DSOptimizer\downloads` exists and has no files (MSI deleted), MSI log
   `logs\winget\rustdesk-msi-*.log` (about 390 KB, "Product: RustDesk -- Installation completed successfully."), `RustDesk` service
