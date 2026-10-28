@@ -1,4 +1,5 @@
 using System;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -31,13 +32,13 @@ internal sealed class RegValueConverter : JsonConverter<RegValue>
         }
 
         var obj = JObject.Load(reader);
-        var typeText = (string?)obj["type"] ?? throw new JsonSerializationException("Brak pola 'type' wartości rejestru.");
+        var typeText = (string?)obj["type"] ?? throw new JsonSerializationException(L.T("Brak pola 'type' wartości rejestru."));
         if (!Enum.TryParse<RegistryValueType>(typeText, ignoreCase: false, out var type))
         {
-            throw new JsonSerializationException($"Nieznany typ wartości rejestru: {typeText}");
+            throw new JsonSerializationException(L.F("Nieznany typ wartości rejestru: {0}", typeText));
         }
 
-        var token = obj["value"] ?? throw new JsonSerializationException("Brak pola 'value' wartości rejestru.");
+        var token = obj["value"] ?? throw new JsonSerializationException(L.T("Brak pola 'value' wartości rejestru."));
         try
         {
             return RegValueJson.FromToken(type, token);

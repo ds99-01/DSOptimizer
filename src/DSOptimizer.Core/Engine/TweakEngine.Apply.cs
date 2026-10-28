@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using DSOptimizer.Core.Errors;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Core.Operations;
 
@@ -15,7 +16,7 @@ public sealed partial class TweakEngine
     private string? FirstActiveConflict(TweakDefinition tweak, JournalDocument document)
         => tweak.Conflicts.FirstOrDefault(id => document.FindActive(id, ScopedUserSid(tweak)) is not null);
 
-    private static string ConflictMessage(string conflictId) => $"Pozycja {conflictId} jest zastosowana i konfliktuje z tą – najpierw ją cofnij.";
+    private static string ConflictMessage(string conflictId) => L.F("Pozycja {0} jest zastosowana i konfliktuje z tą – najpierw ją cofnij.", conflictId);
 
     /// <summary>
     /// Stosuje tweak atomowo: snapshot → journal → zmiany → detekcja. Każdy błąd cofa już wykonane operacje.
@@ -31,7 +32,7 @@ public sealed partial class TweakEngine
 
         if (tweak.Kind != TweakKind.Tweak)
         {
-            return Finish(tweak, TweakOutcome.Refused, null, "Apply dotyczy tylko kind=tweak – dla akcji użyj Execute.");
+            return Finish(tweak, TweakOutcome.Refused, null, L.T("Apply dotyczy tylko kind=tweak – dla akcji użyj Execute."));
         }
 
         _s.Log.Info(Component, $"Apply {tweak.Id}: start");
@@ -50,10 +51,10 @@ public sealed partial class TweakEngine
             {
                 if (ex is not JournalStoreException)
                 {
-                    _s.Log.Fail(Component, $"Nieoczekiwany błąd odczytu journala przy sprawdzaniu konfliktów {tweak.Id}.", ex);
+                    _s.Log.Fail(Component, L.F("Nieoczekiwany błąd odczytu journala przy sprawdzaniu konfliktów {0}.", tweak.Id), ex);
                 }
 
-                return Finish(tweak, TweakOutcome.Failed, null, $"Nie udało się odczytać journala – zmiana nie została wykonana: {ex.Message}", warnings);
+                return Finish(tweak, TweakOutcome.Failed, null, L.F("Nie udało się odczytać journala – zmiana nie została wykonana: {0}", ex.Message), warnings);
             }
 
             if (preloaded.Warning is not null)
@@ -75,14 +76,14 @@ public sealed partial class TweakEngine
         }
         catch (Exception ex)
         {
-            _s.Log.Fail(Component, $"Nieoczekiwany błąd przy budowie operacji {tweak.Id}.", ex);
-            return Finish(tweak, TweakOutcome.Failed, null, $"Nie udało się przygotować operacji: {ex.Message}", warnings);
+            _s.Log.Fail(Component, L.F("Nieoczekiwany błąd przy budowie operacji {0}.", tweak.Id), ex);
+            return Finish(tweak, TweakOutcome.Failed, null, L.F("Nie udało się przygotować operacji: {0}", ex.Message), warnings);
         }
 
         var before = DetectSafely(tweak, operations, cancellationToken);
         if (before == DetectionState.NotSupported)
         {
-            return Finish(tweak, TweakOutcome.NotSupported, before, "Tweak nie dotyczy tego systemu.", warnings);
+            return Finish(tweak, TweakOutcome.NotSupported, before, L.T("Tweak nie dotyczy tego systemu."), warnings);
         }
 
         if (before == DetectionState.Applied)
@@ -101,10 +102,10 @@ public sealed partial class TweakEngine
         {
             if (ex is not OperationException)
             {
-                _s.Log.Fail(Component, $"Nieoczekiwany błąd przy zapisie stanu {tweak.Id}.", ex);
+                _s.Log.Fail(Component, L.F("Nieoczekiwany błąd przy zapisie stanu {0}.", tweak.Id), ex);
             }
 
-            return Finish(tweak, TweakOutcome.Failed, before, $"Nie udało się zapisać stanu przed zmianą: {ex.Message}", warnings);
+            return Finish(tweak, TweakOutcome.Failed, before, L.F("Nie udało się zapisać stanu przed zmianą: {0}", ex.Message), warnings);
         }
 
         JournalDocument document;
@@ -145,10 +146,10 @@ public sealed partial class TweakEngine
         {
             if (ex is not JournalStoreException)
             {
-                _s.Log.Fail(Component, $"Nieoczekiwany błąd journala przy {tweak.Id}.", ex);
+                _s.Log.Fail(Component, L.F("Nieoczekiwany błąd journala przy {0}.", tweak.Id), ex);
             }
 
-            return Finish(tweak, TweakOutcome.Failed, before, $"Nie udało się zapisać journala – zmiana nie została wykonana: {ex.Message}", warnings);
+            return Finish(tweak, TweakOutcome.Failed, before, L.F("Nie udało się zapisać journala – zmiana nie została wykonana: {0}", ex.Message), warnings);
         }
 
         var executed = new List<int>();
@@ -157,7 +158,7 @@ public sealed partial class TweakEngine
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                failure = "Anulowano.";
+                failure = L.T("Anulowano.");
                 break;
             }
 
@@ -170,7 +171,7 @@ public sealed partial class TweakEngine
             {
                 if (ex is not OperationException)
                 {
-                    _s.Log.Fail(Component, $"Nieoczekiwany błąd (Unexpected) przy {mutating[i].Describe()}.", ex);
+                    _s.Log.Fail(Component, L.F("Nieoczekiwany błąd (Unexpected) przy {0}.", mutating[i].Describe()), ex);
                 }
 
                 // Operacje wieloetapowe (usługa: typ startu + stop; skrypt) mogły zmienić część stanu
@@ -204,11 +205,11 @@ public sealed partial class TweakEngine
             entry.Status = JournalEntryStatus.PendingReboot;
             AddEvent(entry, "apply", nameof(TweakOutcome.PendingReboot), null);
             TrySave(document, warnings);
-            return Finish(tweak, TweakOutcome.PendingReboot, after, "Zmiana zadziała po restarcie.", warnings, requiresReboot: true);
+            return Finish(tweak, TweakOutcome.PendingReboot, after, L.T("Zmiana zadziała po restarcie."), warnings, requiresReboot: true);
         }
 
         var all = Enumerable.Range(0, mutating.Count).ToList();
-        return RollBack(tweak, document, entry, isNewEntry, mutating, snapshots, all, $"Detekcja po zmianie: {after}", warnings);
+        return RollBack(tweak, document, entry, isNewEntry, mutating, snapshots, all, L.F("Detekcja po zmianie: {0}", after), warnings);
     }
 
     private JournalEntry NewEntry(TweakDefinition tweak, IEnumerable<SnapshotRecord> baseline)
@@ -247,7 +248,7 @@ public sealed partial class TweakEngine
             }
             catch (Exception ex)
             {
-                _s.Log.Fail(Component, $"Rollback {mutating[index].Describe()} nie powiódł się.", ex);
+                _s.Log.Fail(Component, L.F("Rollback {0} nie powiódł się.", mutating[index].Describe()), ex);
                 notRestored.Add($"{mutating[index].Describe()}: {ex.Message}");
             }
         }

@@ -6,6 +6,7 @@ using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Cli;
 
@@ -81,7 +82,7 @@ internal static class CliInstallRunner
         if (!WingetArguments.TryValidateQuery(query, out var queryError))
         {
             return CliRunner.Build(options, catalog, services, startedAt, CliExitCode.UsageError, null, warnings,
-                errors: new[] { "Nieprawidłowe zapytanie --search-apps: " + queryError });
+                errors: new[] { L.F("Nieprawidłowe zapytanie --search-apps: {0}", queryError) });
         }
 
         var reading = Read(services, install, warnings, out var failure);
@@ -103,7 +104,7 @@ internal static class CliInstallRunner
         }
         catch (Exception ex)
         {
-            services.Log.Fail(Component, "winget search nie wystartował.", ex);
+            services.Log.Fail(Component, L.T("winget search nie wystartował."), ex);
             return Searched(InstallText.SearchStartFailed(ex.Message), null);
         }
 
@@ -146,7 +147,7 @@ internal static class CliInstallRunner
         }
         catch (Exception ex)
         {
-            services.Log.Fail(Component, "Odczyt listy zainstalowanych aplikacji nie powiódł się.", ex);
+            services.Log.Fail(Component, L.T("Odczyt listy zainstalowanych aplikacji nie powiódł się."), ex);
             var error = InstallText.ReadFailed(ex.Message);
             var status = WingetAvailability.CheckAccount(services.User, install.ProcessSid, install.AccountName)
                 ?? new WingetStatus(WingetState.NotWorking, null, error);
@@ -172,10 +173,10 @@ internal static class CliInstallRunner
         targets = new List<InstallTarget>(options.InstallIds.Count);
         if (options.InstallIds.Count == 0)
         {
-            return "Polecenie --install-apps wymaga co najmniej jednego id.";
+            return L.T("Polecenie --install-apps wymaga co najmniej jednego id.");
         }
 
-        var source = options.AppsCatalogPath ?? "wbudowana lista";
+        var source = options.AppsCatalogPath ?? L.T("wbudowana lista");
         var packageKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var id in options.InstallIds)
         {
@@ -185,7 +186,7 @@ internal static class CliInstallRunner
                 var wingetId = id.Substring(InstallTarget.SearchPrefix.Length);
                 if (!WingetArguments.IsValidWingetId(wingetId))
                 {
-                    return $"Nieprawidłowy identyfikator aplikacji '{id}': po winget: musi być pełny identyfikator pakietu, nie skrócony „…” ani pusty.";
+                    return L.F("Nieprawidłowy identyfikator aplikacji '{0}': po winget: musi być pełny identyfikator pakietu, nie skrócony „…” ani pusty.", id);
                 }
 
                 var entry = list.FindByWingetId(wingetId);
@@ -202,7 +203,7 @@ internal static class CliInstallRunner
                 var entry = list.Find(id);
                 if (entry is null)
                 {
-                    return $"Nie ma pozycji '{id}' na liście aplikacji do instalacji ({source}).";
+                    return L.F("Nie ma pozycji '{0}' na liście aplikacji do instalacji ({1}).", id, source);
                 }
 
                 target = InstallTarget.FromEntry(entry);
@@ -210,7 +211,7 @@ internal static class CliInstallRunner
 
             if (!packageKeys.Add(target.PackageKey))
             {
-                return $"Pakiet {target.PackageKey} podany w --install-apps więcej niż raz ('{id}').";
+                return L.F("Pakiet {0} podany w --install-apps więcej niż raz ('{1}').", target.PackageKey, id);
             }
 
             targets.Add(target);

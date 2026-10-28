@@ -22,3 +22,17 @@ src/DSOptimizer.Core/Localization/TranslationTable.cs	": ten sam tekst polski ju
 src/DSOptimizer.Windows/MsiexecInstaller.cs	$"Bezpiecznik testów: {BlockRealMsiexecVariable}=1, start {_executablePath} zablokowany (msiexec nigdy nie startuje w testach)."	bezpiecznik testów (DSO_BLOCK_*)
 src/DSOptimizer.Windows/WebDownloader.cs	$"Bezpiecznik testów: {BlockRealNetworkVariable}=1, połączenie z {url.Host} zablokowane (testy łączą się tylko z pętlą zwrotną)."	bezpiecznik testów (DSO_BLOCK_*)
 src/DSOptimizer.Windows/WingetRunner.cs	$"Bezpiecznik testów: {BlockRealWingetVariable}=1, start {_executablePath} zablokowany (winget nigdy nie startuje w testach)."	bezpiecznik testów (DSO_BLOCK_*)
+
+# Zasoby osadzone (Catalog, ThirdPartyNotices) – wyjątek tylko przy zepsutym buildzie, nigdy w działającym programie.
+src/DSOptimizer.Catalog/BuiltInCatalog.cs	"Brak zasobu: "	komunikat dla programisty (brak zasobu osadzonego)
+src/DSOptimizer.Catalog/BuiltInCatalog.cs	"Brak zasobu katalogu: "	komunikat dla programisty (brak zasobu osadzonego)
+src/DSOptimizer.Core/ThirdPartyNotices.cs	"Brak osadzonego zasobu "	komunikat dla programisty (brak zasobu osadzonego)
+
+# Core – naruszenie kontraktu (komunikat wieloliniowego throw new ArgumentException, strażnik nie widzi go w jednej linii).
+src/DSOptimizer.Core/Abstractions/ToolRequest.cs	$"Niedozwolone narzędzie '{value}': dozwolona jest tylko nazwa pliku .exe z System32, bez interpreterów i hostów skryptów."	komunikat naruszenia kontraktu (throw new ArgumentException)
+
+# Core – teksty, które nie są komunikatami dla użytkownika.
+src/DSOptimizer.Core/ProductInfo.cs	"Dawid Świeboda"	nazwa własna (imię i nazwisko autora), nie tłumaczy się
+src/DSOptimizer.Core/Model/RegistryValueType.cs	"Nazwy typów wymusza format JSON katalogu."	uzasadnienie SuppressMessage dla analizatora kodu (dla programisty, nie trafia do programu)
+src/DSOptimizer.Core/Scripts/ScriptWrapper.cs	"# --- treść tweaka ---"	komentarz w generowanym skrypcie PowerShell (nie trafia do okna ani logu)
+src/DSOptimizer.Core/Scripts/ScriptWrapper.cs	"# --- koniec treści ---"	komentarz w generowanym skrypcie PowerShell (nie trafia do okna ani logu)

@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using DSOptimizer.Core.Localization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -44,17 +45,17 @@ public static class JournalSerializer
         }
         catch (JsonException ex)
         {
-            throw new JournalFormatException($"Uszkodzony journal: {ex.Message}", ex);
+            throw new JournalFormatException(L.F("Uszkodzony journal: {0}", ex.Message), ex);
         }
 
         if (document is null)
         {
-            throw new JournalFormatException("Pusty dokument journala.");
+            throw new JournalFormatException(L.T("Pusty dokument journala."));
         }
 
         if (document.SchemaVersion != JournalDocument.CurrentSchemaVersion)
         {
-            throw new JournalFormatException($"Nieobsługiwana wersja journala: {document.SchemaVersion}.");
+            throw new JournalFormatException(L.F("Nieobsługiwana wersja journala: {0}.", document.SchemaVersion));
         }
 
         return document;

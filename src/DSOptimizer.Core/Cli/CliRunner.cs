@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Cli;
@@ -52,7 +53,7 @@ public static class CliRunner
         var warnings = new List<string>(startupWarnings ?? Array.Empty<string>());
         if (!string.Equals(catalog.Source, CliCatalog.BuiltInSource, StringComparison.Ordinal))
         {
-            warnings.Add($"Użyto zewnętrznego katalogu: {catalog.Source} ({loaded.Hash}).");
+            warnings.Add(L.F("Użyto zewnętrznego katalogu: {0} ({1}).", catalog.Source, loaded.Hash));
         }
 
         if (options.Command is CliCommand.ListApps or CliCommand.RemoveApp)
@@ -79,26 +80,26 @@ public static class CliRunner
         if (tweak is null)
         {
             return Build(options, catalog, services, startedAt, CliExitCode.CatalogError, options.TweakId, warnings,
-                errors: new[] { $"Nieznany tweak '{options.TweakId}' w katalogu {catalog.Source}." });
+                errors: new[] { L.F("Nieznany tweak '{0}' w katalogu {1}.", options.TweakId, catalog.Source) });
         }
 
         var kind = tweak.Kind.ToString().ToLowerInvariant();
         if (options.Command == CliCommand.Execute && tweak.Kind == TweakKind.Tweak)
         {
             return Build(options, catalog, services, startedAt, CliExitCode.UsageError, tweak.Id, warnings,
-                errors: new[] { $"Polecenie execute dotyczy tylko akcji i paneli ('{tweak.Id}' ma kind={kind})." });
+                errors: new[] { L.F("Polecenie execute dotyczy tylko akcji i paneli ('{0}' ma kind={1}).", tweak.Id, kind) });
         }
 
         if (options.Command == CliCommand.Apply && tweak.Kind != TweakKind.Tweak)
         {
             return Build(options, catalog, services, startedAt, CliExitCode.UsageError, tweak.Id, warnings,
-                errors: new[] { $"Polecenie apply dotyczy tylko kind=tweak ('{tweak.Id}' ma kind={kind}) – użyj --execute." });
+                errors: new[] { L.F("Polecenie apply dotyczy tylko kind=tweak ('{0}' ma kind={1}) – użyj --execute.", tweak.Id, kind) });
         }
 
         if (options.Command is CliCommand.Detect or CliCommand.Undo && tweak.Kind != TweakKind.Tweak)
         {
             return Build(options, catalog, services, startedAt, CliExitCode.UsageError, tweak.Id, warnings,
-                errors: new[] { $"Polecenie {options.Command.ToString().ToLowerInvariant()} dotyczy tylko pozycji kind=tweak ('{tweak.Id}' ma kind={kind})." });
+                errors: new[] { L.F("Polecenie {0} dotyczy tylko pozycji kind=tweak ('{1}' ma kind={2}).", options.Command.ToString().ToLowerInvariant(), tweak.Id, kind) });
         }
 
         var engine = new TweakEngine(services, loaded.Hash);
@@ -144,7 +145,7 @@ public static class CliRunner
             new BatchOptions
             {
                 RestorePointPolicy = options.RestorePointPolicy,
-                RestorePointDescription = $"DSOptimizer – przed {tweak.Id}",
+                RestorePointDescription = L.F("DSOptimizer – przed {0}", tweak.Id),
             },
             null,
             cancellationToken);
@@ -174,7 +175,7 @@ public static class CliRunner
         if (row is null)
         {
             return Build(options, catalog, services, startedAt, CliExitCode.OperationFailed, options.TweakId, warnings,
-                errors: new[] { $"Nie ma aplikacji '{options.TweakId}' na liście aplikacji (nie jest zainstalowana albo jest ukryta)." });
+                errors: new[] { L.F("Nie ma aplikacji '{0}' na liście aplikacji (nie jest zainstalowana albo jest ukryta).", options.TweakId) });
         }
 
         // Ta sama reguła co pole wyboru na stronie i strażnik silnika (AppRow.CanRemove).
@@ -185,8 +186,8 @@ public static class CliRunner
                 TweakId = row.App.Id,
                 Outcome = TweakOutcome.Refused,
                 Message = string.IsNullOrWhiteSpace(row.BlockedReason)
-                    ? $"Tej aplikacji nie wolno usunąć ({row.Removability}, grupa {row.Group})."
-                    : $"Tej aplikacji nie wolno usunąć ({row.Removability}): {row.BlockedReason}",
+                    ? L.F("Tej aplikacji nie wolno usunąć ({0}, grupa {1}).", row.Removability, row.Group)
+                    : L.F("Tej aplikacji nie wolno usunąć ({0}): {1}", row.Removability, row.BlockedReason),
             };
             return Build(options, catalog, services, startedAt, CliExitCodes.FromOutcome(refused.Outcome), row.App.Id, warnings, result: refused);
         }

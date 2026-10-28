@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security;
 using DSOptimizer.Core.Catalog;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Cli;
 
@@ -38,7 +39,7 @@ public static class CliCatalog
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException or SecurityException)
         {
-            return Failed(fullPath, $"Nie można odczytać katalogu {fullPath}: {ex.Message}");
+            return Failed(fullPath, L.F("Nie można odczytać katalogu {0}: {1}", fullPath, ex.Message));
         }
 
         return LoadAndValidate(new[] { new CatalogSource(Path.GetFileName(fullPath), json) }, fullPath);

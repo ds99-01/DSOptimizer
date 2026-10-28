@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using DSOptimizer.Core.Errors;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Core.Operations;
 
@@ -24,12 +25,12 @@ public sealed partial class TweakEngine
 
         if (tweak.Kind != TweakKind.Tweak)
         {
-            return Finish(tweak, TweakOutcome.Refused, null, "Undo dotyczy tylko kind=tweak.");
+            return Finish(tweak, TweakOutcome.Refused, null, L.T("Undo dotyczy tylko kind=tweak."));
         }
 
         if (!tweak.Reversible)
         {
-            return Finish(tweak, TweakOutcome.Refused, null, "Tweak jest oznaczony jako nieodwracalny.");
+            return Finish(tweak, TweakOutcome.Refused, null, L.T("Tweak jest oznaczony jako nieodwracalny."));
         }
 
         _s.Log.Info(Component, $"Undo {tweak.Id}: start");
@@ -41,8 +42,8 @@ public sealed partial class TweakEngine
         }
         catch (Exception ex)
         {
-            _s.Log.Fail(Component, $"Nieoczekiwany błąd przy budowie operacji {tweak.Id}.", ex);
-            return Finish(tweak, TweakOutcome.Failed, null, $"Nie udało się przygotować operacji: {ex.Message}", warnings);
+            _s.Log.Fail(Component, L.F("Nieoczekiwany błąd przy budowie operacji {0}.", tweak.Id), ex);
+            return Finish(tweak, TweakOutcome.Failed, null, L.F("Nie udało się przygotować operacji: {0}", ex.Message), warnings);
         }
 
         JournalLoadResult load;
@@ -54,10 +55,10 @@ public sealed partial class TweakEngine
         {
             if (ex is not JournalStoreException)
             {
-                _s.Log.Fail(Component, $"Nieoczekiwany błąd odczytu journala przy {tweak.Id}.", ex);
+                _s.Log.Fail(Component, L.F("Nieoczekiwany błąd odczytu journala przy {0}.", tweak.Id), ex);
             }
 
-            return Finish(tweak, TweakOutcome.Failed, null, $"Nie udało się odczytać journala: {ex.Message}", warnings);
+            return Finish(tweak, TweakOutcome.Failed, null, L.F("Nie udało się odczytać journala: {0}", ex.Message), warnings);
         }
 
         if (load.Warning is not null)
@@ -94,7 +95,7 @@ public sealed partial class TweakEngine
             var operation = mutating.FirstOrDefault(candidate => candidate.Owns(record));
             if (operation is null)
             {
-                problems.Add($"{record.Describe()}: brak odpowiadającej operacji w katalogu");
+                problems.Add(L.F("{0}: brak odpowiadającej operacji w katalogu", record.Describe()));
             }
             else
             {
@@ -110,7 +111,7 @@ public sealed partial class TweakEngine
             }
             catch (Exception ex)
             {
-                _s.Log.Fail(Component, $"Undo {pairs[i].Operation.Describe()} nie powiodło się.", ex);
+                _s.Log.Fail(Component, L.F("Undo {0} nie powiodło się.", pairs[i].Operation.Describe()), ex);
                 problems.Add($"{pairs[i].Operation.Describe()}: {ex.Message}");
             }
         }
@@ -140,11 +141,11 @@ public sealed partial class TweakEngine
                 var current = operation.Capture(CancellationToken.None);
                 if (!SnapshotComparer.SameState(record, current))
                 {
-                    problems.Add($"{operation.Describe()}: po cofnięciu stan różni się od zapisanego ({current.Describe()})");
+                    problems.Add(L.F("{0}: po cofnięciu stan różni się od zapisanego ({1})", operation.Describe(), current.Describe()));
                 }
                 else if (record.CreatedKeyRoot is { } root && !string.Equals(root, current.CreatedKeyRoot, StringComparison.OrdinalIgnoreCase))
                 {
-                    var warning = $"Klucz {root} pozostał po cofnięciu (nie jest pusty).";
+                    var warning = L.F("Klucz {0} pozostał po cofnięciu (nie jest pusty).", root);
                     if (!warnings.Contains(warning))
                     {
                         warnings.Add(warning);
@@ -155,10 +156,10 @@ public sealed partial class TweakEngine
             {
                 if (ex is not OperationException)
                 {
-                    _s.Log.Fail(Component, $"Nieoczekiwany błąd weryfikacji {operation.Describe()}.", ex);
+                    _s.Log.Fail(Component, L.F("Nieoczekiwany błąd weryfikacji {0}.", operation.Describe()), ex);
                 }
 
-                problems.Add($"{operation.Describe()}: nie można zweryfikować stanu – {ex.Message}");
+                problems.Add(L.F("{0}: nie można zweryfikować stanu – {1}", operation.Describe(), ex.Message));
             }
         }
     }
@@ -168,7 +169,7 @@ public sealed partial class TweakEngine
         var defaults = mutating.Select(operation => (Operation: operation, Record: operation.DefaultsSnapshot())).ToList();
         if (defaults.Count == 0 || defaults.Any(pair => pair.Record is null))
         {
-            return Finish(tweak, TweakOutcome.Refused, null, "Brak wpisu w journalu i brak wartości domyślnych w katalogu – nie ma danych do cofnięcia.", warnings);
+            return Finish(tweak, TweakOutcome.Refused, null, L.T("Brak wpisu w journalu i brak wartości domyślnych w katalogu – nie ma danych do cofnięcia."), warnings);
         }
 
         var problems = new List<string>();
@@ -181,14 +182,14 @@ public sealed partial class TweakEngine
             }
             catch (Exception ex)
             {
-                _s.Log.Fail(Component, $"Undo (domyślne) {defaults[i].Operation.Describe()} nie powiodło się.", ex);
+                _s.Log.Fail(Component, L.F("Undo (domyślne) {0} nie powiodło się.", defaults[i].Operation.Describe()), ex);
                 problems.Add($"{defaults[i].Operation.Describe()}: {ex.Message}");
 
                 // Bez wpisu w journalu stan sprzed zmiany jest nieznany: po pierwszym błędzie nie zmieniamy dalej na ślepo.
                 // Pominięte operacje (wcześniejsze na liście) trafiają do NotRestored, żeby raport był kompletny.
                 for (var skipped = i - 1; skipped >= 0; skipped--)
                 {
-                    problems.Add($"{defaults[skipped].Operation.Describe()}: pominięte (stan nieznany)");
+                    problems.Add(L.F("{0}: pominięte (stan nieznany)", defaults[skipped].Operation.Describe()));
                 }
 
                 interrupted = true;
@@ -197,8 +198,8 @@ public sealed partial class TweakEngine
         }
 
         warnings.Add(interrupted
-            ? "Brak wpisu w journalu – próba przywrócenia wartości domyślnych przerwana – stan nieznany."
-            : "Brak wpisu w journalu – przywrócono wartości domyślne z katalogu (stan sprzed zmiany na tym PC jest nieznany).");
+            ? L.T("Brak wpisu w journalu – próba przywrócenia wartości domyślnych przerwana – stan nieznany.")
+            : L.T("Brak wpisu w journalu – przywrócono wartości domyślne z katalogu (stan sprzed zmiany na tym PC jest nieznany)."));
 
         var outcome = problems.Count == 0 ? TweakOutcome.UndoneFromDefaults : TweakOutcome.UndoIncomplete;
         return Finish(tweak, outcome, SafeDetect(tweak), null, warnings, problems, requiresReboot: tweak.RequiresReboot && problems.Count == 0);

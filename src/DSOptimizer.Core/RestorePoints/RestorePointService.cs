@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.RestorePoints;
@@ -25,7 +26,7 @@ public sealed class RestorePointService : IRestorePointService
     private const int ServiceDisabledHResult = unchecked((int)0x80070422);
     private const uint ServiceDisabledCode = 1058;
     private const string Component = "RestorePoint";
-    private const string ProtectionDisabledMessage = "Ochrona systemu jest wyłączona (HRESULT 0x80070422, błąd 1058) – punkt przywracania nie powstał.";
+    private static string ProtectionDisabledMessage => L.T("Ochrona systemu jest wyłączona (HRESULT 0x80070422, błąd 1058) – punkt przywracania nie powstał.");
 
     private readonly IRegistry _registry;
     private readonly IRestorePointApi _api;
@@ -47,7 +48,7 @@ public sealed class RestorePointService : IRestorePointService
         var previous = _registry.Read(FrequencyKeyPath, FrequencyValueName);
         if (previous.Status is not (ReadStatus.Found or ReadStatus.NotFound))
         {
-            return new RestorePointResult(RestorePointStatus.Failed, $"Nie można odczytać {FrequencyValueName}: {previous.Error}");
+            return new RestorePointResult(RestorePointStatus.Failed, L.F("Nie można odczytać {0}: {1}", FrequencyValueName, previous.Error));
         }
 
         HashSet<uint> existing;
@@ -57,10 +58,10 @@ public sealed class RestorePointService : IRestorePointService
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, "Nie można odczytać listy punktów przywracania.", ex);
+            _log.Fail(Component, L.T("Nie można odczytać listy punktów przywracania."), ex);
             return new RestorePointResult(
                 RestorePointStatus.Failed,
-                $"Nie można odczytać listy punktów przywracania, więc nie da się potwierdzić wyniku (punkt nie został utworzony): {Describe(ex)}");
+                L.F("Nie można odczytać listy punktów przywracania, więc nie da się potwierdzić wyniku (punkt nie został utworzony): {0}", Describe(ex)));
         }
 
         try
@@ -71,7 +72,7 @@ public sealed class RestorePointService : IRestorePointService
             {
                 return new RestorePointResult(
                     RestorePointStatus.Failed,
-                    string.Format(CultureInfo.InvariantCulture, "SystemRestore.CreateRestorePoint zwrócił kod {0} – ochrona systemu może być wyłączona.", code),
+                    L.F("SystemRestore.CreateRestorePoint zwrócił kod {0} – ochrona systemu może być wyłączona.", code),
                     code);
             }
 
@@ -81,13 +82,13 @@ public sealed class RestorePointService : IRestorePointService
         {
             // Ostrzeżenie = dokładnie komunikat wyniku: okno rozpoznaje je w raporcie operacji i nie dubluje; szczegóły tylko w pliku.
             _log.Warn(Component, ProtectionDisabledMessage);
-            _log.Info(Component, $"Szczegóły błędu 0x80070422: {Describe(ex)}");
+            _log.Info(Component, L.F("Szczegóły błędu 0x80070422: {0}", Describe(ex)));
             return new RestorePointResult(RestorePointStatus.ProtectionDisabled, ProtectionDisabledMessage, ServiceDisabledCode);
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, "Tworzenie punktu przywracania nie powiodło się.", ex);
-            return new RestorePointResult(RestorePointStatus.Failed, $"Tworzenie punktu przywracania nie powiodło się: {Describe(ex)}");
+            _log.Fail(Component, L.T("Tworzenie punktu przywracania nie powiodło się."), ex);
+            return new RestorePointResult(RestorePointStatus.Failed, L.F("Tworzenie punktu przywracania nie powiodło się: {0}", Describe(ex)));
         }
         finally
         {
@@ -97,7 +98,7 @@ public sealed class RestorePointService : IRestorePointService
             }
             catch (OperationException ex)
             {
-                _log.Warn(Component, $"Nie udało się przywrócić {FrequencyValueName}: {ex.Message}");
+                _log.Warn(Component, L.F("Nie udało się przywrócić {0}: {1}", FrequencyValueName, ex.Message));
             }
         }
     }
@@ -117,10 +118,10 @@ public sealed class RestorePointService : IRestorePointService
             }
             catch (Exception ex)
             {
-                _log.Fail(Component, "Nie można odczytać listy punktów przywracania po utworzeniu.", ex);
+                _log.Fail(Component, L.T("Nie można odczytać listy punktów przywracania po utworzeniu."), ex);
                 return new RestorePointResult(
                     RestorePointStatus.Failed,
-                    $"Nie można potwierdzić utworzenia punktu przywracania (błąd odczytu listy): {Describe(ex)}",
+                    L.F("Nie można potwierdzić utworzenia punktu przywracania (błąd odczytu listy): {0}", Describe(ex)),
                     0);
             }
 
@@ -128,17 +129,14 @@ public sealed class RestorePointService : IRestorePointService
             {
                 if (!existing.Contains(point.SequenceNumber) && string.Equals(point.Description, description, StringComparison.Ordinal))
                 {
-                    _log.Info(Component, $"Utworzono punkt przywracania: {description} (numer sekwencji {point.SequenceNumber})");
+                    _log.Info(Component, L.F("Utworzono punkt przywracania: {0} (numer sekwencji {1})", description, point.SequenceNumber));
                     return new RestorePointResult(RestorePointStatus.Created, null, 0);
                 }
             }
 
             if (_clock.UtcNow >= deadline)
             {
-                var message = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "SystemRestore.CreateRestorePoint zwrócił 0, ale punkt nie pojawił się na liście w ciągu {0} s (możliwy 24-godzinny limit lub pominięcie przez usługę).",
-                    (int)PollTimeout.TotalSeconds);
+                var message = L.F("SystemRestore.CreateRestorePoint zwrócił 0, ale punkt nie pojawił się na liście w ciągu {0} s (możliwy 24-godzinny limit lub pominięcie przez usługę).", (int)PollTimeout.TotalSeconds);
                 _log.Warn(Component, message);
                 return new RestorePointResult(RestorePointStatus.Failed, message, 0);
             }

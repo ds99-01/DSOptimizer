@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Core.Operations;
 
@@ -78,7 +79,7 @@ public sealed partial class TweakEngine
         }
         catch (Exception ex)
         {
-            _s.Log.Fail(Component, $"Detekcja {tweak.Id} przerwana nieoczekiwanym błędem.", ex);
+            _s.Log.Fail(Component, L.F("Detekcja {0} przerwana nieoczekiwanym błędem.", tweak.Id), ex);
             return DetectionState.Unknown;
         }
     }
@@ -123,12 +124,12 @@ public sealed partial class TweakEngine
             }
 
             entry.Status = JournalEntryStatus.Active;
-            AddEvent(entry, "detect", "Applied", "Zmiana aktywna po restarcie.");
+            AddEvent(entry, "detect", "Applied", L.T("Zmiana aktywna po restarcie."));
             _s.Journal.Save(document);
         }
         catch (JournalStoreException ex)
         {
-            _s.Log.Warn(Component, $"Nie udało się zaktualizować journala dla {tweak.Id}: {ex.Message}");
+            _s.Log.Warn(Component, L.F("Nie udało się zaktualizować journala dla {0}: {1}", tweak.Id, ex.Message));
         }
     }
 

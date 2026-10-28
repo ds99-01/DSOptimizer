@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Model;
 
@@ -77,7 +78,7 @@ public sealed class RegValue : IEquatable<RegValue>
     {
         if (!Exists)
         {
-            return "(brak)";
+            return L.T("(brak)");
         }
 
         return Data switch

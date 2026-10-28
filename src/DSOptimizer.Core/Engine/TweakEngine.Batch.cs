@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Engine;
@@ -10,7 +11,7 @@ namespace DSOptimizer.Core.Engine;
 public sealed partial class TweakEngine
 {
     /// <summary>Message wyniku Skipped dla pozycji pominiętej po „Zatrzymaj”.</summary>
-    public const string StoppedMessage = "Pominięte – zatrzymano.";
+    public static string StoppedMessage => L.T("Pominięte – zatrzymano.");
 
     /// <summary>Seria: restore point wg polityki, potem każdy tweak atomowo; błąd jednego nie zatrzymuje reszty.</summary>
     public BatchResult ApplyBatch(
@@ -43,7 +44,7 @@ public sealed partial class TweakEngine
             ReportStep(steps, new BatchStepEvent(0, count, BatchStepKind.RestorePoint, null, BatchStepPhase.Finished, _s.Clock.UtcNow, RestorePoint: restorePoint));
             if (restorePoint.Status != RestorePointStatus.Created)
             {
-                var text = $"Punkt przywracania nie powstał ({restorePoint.Status}): {restorePoint.Message}";
+                var text = L.F("Punkt przywracania nie powstał ({0}): {1}", restorePoint.Status, restorePoint.Message);
                 _s.Log.Warn(Component, text);
                 if (options.RestorePointPolicy == RestorePointPolicy.Required)
                 {
@@ -52,7 +53,7 @@ public sealed partial class TweakEngine
                         RestorePoint = restorePoint,
                         Aborted = true,
                         AbortReason = text,
-                        Results = tweaks.Select(tweak => Skipped(tweak, "Seria przerwana przed rozpoczęciem.")).ToList(),
+                        Results = tweaks.Select(tweak => Skipped(tweak, L.T("Seria przerwana przed rozpoczęciem."))).ToList(),
                     };
                 }
 
@@ -70,7 +71,7 @@ public sealed partial class TweakEngine
             tweak => tweak.Kind == TweakKind.Tweak
                 ? Apply(tweak, output, cancellationToken)
                 : Execute(tweak, output, cancellationToken),
-            "w serii",
+            undo: false,
             cancellationToken);
 
         return new BatchResult { Results = results, Warnings = warnings, RestorePoint = restorePoint, Stopped = stopped };
@@ -96,7 +97,7 @@ public sealed partial class TweakEngine
             stop,
             out var stopped,
             tweak => Undo(tweak, null, cancellationToken),
-            "Cofnij w serii",
+            undo: true,
             cancellationToken);
 
         return new BatchResult { Results = results, Stopped = stopped };
@@ -111,7 +112,7 @@ public sealed partial class TweakEngine
         BatchStop? stop,
         out bool stopped,
         Func<TweakDefinition, TweakResult> run,
-        string context,
+        bool undo,
         CancellationToken cancellationToken)
     {
         stopped = false;
@@ -121,7 +122,7 @@ public sealed partial class TweakEngine
             var tweak = tweaks[i];
             if (cancellationToken.IsCancellationRequested)
             {
-                results.Add(Skipped(tweak, "Anulowano przed rozpoczęciem."));
+                results.Add(Skipped(tweak, L.T("Anulowano przed rozpoczęciem.")));
                 continue;
             }
 
@@ -141,8 +142,11 @@ public sealed partial class TweakEngine
             }
             catch (Exception ex)
             {
-                _s.Log.Fail(Component, $"Nieoczekiwany błąd {context} przy {tweak.Id}.", ex);
-                result = new TweakResult { TweakId = tweak.Id, Outcome = TweakOutcome.Failed, Message = $"Nieoczekiwany błąd: {ex.Message}" };
+                var text = undo
+                    ? L.F("Nieoczekiwany błąd Cofnij w serii przy {0}.", tweak.Id)
+                    : L.F("Nieoczekiwany błąd w serii przy {0}.", tweak.Id);
+                _s.Log.Fail(Component, text, ex);
+                result = new TweakResult { TweakId = tweak.Id, Outcome = TweakOutcome.Failed, Message = L.F("Nieoczekiwany błąd: {0}", ex.Message) };
             }
 
             results.Add(result);
@@ -166,7 +170,7 @@ public sealed partial class TweakEngine
         }
         catch (Exception ex)
         {
-            _s.Log.Fail(Component, $"Odbiornik postępu serii rzucił wyjątek ({step.Kind} {step.Phase}).", ex);
+            _s.Log.Fail(Component, L.F("Odbiornik postępu serii rzucił wyjątek ({0} {1}).", step.Kind, step.Phase), ex);
         }
     }
 
@@ -179,8 +183,8 @@ public sealed partial class TweakEngine
         }
         catch (Exception ex)
         {
-            _s.Log.Fail(Component, "Serwis punktu przywracania rzucił wyjątek.", ex);
-            return new RestorePointResult(RestorePointStatus.Failed, $"Wyjątek serwisu punktu przywracania: {ex.Message}");
+            _s.Log.Fail(Component, L.T("Serwis punktu przywracania rzucił wyjątek."), ex);
+            return new RestorePointResult(RestorePointStatus.Failed, L.F("Wyjątek serwisu punktu przywracania: {0}", ex.Message));
         }
     }
 

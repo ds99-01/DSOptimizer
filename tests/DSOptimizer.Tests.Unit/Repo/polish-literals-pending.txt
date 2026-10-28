@@ -2,20 +2,6 @@
 # Wpis z „/” na końcu = folder (wszystko pod nim), bez „/” = dokładnie ten plik. „#” = komentarz.
 # Każdy obszar po przetłumaczeniu usuwa swoje linie; na końcu plik zostaje bez wpisów.
 
-# Task 5: Core – silnik, katalog, CLI, ustawienia (foldery i pliki w korzeniu Core)
-src/DSOptimizer.Core/Abstractions/
-src/DSOptimizer.Core/Catalog/
-src/DSOptimizer.Core/Cli/
-src/DSOptimizer.Core/Engine/
-src/DSOptimizer.Core/Journal/
-src/DSOptimizer.Core/Model/
-src/DSOptimizer.Core/Operations/
-src/DSOptimizer.Core/RestorePoints/
-src/DSOptimizer.Core/Scripts/
-src/DSOptimizer.Core/Settings/
-src/DSOptimizer.Core/ProductInfo.cs
-src/DSOptimizer.Core/ThirdPartyNotices.cs
-
 # Task 6: Core – naprawy i narzędzia
 src/DSOptimizer.Core/Repair/
 src/DSOptimizer.Core/Tools/
@@ -58,6 +44,3 @@ src/DSOptimizer.App/Views/InstallView.xaml
 src/DSOptimizer.App/Views/LanguageChoiceWindow.xaml
 src/DSOptimizer.App/Views/SettingsView.xaml
 src/DSOptimizer.App/Views/SpecificationView.xaml
-
-# Catalog – komunikaty o braku zasobu katalogu (obszar do ustalenia)
-src/DSOptimizer.Catalog/BuiltInCatalog.cs

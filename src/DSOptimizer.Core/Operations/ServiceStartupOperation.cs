@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Operations;
@@ -27,7 +28,7 @@ public sealed class ServiceStartupOperation : IOperation
 
     public bool ParticipatesInDetection => true;
 
-    public string Describe() => $"Usługa {_entry.Name}";
+    public string Describe() => L.F("Usługa {0}", _entry.Name);
 
     public OperationState Detect(CancellationToken cancellationToken)
     {
@@ -47,11 +48,11 @@ public sealed class ServiceStartupOperation : IOperation
         {
             ReadStatus.Found when query.StartType is ServiceStartType.Boot or ServiceStartType.System => throw new OperationException(
                 OperationErrorKind.Unexpected,
-                $"Usługa {_entry.Name} ma typ startu {query.StartType} (sterownik) – zmiana nie byłaby odwracalna w tej wersji."),
+                L.F("Usługa {0} ma typ startu {1} (sterownik) – zmiana nie byłaby odwracalna w tej wersji.", _entry.Name, query.StartType)),
             ReadStatus.Found => SnapshotRecord.ForService(_entry.Name, existed: true, query.StartType, query.IsRunning),
             ReadStatus.NotFound => SnapshotRecord.ForService(_entry.Name, existed: false, startType: null, wasRunning: false),
-            ReadStatus.AccessDenied => throw new OperationException(OperationErrorKind.AccessDenied, $"Brak dostępu do usługi {_entry.Name}: {query.Error}"),
-            _ => throw new OperationException(OperationErrorKind.Unexpected, $"Nie można odczytać usługi {_entry.Name}: {query.Error}"),
+            ReadStatus.AccessDenied => throw new OperationException(OperationErrorKind.AccessDenied, L.F("Brak dostępu do usługi {0}: {1}", _entry.Name, query.Error)),
+            _ => throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można odczytać usługi {0}: {1}", _entry.Name, query.Error)),
         };
     }
 
@@ -108,11 +109,11 @@ public sealed class ServiceStartupOperation : IOperation
         var query = _services.Query(_entry.Name);
         var current = query.Status switch
         {
-            ReadStatus.Found => query.StartType + (query.IsRunning ? ", działa" : string.Empty),
-            ReadStatus.NotFound => "(brak usługi)",
-            _ => "(nieznany)",
+            ReadStatus.Found => query.IsRunning ? L.F("{0}, działa", query.StartType) : query.StartType.ToString(),
+            ReadStatus.NotFound => L.T("(brak usługi)"),
+            _ => L.T("(nieznany)"),
         };
-        var target = _entry.StartType + (_entry.Stop ? ", zatrzymana" : string.Empty);
+        var target = _entry.Stop ? L.F("{0}, zatrzymana", _entry.StartType) : _entry.StartType.ToString();
         return new PlannedChange { Description = Describe(), Current = current, Target = target };
     }
 }

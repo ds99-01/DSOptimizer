@@ -209,6 +209,9 @@ How to read the tables:
 | Ukryte przez filtr: {0} | Hidden by the filter: {0} | Note under the list |
 | Skopiowano adres / Skopiowano ścieżkę | Address copied / Path copied | Log lines after copying to the clipboard |
 | Nieoczekiwany błąd | Unexpected error | Log and result messages |
+| journal | journal | The file behind Change history that keeps the state from before each change; a technical word kept as in the Polish engine messages ("Couldn't read the journal: {0}"). **do audytu (Etap 5)** |
+| usługa / typ startu | service / startup type | Windows service in engine messages and the change preview ("Service SysMain", "startup type"), as in Services |
+| Anulowano | Canceled | US spelling, as in "Batch canceled" |
 | detekcja (stanu) | status check | "Detekcja … przerwana" → "Status check of … was interrupted"; same word as in "Unknown (check failed)" |
 | Zaznaczono {N} pozycji | {N} items selected | Selection bar; plural rule 8 |
 | Kliknij dwukrotnie wiersz albo pole wyboru, … | Double-click a row or checkbox, … | "pole wyboru" = checkbox |

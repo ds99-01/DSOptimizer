@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -28,7 +29,7 @@ public static class CatalogLoader
             {
                 if (item is not JObject obj)
                 {
-                    throw TweakParser.Error(item, source.Name, "element katalogu musi być obiektem tweaka");
+                    throw TweakParser.Error(item, source.Name, L.T("element katalogu musi być obiektem tweaka"));
                 }
 
                 definitions.Add(TweakParser.Parse(obj, source.Name));
@@ -47,7 +48,7 @@ public static class CatalogLoader
         catch (JsonReaderException ex)
         {
             throw new CatalogLoadException(
-                string.Format(CultureInfo.InvariantCulture, "{0} (linia {1}, kolumna {2}): błędny JSON – {3}", source.Name, ex.LineNumber, ex.LinePosition, ex.Message),
+                L.F("{0} (linia {1}, kolumna {2}): błędny JSON – {3}", source.Name, ex.LineNumber, ex.LinePosition, ex.Message),
                 ex);
         }
     }

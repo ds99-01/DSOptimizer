@@ -38,14 +38,14 @@ public static class AppSettingsSerializer
 
         if (string.IsNullOrWhiteSpace(json))
         {
-            throw new SettingsFormatException("Pusty plik ustawień.");
+            throw new SettingsFormatException(L.T("Pusty plik ustawień."));
         }
 
         // Surowy napis z BOM jest odrzucany tutaj; plik z BOM (np. z Notatnika) i tak się wczyta, bo File.ReadAllText
         // w JsonFileSettingsStore wykrywa BOM i usuwa go, zanim napis trafi do serializera.
         if (json[0] == '﻿')
         {
-            throw new SettingsFormatException("Plik ustawień zaczyna się od BOM (oczekiwano UTF-8 bez BOM).");
+            throw new SettingsFormatException(L.T("Plik ustawień zaczyna się od BOM (oczekiwano UTF-8 bez BOM)."));
         }
 
         JToken root;
@@ -59,17 +59,17 @@ public static class AppSettingsSerializer
             root = JToken.ReadFrom(reader);
             if (reader.Read())
             {
-                throw new SettingsFormatException("Plik ustawień zawiera dane po zamknięciu dokumentu JSON.");
+                throw new SettingsFormatException(L.T("Plik ustawień zawiera dane po zamknięciu dokumentu JSON."));
             }
         }
         catch (JsonException ex)
         {
-            throw new SettingsFormatException($"Uszkodzony plik ustawień: {ex.Message}", ex);
+            throw new SettingsFormatException(L.F("Uszkodzony plik ustawień: {0}", ex.Message), ex);
         }
 
         if (root is not JObject document)
         {
-            throw new SettingsFormatException("Plik ustawień musi być obiektem JSON.");
+            throw new SettingsFormatException(L.T("Plik ustawień musi być obiektem JSON."));
         }
 
         CheckSchemaVersion(document["schemaVersion"]);
@@ -86,28 +86,28 @@ public static class AppSettingsSerializer
     {
         if (token is null)
         {
-            throw new SettingsFormatException("Brak pola schemaVersion w pliku ustawień.");
+            throw new SettingsFormatException(L.T("Brak pola schemaVersion w pliku ustawień."));
         }
 
         if (token.Type != JTokenType.Integer)
         {
-            throw new SettingsFormatException("Pole schemaVersion musi być liczbą całkowitą.");
+            throw new SettingsFormatException(L.T("Pole schemaVersion musi być liczbą całkowitą."));
         }
 
         // Newtonsoft zwraca long tylko dla liczb mieszczących się w zakresie; większe to BigInteger.
         if (token is not JValue { Value: long version })
         {
-            throw new SettingsFormatException("Pole schemaVersion jest poza dozwolonym zakresem liczb.");
+            throw new SettingsFormatException(L.T("Pole schemaVersion jest poza dozwolonym zakresem liczb."));
         }
 
         if (version > AppSettings.SchemaVersion)
         {
-            throw new SettingsFormatException($"Plik ustawień ma nowszą wersję formatu (schemaVersion {version} – nowsza wersja programu); ta wersja obsługuje {AppSettings.SchemaVersion}.");
+            throw new SettingsFormatException(L.F("Plik ustawień ma nowszą wersję formatu (schemaVersion {0} – nowsza wersja programu); ta wersja obsługuje {1}.", version, AppSettings.SchemaVersion));
         }
 
         if (version != AppSettings.SchemaVersion)
         {
-            throw new SettingsFormatException($"Nieobsługiwana wersja pliku ustawień: {version}.");
+            throw new SettingsFormatException(L.F("Nieobsługiwana wersja pliku ustawień: {0}.", version));
         }
     }
 
@@ -120,7 +120,7 @@ public static class AppSettingsSerializer
 
         if (token.Type != JTokenType.Boolean)
         {
-            throw new SettingsFormatException("Pole createRestorePoint musi być wartością true lub false.");
+            throw new SettingsFormatException(L.T("Pole createRestorePoint musi być wartością true lub false."));
         }
 
         return token.Value<bool>();
@@ -135,7 +135,7 @@ public static class AppSettingsSerializer
 
         if (token.Type != JTokenType.String)
         {
-            throw new SettingsFormatException("Pole theme musi być tekstem: system, light albo dark.");
+            throw new SettingsFormatException(L.T("Pole theme musi być tekstem: system, light albo dark."));
         }
 
         return (token.Value<string>() ?? string.Empty).ToLowerInvariant() switch
@@ -143,7 +143,7 @@ public static class AppSettingsSerializer
             "system" => ThemePreference.System,
             "light" => ThemePreference.Light,
             "dark" => ThemePreference.Dark,
-            _ => throw new SettingsFormatException("Nieznana wartość pola theme (dozwolone: system, light, dark)."),
+            _ => throw new SettingsFormatException(L.T("Nieznana wartość pola theme (dozwolone: system, light, dark).")),
         };
     }
 
@@ -156,7 +156,7 @@ public static class AppSettingsSerializer
 
         if (token.Type != JTokenType.String)
         {
-            throw new SettingsFormatException("Pole language musi być tekstem: pl albo en.");
+            throw new SettingsFormatException(L.T("Pole language musi być tekstem: pl albo en."));
         }
 
         return UiLanguageCodes.TryParse(token.Value<string>(), out var language) ? language : null;

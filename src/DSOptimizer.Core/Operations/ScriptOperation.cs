@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Operations;
@@ -29,7 +30,7 @@ public sealed class ScriptOperation : IOperation
 
     public bool ParticipatesInDetection => _script.Detect is not null;
 
-    public string Describe() => "Skrypt PowerShell";
+    public string Describe() => L.T("Skrypt PowerShell");
 
     public OperationState Detect(CancellationToken cancellationToken)
     {
@@ -91,7 +92,7 @@ public sealed class ScriptOperation : IOperation
 
         if (_script.Undo is null)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, "Skrypt tweaka nie ma kroku undo – zmiany nie da się cofnąć.");
+            throw new OperationException(OperationErrorKind.Unexpected, L.T("Skrypt tweaka nie ma kroku undo – zmiany nie da się cofnąć."));
         }
 
         EnsureSuccess(Run(_script.Undo, snapshot.Capture ?? string.Empty, cancellationToken), "undo");
@@ -102,7 +103,7 @@ public sealed class ScriptOperation : IOperation
     public bool Owns(SnapshotRecord snapshot) => snapshot is not null && snapshot.Op == OperationKind.Script;
 
     public PlannedChange Plan(CancellationToken cancellationToken)
-        => new() { Description = Describe(), Current = "(nieznana przed wykonaniem)", Target = "wykonanie skryptu apply" };
+        => new() { Description = Describe(), Current = L.T("(nieznana przed wykonaniem)"), Target = L.T("wykonanie skryptu apply") };
 
     private ScriptResult Run(string body, string snapshot, CancellationToken cancellationToken)
         => _runner.Run(new ScriptRequest { Body = body, UserSid = _userSid, Snapshot = snapshot, Timeout = _timeout }, _output, cancellationToken);
@@ -111,8 +112,8 @@ public sealed class ScriptOperation : IOperation
     {
         if (result.ExitCode != 0)
         {
-            var errors = result.Errors.Count == 0 ? "(brak stderr)" : string.Join(" | ", result.Errors);
-            throw new OperationException(OperationErrorKind.ScriptFailed, $"Skrypt {phase} zakończył się kodem {result.ExitCode}: {errors}");
+            var errors = result.Errors.Count == 0 ? L.T("(brak stderr)") : string.Join(" | ", result.Errors);
+            throw new OperationException(OperationErrorKind.ScriptFailed, L.F("Skrypt {0} zakończył się kodem {1}: {2}", phase, result.ExitCode, errors));
         }
     }
 }

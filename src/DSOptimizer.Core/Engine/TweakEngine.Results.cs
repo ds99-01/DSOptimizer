@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Engine;
@@ -46,7 +47,7 @@ public sealed partial class TweakEngine
         var warnings = new List<string>();
         if (tweak.Scope == TweakScope.User && !_s.User.IsCertain)
         {
-            warnings.Add($"Nie udało się pewnie ustalić zalogowanego użytkownika – zmiany trafiają do profilu {_s.User.Sid}.");
+            warnings.Add(L.F("Nie udało się pewnie ustalić zalogowanego użytkownika – zmiany trafiają do profilu {0}.", _s.User.Sid));
         }
 
         return warnings;
@@ -60,7 +61,7 @@ public sealed partial class TweakEngine
         }
         catch (Exception ex)
         {
-            _s.Log.Fail(Component, $"Detekcja {tweak.Id} przerwana nieoczekiwanym błędem.", ex);
+            _s.Log.Fail(Component, L.F("Detekcja {0} przerwana nieoczekiwanym błędem.", tweak.Id), ex);
             return DetectionState.Unknown;
         }
     }
@@ -75,14 +76,14 @@ public sealed partial class TweakEngine
         {
             if (ex is JournalStoreException)
             {
-                _s.Log.Warn(Component, $"Nie udało się zapisać journala: {ex.Message}");
+                _s.Log.Warn(Component, L.F("Nie udało się zapisać journala: {0}", ex.Message));
             }
             else
             {
-                _s.Log.Fail(Component, "Nieoczekiwany błąd zapisu journala.", ex);
+                _s.Log.Fail(Component, L.T("Nieoczekiwany błąd zapisu journala."), ex);
             }
 
-            warnings.Add($"Nie udało się zapisać journala: {ex.Message}");
+            warnings.Add(L.F("Nie udało się zapisać journala: {0}", ex.Message));
         }
     }
 

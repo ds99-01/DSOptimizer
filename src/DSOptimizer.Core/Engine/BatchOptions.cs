@@ -1,4 +1,5 @@
 using System;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Engine;
 
@@ -12,5 +13,5 @@ public sealed class BatchOptions
     /// <summary>Opcjonalny sygnał „Zatrzymaj”: pozostałe pozycje zostaną pominięte (sprawdzany tylko między krokami).</summary>
     public BatchStop? Stop { get; init; }
 
-    public string RestorePointDescription { get; init; } = "DSOptimizer – przed zmianami";
+    public string RestorePointDescription { get; init; } = L.T("DSOptimizer – przed zmianami");
 }

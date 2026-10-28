@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using DSOptimizer.Core.Localization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -55,7 +56,7 @@ public static class RegValueJson
             string[] multi => new JArray(multi.Cast<object>().ToArray()),
             byte[] binary => new JValue(string.Concat(binary.Select(b => b.ToString("x2", CultureInfo.InvariantCulture)))),
             string text => new JValue(text),
-            _ => throw new FormatException("Nieobsługiwane dane wartości rejestru."),
+            _ => throw new FormatException(L.T("Nieobsługiwane dane wartości rejestru.")),
         };
     }
 
@@ -105,5 +106,5 @@ public static class RegValueJson
     }
 
     private static FormatException Invalid(RegistryValueType type, JToken token)
-        => new(string.Format(CultureInfo.InvariantCulture, "Wartość {0} nie pasuje do typu {1}.", token.ToString(Formatting.None), type));
+        => new(L.F("Wartość {0} nie pasuje do typu {1}.", token.ToString(Formatting.None), type));
 }

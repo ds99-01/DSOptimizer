@@ -1,3 +1,4 @@
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Operations;
@@ -41,9 +42,11 @@ public sealed class SnapshotRecord
     public string Describe() => Op switch
     {
         OperationKind.Registry => $"{Path}\\{Name} = {(Value ?? RegValue.Absent).ToDisplayString()}",
-        OperationKind.Service => ServiceExisted
-            ? $"Usługa {ServiceName}: {StartType}{(WasRunning ? ", działała" : string.Empty)}"
-            : $"Usługa {ServiceName}: (brak usługi)",
-        _ => $"Skrypt: {Capture ?? "(brak snapshotu)"}",
+        OperationKind.Service => !ServiceExisted
+            ? L.F("Usługa {0}: (brak usługi)", ServiceName)
+            : WasRunning
+                ? L.F("Usługa {0}: {1}, działała", ServiceName, StartType)
+                : L.F("Usługa {0}: {1}", ServiceName, StartType),
+        _ => L.F("Skrypt: {0}", Capture ?? L.T("(brak snapshotu)")),
     };
 }

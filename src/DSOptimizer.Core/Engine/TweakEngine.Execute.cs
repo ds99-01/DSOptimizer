@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Engine;
@@ -24,26 +25,26 @@ public sealed partial class TweakEngine
 
         if (tweak.Kind == TweakKind.Tweak)
         {
-            return Finish(tweak, TweakOutcome.Refused, null, "Execute dotyczy akcji i paneli – dla tweaków użyj Apply.");
+            return Finish(tweak, TweakOutcome.Refused, null, L.T("Execute dotyczy akcji i paneli – dla tweaków użyj Apply."));
         }
 
         if (tweak.Handler is { } handlerName)
         {
             return tweak.Launch is null && tweak.Script?.Apply is null
                 ? RunHandler(tweak, handlerName, output, progress, cancellationToken)
-                : Finish(tweak, TweakOutcome.Refused, null, "Pozycja ma handler razem z launch albo script.apply.");
+                : Finish(tweak, TweakOutcome.Refused, null, L.T("Pozycja ma handler razem z launch albo script.apply."));
         }
 
         if (tweak.Launch is { } launch)
         {
             return tweak.Script?.Apply is null
                 ? Launch(tweak, launch, cancellationToken)
-                : Finish(tweak, TweakOutcome.Refused, null, "Pozycja ma jednocześnie launch i script.apply.");
+                : Finish(tweak, TweakOutcome.Refused, null, L.T("Pozycja ma jednocześnie launch i script.apply."));
         }
 
         if (tweak.Script?.Apply is not { } body)
         {
-            return Finish(tweak, TweakOutcome.Refused, null, "Brak skryptu apply.");
+            return Finish(tweak, TweakOutcome.Refused, null, L.T("Brak skryptu apply."));
         }
 
         _s.Log.Info(Component, $"Execute {tweak.Id}: start");
@@ -68,23 +69,23 @@ public sealed partial class TweakEngine
             // Przy błędzie wynik niesie stderr (bez zalewania okna), a stdout (np. kopia konfiguracji sprzed zmiany) trafia do pliku logu.
             if (stdout is not null)
             {
-                _s.Log.Info(Component, $"{tweak.Id}: wyjście skryptu przed błędem:{Environment.NewLine}{stdout}");
+                _s.Log.Info(Component, L.F("{0}: wyjście skryptu przed błędem:{1}{2}", tweak.Id, Environment.NewLine, stdout));
             }
 
-            var errors = result.Errors.Count == 0 ? "(brak stderr)" : string.Join(" | ", result.Errors);
-            return Finish(tweak, TweakOutcome.Failed, null, $"Skrypt zakończył się kodem {result.ExitCode}: {errors}");
+            var errors = result.Errors.Count == 0 ? L.T("(brak stderr)") : string.Join(" | ", result.Errors);
+            return Finish(tweak, TweakOutcome.Failed, null, L.F("Skrypt zakończył się kodem {0}: {1}", result.ExitCode, errors));
         }
         catch (Exception ex)
         {
             if (ex is not OperationException)
             {
-                _s.Log.Fail(Component, $"Nieoczekiwany błąd wykonania {tweak.Id}.", ex);
+                _s.Log.Fail(Component, L.F("Nieoczekiwany błąd wykonania {0}.", tweak.Id), ex);
             }
 
             var partial = collector.Text();
             if (partial is not null)
             {
-                _s.Log.Info(Component, $"{tweak.Id}: wyjście skryptu przed błędem:{Environment.NewLine}{partial}");
+                _s.Log.Info(Component, L.F("{0}: wyjście skryptu przed błędem:{1}{2}", tweak.Id, Environment.NewLine, partial));
             }
 
             return Finish(tweak, TweakOutcome.Failed, null, ex.Message);
@@ -97,12 +98,12 @@ public sealed partial class TweakEngine
         _s.Log.Info(Component, $"Execute {tweak.Id}: handler {handlerName}");
         if (cancellationToken.IsCancellationRequested)
         {
-            return Finish(tweak, TweakOutcome.Failed, null, "Anulowano przed uruchomieniem.");
+            return Finish(tweak, TweakOutcome.Failed, null, L.T("Anulowano przed uruchomieniem."));
         }
 
         if (!_s.Handlers.TryGet(handlerName, out var handler))
         {
-            return Finish(tweak, TweakOutcome.Refused, null, $"Brak implementacji akcji '{handlerName}'.");
+            return Finish(tweak, TweakOutcome.Refused, null, L.F("Brak implementacji akcji '{0}'.", handlerName));
         }
 
         ActionHandlerResult result;
@@ -114,7 +115,7 @@ public sealed partial class TweakEngine
         {
             if (ex is not OperationException)
             {
-                _s.Log.Fail(Component, $"Nieoczekiwany błąd handlera {handlerName} ({tweak.Id}).", ex);
+                _s.Log.Fail(Component, L.F("Nieoczekiwany błąd handlera {0} ({1}).", handlerName, tweak.Id), ex);
             }
 
             return Finish(tweak, TweakOutcome.Failed, null, ex.Message);
@@ -168,19 +169,19 @@ public sealed partial class TweakEngine
         _s.Log.Info(Component, $"Execute {tweak.Id}: launch {launch.File}");
         if (cancellationToken.IsCancellationRequested)
         {
-            return Finish(tweak, TweakOutcome.Failed, null, "Anulowano przed uruchomieniem.");
+            return Finish(tweak, TweakOutcome.Failed, null, L.T("Anulowano przed uruchomieniem."));
         }
 
         try
         {
             _s.Launcher.Launch(launch);
-            return Finish(tweak, TweakOutcome.Executed, null, $"Uruchomiono {launch.File}");
+            return Finish(tweak, TweakOutcome.Executed, null, L.F("Uruchomiono {0}", launch.File));
         }
         catch (Exception ex)
         {
             if (ex is not OperationException)
             {
-                _s.Log.Fail(Component, $"Nieoczekiwany błąd uruchamiania {tweak.Id}.", ex);
+                _s.Log.Fail(Component, L.F("Nieoczekiwany błąd uruchamiania {0}.", tweak.Id), ex);
             }
 
             return Finish(tweak, TweakOutcome.Failed, null, ex.Message);

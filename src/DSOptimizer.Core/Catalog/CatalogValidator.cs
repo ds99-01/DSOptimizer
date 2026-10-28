@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Catalog;
@@ -44,12 +45,12 @@ public static class CatalogValidator
         {
             if (!IdPattern.IsMatch(definition.Id))
             {
-                errors.Add(new ValidationError(definition.Id, "id-format", "Id musi mieć postać 'kategoria.nazwa' (małe litery, cyfry, myślniki)."));
+                errors.Add(new ValidationError(definition.Id, "id-format", L.T("Id musi mieć postać 'kategoria.nazwa' (małe litery, cyfry, myślniki).")));
             }
 
             if (!ids.Add(definition.Id))
             {
-                errors.Add(new ValidationError(definition.Id, "id-unique", "Zduplikowane id."));
+                errors.Add(new ValidationError(definition.Id, "id-unique", L.T("Zduplikowane id.")));
             }
         }
 
@@ -60,7 +61,7 @@ public static class CatalogValidator
             {
                 if (ids.Contains(alias) || !aliases.Add(alias))
                 {
-                    errors.Add(new ValidationError(definition.Id, "alias-unique", $"Alias '{alias}' koliduje z innym id lub aliasem."));
+                    errors.Add(new ValidationError(definition.Id, "alias-unique", L.F("Alias '{0}' koliduje z innym id lub aliasem.", alias)));
                 }
             }
         }
@@ -72,72 +73,72 @@ public static class CatalogValidator
 
         if (string.IsNullOrWhiteSpace(definition.Title))
         {
-            Add("required-field", "Brak tytułu.");
+            Add("required-field", L.T("Brak tytułu."));
         }
 
         if (string.IsNullOrWhiteSpace(definition.Category))
         {
-            Add("required-field", "Brak kategorii.");
+            Add("required-field", L.T("Brak kategorii."));
         }
 
         if (string.IsNullOrWhiteSpace(definition.Summary))
         {
-            Add("summary", "Brak krótkiego opisu (summary).");
+            Add("summary", L.T("Brak krótkiego opisu (summary)."));
         }
         else if (definition.Summary.Length > SummaryMaxLength)
         {
-            Add("summary", $"summary ma {definition.Summary.Length} znaków (limit {SummaryMaxLength}).");
+            Add("summary", L.F("summary ma {0} znaków (limit {1}).", definition.Summary.Length, SummaryMaxLength));
         }
 
         ValidateBenefit(definition, Add);
 
         if (definition.Suggested && definition.Kind != TweakKind.Tweak)
         {
-            Add("suggested", "Pole suggested jest dozwolone tylko dla kind=tweak.");
+            Add("suggested", L.T("Pole suggested jest dozwolone tylko dla kind=tweak."));
         }
 
         if (definition.Editions is { } editions)
         {
             if (editions.Count == 0)
             {
-                Add("editions", "Pole editions nie może być puste (pomiń je, by pozycja działała na wszystkich edycjach).");
+                Add("editions", L.T("Pole editions nie może być puste (pomiń je, by pozycja działała na wszystkich edycjach)."));
             }
             else if (editions.Distinct().Count() != editions.Count)
             {
-                Add("editions", "Pole editions zawiera zduplikowaną rodzinę edycji.");
+                Add("editions", L.T("Pole editions zawiera zduplikowaną rodzinę edycji."));
             }
         }
 
         if (definition.MinBuild is { } min && definition.MaxBuild is { } max && min > max)
         {
-            Add("build-range", "minBuild jest większy niż maxBuild.");
+            Add("build-range", L.T("minBuild jest większy niż maxBuild."));
         }
 
         if (definition.Timeout is { } timeout && timeout <= TimeSpan.Zero)
         {
-            Add("timeout", "timeoutSeconds musi być większe od zera.");
+            Add("timeout", L.T("timeoutSeconds musi być większe od zera."));
         }
 
         foreach (var entry in definition.Registry.Where(entry => !AllowedRoots.Any(root => entry.Path.StartsWith(root, StringComparison.OrdinalIgnoreCase))))
         {
-            Add("registry-path", $"Ścieżka '{entry.Path}' musi zaczynać się od HKLM\\, HKCU\\, HKCR\\ lub HKU\\.");
+            Add("registry-path", L.F("Ścieżka '{0}' musi zaczynać się od HKLM\\, HKCU\\, HKCR\\ lub HKU\\.", entry.Path));
         }
 
         ValidateScope(definition, Add);
 
         if (ScriptTexts(definition.Script).Any(text => text.IndexOf("HKCU:", StringComparison.OrdinalIgnoreCase) >= 0))
         {
-            Add("script-hkcu", "Skrypt nie może używać HKCU: – użyj Registry::HKEY_USERS\\$UserSid.");
+            Add("script-hkcu", L.T("Skrypt nie może używać HKCU: – użyj Registry::HKEY_USERS\\$UserSid."));
         }
 
         if (definition.Launch is { } launch && !LaunchTarget.IsAllowed(launch.File))
         {
-            Add("launch-file", $"launch.file '{launch.File}': dozwolona jest tylko nazwa pliku .exe/.cpl/.msc z System32 (bez ścieżki) albo shell:::{{GUID}}.");
+            Add("launch-file", L.F("launch.file '{0}': dozwolona jest tylko nazwa pliku .exe/.cpl/.msc z System32 (bez ścieżki) albo shell:::{{GUID}}.", launch.File));
         }
 
         if (definition.Handler is { } handler && !ActionHandlerNames.All.Contains(handler))
         {
-            Add("handler-unknown", $"handler '{handler}' nie jest znany (dozwolone: {string.Join(", ", ActionHandlerNames.All)}).");
+            Add("handler-unknown", L.F("handler '{0}' nie jest znany (dozwolone: {1}).", handler, string.Join(", ", ActionHandlerNames.All)));
         }
 
         if (definition.Kind == TweakKind.Tweak)
@@ -156,16 +157,16 @@ public static class CatalogValidator
         {
             if (definition.Benefit is not null)
             {
-                add("benefit", "Panel nie może mieć benefit – sekcja „Co zyskasz” jest tylko dla tweaków i akcji.");
+                add("benefit", L.T("Panel nie może mieć benefit – sekcja „Co zyskasz” jest tylko dla tweaków i akcji."));
             }
         }
         else if (string.IsNullOrWhiteSpace(definition.Benefit))
         {
-            add("benefit", "Brak opisu realnego zysku (benefit).");
+            add("benefit", L.T("Brak opisu realnego zysku (benefit)."));
         }
         else if (definition.Benefit!.Length > BenefitMaxLength)
         {
-            add("benefit", $"benefit ma {definition.Benefit.Length} znaków (limit {BenefitMaxLength}).");
+            add("benefit", L.F("benefit ma {0} znaków (limit {1}).", definition.Benefit.Length, BenefitMaxLength));
         }
     }
 
@@ -175,17 +176,17 @@ public static class CatalogValidator
         {
             if (definition.Registry.Any(entry => !IsHkcu(entry.Path)))
             {
-                add("scope", "Tweak scope=user może zmieniać tylko HKCU\\.");
+                add("scope", L.T("Tweak scope=user może zmieniać tylko HKCU\\."));
             }
 
             if (definition.Services.Count > 0)
             {
-                add("scope", "Tweak scope=user nie może zmieniać usług.");
+                add("scope", L.T("Tweak scope=user nie może zmieniać usług."));
             }
         }
         else if (definition.Registry.Any(entry => IsHkcu(entry.Path)))
         {
-            add("scope", "Tweak scope=machine nie może zmieniać HKCU\\.");
+            add("scope", L.T("Tweak scope=machine nie może zmieniać HKCU\\."));
         }
     }
 
@@ -193,25 +194,25 @@ public static class CatalogValidator
     {
         if (definition.Launch is not null)
         {
-            add("launch-shape", "Tweak nie może mieć launch – launch jest tylko dla akcji i paneli.");
+            add("launch-shape", L.T("Tweak nie może mieć launch – launch jest tylko dla akcji i paneli."));
         }
 
         if (definition.Handler is not null)
         {
-            add("handler-kind", "Tweak nie może mieć handler – handler jest tylko dla akcji.");
+            add("handler-kind", L.T("Tweak nie może mieć handler – handler jest tylko dla akcji."));
         }
 
         var hasDetection = definition.Registry.Count > 0 || definition.Services.Count > 0 || definition.Script?.Detect is not null;
         if (!hasDetection)
         {
-            add("tweak-detection", "Tweak musi mieć detekcję (rejestr, usługa lub script.detect).");
+            add("tweak-detection", L.T("Tweak musi mieć detekcję (rejestr, usługa lub script.detect)."));
         }
 
         if (!definition.Reversible)
         {
             if (definition.Warnings.Count == 0)
             {
-                add("tweak-reversible", "Nieodwracalny tweak musi mieć ostrzeżenie.");
+                add("tweak-reversible", L.T("Nieodwracalny tweak musi mieć ostrzeżenie."));
             }
 
             return;
@@ -219,17 +220,17 @@ public static class CatalogValidator
 
         foreach (var entry in definition.Registry.Where(entry => !entry.DetectOnly && entry.Original is null))
         {
-            add("tweak-reversible", $"Wpis {entry.Path}\\{entry.Name} nie ma 'original'.");
+            add("tweak-reversible", L.F("Wpis {0}\\{1} nie ma 'original'.", entry.Path, entry.Name));
         }
 
         foreach (var service in definition.Services.Where(service => service.Original is null))
         {
-            add("tweak-reversible", $"Usługa {service.Name} nie ma 'original'.");
+            add("tweak-reversible", L.F("Usługa {0} nie ma 'original'.", service.Name));
         }
 
         if (definition.Script?.Apply is not null && definition.Script.Undo is null)
         {
-            add("tweak-reversible", "Skrypt apply wymaga skryptu undo.");
+            add("tweak-reversible", L.T("Skrypt apply wymaga skryptu undo."));
         }
     }
 
@@ -241,21 +242,21 @@ public static class CatalogValidator
         var ways = (hasApply ? 1 : 0) + (hasLaunch ? 1 : 0) + (hasHandler ? 1 : 0);
         if (ways == 0)
         {
-            add("action-shape", "Akcja/panel wymaga script.apply, launch albo handler.");
+            add("action-shape", L.T("Akcja/panel wymaga script.apply, launch albo handler."));
         }
         else if (ways > 1)
         {
-            add("action-shape", "Akcja/panel ma dokładnie jedną drogę wykonania: script.apply, launch albo handler.");
+            add("action-shape", L.T("Akcja/panel ma dokładnie jedną drogę wykonania: script.apply, launch albo handler."));
         }
 
         if (hasHandler && definition.Kind == TweakKind.Panel)
         {
-            add("handler-kind", "Panel nie może mieć handler – handler jest tylko dla akcji.");
+            add("handler-kind", L.T("Panel nie może mieć handler – handler jest tylko dla akcji."));
         }
 
         if (definition.Registry.Count > 0 || definition.Services.Count > 0)
         {
-            add("action-shape", "Akcja/panel nie może mieć wpisów registry/services.");
+            add("action-shape", L.T("Akcja/panel nie może mieć wpisów registry/services."));
         }
     }
 

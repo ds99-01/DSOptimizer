@@ -1,0 +1,737 @@
+{
+  "language": "en",
+  "entries": [
+    {
+      "pl": "element katalogu musi być obiektem tweaka",
+      "en": "a catalog element must be a tweak object"
+    },
+    {
+      "pl": "{0} (linia {1}, kolumna {2}): błędny JSON – {3}",
+      "en": "{0} (line {1}, column {2}): invalid JSON – {3}"
+    },
+    {
+      "pl": "{0} (linia {1}): {2}",
+      "en": "{0} (line {1}): {2}"
+    },
+    {
+      "pl": "brak wymaganego pola '{0}'",
+      "en": "missing required field '{0}'"
+    },
+    {
+      "pl": "wpis rejestru {0}\\{1}: {2}",
+      "en": "registry entry {0}\\{1}: {2}"
+    },
+    {
+      "pl": "nieznane pole '{0}'",
+      "en": "unknown field '{0}'"
+    },
+    {
+      "pl": "pole '{0}' musi być tekstem",
+      "en": "field '{0}' must be text"
+    },
+    {
+      "pl": "pole '{0}': nieznana wartość '{1}'",
+      "en": "field '{0}': unknown value '{1}'"
+    },
+    {
+      "pl": "pole '{0}' musi być true/false",
+      "en": "field '{0}' must be true/false"
+    },
+    {
+      "pl": "pole '{0}' musi być liczbą całkowitą",
+      "en": "field '{0}' must be an integer"
+    },
+    {
+      "pl": "pole '{0}' musi być tablicą tekstów",
+      "en": "field '{0}' must be an array of text values"
+    },
+    {
+      "pl": "pole '{0}' musi być tablicą obiektów",
+      "en": "field '{0}' must be an array of objects"
+    },
+    {
+      "pl": "pole '{0}' musi być obiektem",
+      "en": "field '{0}' must be an object"
+    },
+    {
+      "pl": "pole '{0}' musi być tekstem lub tablicą linii",
+      "en": "field '{0}' must be text or an array of lines"
+    },
+    {
+      "pl": "Id musi mieć postać 'kategoria.nazwa' (małe litery, cyfry, myślniki).",
+      "en": "The id must have the form 'category.name' (lowercase letters, digits, hyphens)."
+    },
+    {
+      "pl": "Zduplikowane id.",
+      "en": "Duplicate id."
+    },
+    {
+      "pl": "Alias '{0}' koliduje z innym id lub aliasem.",
+      "en": "Alias '{0}' collides with another id or alias."
+    },
+    {
+      "pl": "Brak tytułu.",
+      "en": "Missing title."
+    },
+    {
+      "pl": "Brak kategorii.",
+      "en": "Missing category."
+    },
+    {
+      "pl": "Brak krótkiego opisu (summary).",
+      "en": "Missing short description (summary)."
+    },
+    {
+      "pl": "summary ma {0} znaków (limit {1}).",
+      "en": "summary has {0} characters (limit {1})."
+    },
+    {
+      "pl": "Pole suggested jest dozwolone tylko dla kind=tweak.",
+      "en": "The suggested field is allowed only for kind=tweak."
+    },
+    {
+      "pl": "Pole editions nie może być puste (pomiń je, by pozycja działała na wszystkich edycjach).",
+      "en": "The editions field can't be empty (leave it out so the item works on all editions)."
+    },
+    {
+      "pl": "Pole editions zawiera zduplikowaną rodzinę edycji.",
+      "en": "The editions field contains a duplicate edition family."
+    },
+    {
+      "pl": "minBuild jest większy niż maxBuild.",
+      "en": "minBuild is greater than maxBuild."
+    },
+    {
+      "pl": "timeoutSeconds musi być większe od zera.",
+      "en": "timeoutSeconds must be greater than zero."
+    },
+    {
+      "pl": "Ścieżka '{0}' musi zaczynać się od HKLM\\, HKCU\\, HKCR\\ lub HKU\\.",
+      "en": "Path '{0}' must start with HKLM\\, HKCU\\, HKCR\\ or HKU\\."
+    },
+    {
+      "pl": "Skrypt nie może używać HKCU: – użyj Registry::HKEY_USERS\\$UserSid.",
+      "en": "The script can't use HKCU: – use Registry::HKEY_USERS\\$UserSid."
+    },
+    {
+      "pl": "launch.file '{0}': dozwolona jest tylko nazwa pliku .exe/.cpl/.msc z System32 (bez ścieżki) albo shell:::{{GUID}}.",
+      "en": "launch.file '{0}': only an .exe/.cpl/.msc file name from System32 (without a path) or shell:::{{GUID}} is allowed."
+    },
+    {
+      "pl": "handler '{0}' nie jest znany (dozwolone: {1}).",
+      "en": "handler '{0}' isn't known (allowed: {1})."
+    },
+    {
+      "pl": "Panel nie może mieć benefit – sekcja „Co zyskasz” jest tylko dla tweaków i akcji.",
+      "en": "A panel can't have benefit – the \"What you gain\" section is only for tweaks and actions."
+    },
+    {
+      "pl": "Brak opisu realnego zysku (benefit).",
+      "en": "Missing description of the real gain (benefit)."
+    },
+    {
+      "pl": "benefit ma {0} znaków (limit {1}).",
+      "en": "benefit has {0} characters (limit {1})."
+    },
+    {
+      "pl": "Tweak scope=user może zmieniać tylko HKCU\\.",
+      "en": "A scope=user tweak can change only HKCU\\."
+    },
+    {
+      "pl": "Tweak scope=user nie może zmieniać usług.",
+      "en": "A scope=user tweak can't change services."
+    },
+    {
+      "pl": "Tweak scope=machine nie może zmieniać HKCU\\.",
+      "en": "A scope=machine tweak can't change HKCU\\."
+    },
+    {
+      "pl": "Tweak nie może mieć launch – launch jest tylko dla akcji i paneli.",
+      "en": "A tweak can't have launch – launch is only for actions and panels."
+    },
+    {
+      "pl": "Tweak nie może mieć handler – handler jest tylko dla akcji.",
+      "en": "A tweak can't have handler – handler is only for actions."
+    },
+    {
+      "pl": "Tweak musi mieć detekcję (rejestr, usługa lub script.detect).",
+      "en": "A tweak must have a status check (registry, service or script.detect)."
+    },
+    {
+      "pl": "Nieodwracalny tweak musi mieć ostrzeżenie.",
+      "en": "An irreversible tweak must have a warning."
+    },
+    {
+      "pl": "Wpis {0}\\{1} nie ma 'original'.",
+      "en": "Entry {0}\\{1} has no 'original'."
+    },
+    {
+      "pl": "Usługa {0} nie ma 'original'.",
+      "en": "Service {0} has no 'original'."
+    },
+    {
+      "pl": "Skrypt apply wymaga skryptu undo.",
+      "en": "The apply script requires an undo script."
+    },
+    {
+      "pl": "Akcja/panel wymaga script.apply, launch albo handler.",
+      "en": "An action/panel requires script.apply, launch or handler."
+    },
+    {
+      "pl": "Akcja/panel ma dokładnie jedną drogę wykonania: script.apply, launch albo handler.",
+      "en": "An action/panel has exactly one way to run: script.apply, launch or handler."
+    },
+    {
+      "pl": "Panel nie może mieć handler – handler jest tylko dla akcji.",
+      "en": "A panel can't have handler – handler is only for actions."
+    },
+    {
+      "pl": "Akcja/panel nie może mieć wpisów registry/services.",
+      "en": "An action/panel can't have registry/services entries."
+    },
+    {
+      "pl": "Nie można odczytać katalogu {0}: {1}",
+      "en": "Can't read the catalog {0}: {1}"
+    },
+    {
+      "pl": "winget search nie wystartował.",
+      "en": "winget search didn't start."
+    },
+    {
+      "pl": "Odczyt listy zainstalowanych aplikacji nie powiódł się.",
+      "en": "Couldn't read the list of installed apps."
+    },
+    {
+      "pl": "Polecenie --install-apps wymaga co najmniej jednego id.",
+      "en": "The --install-apps command requires at least one id."
+    },
+    {
+      "pl": "wbudowana lista",
+      "en": "built-in list"
+    },
+    {
+      "pl": "Nieprawidłowy identyfikator aplikacji '{0}': po winget: musi być pełny identyfikator pakietu, nie skrócony „…” ani pusty.",
+      "en": "Invalid app identifier '{0}': after winget: it must be the full package identifier, not shortened with \"…\" and not empty."
+    },
+    {
+      "pl": "Nie ma pozycji '{0}' na liście aplikacji do instalacji ({1}).",
+      "en": "Item '{0}' isn't on the list of apps to install ({1})."
+    },
+    {
+      "pl": "Pakiet {0} podany w --install-apps więcej niż raz ('{1}').",
+      "en": "Package {0} was given more than once in --install-apps ('{1}')."
+    },
+    {
+      "pl": "Użyto zewnętrznego katalogu: {0} ({1}).",
+      "en": "An external catalog was used: {0} ({1})."
+    },
+    {
+      "pl": "Nieznany tweak '{0}' w katalogu {1}.",
+      "en": "Unknown tweak '{0}' in catalog {1}."
+    },
+    {
+      "pl": "Polecenie execute dotyczy tylko akcji i paneli ('{0}' ma kind={1}).",
+      "en": "The execute command applies only to actions and panels ('{0}' has kind={1})."
+    },
+    {
+      "pl": "Polecenie apply dotyczy tylko kind=tweak ('{0}' ma kind={1}) – użyj --execute.",
+      "en": "The apply command applies only to kind=tweak ('{0}' has kind={1}) – use --execute."
+    },
+    {
+      "pl": "Polecenie {0} dotyczy tylko pozycji kind=tweak ('{1}' ma kind={2}).",
+      "en": "The {0} command applies only to kind=tweak items ('{1}' has kind={2})."
+    },
+    {
+      "pl": "Nie ma aplikacji '{0}' na liście aplikacji (nie jest zainstalowana albo jest ukryta).",
+      "en": "App '{0}' isn't on the app list (it isn't installed or it's hidden)."
+    },
+    {
+      "pl": "Tej aplikacji nie wolno usunąć ({0}, grupa {1}).",
+      "en": "This app can't be removed ({0}, group {1})."
+    },
+    {
+      "pl": "Tej aplikacji nie wolno usunąć ({0}): {1}",
+      "en": "This app can't be removed ({0}): {1}"
+    },
+    {
+      "pl": "DSOptimizer – przed zmianami",
+      "en": "DSOptimizer – before changes"
+    },
+    {
+      "pl": "Pozycja {0} jest zastosowana i konfliktuje z tą – najpierw ją cofnij.",
+      "en": "Item {0} is applied and conflicts with this one – undo it first."
+    },
+    {
+      "pl": "Apply dotyczy tylko kind=tweak – dla akcji użyj Execute.",
+      "en": "Apply is only for kind=tweak – use Execute for actions."
+    },
+    {
+      "pl": "Nieoczekiwany błąd odczytu journala przy sprawdzaniu konfliktów {0}.",
+      "en": "Unexpected error reading the journal while checking conflicts for {0}."
+    },
+    {
+      "pl": "Nie udało się odczytać journala – zmiana nie została wykonana: {0}",
+      "en": "Couldn't read the journal – the change wasn't made: {0}"
+    },
+    {
+      "pl": "Nieoczekiwany błąd przy budowie operacji {0}.",
+      "en": "Unexpected error while preparing the operations for {0}."
+    },
+    {
+      "pl": "Nie udało się przygotować operacji: {0}",
+      "en": "Couldn't prepare the operations: {0}"
+    },
+    {
+      "pl": "Tweak nie dotyczy tego systemu.",
+      "en": "The tweak doesn't apply to this system."
+    },
+    {
+      "pl": "Nieoczekiwany błąd przy zapisie stanu {0}.",
+      "en": "Unexpected error while saving the state of {0}."
+    },
+    {
+      "pl": "Nie udało się zapisać stanu przed zmianą: {0}",
+      "en": "Couldn't save the state before the change: {0}"
+    },
+    {
+      "pl": "Nieoczekiwany błąd journala przy {0}.",
+      "en": "Unexpected journal error for {0}."
+    },
+    {
+      "pl": "Nie udało się zapisać journala – zmiana nie została wykonana: {0}",
+      "en": "Couldn't save the journal – the change wasn't made: {0}"
+    },
+    {
+      "pl": "Anulowano.",
+      "en": "Canceled."
+    },
+    {
+      "pl": "Nieoczekiwany błąd (Unexpected) przy {0}.",
+      "en": "Unexpected error (Unexpected) in {0}."
+    },
+    {
+      "pl": "Zmiana zadziała po restarcie.",
+      "en": "The change takes effect after a restart."
+    },
+    {
+      "pl": "Detekcja po zmianie: {0}",
+      "en": "Status check after the change: {0}"
+    },
+    {
+      "pl": "Rollback {0} nie powiódł się.",
+      "en": "Couldn't roll back {0}."
+    },
+    {
+      "pl": "Pominięte – zatrzymano.",
+      "en": "Skipped – stopped."
+    },
+    {
+      "pl": "Punkt przywracania nie powstał ({0}): {1}",
+      "en": "The restore point wasn't created ({0}): {1}"
+    },
+    {
+      "pl": "Seria przerwana przed rozpoczęciem.",
+      "en": "Batch interrupted before it started."
+    },
+    {
+      "pl": "Anulowano przed rozpoczęciem.",
+      "en": "Canceled before it started."
+    },
+    {
+      "pl": "Nieoczekiwany błąd Cofnij w serii przy {0}.",
+      "en": "Unexpected error in the Undo batch for {0}."
+    },
+    {
+      "pl": "Nieoczekiwany błąd w serii przy {0}.",
+      "en": "Unexpected error in the batch for {0}."
+    },
+    {
+      "pl": "Odbiornik postępu serii rzucił wyjątek ({0} {1}).",
+      "en": "The batch progress receiver threw an exception ({0} {1})."
+    },
+    {
+      "pl": "Serwis punktu przywracania rzucił wyjątek.",
+      "en": "The restore point service threw an exception."
+    },
+    {
+      "pl": "Wyjątek serwisu punktu przywracania: {0}",
+      "en": "Restore point service exception: {0}"
+    },
+    {
+      "pl": "Execute dotyczy akcji i paneli – dla tweaków użyj Apply.",
+      "en": "Execute is only for actions and panels – use Apply for tweaks."
+    },
+    {
+      "pl": "Pozycja ma handler razem z launch albo script.apply.",
+      "en": "The item has a handler together with launch or script.apply."
+    },
+    {
+      "pl": "Pozycja ma jednocześnie launch i script.apply.",
+      "en": "The item has both launch and script.apply."
+    },
+    {
+      "pl": "Brak skryptu apply.",
+      "en": "No apply script."
+    },
+    {
+      "pl": "{0}: wyjście skryptu przed błędem:{1}{2}",
+      "en": "{0}: script output before the error:{1}{2}"
+    },
+    {
+      "pl": "(brak stderr)",
+      "en": "(no stderr)"
+    },
+    {
+      "pl": "Skrypt zakończył się kodem {0}: {1}",
+      "en": "The script ended with code {0}: {1}"
+    },
+    {
+      "pl": "Nieoczekiwany błąd wykonania {0}.",
+      "en": "Unexpected error while running {0}."
+    },
+    {
+      "pl": "Anulowano przed uruchomieniem.",
+      "en": "Canceled before starting."
+    },
+    {
+      "pl": "Brak implementacji akcji '{0}'.",
+      "en": "No implementation for action '{0}'."
+    },
+    {
+      "pl": "Nieoczekiwany błąd handlera {0} ({1}).",
+      "en": "Unexpected error in handler {0} ({1})."
+    },
+    {
+      "pl": "Uruchomiono {0}",
+      "en": "Started {0}"
+    },
+    {
+      "pl": "Nieoczekiwany błąd uruchamiania {0}.",
+      "en": "Unexpected error while starting {0}."
+    },
+    {
+      "pl": "Nie udało się pewnie ustalić zalogowanego użytkownika – zmiany trafiają do profilu {0}.",
+      "en": "Couldn't reliably determine the signed-in user – the changes go to profile {0}."
+    },
+    {
+      "pl": "Detekcja {0} przerwana nieoczekiwanym błędem.",
+      "en": "Status check of {0} was interrupted by an unexpected error."
+    },
+    {
+      "pl": "Nie udało się zapisać journala: {0}",
+      "en": "Couldn't save the journal: {0}"
+    },
+    {
+      "pl": "Nieoczekiwany błąd zapisu journala.",
+      "en": "Unexpected error while saving the journal."
+    },
+    {
+      "pl": "Undo dotyczy tylko kind=tweak.",
+      "en": "Undo is only for kind=tweak."
+    },
+    {
+      "pl": "Tweak jest oznaczony jako nieodwracalny.",
+      "en": "The tweak is marked as irreversible."
+    },
+    {
+      "pl": "Nieoczekiwany błąd odczytu journala przy {0}.",
+      "en": "Unexpected error reading the journal for {0}."
+    },
+    {
+      "pl": "Nie udało się odczytać journala: {0}",
+      "en": "Couldn't read the journal: {0}"
+    },
+    {
+      "pl": "{0}: brak odpowiadającej operacji w katalogu",
+      "en": "{0}: no matching operation in the catalog"
+    },
+    {
+      "pl": "Undo {0} nie powiodło się.",
+      "en": "Couldn't undo {0}."
+    },
+    {
+      "pl": "{0}: po cofnięciu stan różni się od zapisanego ({1})",
+      "en": "{0}: after undo, the state differs from the saved one ({1})"
+    },
+    {
+      "pl": "Klucz {0} pozostał po cofnięciu (nie jest pusty).",
+      "en": "Key {0} remained after undo (it isn't empty)."
+    },
+    {
+      "pl": "Nieoczekiwany błąd weryfikacji {0}.",
+      "en": "Unexpected error while verifying {0}."
+    },
+    {
+      "pl": "{0}: nie można zweryfikować stanu – {1}",
+      "en": "{0}: can't verify the state – {1}"
+    },
+    {
+      "pl": "Brak wpisu w journalu i brak wartości domyślnych w katalogu – nie ma danych do cofnięcia.",
+      "en": "No journal entry and no default values in the catalog – there's no data to undo the change."
+    },
+    {
+      "pl": "Undo (domyślne) {0} nie powiodło się.",
+      "en": "Couldn't undo {0} (defaults)."
+    },
+    {
+      "pl": "{0}: pominięte (stan nieznany)",
+      "en": "{0}: skipped (state unknown)"
+    },
+    {
+      "pl": "Brak wpisu w journalu – próba przywrócenia wartości domyślnych przerwana – stan nieznany.",
+      "en": "No journal entry – restoring the default values was interrupted – state unknown."
+    },
+    {
+      "pl": "Brak wpisu w journalu – przywrócono wartości domyślne z katalogu (stan sprzed zmiany na tym PC jest nieznany).",
+      "en": "No journal entry – the default values from the catalog were restored (the state before the change on this computer is unknown)."
+    },
+    {
+      "pl": "Nie udało się zaktualizować journala dla {0}: {1}",
+      "en": "Couldn't update the journal for {0}: {1}"
+    },
+    {
+      "pl": "Uszkodzony journal: {0}",
+      "en": "Damaged journal: {0}"
+    },
+    {
+      "pl": "Pusty dokument journala.",
+      "en": "Empty journal document."
+    },
+    {
+      "pl": "Nieobsługiwana wersja journala: {0}.",
+      "en": "Unsupported journal version: {0}."
+    },
+    {
+      "pl": "Brak pola 'type' wartości rejestru.",
+      "en": "The registry value has no 'type' field."
+    },
+    {
+      "pl": "Nieznany typ wartości rejestru: {0}",
+      "en": "Unknown registry value type: {0}"
+    },
+    {
+      "pl": "Brak pola 'value' wartości rejestru.",
+      "en": "The registry value has no 'value' field."
+    },
+    {
+      "pl": "Ścieżki bazowe launch muszą być pełne i lokalne (System32: '{0}', PowerShell: '{1}', Explorer: '{2}').",
+      "en": "Launch base paths must be full and local (System32: '{0}', PowerShell: '{1}', Explorer: '{2}')."
+    },
+    {
+      "pl": "Nie znaleziono pliku {0}.",
+      "en": "File {0} wasn't found."
+    },
+    {
+      "pl": "Niedozwolony plik launch '{0}': dozwolona jest tylko nazwa pliku .exe/.cpl/.msc z System32 albo shell:::{{GUID}}.",
+      "en": "Launch file '{0}' isn't allowed: only an .exe/.cpl/.msc file name from System32 or shell:::{{GUID}} is allowed."
+    },
+    {
+      "pl": "(brak)",
+      "en": "(none)"
+    },
+    {
+      "pl": "Nieobsługiwane dane wartości rejestru.",
+      "en": "Unsupported registry value data."
+    },
+    {
+      "pl": "Wartość {0} nie pasuje do typu {1}.",
+      "en": "Value {0} doesn't match type {1}."
+    },
+    {
+      "pl": "Brak Eksploratora tego konta w bieżącej sesji – nie uruchamiam podniesionego Eksploratora.",
+      "en": "File Explorer for this account isn't running in the current session – not starting an elevated File Explorer."
+    },
+    {
+      "pl": "Brak dostępu do odczytu {0}: {1}",
+      "en": "Access denied reading {0}: {1}"
+    },
+    {
+      "pl": "Nie można odczytać {0}: {1}",
+      "en": "Can't read {0}: {1}"
+    },
+    {
+      "pl": "(nieznana: {0})",
+      "en": "(unknown: {0})"
+    },
+    {
+      "pl": "Skrypt PowerShell",
+      "en": "PowerShell script"
+    },
+    {
+      "pl": "Skrypt tweaka nie ma kroku undo – zmiany nie da się cofnąć.",
+      "en": "The tweak script has no undo step – the change can't be undone."
+    },
+    {
+      "pl": "(nieznana przed wykonaniem)",
+      "en": "(unknown before running)"
+    },
+    {
+      "pl": "wykonanie skryptu apply",
+      "en": "running the apply script"
+    },
+    {
+      "pl": "Skrypt {0} zakończył się kodem {1}: {2}",
+      "en": "Script {0} ended with code {1}: {2}"
+    },
+    {
+      "pl": "Usługa {0}",
+      "en": "Service {0}"
+    },
+    {
+      "pl": "Usługa {0} ma typ startu {1} (sterownik) – zmiana nie byłaby odwracalna w tej wersji.",
+      "en": "Service {0} has startup type {1} (driver) – the change wouldn't be reversible in this version."
+    },
+    {
+      "pl": "Brak dostępu do usługi {0}: {1}",
+      "en": "Access denied to service {0}: {1}"
+    },
+    {
+      "pl": "Nie można odczytać usługi {0}: {1}",
+      "en": "Can't read service {0}: {1}"
+    },
+    {
+      "pl": "{0}, działa",
+      "en": "{0}, running"
+    },
+    {
+      "pl": "(brak usługi)",
+      "en": "(no such service)"
+    },
+    {
+      "pl": "(nieznany)",
+      "en": "(unknown)"
+    },
+    {
+      "pl": "{0}, zatrzymana",
+      "en": "{0}, stopped"
+    },
+    {
+      "pl": "Usługa {0}: (brak usługi)",
+      "en": "Service {0}: (no such service)"
+    },
+    {
+      "pl": "Usługa {0}: {1}, działała",
+      "en": "Service {0}: {1}, was running"
+    },
+    {
+      "pl": "Usługa {0}: {1}",
+      "en": "Service {0}: {1}"
+    },
+    {
+      "pl": "Skrypt: {0}",
+      "en": "Script: {0}"
+    },
+    {
+      "pl": "(brak snapshotu)",
+      "en": "(no snapshot)"
+    },
+    {
+      "pl": "Nazwa DSOptimizer i znak DŚO nie są objęte licencją MPL 2.0; przerobione wersje muszą nosić inną nazwę.",
+      "en": "The DSOptimizer name and the DŚO mark aren't covered by the MPL 2.0 license; modified versions must use a different name."
+    },
+    {
+      "pl": "Ochrona systemu jest wyłączona (HRESULT 0x80070422, błąd 1058) – punkt przywracania nie powstał.",
+      "en": "System Protection is turned off (HRESULT 0x80070422, error 1058) – the restore point wasn't created."
+    },
+    {
+      "pl": "Nie można odczytać listy punktów przywracania.",
+      "en": "Can't read the list of restore points."
+    },
+    {
+      "pl": "Nie można odczytać listy punktów przywracania, więc nie da się potwierdzić wyniku (punkt nie został utworzony): {0}",
+      "en": "Can't read the list of restore points, so the result can't be confirmed (the restore point wasn't created): {0}"
+    },
+    {
+      "pl": "SystemRestore.CreateRestorePoint zwrócił kod {0} – ochrona systemu może być wyłączona.",
+      "en": "SystemRestore.CreateRestorePoint returned code {0} – System Protection may be turned off."
+    },
+    {
+      "pl": "Szczegóły błędu 0x80070422: {0}",
+      "en": "Error 0x80070422 details: {0}"
+    },
+    {
+      "pl": "Tworzenie punktu przywracania nie powiodło się.",
+      "en": "Couldn't create the restore point."
+    },
+    {
+      "pl": "Tworzenie punktu przywracania nie powiodło się: {0}",
+      "en": "Couldn't create the restore point: {0}"
+    },
+    {
+      "pl": "Nie udało się przywrócić {0}: {1}",
+      "en": "Couldn't restore {0}: {1}"
+    },
+    {
+      "pl": "Nie można odczytać listy punktów przywracania po utworzeniu.",
+      "en": "Can't read the list of restore points after creating one."
+    },
+    {
+      "pl": "Nie można potwierdzić utworzenia punktu przywracania (błąd odczytu listy): {0}",
+      "en": "Can't confirm that the restore point was created (couldn't read the list): {0}"
+    },
+    {
+      "pl": "Utworzono punkt przywracania: {0} (numer sekwencji {1})",
+      "en": "Restore point created: {0} (sequence number {1})"
+    },
+    {
+      "pl": "SystemRestore.CreateRestorePoint zwrócił 0, ale punkt nie pojawił się na liście w ciągu {0} s (możliwy 24-godzinny limit lub pominięcie przez usługę).",
+      "en": "SystemRestore.CreateRestorePoint returned 0, but the restore point didn't appear in the list within {0} s (possibly the 24-hour limit, or the service skipped it)."
+    },
+    {
+      "pl": "Pusty plik ustawień.",
+      "en": "The settings file is empty."
+    },
+    {
+      "pl": "Plik ustawień zaczyna się od BOM (oczekiwano UTF-8 bez BOM).",
+      "en": "The settings file starts with a BOM (expected UTF-8 without BOM)."
+    },
+    {
+      "pl": "Plik ustawień zawiera dane po zamknięciu dokumentu JSON.",
+      "en": "The settings file has data after the end of the JSON document."
+    },
+    {
+      "pl": "Uszkodzony plik ustawień: {0}",
+      "en": "Damaged settings file: {0}"
+    },
+    {
+      "pl": "Plik ustawień musi być obiektem JSON.",
+      "en": "The settings file must be a JSON object."
+    },
+    {
+      "pl": "Brak pola schemaVersion w pliku ustawień.",
+      "en": "The settings file has no schemaVersion field."
+    },
+    {
+      "pl": "Pole schemaVersion musi być liczbą całkowitą.",
+      "en": "The schemaVersion field must be an integer."
+    },
+    {
+      "pl": "Pole schemaVersion jest poza dozwolonym zakresem liczb.",
+      "en": "The schemaVersion field is outside the allowed number range."
+    },
+    {
+      "pl": "Plik ustawień ma nowszą wersję formatu (schemaVersion {0} – nowsza wersja programu); ta wersja obsługuje {1}.",
+      "en": "The settings file has a newer format version (schemaVersion {0} – a newer program version); this version supports {1}."
+    },
+    {
+      "pl": "Nieobsługiwana wersja pliku ustawień: {0}.",
+      "en": "Unsupported settings file version: {0}."
+    },
+    {
+      "pl": "Pole createRestorePoint musi być wartością true lub false.",
+      "en": "The createRestorePoint field must be true or false."
+    },
+    {
+      "pl": "Pole theme musi być tekstem: system, light albo dark.",
+      "en": "The theme field must be text: system, light or dark."
+    },
+    {
+      "pl": "Nieznana wartość pola theme (dozwolone: system, light, dark).",
+      "en": "Unknown value of the theme field (allowed: system, light, dark)."
+    },
+    {
+      "pl": "Pole language musi być tekstem: pl albo en.",
+      "en": "The language field must be text: pl or en."
+    }
+  ]
+}

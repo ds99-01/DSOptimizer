@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -73,7 +74,7 @@ internal static class TweakParser
     {
         var info = (IJsonLineInfo)at;
         var line = info.HasLineInfo() ? info.LineNumber : 0;
-        return new CatalogLoadException(string.Format(CultureInfo.InvariantCulture, "{0} (linia {1}): {2}", source, line, message));
+        return new CatalogLoadException(L.F("{0} (linia {1}): {2}", source, line, message));
     }
 
     private static RegistryEntry ParseRegistry(JObject obj, string source)
@@ -82,7 +83,7 @@ internal static class TweakParser
         var path = RequiredString(obj, "path", source);
         var name = RequiredString(obj, "name", source);
         var type = RequiredEnum<RegistryValueType>(obj, "type", source);
-        var value = Field(obj, "value") ?? throw Error(obj, source, "brak wymaganego pola 'value'");
+        var value = Field(obj, "value") ?? throw Error(obj, source, L.F("brak wymaganego pola '{0}'", "value"));
         var original = Field(obj, "original");
         return new RegistryEntry
         {
@@ -136,7 +137,7 @@ internal static class TweakParser
         }
         catch (FormatException ex)
         {
-            throw Error(token, source, $"wpis rejestru {path}\\{name}: {ex.Message}");
+            throw Error(token, source, L.F("wpis rejestru {0}\\{1}: {2}", path, name, ex.Message));
         }
     }
 
@@ -146,7 +147,7 @@ internal static class TweakParser
         {
             if (!known.Contains(property.Name))
             {
-                throw Error(property, source, $"nieznane pole '{property.Name}'");
+                throw Error(property, source, L.F("nieznane pole '{0}'", property.Name));
             }
         }
     }
@@ -157,7 +158,7 @@ internal static class TweakParser
             : null;
 
     private static string RequiredString(JObject obj, string name, string source)
-        => OptionalString(obj, name, source) ?? throw Error(obj, source, $"brak wymaganego pola '{name}'");
+        => OptionalString(obj, name, source) ?? throw Error(obj, source, L.F("brak wymaganego pola '{0}'", name));
 
     private static string? OptionalString(JObject obj, string name, string source)
     {
@@ -167,7 +168,7 @@ internal static class TweakParser
             return null;
         }
 
-        return token.Type == JTokenType.String ? (string)token! : throw Error(token, source, $"pole '{name}' musi być tekstem");
+        return token.Type == JTokenType.String ? (string)token! : throw Error(token, source, L.F("pole '{0}' musi być tekstem", name));
     }
 
     /// <summary>Dokładnie jedna nazwa z <see cref="Enum.GetNames(Type)"/> (bez wielkości liter); bez przecinków, przycinania spacji i liczb.</summary>
@@ -189,7 +190,7 @@ internal static class TweakParser
 
     private static T RequiredEnum<T>(JObject obj, string name, string source)
         where T : struct, Enum
-        => OptionalEnum<T>(obj, name, source) ?? throw Error(obj, source, $"brak wymaganego pola '{name}'");
+        => OptionalEnum<T>(obj, name, source) ?? throw Error(obj, source, L.F("brak wymaganego pola '{0}'", name));
 
     private static T? OptionalEnum<T>(JObject obj, string name, string source)
         where T : struct, Enum
@@ -205,7 +206,7 @@ internal static class TweakParser
             return value;
         }
 
-        throw Error(Field(obj, name)!, source, $"pole '{name}': nieznana wartość '{text}'");
+        throw Error(Field(obj, name)!, source, L.F("pole '{0}': nieznana wartość '{1}'", name, text));
     }
 
     private static bool? OptionalBool(JObject obj, string name, string source)
@@ -216,7 +217,7 @@ internal static class TweakParser
             return null;
         }
 
-        return token.Type == JTokenType.Boolean ? (bool)token : throw Error(token, source, $"pole '{name}' musi być true/false");
+        return token.Type == JTokenType.Boolean ? (bool)token : throw Error(token, source, L.F("pole '{0}' musi być true/false", name));
     }
 
     private static int? OptionalInt(JObject obj, string name, string source)
@@ -233,7 +234,7 @@ internal static class TweakParser
             return value;
         }
 
-        throw Error(token, source, $"pole '{name}' musi być liczbą całkowitą");
+        throw Error(token, source, L.F("pole '{0}' musi być liczbą całkowitą", name));
     }
 
     private static TimeSpan? ParseTimeout(JObject obj, string source)
@@ -264,7 +265,7 @@ internal static class TweakParser
             return array.Select(item => (string)item!).ToList();
         }
 
-        throw Error(token, source, $"pole '{name}' musi być tablicą tekstów");
+        throw Error(token, source, L.F("pole '{0}' musi być tablicą tekstów", name));
     }
 
     private static List<EditionFamily>? EditionList(JObject obj, string name, string source)
@@ -277,7 +278,7 @@ internal static class TweakParser
 
         if (token is not JArray array || !array.All(item => item.Type == JTokenType.String))
         {
-            throw Error(token, source, $"pole '{name}' musi być tablicą tekstów");
+            throw Error(token, source, L.F("pole '{0}' musi być tablicą tekstów", name));
         }
 
         var result = new List<EditionFamily>();
@@ -286,7 +287,7 @@ internal static class TweakParser
             var text = (string)item!;
             if (!TryParseExactEnum<EditionFamily>(text, out var family))
             {
-                throw Error(item, source, $"pole '{name}': nieznana wartość '{text}'");
+                throw Error(item, source, L.F("pole '{0}': nieznana wartość '{1}'", name, text));
             }
 
             result.Add(family);
@@ -308,7 +309,7 @@ internal static class TweakParser
             return array.Cast<JObject>().ToList();
         }
 
-        throw Error(token, source, $"pole '{name}' musi być tablicą obiektów");
+        throw Error(token, source, L.F("pole '{0}' musi być tablicą obiektów", name));
     }
 
     private static JObject? OptionalObject(JObject obj, string name, string source)
@@ -318,7 +319,7 @@ internal static class TweakParser
         {
             null => null,
             JObject value => value,
-            _ => throw Error(token, source, $"pole '{name}' musi być obiektem"),
+            _ => throw Error(token, source, L.F("pole '{0}' musi być obiektem", name)),
         };
     }
 
@@ -330,7 +331,7 @@ internal static class TweakParser
             null => null,
             { Type: JTokenType.String } => (string)token!,
             JArray array when array.All(item => item.Type == JTokenType.String) => string.Join("\n", array.Select(item => (string)item!)),
-            _ => throw Error(token, source, $"pole '{name}' musi być tekstem lub tablicą linii"),
+            _ => throw Error(token, source, L.F("pole '{0}' musi być tekstem lub tablicą linii", name)),
         };
     }
 }

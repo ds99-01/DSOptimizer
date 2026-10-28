@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Model;
 
@@ -56,14 +57,14 @@ public static class LaunchTarget
         {
             throw new OperationException(
                 OperationErrorKind.Unexpected,
-                $"Ścieżki bazowe launch muszą być pełne i lokalne (System32: '{systemDirectory}', PowerShell: '{powerShellPath}', Explorer: '{explorerPath}').");
+                L.F("Ścieżki bazowe launch muszą być pełne i lokalne (System32: '{0}', PowerShell: '{1}', Explorer: '{2}').", systemDirectory, powerShellPath, explorerPath));
         }
 
         if (IsShellNamespace(file))
         {
             if (!fileExists(explorerPath))
             {
-                throw new OperationException(OperationErrorKind.NotFound, $"Nie znaleziono pliku {explorerPath}.");
+                throw new OperationException(OperationErrorKind.NotFound, L.F("Nie znaleziono pliku {0}.", explorerPath));
             }
 
             return explorerPath;
@@ -73,7 +74,7 @@ public static class LaunchTarget
         {
             throw new OperationException(
                 OperationErrorKind.Unexpected,
-                $"Niedozwolony plik launch '{file}': dozwolona jest tylko nazwa pliku .exe/.cpl/.msc z System32 albo shell:::{{GUID}}.");
+                L.F("Niedozwolony plik launch '{0}': dozwolona jest tylko nazwa pliku .exe/.cpl/.msc z System32 albo shell:::{{GUID}}.", file));
         }
 
         var path = string.Equals(file, PowerShellFileName, StringComparison.OrdinalIgnoreCase)
@@ -81,7 +82,7 @@ public static class LaunchTarget
             : Path.Combine(systemDirectory, file);
         if (!fileExists(path))
         {
-            throw new OperationException(OperationErrorKind.NotFound, $"Nie znaleziono pliku {path}.");
+            throw new OperationException(OperationErrorKind.NotFound, L.F("Nie znaleziono pliku {0}.", path));
         }
 
         return path;
@@ -120,7 +121,7 @@ public static class LaunchTarget
         var hostPath = Path.Combine(systemDirectory, host);
         if (!fileExists(hostPath))
         {
-            throw new OperationException(OperationErrorKind.NotFound, $"Nie znaleziono pliku {hostPath}.");
+            throw new OperationException(OperationErrorKind.NotFound, L.F("Nie znaleziono pliku {0}.", hostPath));
         }
 
         var hostArguments = "\"" + target + "\"" + (arguments.Length == 0 ? string.Empty : " " + arguments);

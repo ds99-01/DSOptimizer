@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Operations;
@@ -43,8 +44,8 @@ public sealed class RegistryValueOperation : IOperation
         {
             ReadStatus.Found => SnapshotRecord.ForRegistry(_entry.Path, _entry.Name, read.Value),
             ReadStatus.NotFound => SnapshotRecord.ForRegistry(_entry.Path, _entry.Name, read.Value, FindMissingKeyRoot()),
-            ReadStatus.AccessDenied => throw new OperationException(OperationErrorKind.AccessDenied, $"Brak dostępu do odczytu {Describe()}: {read.Error}"),
-            _ => throw new OperationException(OperationErrorKind.Unexpected, $"Nie można odczytać {Describe()}: {read.Error}"),
+            ReadStatus.AccessDenied => throw new OperationException(OperationErrorKind.AccessDenied, L.F("Brak dostępu do odczytu {0}: {1}", Describe(), read.Error)),
+            _ => throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można odczytać {0}: {1}", Describe(), read.Error)),
         };
     }
 
@@ -140,7 +141,7 @@ public sealed class RegistryValueOperation : IOperation
         var read = _registry.Read(_entry.Path, _entry.Name);
         var current = read.Status is ReadStatus.Found or ReadStatus.NotFound
             ? read.Value.ToDisplayString()
-            : $"(nieznana: {read.Status})";
+            : L.F("(nieznana: {0})", read.Status);
         return new PlannedChange { Description = Describe(), Current = current, Target = _entry.Value.ToDisplayString() };
     }
 }

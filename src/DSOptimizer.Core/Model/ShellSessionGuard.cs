@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Model;
 
@@ -11,7 +12,7 @@ namespace DSOptimizer.Core.Model;
 /// </summary>
 public static class ShellSessionGuard
 {
-    public const string RefusalMessage = "Brak Eksploratora tego konta w bieżącej sesji – nie uruchamiam podniesionego Eksploratora.";
+    public static string RefusalMessage => L.T("Brak Eksploratora tego konta w bieżącej sesji – nie uruchamiam podniesionego Eksploratora.");
 
     public static bool HasOwnExplorer(IEnumerable<ExplorerProcessInfo> explorers, int sessionId, string ownerSid)
     {
