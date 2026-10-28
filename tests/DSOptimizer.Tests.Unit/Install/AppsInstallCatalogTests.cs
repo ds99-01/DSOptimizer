@@ -384,12 +384,15 @@ public class AppsInstallCatalogTests
 
     private static AppsInstallCatalog BuiltIn() => AppsInstallCatalog.Load(BuiltInCatalog.AppsInstallSource.Json);
 
-    private static string Readme() => File.ReadAllText(RepoRoot.Combine("docs", "apps", "install-README.md"), Encoding.UTF8);
+    private const string PolishReadme = "docs/apps/install-README.md";
+    private const string EnglishReadme = "docs/en/apps/install-README.md";
 
-    private static string Section(string text, string heading)
+    private static string Readme(string path) => File.ReadAllText(RepoRoot.Combine(path.Split('/')), Encoding.UTF8);
+
+    private static string Section(string text, string heading, string path)
     {
         var start = text.IndexOf("\n## " + heading, StringComparison.Ordinal);
-        Assert.True(start >= 0, "Brak sekcji „" + heading + "” w install-README.md");
+        Assert.True(start >= 0, "Brak sekcji „" + heading + "” w " + path);
         var end = text.IndexOf("\n## ", start + 4, StringComparison.Ordinal);
         return end < 0 ? text.Substring(start) : text.Substring(start, end - start);
     }
@@ -404,17 +407,20 @@ public class AppsInstallCatalogTests
         Assert.Equal(Enum.GetValues(typeof(InstallCategory)).Cast<InstallCategory>(), entries.Select(e => e.Category).Distinct());
     }
 
-    [Fact]
-    public void BuiltIn_EveryEntryHasReadmeRow()
+    [Theory]
+    [InlineData(PolishReadme, "Lista – pozycje z dowodem")]
+    [InlineData(EnglishReadme, "List – entries with evidence")]
+    public void BuiltIn_EveryEntryHasReadmeRow(string path, string listHeading)
     {
         // Każde id i wingetId (albo repozytorium github) ma wiersz tabeli z dowodem, z tą samą regułą match i tym samym źródłem co apps.json.
-        var table = Section(Readme(), "Lista – pozycje z dowodem")
+        var section = Section(Readme(path), listHeading, path);
+        var table = section
             .Split('\n').Where(l => l.StartsWith("| `install.", StringComparison.Ordinal)).ToList();
         var entries = BuiltIn().Entries;
 
         Assert.Equal(35, entries.Count);
         Assert.Equal(entries.Count, table.Count);
-        Assert.Contains("(" + entries.Count + ")", Section(Readme(), "Lista – pozycje z dowodem").Split('\n')[1], StringComparison.Ordinal);
+        Assert.Contains("(" + entries.Count + ")", section.Split('\n')[1], StringComparison.Ordinal);
         foreach (var entry in entries)
         {
             var row = Assert.Single(table, l => l.StartsWith("| `" + entry.Id + "` |", StringComparison.Ordinal));
@@ -432,11 +438,13 @@ public class AppsInstallCatalogTests
         }
     }
 
-    [Fact]
-    public void BuiltIn_RejectedNotInList()
+    [Theory]
+    [InlineData(PolishReadme, "Odrzucone", "zamiast tego `install.rustdesk` z GitHuba")]
+    [InlineData(EnglishReadme, "Rejected", "use `install.rustdesk` from GitHub instead")]
+    public void BuiltIn_RejectedNotInList(string path, string rejectedHeading, string rustDeskPhrase)
     {
         var catalog = BuiltIn();
-        var rejected = Section(Readme(), "Odrzucone");
+        var rejected = Section(Readme(path), rejectedHeading, path);
 
         foreach (var id in RejectedWingetIds)
         {
@@ -446,7 +454,7 @@ public class AppsInstallCatalogTests
 
         // RustDesk nie ma w winget, ale jest na liście z GitHuba: wiersz odrzuconego pakietu winget odsyła do pozycji listy.
         var rustDeskRow = rejected.Split('\n').Single(l => l.StartsWith("| `RustDesk.RustDesk` |", StringComparison.Ordinal));
-        Assert.Contains("zamiast tego `install.rustdesk` z GitHuba", rustDeskRow, StringComparison.Ordinal);
+        Assert.Contains(rustDeskPhrase, rustDeskRow, StringComparison.Ordinal);
         Assert.Equal(InstallOrigin.GitHub, catalog.Find("install.rustdesk")!.Origin);
     }
 

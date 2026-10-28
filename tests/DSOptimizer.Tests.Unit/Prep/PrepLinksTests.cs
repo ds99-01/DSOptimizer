@@ -98,10 +98,23 @@ public class PrepLinksTests
         Assert.Equal(PrepLinks.IsAllowed(PrepLinks.WindowsUpdate, PrepLinks.SettingsOpenable), PrepLinks.IsAllowed(PrepLinks.WindowsUpdate));
     }
 
-    [Fact]
-    public void LinksMatchDocsPrepReadme()
+    /// <summary>
+    /// Polski README i jego angielska wersja mają te same tabele; różnią się tylko słowa kolumny celu i nagłówek tabeli nazw.
+    /// Klucz porównania zostaje z polskimi słowami celu (angielskie są mapowane na polskie).
+    /// </summary>
+    [Theory]
+    [InlineData("docs/prep/README.md", "chipset", "grafika", "wsparcie", "wsparcie-numer", "Producent")]
+    [InlineData("docs/en/prep/README.md", "chipset", "graphics", "support", "support-number", "Manufacturer")]
+    public void LinksMatchDocsPrepReadme(string path, string chipset, string graphics, string support, string supportNumber, string headerWord)
     {
-        var lines = File.ReadAllLines(RepoRoot.Combine("docs", "prep", "README.md"), Encoding.UTF8);
+        var lines = File.ReadAllLines(RepoRoot.Combine(path.Split('/')), Encoding.UTF8);
+        var purposes = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [chipset] = "chipset",
+            [graphics] = "grafika",
+            [support] = "wsparcie",
+            [supportNumber] = "wsparcie-numer",
+        };
 
         var readmeLinks = new HashSet<string>(StringComparer.Ordinal);
         var readmeNames = new Dictionary<string, string[]>(StringComparer.Ordinal);
@@ -113,13 +126,13 @@ public class PrepLinksTests
                 continue;
             }
 
-            if (cells.Length == 5 && cells[1] is "chipset" or "grafika" or "wsparcie" or "wsparcie-numer")
+            if (cells.Length == 5 && purposes.TryGetValue(cells[1], out var purpose))
             {
                 // Brak obsługi szablonu z numerem: kto doda taki wiersz, musi świadomie dodać też kod.
-                Assert.NotEqual("wsparcie-numer", cells[1]);
-                readmeLinks.Add(Key(cells[0], cells[1], cells[2], DateTime.ParseExact(cells[4], "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+                Assert.NotEqual("wsparcie-numer", purpose);
+                readmeLinks.Add(Key(cells[0], purpose, cells[2], DateTime.ParseExact(cells[4], "yyyy-MM-dd", CultureInfo.InvariantCulture)));
             }
-            else if (cells.Length == 2 && cells[0] != "Producent" && !cells[0].StartsWith("---", StringComparison.Ordinal))
+            else if (cells.Length == 2 && cells[0] != headerWord && !cells[0].StartsWith("---", StringComparison.Ordinal))
             {
                 readmeNames[cells[0]] = cells[1].Split(new[] { "; " }, StringSplitOptions.RemoveEmptyEntries);
             }
