@@ -161,7 +161,7 @@ public class SecDecryptActionTests
             var run = Run(Mocks(St(0, 1, 78), St(0, 3, 77)));
 
             Assert.Equal(0, run.ExitCode);
-            Assert.Contains("Decryption of C: started: 77% encrypted. Windows continues in the background, also after a restart.", run.Output);
+            Assert.Contains("Decryption of C: started: 77% encrypted. Windows continues in the background, even after a restart.", run.Output);
             Assert.Empty(run.Error);
         }
     }

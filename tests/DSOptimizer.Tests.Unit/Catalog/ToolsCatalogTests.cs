@@ -192,7 +192,7 @@ public class ToolsCatalogTests
 
             Assert.NotEqual(0, run.ExitCode);
             Assert.Contains(
-                "no File Explorer of user " + UserSid + " (shell without /factory); nothing was stopped. Open Task Manager > File > Run new task > explorer.exe (by hand; the program doesn't start anything).",
+                "no File Explorer of user " + UserSid + " (shell without /factory); nothing was stopped. Open Task Manager > Run new task > explorer.exe (by hand; the program doesn't start anything).",
                 run.Error,
                 StringComparison.Ordinal);
             Assert.False(Stopped(run));

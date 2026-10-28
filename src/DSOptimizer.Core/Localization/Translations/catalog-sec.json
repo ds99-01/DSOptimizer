@@ -24,7 +24,7 @@
     },
     {
       "pl": "Według Microsoftu wyłączanie szyfrowania przez kogoś innego niż producent sprzętu narusza licencję Windows 11; odradza je też przy Recall.",
-      "en": "Microsoft says only the hardware manufacturer may turn off encryption under the Windows 11 license; it also advises against it with Recall."
+      "en": "Microsoft says only the hardware maker may turn off encryption under the Windows 11 license; it also advises against it on PCs with Recall."
     },
     {
       "pl": "Wyłącz szyfrowanie BitLocker na dysku C:",
@@ -32,7 +32,7 @@
     },
     {
       "pl": "Odszyfrowuje dysk C: – Windows robi to w tle i może to potrwać, także po restarcie.",
-      "en": "Decrypts the C: drive – Windows does this in the background and it can take a while, also after a restart."
+      "en": "Decrypts the C: drive – Windows does this in the background and it can take a while. It continues after a restart."
     },
     {
       "pl": "Po zakończeniu dysk C: nie jest już zaszyfrowany, a Windows usuwa z niego wszystkie klucze BitLockera.",
@@ -40,7 +40,7 @@
     },
     {
       "pl": "Odczytuje ConversionStatus woluminu C: (Win32_EncryptableVolume, GetConversionStatus); gdy dysk jest już odszyfrowany, nic nie zmienia. W innym wypadku wywołuje metodę Decrypt, która wraca od razu, a Windows odszyfrowuje dysk w tle, także po restarcie; po zakończeniu usuwa wszystkie protektory klucza woluminu. Akcja nie czeka na koniec: sprawdza tylko, czy ConversionStatus to teraz 3 (odszyfrowywanie w toku) albo 0, a każdy inny wynik kończy się błędem z kodem hex. Postęp w procentach zobaczysz, uruchamiając akcję ponownie, albo w Ustawieniach. Gdy na komputerze są klucze automatycznego odblokowania innych dysków (kod 0x80310029), akcja kończy się błędem i ich nie usuwa – zrób to świadomie poleceniem Clear-BitLockerAutoUnlock. Zablokowany dysk też daje błąd z kodem. Bez pozycji „Zablokuj automatyczne szyfrowanie dysku (BitLocker)” Windows może zaszyfrować dysk ponownie; polityka firmy lub szkoły może wymagać szyfrowania. Bez cofania – ponowne zaszyfrowanie dysku to osobna decyzja w Ustawieniach Windows.",
-      "en": "Reads the ConversionStatus of the C: volume (Win32_EncryptableVolume, GetConversionStatus); if the drive is already decrypted, it changes nothing. Otherwise it calls the Decrypt method, which returns right away, and Windows decrypts the drive in the background, also after a restart; when it's done, it removes all key protectors of the volume. The action doesn't wait for the end: it only checks that ConversionStatus is now 3 (decryption in progress) or 0, and any other result ends with an error with a hex code. You see the progress in percent by running the action again, or in Settings. If the computer has auto-unlock keys of other drives (code 0x80310029), the action ends with an error and doesn't remove them – do that deliberately with Clear-BitLockerAutoUnlock. A locked drive also gives an error with a code. Without the \"Block automatic drive encryption (BitLocker)\" item, Windows may encrypt the drive again; a company or school policy may require encryption. No undo – encrypting the drive again is a separate decision in Windows Settings."
+      "en": "Reads the ConversionStatus of the C: volume (Win32_EncryptableVolume, GetConversionStatus); if the drive is already decrypted, it changes nothing. Otherwise it calls the Decrypt method, which returns right away, and Windows decrypts the drive in the background, even after a restart; when it's done, it removes all key protectors of the volume. The action doesn't wait for the end: it only checks that ConversionStatus is now 3 (decryption in progress) or 0, and any other result ends with an error with a hex code. You see the progress in percent by running the action again, or in Settings. If the computer has auto-unlock keys of other drives (code 0x80310029), the action ends with an error and doesn't remove them – do that deliberately with Clear-BitLockerAutoUnlock. A locked drive also gives an error with a code. Without the \"Block automatic drive encryption (BitLocker)\" item, Windows may encrypt the drive again; a company or school policy may require encryption. No undo – encrypting the drive again is a separate decision in Windows Settings."
     },
     {
       "pl": "Nie da się tego cofnąć w DSOptimizerze – szyfrowanie włączysz ponownie w Ustawieniach; do tego czasu dane nie są chronione po kradzieży.",
@@ -112,11 +112,11 @@
     },
     {
       "pl": "Odszyfrowywanie C: w toku: {0}% zaszyfrowane. Windows kontynuuje w tle, także po restarcie.",
-      "en": "Decryption of C: in progress: {0}% encrypted. Windows continues in the background, also after a restart."
+      "en": "Decryption of C: in progress: {0}% encrypted. Windows continues in the background, even after a restart."
     },
     {
       "pl": "Odszyfrowywanie C: rozpoczęte: {0}% zaszyfrowane. Windows kontynuuje w tle, także po restarcie.",
-      "en": "Decryption of C: started: {0}% encrypted. Windows continues in the background, also after a restart."
+      "en": "Decryption of C: started: {0}% encrypted. Windows continues in the background, even after a restart."
     },
     {
       "pl": "Dodaj „Przejmij na własność” do menu kontekstowego",
@@ -124,7 +124,7 @@
     },
     {
       "pl": "Po kliknięciu prawym przyciskiem z wciśniętym Shift pojawia się wpis, który daje administratorom pełny dostęp do pliku lub folderu.",
-      "en": "When you right-click while holding Shift, an entry appears that gives administrators full access to the file or folder."
+      "en": "When you right-click while holding Shift, a \"Przejmij na własność\" (take ownership) entry appears that gives administrators full access to the file or folder."
     },
     {
       "pl": "Plik albo folder, do którego Windows odmawia dostępu, odblokujesz z menu prawego przycisku zamiast poleceniami w konsoli.",

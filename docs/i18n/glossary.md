@@ -470,7 +470,7 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | po stronie klienta | on the client | "Don't require SMB signing on the client" |
 | profil publiczny / profil prywatny (sieci) | public network profile / private profile | Settings › Network & internet › Wi-Fi › Network profile type; [Make a Wi-Fi network public or private in Windows](https://support.microsoft.com/en-us/kb/4043043). Category names in technical details stay `Public` / `Private` / `DomainAuthenticated` |
 | wykrywalny w sieci | discoverable on the network | Same source |
-| zapora Windows | Windows Firewall | [Turn Windows Firewall on or off](https://support.microsoft.com/help/4028544/windows-turn-windows-firewall-on-or-off). **do audytu (Etap 5)** – see "Zapora Windows Defender" in Windows names |
+| zapora Windows | Windows Defender Firewall | Single name for the firewall: see "Zapora Windows Defender" in Windows names |
 | automatyczne szyfrowanie (urządzenia, dysku) | automatic (device, drive) encryption | [Device Encryption in Windows](https://support.microsoft.com/en-us/windows/security/encryption/device-encryption-in-windows); the technical name "BitLocker automatic device encryption" stays as it is |
 | odszyfrowywanie / odszyfrowuje | decryption / decrypts | BitLocker; "Decryption of C: in progress" |
 | klucze automatycznego odblokowania | auto-unlock keys | BitLocker "Turn on auto-unlock"; [Clear-BitLockerAutoUnlock](https://learn.microsoft.com/en-us/powershell/module/bitlocker/clear-bitlockerautounlock) |
@@ -481,7 +481,7 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | Administratorzy (grupa) | Administrators | Built-in group, SID S-1-5-32-544 |
 | UAC (zgoda w UAC) | UAC prompt ("after you approve the UAC prompt") | |
 | powłoka (Eksploratora) / pulpit | shell / desktop | "the File Explorer shell (explorer.exe)" |
-| Menedżer zadań > Plik > Uruchom nowe zadanie | Task Manager > File > Run new task | "Run new task" as in Task Manager. **do audytu (Etap 5)** – the redesigned Windows 11 Task Manager shows "Run new task" in the command bar, not in a File menu (the Polish text says "Plik") |
+| Menedżer zadań > Plik > Uruchom nowe zadanie | Task Manager > Run new task | "Run new task" as in Task Manager. **do audytu (Etap 5)** – the redesigned Windows 11 Task Manager shows "Run new task" in the command bar, not in a File menu (the Polish text says "Plik"). **do audytu (Etap 5):** polski tekst też do poprawy |
 | wylogowanie | signing out | Style rule 11 |
 | wydanie testowe / szkic (GitHub) | test release / draft | WinUtil description |
 

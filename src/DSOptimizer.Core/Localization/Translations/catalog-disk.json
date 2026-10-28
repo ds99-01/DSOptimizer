@@ -56,7 +56,7 @@
     },
     {
       "pl": "Po powercfg /hibernate on brak dowodu włączonej hibernacji (plik hibernacji i HibernateEnabled różne od 0).",
-      "en": "After powercfg /hibernate on, there's no evidence that hibernation is on (a hibernation file and HibernateEnabled other than 0)."
+      "en": "After powercfg /hibernate on, there's no evidence that hibernation is on (expected a hibernation file and HibernateEnabled not equal to 0)."
     },
     {
       "pl": "Hibernacja przywrócona.",
@@ -152,7 +152,7 @@
     },
     {
       "pl": "Windows nie utrzymuje już zgodności, z której korzystają tylko bardzo stare programy. Dysk C: zwykle ma to wyłączone od instalacji.",
-      "en": "Windows no longer keeps up compatibility that only very old programs use. The C: drive usually has this turned off since installation."
+      "en": "Windows no longer maintains compatibility that only very old programs use. The C: drive usually has this turned off since installation."
     },
     {
       "pl": "NtfsDisable8dot3NameCreation = 1 (wyłączone dla wszystkich woluminów) zamiast domyślnego 2 (ustawienie osobno dla każdego woluminu) w HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem. Wolumin C: ma zwykle krótkie nazwy wyłączone już od instalacji (flaga woluminu), więc zmiana obejmuje głównie nowe i dodatkowe woluminy, także dyski podłączane później. Dotyczy tylko nowych nazw – istniejące nazwy 8.3 zostają. Cofnięcie przywraca poprzednią wartość.",
