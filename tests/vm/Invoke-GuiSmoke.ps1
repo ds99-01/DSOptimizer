@@ -8,9 +8,11 @@ Instrukcja uruchomienia:
     Home, albo Pro z oknem zostawionym do ręcznego przeklikania (VMConnect), bez revertu:
         .\tests\vm\Invoke-GuiSmoke.ps1 -VmName DSO-26H2-Home -OutDirectory $env:TEMP\dso-explore\smoke
         .\tests\vm\Invoke-GuiSmoke.ps1 -OutDirectory $env:TEMP\dso-explore\smoke -KeepRunning
+    Wybór języka w pierwszym oknie (domyślnie polski; angielski np. do przebiegu Etapu 5):
+        .\tests\vm\Invoke-GuiSmoke.ps1 -OutDirectory $env:TEMP\dso-explore\smoke -Language en
 Opis działania:
     Revert do czystego checkpointu, start VM, kopia builda, start C:\dso\app\DSOptimizer.exe w sesji interaktywnej 'dso'
-    (zadanie Harmonogramu), po -StartupSeconds (domyślnie 45 s, koniec detekcji startowej) sprawdza: proces żyje, Responding=True
+    (zadanie Harmonogramu), wybór języka w pierwszym oknie (-Language pl|en, sprawdzenie LanguageChoice), po -StartupSeconds (domyślnie 45 s, koniec detekcji startowej) sprawdza: proces żyje, Responding=True
     (z oknem głównym), brak zdarzeń .NET Runtime / Application Error / WER od startu, brak linii ERROR w
     %ProgramData%\DSOptimizer\logs\*.log. Sonda UI (UI Automation w sesji 'dso', bez myszy): pozycja menu „Historia zmian” otwiera
     stronę (HistoryMenu); po zastosowaniu „Szybsze otwieranie podmenu” (ux.menu-delay, safe, „Zastosuj (1)” bez potwierdzenia) wiersz
@@ -40,7 +42,8 @@ param(
     [string]$CatalogPath,
     [string]$CheckpointName = 'czysta-26H2',
     [ValidateRange(60, 7200)][int]$ReadyTimeoutSeconds = 1200,
-    [ValidateRange(0, 600)][int]$StartupSeconds = 45
+    [ValidateRange(0, 600)][int]$StartupSeconds = 45,
+    [ValidateSet('pl', 'en')][string]$Language = 'pl'
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -62,7 +65,7 @@ try {
     if (-not (Test-Path -LiteralPath $CatalogPath -PathType Leaf)) { throw "Brak katalogu testowego '$CatalogPath'." }
 
     $Result = Invoke-DsoGuiSmoke -VmName $VmName -OutDirectory $OutDirectory -BuildDirectory $BuildDirectory -CatalogPath $CatalogPath `
-        -KeepRunning:$KeepRunning -CheckpointName $CheckpointName -ReadyTimeoutSeconds $ReadyTimeoutSeconds -StartupSeconds $StartupSeconds
+        -KeepRunning:$KeepRunning -CheckpointName $CheckpointName -ReadyTimeoutSeconds $ReadyTimeoutSeconds -StartupSeconds $StartupSeconds -Language $Language
     foreach ($Check in $Result.checks) {
         $Mark = if ($Check.Passed) { 'OK  ' } else { 'FAIL' }
         $Color = if ($Check.Passed) { 'Green' } else { 'Red' }

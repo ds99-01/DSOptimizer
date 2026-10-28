@@ -500,6 +500,8 @@ function Invoke-DsoCli {
         # (jak właściciel laptopa, który podnosi DSOptimizer przez UAC; wzorzec K2 eksploracji E4A2). Puste = Administrator PS Direct.
         [ValidatePattern('^([A-Za-z0-9_-]+)?\z')][string]$RunAsUser
     )
+    # Język CLI przypięty do polskiego: teksty w raportach (np. MessageContains) mają być stałe niezależnie od kultury VM.
+    if (@($Arguments) -notcontains '--lang') { $Arguments = @($Arguments) + @('--lang', 'pl') }
     if ($RunAsUser) {
         $RemoteAsUser = {
             param([string]$ExePath, [string[]]$Arguments, [string]$OutPath, [int]$TimeoutMs, [string]$UserName)

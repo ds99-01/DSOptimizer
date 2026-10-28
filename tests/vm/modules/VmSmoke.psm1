@@ -15,6 +15,9 @@ Opis działania:
     pozycji tego przebiegu (NotApplied/Partial, Get-DsoPrivacyDetection + Get-GuiPrivacyExpectedCount), uruchomionych przed sondą UI. Funkcje przywracania, gotowości i kopiowania pochodzą z VmHost.
     Potem sonda wchodzi na „Aplikacje” i czyta N z „Usuń (N)”; oczekiwane N = sugerowane usuwalne wiersze z CLI --list-apps tego
     przebiegu (Get-DsoAppsListing + Get-GuiAppsExpectedCount), uruchomionego przed sondą UI jako 'dso' - to samo konto co okno.
+    Na czystym checkpoincie (brak settings.json) pierwsze okno to wybór języka: Confirm-DsoLanguageChoice (UIA w sesji dso) czeka
+    do 30 s na okno LanguageChoiceWindow i klika kafelek wybranego języka (-Language pl|en); sprawdzenie LanguageChoice jest zielone
+    tylko, gdy okno się pokazało i po wyborze pojawiło się okno główne. CLI w runnerze dostaje --lang pl (VmRun\Invoke-DsoCli).
     Potem sonda wchodzi na „Przygotowanie” (7 tytułów kroków po odczycie, przycisk „Otwórz Windows Update”, linia karty w kroku
     „Grafika” – PrepPage; bez klikania linków), potem na „Naprawy” (lista ma wszystkie tytuły kategorii repair z katalogu –
     RepairPage, Get-GuiRepairTitle; niczego nie uruchamia), a jako ostatnie na „Instalacja” (Etap 4c: wszystkie kategorie i tytuły
@@ -197,6 +200,108 @@ function Get-DsoGuiUiProbe {
         -ArgumentText "-Category ""$($Target.Category)"" -TweakTitle ""$($Target.TweakTitle)""" -UserName $UserName -TimeoutSeconds $TimeoutSeconds
     if ([string]::IsNullOrWhiteSpace($Text)) { throw 'Sonda UI nie zwróciła wyniku.' }
     return ($Text | ConvertFrom-Json)
+}
+
+function Get-LanguageChoiceProbeScript {
+    # Skrypt uruchamiany W VM w sesji 'dso' (tylko ASCII, PowerShell 5.1): czeka do 30 s na okno wyboru jezyka (AutomationId
+    # LanguageChoiceWindow), klika kafelek wybranego jezyka (InvokePattern) i czeka, az okno wyboru zniknie. Gdy zamiast niego
+    # pojawi sie okno glowne (czysty checkpoint zawsze ma pokazac wybor), zwraca Shown=false.
+    [CmdletBinding()]
+    [OutputType([string])]
+    param()
+    return @'
+param([Parameter(Mandatory)][string]$ResultFile, [Parameter(Mandatory)][ValidateSet('pl', 'en')][string]$Language)
+$ErrorActionPreference = 'Stop'
+$Out = [ordered]@{ Ok = $false; Error = $null; Shown = $false; Chosen = $false; MainWindowAppeared = $false; Language = $Language }
+try {
+    Add-Type -AssemblyName UIAutomationClient
+    Add-Type -AssemblyName UIAutomationTypes
+    $AE = [System.Windows.Automation.AutomationElement]
+    $TileId = if ($Language -eq 'en') { 'LanguageChoiceEnglish' } else { 'LanguageChoicePolish' }
+    function Get-ProcessWindowElement {
+        $Process = @(Get-Process -Name 'DSOptimizer' -ErrorAction SilentlyContinue)[0]
+        if ($null -eq $Process) { return $null }
+        $Process.Refresh()
+        if ($Process.MainWindowHandle -eq [IntPtr]::Zero) { return $null }
+        return $AE::FromHandle($Process.MainWindowHandle)
+    }
+    $Chooser = $null
+    $Limit = (Get-Date).AddSeconds(30)
+    do {
+        $Window = Get-ProcessWindowElement
+        if ($null -ne $Window) {
+            if ($Window.Current.AutomationId -eq 'LanguageChoiceWindow') { $Chooser = $Window; break }
+            # Okno glowne bez okna wyboru: wybor sie nie pokazal.
+            $Out.MainWindowAppeared = $true
+            break
+        }
+        Start-Sleep -Milliseconds 250
+    } while ((Get-Date) -lt $Limit)
+    if ($null -ne $Chooser) {
+        $Out.Shown = $true
+        $ById = New-Object System.Windows.Automation.PropertyCondition($AE::AutomationIdProperty, $TileId)
+        $Tile = $null
+        $TileLimit = (Get-Date).AddSeconds(10)
+        do {
+            $Tile = $Chooser.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $ById)
+            if ($null -eq $Tile) { Start-Sleep -Milliseconds 250 }
+        } while ($null -eq $Tile -and (Get-Date) -lt $TileLimit)
+        if ($null -eq $Tile) { throw "Brak kafelka $TileId w oknie wyboru jezyka." }
+        $Tile.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+        $CloseLimit = (Get-Date).AddSeconds(15)
+        do {
+            Start-Sleep -Milliseconds 250
+            $Window = Get-ProcessWindowElement
+            $StillChooser = ($null -ne $Window) -and ($Window.Current.AutomationId -eq 'LanguageChoiceWindow')
+            if ($null -ne $Window -and -not $StillChooser) { $Out.MainWindowAppeared = $true }
+        } while (($StillChooser -or $null -eq $Window) -and (Get-Date) -lt $CloseLimit)
+        $Out.Chosen = $Out.MainWindowAppeared
+    }
+    $Out.Ok = $true
+}
+catch { $Out.Error = $_.Exception.Message }
+$Json = $Out | ConvertTo-Json -Depth 4
+Set-Content -LiteralPath $ResultFile -Value $Json -Encoding UTF8
+'@
+}
+
+function Confirm-DsoLanguageChoice {
+    # W VM: sonda UIA w sesji 'dso' (Get-LanguageChoiceProbeScript) czeka do 30 s na okno wyboru języka, wybiera kafelek języka
+    # i czeka na okno główne. Zwraca { Shown, Chosen, ... }: Shown=false, gdy okno główne pojawiło się bez wyboru
+    # (na czystym checkpoincie brak settings.json, więc wybór ma się pokazać zawsze).
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)][hashtable]$Layout,
+        [ValidateSet('pl', 'en')][string]$Language = 'pl',
+        [ValidatePattern('^[A-Za-z0-9_-]+\z')][string]$UserName = 'dso',
+        [ValidateRange(60, 300)][int]$TimeoutSeconds = 90
+    )
+    Assert-DsoVmLiveAllowed
+    $Text = Invoke-DsoUserSessionScript -Session $Session -Layout $Layout -Name 'GuiSmoke-Language' -ScriptText (Get-LanguageChoiceProbeScript) `
+        -ArgumentText "-Language $Language" -UserName $UserName -TimeoutSeconds $TimeoutSeconds
+    if ([string]::IsNullOrWhiteSpace($Text)) { throw 'Sonda okna wyboru języka nie zwróciła wyniku.' }
+    $Result = $Text | ConvertFrom-Json
+    if ($Result.PSObject.Properties['Error'] -and $Result.Error) { throw "Sonda okna wyboru języka: $($Result.Error)" }
+    return $Result
+}
+
+function Get-GuiLanguageCheck {
+    # Czysta agregacja wyniku Confirm-DsoLanguageChoice -> sprawdzenie { Name, Passed, Detail }. Wynik $null = niezaliczone.
+    [CmdletBinding()]
+    param(
+        [AllowNull()]$Choice,
+        [ValidateSet('pl', 'en')][string]$Language = 'pl'
+    )
+    $Word = if ($Language -eq 'en') { 'angielski' } else { 'polski' }
+    $Name = 'LanguageChoice'
+    if ($null -eq $Choice) { return New-GuiSmokeCheck -Name $Name -Passed $false -Detail 'brak odczytu okna wyboru języka' }
+    $Shown = [bool]$Choice.Shown
+    $Chosen = [bool]$Choice.Chosen
+    $Detail = if (-not $Shown) { 'okno wyboru języka się nie pokazało (czysty checkpoint nie ma settings.json)' }
+    elseif (-not $Chosen) { "okno wyboru języka pokazane, ale po wyborze nie pojawiło się okno główne ($Word)" }
+    else { "Okno wyboru języka pokazane i wybrano $Word" }
+    return New-GuiSmokeCheck -Name $Name -Passed ($Shown -and $Chosen) -Detail $Detail
 }
 
 function Get-DsoPrivacyDetection {
@@ -409,7 +514,8 @@ function Invoke-DsoGuiSmoke {
         [switch]$KeepRunning,
         [string]$CheckpointName = 'czysta-26H2',
         [ValidateRange(60, 7200)][int]$ReadyTimeoutSeconds = 1200,
-        [ValidateRange(0, 600)][int]$StartupSeconds = 45
+        [ValidateRange(0, 600)][int]$StartupSeconds = 45,
+        [ValidateSet('pl', 'en')][string]$Language = 'pl'
     )
     Assert-DsoVmLiveAllowed
     $OutDirectory = Resolve-ExploreOutDirectory -Path $OutDirectory
@@ -425,6 +531,8 @@ function Invoke-DsoGuiSmoke {
     $Probe = $null
     $UiProbe = $null
     $UiError = $null
+    $LanguageChoice = $null
+    $LanguageError = $null
     $PrivacyDetection = $null
     $PrivacyExpected = $null
     $DetectionError = $null
@@ -451,6 +559,9 @@ function Invoke-DsoGuiSmoke {
         $Session = Wait-VmReady -VmName $VmName -Credential $Credential -TimeoutSeconds $ReadyTimeoutSeconds
         Copy-DsoBuildToVm -Session $Session -BuildDirectory $BuildDirectory -CatalogPath $CatalogPath -Layout $Layout
         $Since = Start-DsoGuiInUserSession -Session $Session -Layout $Layout
+        # Na czystym checkpoincie (brak settings.json) pierwsze okno to wybór języka; dopiero po nim startuje okno główne.
+        try { $LanguageChoice = Confirm-DsoLanguageChoice -Session $Session -Layout $Layout -Language $Language }
+        catch { $LanguageError = "okno wyboru języka: $($_.Exception.Message)" }
         Start-Sleep -Seconds $StartupSeconds
         $Resolution = Get-DsoVmResolution -VmName $VmName
         try { $Shot = Save-DsoVmThumbnail -VmName $VmName -Path $ScreenshotPath -Width $Resolution.Width -Height $Resolution.Height }
@@ -490,13 +601,16 @@ function Invoke-DsoGuiSmoke {
     }
     $BaseChecks = Get-GuiSmokeCheck -Probe $Probe -ScreenshotPath $Shot
     $UiChecks = Get-GuiUiCheck -Probe $UiProbe -PrivacyExpected $PrivacyExpected -AppsExpected $AppsExpected -RepairTitles $RepairTitles -InstallExpected $InstallExpected
-    $Checks = @($BaseChecks) + @($UiChecks)
-    $Errors = @($PrimaryError, $ShotError, $DetectionError, $AppsListError, $RepairTitlesError, $InstallTitlesError, $UiError, $UiShotError, $RevertError) | Where-Object { $_ }
+    $LanguageCheck = Get-GuiLanguageCheck -Choice $LanguageChoice -Language $Language
+    $Checks = @($BaseChecks) + @($LanguageCheck) + @($UiChecks)
+    $Errors = @($PrimaryError, $LanguageError, $ShotError, $DetectionError, $AppsListError, $RepairTitlesError, $InstallTitlesError, $UiError, $UiShotError, $RevertError) | Where-Object { $_ }
     $Failed = @($Checks | Where-Object { -not $_.Passed }).Count + @($Errors).Count
     $Result = [ordered]@{
         schema         = 1
         vmName         = $VmName
         passed         = ($Failed -eq 0)
+        language       = $Language
+        languageChoice = $LanguageChoice
         keepRunning    = [bool]$KeepRunning
         startedAt      = $StartedAt.ToString('o')
         finishedAt     = (Get-Date).ToString('o')
@@ -519,4 +633,4 @@ function Invoke-DsoGuiSmoke {
     return [pscustomobject]$Result
 }
 
-Export-ModuleMember -Function Get-GuiSmokeProbeScript, Start-DsoGuiInUserSession, Invoke-DsoUserSessionScript, Get-DsoGuiProbe, Get-DsoGuiUiProbe, Get-DsoPrivacyDetection, Get-DsoAppsListing, ConvertTo-DsoRgb565Png, Save-DsoVmThumbnail, Get-DsoVmResolution, Get-GuiSmokeCheck, Invoke-DsoGuiSmoke
+Export-ModuleMember -Function Get-GuiSmokeProbeScript, Get-LanguageChoiceProbeScript, Confirm-DsoLanguageChoice, Get-GuiLanguageCheck, Start-DsoGuiInUserSession, Invoke-DsoUserSessionScript, Get-DsoGuiProbe, Get-DsoGuiUiProbe, Get-DsoPrivacyDetection, Get-DsoAppsListing, ConvertTo-DsoRgb565Png, Save-DsoVmThumbnail, Get-DsoVmResolution, Get-GuiSmokeCheck, Invoke-DsoGuiSmoke

@@ -351,6 +351,113 @@ Describe 'Get-DsoPrivacyDetection (CLI --detect w VM)' {
     }
 }
 
+Describe 'Okno wyboru języka w smoke GUI' {
+    It 'Get-GuiLanguageCheck: pokazane i wybrane = zielone z tekstem po polsku (pl)' {
+        $C = Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $true }) -Language pl
+        $C.Name | Should -Be 'LanguageChoice'
+        $C.Passed | Should -BeTrue
+        $C.Detail | Should -Be 'Okno wyboru języka pokazane i wybrano polski'
+    }
+    It 'Get-GuiLanguageCheck: tekst dla en' {
+        (Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $true }) -Language en).Detail | Should -Be 'Okno wyboru języka pokazane i wybrano angielski'
+    }
+    It 'Get-GuiLanguageCheck: okno główne bez okna wyboru (Shown=false) = czerwone' {
+        $C = Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $false; Chosen = $false }) -Language pl
+        $C.Passed | Should -BeFalse
+        $C.Detail | Should -BeLike '*nie pokazało*'
+    }
+    It 'Get-GuiLanguageCheck: pokazane, ale bez okna głównego po wyborze = czerwone' {
+        (Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $false }) -Language pl).Passed | Should -BeFalse
+    }
+    It 'Get-GuiLanguageCheck: brak odczytu = czerwone' {
+        (Get-GuiLanguageCheck -Choice $null -Language pl).Passed | Should -BeFalse
+    }
+    It 'skrypt sondy: tylko ASCII, AutomationId okna i kafelków, InvokePattern, limit 30 s' {
+        $Script = Get-LanguageChoiceProbeScript
+        $Script | Should -Match '^[\x09\x0A\x0D\x20-\x7E]+$'
+        $Script | Should -Match 'LanguageChoiceWindow'
+        $Script | Should -Match 'LanguageChoicePolish'
+        $Script | Should -Match 'LanguageChoiceEnglish'
+        $Script | Should -Match 'InvokePattern'
+        $Script | Should -Match 'AddSeconds\(30\)'
+    }
+    It 'Confirm-DsoLanguageChoice idzie przez sesję dso z argumentem -Language i zwraca wynik sondy' {
+        Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {}
+        Mock -ModuleName VmSmoke Invoke-Command -RemoveParameterValidation 'Session' { '{"Ok":true,"Error":null,"Shown":true,"Chosen":true}' }
+        $R = Confirm-DsoLanguageChoice -Session $script:FakeSession -Layout (Get-DsoVmLayout) -Language en
+        $R.Shown | Should -BeTrue
+        Should -Invoke -ModuleName VmSmoke Invoke-Command -Times 1 -Exactly -ParameterFilter {
+            $ArgumentList[2] -eq 'GuiSmoke-Language' -and $ArgumentList[3] -eq '-Language en' -and $ArgumentList[4] -eq 'dso'
+        }
+    }
+    It 'Confirm-DsoLanguageChoice: błąd sondy rzuca wyjątek' {
+        Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {}
+        Mock -ModuleName VmSmoke Invoke-Command -RemoveParameterValidation 'Session' { '{"Ok":false,"Error":"Brak kafelka","Shown":true,"Chosen":false}' }
+        { Confirm-DsoLanguageChoice -Session $script:FakeSession -Layout (Get-DsoVmLayout) } | Should -Throw '*Brak kafelka*'
+    }
+}
+
+Describe 'Okno wyboru języka w Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasHyperV) {
+    BeforeEach {
+        $script:Build = Join-Path $TestDrive 'build'
+        $null = New-Item -ItemType Directory -Path $script:Build -Force
+        Set-Content -LiteralPath (Join-Path $script:Build 'DSOptimizer.exe') -Value 'x'
+        $script:Out = Join-Path $TestDrive ('out-' + [guid]::NewGuid().ToString('N'))
+        Set-NoLiveVmDefaultMock -ModuleName VmSmoke
+        Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {}
+        Mock -ModuleName VmSmoke Get-DsoVmCredential { $script:Credential }
+        Mock -ModuleName VmSmoke Restore-VmCleanState {}
+        Mock -ModuleName VmSmoke Start-VM {}
+        Mock -ModuleName VmSmoke Wait-VmReady { $script:FakeSession }
+        Mock -ModuleName VmSmoke Copy-DsoBuildToVm {}
+        Mock -ModuleName VmSmoke Remove-PSSession {}
+        Mock -ModuleName VmSmoke Start-Sleep {}
+        Mock -ModuleName VmSmoke Start-DsoGuiInUserSession { '2026-10-19T10:00:00.0000000Z' }
+        Mock -ModuleName VmSmoke Confirm-DsoLanguageChoice { [pscustomobject]@{ Shown = $true; Chosen = $true } }
+        Mock -ModuleName VmSmoke Get-DsoGuiProbe { $script:GoodProbe }
+        Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { $script:GoodUiProbe }
+        Mock -ModuleName VmSmoke Get-GuiPrivacySuggestedId { @('privacy.a', 'privacy.b', 'privacy.c') }
+        Mock -ModuleName VmSmoke Get-GuiRepairTitle { @('Wyczyść pamięć DNS', 'Ochrona systemu') }
+        Mock -ModuleName VmSmoke Get-GuiInstallTitle { [pscustomobject]@{ Titles = @('Mozilla Firefox', '7-Zip'); Categories = @('Przeglądarki', 'Narzędzia') } }
+        Mock -ModuleName VmSmoke Get-DsoPrivacyDetection { $script:GoodDetection }
+        Mock -ModuleName VmSmoke Get-DsoAppsListing { $script:GoodListing }
+        Mock -ModuleName VmSmoke Save-DsoVmThumbnail { Set-Content -LiteralPath $Path -Value 'png'; $Path }
+        Mock -ModuleName VmSmoke Get-DsoVmResolution { [pscustomobject]@{ Width = 1280; Height = 800; Source = 'guest'; Error = $null } }
+    }
+    It 'domyślnie wybiera polski, wybór idzie zaraz po starcie okna, przed sondą stanu' {
+        $script:Order = New-Object System.Collections.Generic.List[string]
+        Mock -ModuleName VmSmoke Start-DsoGuiInUserSession { $script:Order.Add('start'); '2026-10-19T10:00:00.0000000Z' }
+        Mock -ModuleName VmSmoke Confirm-DsoLanguageChoice { $script:Order.Add("wybor:$Language"); [pscustomobject]@{ Shown = $true; Chosen = $true } }
+        Mock -ModuleName VmSmoke Get-DsoGuiProbe { $script:Order.Add('stan'); $script:GoodProbe }
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        @($script:Order)[0..2] | Should -Be @('start', 'wybor:pl', 'stan')
+        $Check = $Result.checks | Where-Object Name -eq 'LanguageChoice'
+        $Check.Passed | Should -BeTrue
+        $Check.Detail | Should -Be 'Okno wyboru języka pokazane i wybrano polski'
+        $Result.passed | Should -BeTrue
+    }
+    It '-Language en przekazuje angielski do wyboru i do tekstu sprawdzenia' {
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language en
+        Should -Invoke -ModuleName VmSmoke Confirm-DsoLanguageChoice -Times 1 -Exactly -ParameterFilter { $Language -eq 'en' }
+        ($Result.checks | Where-Object Name -eq 'LanguageChoice').Detail | Should -Be 'Okno wyboru języka pokazane i wybrano angielski'
+    }
+    It 'brak okna wyboru (Shown=false) = sprawdzenie czerwone i passed=false' {
+        Mock -ModuleName VmSmoke Confirm-DsoLanguageChoice { [pscustomobject]@{ Shown = $false; Chosen = $false } }
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result.passed | Should -BeFalse
+        ($Result.checks | Where-Object Name -eq 'LanguageChoice').Passed | Should -BeFalse
+        ($Result.checks | Where-Object Name -eq 'PrepPage').Passed | Should -BeTrue
+    }
+    It 'wyjątek sondy wyboru nie gubi reszty przebiegu, ale daje błąd i czerwone sprawdzenie' {
+        Mock -ModuleName VmSmoke Confirm-DsoLanguageChoice { throw 'zadanie nie wystartowało' }
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result.passed | Should -BeFalse
+        ($Result.errors -join ' ') | Should -BeLike '*okno wyboru języka: zadanie nie wystartowało*'
+        ($Result.checks | Where-Object Name -eq 'LanguageChoice').Passed | Should -BeFalse
+        Should -Invoke -ModuleName VmSmoke Get-DsoGuiUiProbe -Times 1 -Exactly
+    }
+}
+
 Describe 'Get-DsoAppsListing (CLI --list-apps w VM)' {
     BeforeEach { Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {} }
     It 'woła CLI --list-apps z --out w katalogu wyników VM, jako konto dso (te same warunki co okno: konto procesu = zalogowane)' {
@@ -380,6 +487,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         Mock -ModuleName VmSmoke Remove-PSSession {}
         Mock -ModuleName VmSmoke Start-Sleep {}
         Mock -ModuleName VmSmoke Start-DsoGuiInUserSession { '2026-10-19T10:00:00.0000000Z' }
+        Mock -ModuleName VmSmoke Confirm-DsoLanguageChoice { [pscustomobject]@{ Shown = $true; Chosen = $true } }
         Mock -ModuleName VmSmoke Get-DsoGuiProbe { $script:GoodProbe }
         Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { $script:GoodUiProbe }
         Mock -ModuleName VmSmoke Get-GuiPrivacySuggestedId { @('privacy.a', 'privacy.b', 'privacy.c') }
@@ -407,7 +515,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         $Result.screenshotPath | Should -BeLike (Join-Path $script:Out '*.png')
         $Saved = Get-Content -LiteralPath $Result.resultPath -Raw -Encoding UTF8 | ConvertFrom-Json
         $Saved.vmName | Should -Be 'DSO-26H2-Home'
-        @($Saved.checks.Name) | Should -Be @('ProcessAlive', 'Responding', 'NoCrashEvents', 'NoLogErrors', 'Screenshot', 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage')
+        @($Saved.checks.Name) | Should -Be @('ProcessAlive', 'Responding', 'NoCrashEvents', 'NoLogErrors', 'Screenshot', 'LanguageChoice', 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage')
         @($Saved.repairTitles) | Should -Be @('Wyczyść pamięć DNS', 'Ochrona systemu')
         @($Saved.installExpected.Titles) | Should -Be @('Mozilla Firefox', '7-Zip')
         @($Saved.privacyDetection.Id) | Should -Be @('privacy.a', 'privacy.b', 'privacy.c')

@@ -89,6 +89,30 @@ Describe 'Invoke-DsoCli' {
         $Result = Invoke-DsoCli -Session $null -ExePath 'C:\dso\app\DSOptimizer.exe' -Arguments @('--detect', 'a.b') -OutPath 'C:\dso\out\a.json'
         $Result.Report.state | Should -Be 'Applied'
     }
+    It 'dokleja --lang pl na końcu argumentów (PS Direct)' {
+        Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $global:DsoLangArgs = $ArgumentList[1]; @{ ExitCode = 0; TimedOut = $false; Json = $null } }
+        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @('--detect', 'a.b', '--out', 'C:\o.json') -OutPath 'C:\o.json'
+        @($global:DsoLangArgs) | Should -Be @('--detect', 'a.b', '--out', 'C:\o.json', '--lang', 'pl')
+        Remove-Variable -Name DsoLangArgs -Scope Global -ErrorAction SilentlyContinue
+    }
+    It 'bez argumentów też dostaje samo --lang pl' {
+        Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $global:DsoLangArgs = $ArgumentList[1]; @{ ExitCode = 0; TimedOut = $false; Json = $null } }
+        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @() -OutPath 'C:\o.json'
+        @($global:DsoLangArgs) | Should -Be @('--lang', 'pl')
+        Remove-Variable -Name DsoLangArgs -Scope Global -ErrorAction SilentlyContinue
+    }
+    It 'dokleja --lang pl także w gałęzi -RunAsUser (zadanie Harmonogramu)' {
+        Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $global:DsoLangArgs = $ArgumentList[1]; @{ ExitCode = 0; TimedOut = $false; Json = $null } }
+        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @('--list-apps') -OutPath 'C:\o.json' -RunAsUser 'dso'
+        @($global:DsoLangArgs) | Should -Be @('--list-apps', '--lang', 'pl')
+        Remove-Variable -Name DsoLangArgs -Scope Global -ErrorAction SilentlyContinue
+    }
+    It 'nie dubluje --lang, gdy wywołujący już go podał' {
+        Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $global:DsoLangArgs = $ArgumentList[1]; @{ ExitCode = 0; TimedOut = $false; Json = $null } }
+        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @('--list-apps', '--lang', 'en') -OutPath 'C:\o.json'
+        @($global:DsoLangArgs) | Should -Be @('--list-apps', '--lang', 'en')
+        Remove-Variable -Name DsoLangArgs -Scope Global -ErrorAction SilentlyContinue
+    }
     It 'bez pliku JSON zwraca Report = null i zachowuje ExitCode' {
         Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { @{ ExitCode = 740; TimedOut = $false; Json = $null } }
         $Result = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @() -OutPath 'C:\o.json'
@@ -281,11 +305,11 @@ Describe 'Poprawki rundy 1' {
         }
         It 'przekroczenie czasu: ExitCode -1, TimedOut, proces zabity' {
             $Out = Join-Path $script:Dir 'o2.json'
-            $Result = Invoke-DsoCli -Session $null -ExePath "$env:SystemRoot\System32\ping.exe" -Arguments '-n', '37', '127.0.0.1' -OutPath $Out -TimeoutSeconds 1
+            $Result = Invoke-DsoCli -Session $null -ExePath "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -Arguments '-NoProfile', '-Command', 'Start-Sleep', '37;#' -OutPath $Out -TimeoutSeconds 1
             $Result.ExitCode | Should -Be -1
             $Result.TimedOut | Should -BeTrue
             Start-Sleep -Milliseconds 500
-            @(Get-CimInstance -ClassName Win32_Process -Filter "Name = 'PING.EXE'" | Where-Object { $_.CommandLine -like '*-n 37 127.0.0.1*' }).Count | Should -Be 0
+            @(Get-CimInstance -ClassName Win32_Process -Filter "Name = 'powershell.exe'" | Where-Object { $_.CommandLine -like '*Start-Sleep 37;#*' }).Count | Should -Be 0
         }
         It 'uszkodzony JSON: Report null, ReportError wypełniony, Json zachowany' {
             $Out = Join-Path $script:Dir 'o3.json'
@@ -994,7 +1018,7 @@ Describe 'Etap 4a T7: Invoke-DsoCli -RunAsUser (zadanie Harmonogramu)' {
             $Result.ExitCode | Should -Be 1
             $Result.TimedOut | Should -BeFalse
             $Result.Report.outcome | Should -Be 'Refused'
-            $global:DsoTaskEvents | Should -Contain "action:C:\dso\app\DSOptimizer.exe|--remove-app appx:x --out $Out"
+            $global:DsoTaskEvents | Should -Contain "action:C:\dso\app\DSOptimizer.exe|--remove-app appx:x --out $Out --lang pl"
             $global:DsoTaskEvents | Should -Contain 'principal:dso|Interactive|Highest'
             $global:DsoTaskEvents[$global:DsoTaskEvents.Count - 1] | Should -Be 'unregister'
             Remove-Variable -Name DsoTaskOut -Scope Global -ErrorAction SilentlyContinue
