@@ -28,6 +28,10 @@ jobs:
         if: ${{ !cancelled() }}
         run: dotnet test tests/DSOptimizer.Tests.Windows/DSOptimizer.Tests.Windows.csproj -c Release --no-build --logger "trx;LogFileName=windows.trx"
 
+      - name: Raport braków tłumaczeń (informacyjnie)
+        if: ${{ !cancelled() }}
+        run: powershell -NoProfile -File tools/i18n/Get-MissingTranslations.ps1
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4

@@ -49,15 +49,33 @@ public static class CliHost
         installServices ??= CreateInstallServices;
         var startedAt = DateTimeOffset.UtcNow;
 
-        // Język: --lang > zapamiętany w ustawieniach (tylko odczyt, korzeń nie powstaje) > język interfejsu Windows.
-        // Cały przebieg, od parsowania po zapis raportu, idzie w tym języku; domyślny język procesu nie jest zmieniany.
-        var language = CliParser.FindLanguage(args)
-            ?? new JsonFileSettingsStore(root, new SystemClock()).PeekLanguage()
-            ?? LanguageDetector.DetectCurrent();
-        using (L.Use(language))
+        // Cały przebieg, od parsowania po zapis raportu, idzie w tym języku; domyślny język procesu ustawia Program.Main.
+        using (L.Use(ResolveLanguage(args, root)))
         {
             return RunInLanguage(args, root, logMirrorDirectory, readAllText, builtInSources, serialize, installServices, startedAt);
         }
+    }
+
+    /// <summary>
+    /// Język trybu CLI: <c>--lang</c> &gt; zapamiętany w ustawieniach (tylko odczyt, korzeń nie powstaje) &gt; język interfejsu Windows.
+    /// <c>Program.Main</c> ustawia go jako domyślny język procesu, bo wątki bez przepływu <see cref="System.Threading.AsyncLocal{T}"/>
+    /// nie widzą <see cref="L.Use"/> z <see cref="Run(IReadOnlyList{string}, SecureRoot, string?)"/>.
+    /// </summary>
+    public static UiLanguage ResolveLanguage(IReadOnlyList<string> args, SecureRoot root)
+    {
+        if (args is null)
+        {
+            throw new ArgumentNullException(nameof(args));
+        }
+
+        if (root is null)
+        {
+            throw new ArgumentNullException(nameof(root));
+        }
+
+        return CliParser.FindLanguage(args)
+            ?? new JsonFileSettingsStore(root, new SystemClock()).PeekLanguage()
+            ?? LanguageDetector.DetectCurrent();
     }
 
     private static int RunInLanguage(IReadOnlyList<string> args, SecureRoot root, string? logMirrorDirectory,

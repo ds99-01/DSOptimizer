@@ -81,6 +81,20 @@ Describe 'Get-MissingTranslations.ps1' {
         $Result.Text | Should -Match 'src/A\.cs:1  Plik \{0\}'
     }
 
+    It 'L.P daje trzy klucze: formy one, few i many' {
+        $Source = "var a = 1;`r`nvar s = L.P(`"{0} plik`", `"{0} pliki`", `"{0} plików`", n);"
+        $Root = New-TestTree -Files @{ 'src\A.cs' = $Source }
+        $Result = Invoke-Report -Root $Root
+        $Result.Code | Should -Be 0
+        $Result.Text | Should -Match 'Brak tłumaczenia \(3\)'
+        $Result.Text | Should -Match '(?m)^  src/A\.cs:2  \{0\} plik$'
+        $Result.Text | Should -Match '(?m)^  src/A\.cs:2  \{0\} pliki$'
+        $Result.Text | Should -Match '(?m)^  src/A\.cs:2  \{0\} plików$'
+
+        $Translated = New-TestTree -Files @{ 'src\A.cs' = $Source } -Translations '{"language":"en","entries":[{"pl":"{0} plik","en":"{0} file"},{"pl":"{0} pliki","en":"{0} files"},{"pl":"{0} plików","en":"{0} files"}]}'
+        (Invoke-Report -Root $Translated).Text | Should -Match 'Braki: 0, nieużywane: 0'
+    }
+
     It 'rozkodowuje sekwencje ucieczki C#' {
         $Root = New-TestTree -Files @{ 'src\A.cs' = 'var s = L.T("a \"b\"");' }
         $Result = Invoke-Report -Root $Root

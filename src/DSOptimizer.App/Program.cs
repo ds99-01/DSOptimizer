@@ -37,6 +37,8 @@ internal static class Program
     {
         if (args.Length > 0)
         {
+            // Domyślny język procesu = język CLI: wątki bez przepływu AsyncLocal (np. odczyt potoku) nie widzą L.Use z CliHost.Run.
+            L.SetDefault(CliHost.ResolveLanguage(args, SecureRoot.ProgramData));
             return CliHost.Run(args, SecureRoot.ProgramData, FileLog.DefaultMirrorDirectory);
         }
 

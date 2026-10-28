@@ -137,6 +137,82 @@ public class LTests
         Assert.Throws<ArgumentNullException>(() => L.F(null!));
     }
 
+    private static TranslationTable PluralTable() =>
+        TranslationTable.Load(new[]
+        {
+            new TranslationSource(
+                "t.json",
+                "{\"language\":\"en\",\"entries\":["
+                + "{\"pl\":\"{0} pozycja\",\"en\":\"{0} item\"},"
+                + "{\"pl\":\"{0} pozycje\",\"en\":\"{0} items\"},"
+                + "{\"pl\":\"{0} pozycji\",\"en\":\"{0} items\"}]}"),
+        });
+
+    private static string Items(int count) => L.P("{0} pozycja", "{0} pozycje", "{0} pozycji", count);
+
+    [Fact]
+    public void P_Polish_ChoosesForm()
+    {
+        using (L.UseTable(PluralTable()))
+        using (L.Use(UiLanguage.Polish))
+        {
+            Assert.Equal("1 pozycja", Items(1));
+            Assert.Equal("2 pozycje", Items(2));
+            Assert.Equal("5 pozycji", Items(5));
+            Assert.Equal("22 pozycje", Items(22));
+            Assert.Equal("12 pozycji", Items(12));
+            Assert.Equal("0 pozycji", Items(0));
+            Assert.Equal("1 234 pozycje", Items(1234));
+            Assert.Equal("1 235 pozycji", Items(1235));
+        }
+    }
+
+    [Fact]
+    public void P_English_OneUsesOne()
+    {
+        using (L.UseTable(PluralTable()))
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("1 item", Items(1));
+        }
+    }
+
+    [Fact]
+    public void P_English_OtherUsesMany()
+    {
+        using (L.UseTable(PluralTable()))
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("0 items", Items(0));
+            Assert.Equal("2 items", Items(2));
+            Assert.Equal("5 items", Items(5));
+            Assert.Equal("22 items", Items(22));
+            Assert.Equal("1,234 items", Items(1234));
+        }
+    }
+
+    [Fact]
+    public void P_English_MissingTranslation_FallsBackToPolishForm()
+    {
+        using (L.UseTable(TranslationTable.Empty))
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("1 pozycja", Items(1));
+            Assert.Equal("2 pozycje", Items(2));
+            Assert.Equal("5 pozycji", Items(5));
+            Assert.Equal("1,235 pozycji", Items(1235));
+        }
+    }
+
+    [Fact]
+    public void P_FormWithoutPlaceholder_Throws()
+    {
+        Assert.Throws<ArgumentException>(() => L.P("pozycja", "{0} pozycje", "{0} pozycji", 1));
+        Assert.Throws<ArgumentException>(() => L.P("{0} pozycja", "pozycje", "{0} pozycji", 5));
+        Assert.Throws<ArgumentException>(() => L.P("{0} pozycja", "{0} pozycje", "pozycji", 5));
+        Assert.Throws<ArgumentNullException>(() => L.P(null!, "{0} pozycje", "{0} pozycji", 5));
+    }
+
     [Fact]
     public void LoadBuiltIn_ThrowingSource_YieldsEmptyTableAndWarning()
     {

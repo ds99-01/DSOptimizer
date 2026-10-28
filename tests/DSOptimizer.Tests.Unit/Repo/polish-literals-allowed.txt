@@ -1,0 +1,24 @@
+# Wyjątki strażnika polskich tekstów (PolishLiteralRulesTests): teksty, które celowo zostają po polsku.
+# Format: ścieżka względem repo<TAB>literał dokładnie jak w źródle<TAB>powód.
+# C#: literał z przedrostkiem i cudzysłowami (np. $"…"), XAML: wartość po rozkodowaniu encji XML.
+# Wpis, którego literału już nie ma w pliku, jest błędem testu.
+
+# Localization – komunikaty tabeli tłumaczeń (dla programisty; gdy tabela się nie wczyta, nie ma czym tłumaczyć).
+src/DSOptimizer.Core/Localization/L.cs	"Brak zasobu "	komunikat dla programisty: brak osadzonego zasobu tłumaczeń
+src/DSOptimizer.Core/Localization/L.cs	"Nie wczytano tłumaczeń: "	komunikat TranslationTable: tabela się nie wczytała, więc nie ma czym tłumaczyć
+src/DSOptimizer.Core/Localization/TranslationFormatException.cs	"Błędy w plikach tłumaczeń ("	komunikat TranslationTable (dla programisty, tabelę pilnuje test BuiltIn_LoadsWithoutErrors)
+src/DSOptimizer.Core/Localization/TranslationTable.cs	": korzeń pliku musi być obiektem JSON."	komunikat TranslationTable (dla programisty, tabelę pilnuje test BuiltIn_LoadsWithoutErrors)
+src/DSOptimizer.Core/Localization/TranslationTable.cs	": dane po zamknięciu dokumentu JSON."	komunikat TranslationTable (dla programisty, tabelę pilnuje test BuiltIn_LoadsWithoutErrors)
+src/DSOptimizer.Core/Localization/TranslationTable.cs	": pole \"language\" musi mieć dokładnie wartość \"en\"."	komunikat TranslationTable (dla programisty, tabelę pilnuje test BuiltIn_LoadsWithoutErrors)
+src/DSOptimizer.Core/Localization/TranslationTable.cs	": wpis musi być obiektem."	komunikat TranslationTable (dla programisty, tabelę pilnuje test BuiltIn_LoadsWithoutErrors)
+src/DSOptimizer.Core/Localization/TranslationTable.cs	": wpis musi mieć dokładnie klucze \"pl\" i \"en\" (jest: "	komunikat TranslationTable (dla programisty, tabelę pilnuje test BuiltIn_LoadsWithoutErrors)
+src/DSOptimizer.Core/Localization/TranslationTable.cs	": \"pl\" i \"en\" muszą być niepustymi napisami."	komunikat TranslationTable (dla programisty, tabelę pilnuje test BuiltIn_LoadsWithoutErrors)
+src/DSOptimizer.Core/Localization/TranslationTable.cs	": inny zbiór symboli zastępczych w \"pl\" i \"en\" ("	komunikat TranslationTable (dla programisty, tabelę pilnuje test BuiltIn_LoadsWithoutErrors)
+src/DSOptimizer.Core/Localization/TranslationTable.cs	": \"pl\" lub \"en\" nie jest poprawnym napisem formatującym (zabłąkany nawias klamrowy) ("	komunikat TranslationTable (dla programisty, tabelę pilnuje test BuiltIn_LoadsWithoutErrors)
+src/DSOptimizer.Core/Localization/TranslationTable.cs	": początkowe lub końcowe białe znaki \"en\" różnią się od \"pl\" ("	komunikat TranslationTable (dla programisty, tabelę pilnuje test BuiltIn_LoadsWithoutErrors)
+src/DSOptimizer.Core/Localization/TranslationTable.cs	": ten sam tekst polski już jest w pliku "	komunikat TranslationTable (dla programisty, tabelę pilnuje test BuiltIn_LoadsWithoutErrors)
+
+# Bezpieczniki testów (DSO_BLOCK_*): komunikat dla testów, nigdy dla użytkownika.
+src/DSOptimizer.Windows/MsiexecInstaller.cs	$"Bezpiecznik testów: {BlockRealMsiexecVariable}=1, start {_executablePath} zablokowany (msiexec nigdy nie startuje w testach)."	bezpiecznik testów (DSO_BLOCK_*)
+src/DSOptimizer.Windows/WebDownloader.cs	$"Bezpiecznik testów: {BlockRealNetworkVariable}=1, połączenie z {url.Host} zablokowane (testy łączą się tylko z pętlą zwrotną)."	bezpiecznik testów (DSO_BLOCK_*)
+src/DSOptimizer.Windows/WingetRunner.cs	$"Bezpiecznik testów: {BlockRealWingetVariable}=1, start {_executablePath} zablokowany (winget nigdy nie startuje w testach)."	bezpiecznik testów (DSO_BLOCK_*)

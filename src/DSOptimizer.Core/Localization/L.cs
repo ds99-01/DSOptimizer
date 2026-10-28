@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using DSOptimizer.Core.Hardware;
 
 namespace DSOptimizer.Core.Localization;
 
@@ -73,6 +74,23 @@ public static class L
     public static string F(string polishFormat, params object?[] args) =>
         string.Format(Culture, T(polishFormat), args);
 
+    /// <summary>
+    /// Liczba z odmianą: każda forma zawiera <c>{0}</c> (= <paramref name="count"/> w formacie <c>N0</c> kultury <see cref="Culture"/>).
+    /// Po polsku forma z <see cref="PolishPlural.Choose"/>; po angielsku 1 → tłumaczenie <paramref name="one"/>, inaczej tłumaczenie
+    /// <paramref name="many"/> (<paramref name="few"/> nie jest kluczem angielskim). Brak tłumaczenia wybranej formy = polska forma
+    /// dla tej liczby, nigdy błędna polska odmiana.
+    /// </summary>
+    public static string P(string one, string few, string many, int count)
+    {
+        RequirePlaceholder(one, nameof(one));
+        RequirePlaceholder(few, nameof(few));
+        RequirePlaceholder(many, nameof(many));
+        var form = Current == UiLanguage.English
+            ? Table().Find(UiLanguage.English, count == 1 ? one : many)
+            : null;
+        return string.Format(Culture, form ?? PolishPlural.Choose(count, one, few, many), count.ToString("N0", Culture));
+    }
+
     /// <summary>Wbudowane pliki tłumaczeń (zasoby <c>DSOptimizer.Core.Translations.*.json</c> zestawu Core).</summary>
     public static IReadOnlyList<TranslationSource> BuiltInSources()
     {
@@ -102,6 +120,19 @@ public static class L
         var previous = TableOverride.Value;
         TableOverride.Value = table;
         return new Restore(() => TableOverride.Value = previous);
+    }
+
+    private static void RequirePlaceholder(string form, string name)
+    {
+        if (form is null)
+        {
+            throw new ArgumentNullException(name);
+        }
+
+        if (form.IndexOf("{0}", StringComparison.Ordinal) < 0)
+        {
+            throw new ArgumentException("Forma liczebnika musi zawierać {0}: " + form, name);
+        }
     }
 
     private static TranslationTable Table()

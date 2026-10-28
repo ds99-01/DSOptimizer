@@ -107,6 +107,35 @@ public class CliHostTests
     }
 
     [Fact]
+    public void ResolveLanguage_LangArgumentWins()
+    {
+        using var temp = new TempDirectory();
+        new JsonFileSettingsStore(temp.AppRoot, new SystemClock()).Save(new AppSettings { Language = UiLanguage.English });
+
+        Assert.Equal(UiLanguage.Polish, CliHost.ResolveLanguage(new[] { "--detect", "x", "--lang", "pl" }, temp.AppRoot));
+    }
+
+    [Fact]
+    public void ResolveLanguage_SavedWhenNoArgument()
+    {
+        using var temp = new TempDirectory();
+        new JsonFileSettingsStore(temp.AppRoot, new SystemClock()).Save(new AppSettings { Language = UiLanguage.English });
+
+        Assert.Equal(UiLanguage.English, CliHost.ResolveLanguage(new[] { "--detect", "x" }, temp.AppRoot));
+    }
+
+    [Fact]
+    public void ResolveLanguage_DoesNotCreateRoot()
+    {
+        using var temp = new TempDirectory();
+
+        var language = CliHost.ResolveLanguage(new[] { "--detect", "x" }, temp.AppRoot);
+
+        Assert.Equal(LanguageDetector.DetectCurrent(), language);
+        Assert.False(Directory.Exists(temp.Sub("app")));
+    }
+
+    [Fact]
     public void Run_UsageError_DoesNotCreateRootWhenReadingLanguage()
     {
         using var temp = new TempDirectory();

@@ -1,7 +1,7 @@
 ﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
-    Raport braków tłumaczeń: polskie teksty z L.T/L.F i {l:T '…'} bez angielskiego odpowiednika.
+    Raport braków tłumaczeń: polskie teksty z L.T/L.F/L.P i {l:T '…'} bez angielskiego odpowiednika.
 
 .DESCRIPTION
     # Instrukcja uruchomienia (Windows PowerShell 5.1, z katalogu repo):
@@ -9,7 +9,8 @@
     #     .\tools\i18n\Get-MissingTranslations.ps1 -FailOnMissing     # kod 1, gdy są braki
     #     .\tools\i18n\Get-MissingTranslations.ps1 -Root <repo>       # inny korzeń repo
     # Opis działania:
-    #     Przeszukuje src\**\*.cs (wywołania L.T("…") i L.F("…", …)) oraz src\**\*.xaml ({l:T '…'}), pomija foldery obj i bin
+    #     Przeszukuje src\**\*.cs (wywołania L.T("…"), L.F("…", …) i L.P("…", "…", "…", n) – z L.P trzy klucze: formy
+    #     one, few i many; few nie jest kluczem angielskim, ale dostaje tłumaczenie równe many) oraz src\**\*.xaml ({l:T '…'}), pomija foldery obj i bin
     #     oraz src\DSOptimizer.Core\Localization\L.cs. Zasady literałów pilnuje test TranslationCallRulesTests, więc wystarczą
     #     proste wyrażenia regularne. Teksty są rozkodowywane (C#: \\ \" \' \0 \n \r \t \uXXXX; XAML: encje XML,
     #     potem \' i \\). Tłumaczenia czyta z src\DSOptimizer.Core\Localization\Translations\*.json
@@ -99,21 +100,27 @@ function Get-SourceTexts {
         $Pattern = '\{l:T ''((?:[^''\\]|\\.)*)''\}'
     }
     else {
-        $Pattern = '(?<![\w.])L\.[TF]\("((?:[^"\\\r\n]|\\.)*)"'
+        # L.T("…") i L.F("…", …) – jeden klucz; L.P("…", "…", "…", n) – trzy klucze (formy one, few, many).
+        $Literal = '"((?:[^"\\\r\n]|\\.)*)"'
+        $Pattern = '(?<![\w.])L\.(?:[TF]\(' + $Literal + '|P\(' + $Literal + '\s*,\s*' + $Literal + '\s*,\s*' + $Literal + ')'
     }
     foreach ($Match in [regex]::Matches($Content, $Pattern)) {
         $Line = 1
         for ($Index = 0; $Index -lt $Match.Index; $Index++) {
             if ($Content[$Index] -eq "`n") { $Line++ }
         }
-        if (-not $IsXaml -and -not [regex]::IsMatch($Match.Groups[1].Value, '^(?:[^\\]|\\[^xU])*$')) {
-            throw ('Nieobsługiwana sekwencja ucieczki (\x lub \U) w {0}:{1}' -f $Relative, $Line)
-        }
-        if ($IsXaml) { $Decoded = ConvertFrom-XamlLiteral -Text $Match.Groups[1].Value }
-        else { $Decoded = ConvertFrom-CSharpLiteral -Text $Match.Groups[1].Value }
-        [pscustomobject]@{
-            Text  = [string]$Decoded
-            Where = ('{0}:{1}' -f $Relative, $Line)
+        for ($Group = 1; $Group -lt $Match.Groups.Count; $Group++) {
+            if (-not $Match.Groups[$Group].Success) { continue }
+            $Value = $Match.Groups[$Group].Value
+            if (-not $IsXaml -and -not [regex]::IsMatch($Value, '^(?:[^\\]|\\[^xU])*$')) {
+                throw ('Nieobsługiwana sekwencja ucieczki (\x lub \U) w {0}:{1}' -f $Relative, $Line)
+            }
+            if ($IsXaml) { $Decoded = ConvertFrom-XamlLiteral -Text $Value }
+            else { $Decoded = ConvertFrom-CSharpLiteral -Text $Value }
+            [pscustomobject]@{
+                Text  = [string]$Decoded
+                Where = ('{0}:{1}' -f $Relative, $Line)
+            }
         }
     }
 }

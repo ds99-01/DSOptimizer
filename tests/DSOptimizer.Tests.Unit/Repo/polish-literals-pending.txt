@@ -1,0 +1,66 @@
+# Obszary jeszcze nie przetłumaczone (PolishLiteralRulesTests): pliki pod tymi ścieżkami strażnik pomija.
+# Wpis z „/” na końcu = folder (wszystko pod nim), bez „/” = dokładnie ten plik. „#” = komentarz.
+# Każdy obszar po przetłumaczeniu usuwa swoje linie; na końcu plik zostaje bez wpisów.
+
+# Task 4: Core – interfejs
+src/DSOptimizer.Core/Gui/
+
+# Task 5: Core – silnik, katalog, CLI, ustawienia (foldery i pliki w korzeniu Core)
+src/DSOptimizer.Core/Abstractions/
+src/DSOptimizer.Core/Catalog/
+src/DSOptimizer.Core/Cli/
+src/DSOptimizer.Core/Engine/
+src/DSOptimizer.Core/Journal/
+src/DSOptimizer.Core/Model/
+src/DSOptimizer.Core/Operations/
+src/DSOptimizer.Core/RestorePoints/
+src/DSOptimizer.Core/Scripts/
+src/DSOptimizer.Core/Settings/
+src/DSOptimizer.Core/ProductInfo.cs
+src/DSOptimizer.Core/ThirdPartyNotices.cs
+
+# Task 6: Core – naprawy i narzędzia
+src/DSOptimizer.Core/Repair/
+src/DSOptimizer.Core/Tools/
+
+# Task 7: Core – aplikacje
+src/DSOptimizer.Core/Apps/
+
+# Task 8: Core – instalacja
+src/DSOptimizer.Core/Install/
+
+# Task 9: Core – Specyfikacja i Przygotowanie
+src/DSOptimizer.Core/Hardware/
+src/DSOptimizer.Core/Prep/
+
+# Task 10: Windows
+src/DSOptimizer.Windows/
+
+# Task 11: App – okno główne, wspólne elementy, start programu
+src/DSOptimizer.App/Gui/
+src/DSOptimizer.App/MainWindow.xaml
+src/DSOptimizer.App/MainWindow.xaml.cs
+src/DSOptimizer.App/Program.cs
+src/DSOptimizer.App/Themes/Tokens.xaml
+src/DSOptimizer.App/ViewModels/ItemViewModel.cs
+src/DSOptimizer.App/ViewModels/MainViewModel.cs
+src/DSOptimizer.App/ViewModels/SeriesWindowViewModel.cs
+src/DSOptimizer.App/Views/LicensesWindow.xaml
+src/DSOptimizer.App/Views/SeriesWindow.xaml
+
+# Task 12: App – strony
+src/DSOptimizer.App/ViewModels/AppRowViewModel.cs
+src/DSOptimizer.App/ViewModels/AppsViewModel.cs
+src/DSOptimizer.App/ViewModels/HistoryViewModel.cs
+src/DSOptimizer.App/ViewModels/InstallViewModel.cs
+src/DSOptimizer.App/ViewModels/PrepViewModel.cs
+src/DSOptimizer.App/ViewModels/SettingsViewModel.cs
+src/DSOptimizer.App/ViewModels/SpecificationViewModel.cs
+src/DSOptimizer.App/Views/AppsView.xaml
+src/DSOptimizer.App/Views/InstallView.xaml
+src/DSOptimizer.App/Views/LanguageChoiceWindow.xaml
+src/DSOptimizer.App/Views/SettingsView.xaml
+src/DSOptimizer.App/Views/SpecificationView.xaml
+
+# Catalog – komunikaty o braku zasobu katalogu (obszar do ustalenia)
+src/DSOptimizer.Catalog/BuiltInCatalog.cs
