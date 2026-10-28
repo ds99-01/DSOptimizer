@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Settings;
 using DSOptimizer.Tests.Windows.Support;
 using DSOptimizer.Windows;
@@ -120,5 +121,53 @@ public class JsonFileSettingsStoreTests
         var ex = Assert.Throws<SettingsStoreException>(() => store.Save(AppSettings.Default));
 
         Assert.Contains(store.FilePath, ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void PeekLanguage_NoRoot_ReturnsNullAndCreatesNothing()
+    {
+        using var temp = new TempDirectory();
+
+        Assert.Null(Store(temp).PeekLanguage());
+        Assert.False(Directory.Exists(temp.Sub("app")));
+    }
+
+    [Fact]
+    public void PeekLanguage_SavedEnglish_ReturnsEnglish()
+    {
+        using var temp = new TempDirectory();
+        var store = Store(temp);
+        store.Save(new AppSettings { Language = UiLanguage.English });
+
+        Assert.Equal(UiLanguage.English, store.PeekLanguage());
+    }
+
+    [Fact]
+    public void PeekLanguage_Corrupted_ReturnsNullAndLeavesFile()
+    {
+        using var temp = new TempDirectory();
+        var store = Store(temp);
+        store.Save(AppSettings.Default);
+        File.WriteAllText(store.FilePath, "{");
+
+        Assert.Null(store.PeekLanguage());
+        Assert.Equal("{", File.ReadAllText(store.FilePath));
+        Assert.Empty(Directory.GetFiles(temp.Sub("app"), "*.untrusted-*"));
+    }
+
+    [Fact]
+    public void PeekLanguage_Untrusted_ReturnsNullAndDoesNotMove()
+    {
+        using var temp = new TempDirectory();
+        var store = Store(temp);
+        store.Save(new AppSettings { Language = UiLanguage.English });
+        var security = File.GetAccessControl(store.FilePath);
+        security.AddAccessRule(new FileSystemAccessRule(
+            new SecurityIdentifier("S-1-5-32-545"), FileSystemRights.FullControl, AccessControlType.Allow));
+        File.SetAccessControl(store.FilePath, security);
+
+        Assert.Null(store.PeekLanguage());
+        Assert.True(File.Exists(store.FilePath));
+        Assert.Empty(Directory.GetFiles(temp.Sub("app"), "*.untrusted-*"));
     }
 }

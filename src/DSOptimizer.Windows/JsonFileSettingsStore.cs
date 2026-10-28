@@ -5,6 +5,7 @@ using System.Security;
 using System.Security.AccessControl;
 using System.Text;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Settings;
 using Newtonsoft.Json;
 
@@ -76,6 +77,35 @@ public sealed class JsonFileSettingsStore : ISettingsStore
             or InvalidOperationException or ArgumentException or NotSupportedException or JsonException)
         {
             return Defaults($"Nie można odczytać pliku ustawień {FilePath}: {ex.Message}. {DefaultsSuffix}");
+        }
+    }
+
+    /// <summary>
+    /// Tylko odczyt zapamiętanego języka: bez tworzenia folderu, bez przenoszenia pliku, nigdy nie rzuca.
+    /// <c>null</c> = brak folderu/pliku, plik niezaufany, za duży, uszkodzony albo bez poprawnego pola.
+    /// </summary>
+    public UiLanguage? PeekLanguage()
+    {
+        try
+        {
+            if (!File.Exists(FilePath) || !SecureDirectory.IsTrustedFile(FilePath))
+            {
+                return null;
+            }
+
+            if (new FileInfo(FilePath).Length > MaxFileBytes)
+            {
+                return null;
+            }
+
+            var json = File.ReadAllText(FilePath, Utf8NoBom);
+            return AppSettingsSerializer.Deserialize(json).Language;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException
+            or InvalidOperationException or ArgumentException or NotSupportedException or JsonException
+            or SettingsFormatException)
+        {
+            return null;
         }
     }
 

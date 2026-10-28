@@ -1,3 +1,4 @@
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Settings;
 using Xunit;
 
@@ -72,5 +73,61 @@ public class AppSettingsSerializerTests
         var ex = Assert.Throws<SettingsFormatException>(() => AppSettingsSerializer.Deserialize("{\"schemaVersion\":2}"));
 
         Assert.Contains("nowsza wersja", ex.Message);
+    }
+
+    [Fact]
+    public void Serialize_NullLanguage_OmitsField()
+    {
+        var json = AppSettingsSerializer.Serialize(new AppSettings { Language = null });
+
+        Assert.DoesNotContain("language", json, System.StringComparison.Ordinal);
+        Assert.Equal("{\"schemaVersion\":1,\"createRestorePoint\":true,\"theme\":\"system\"}", json);
+    }
+
+    [Fact]
+    public void Serialize_English_WritesEn()
+    {
+        var json = AppSettingsSerializer.Serialize(new AppSettings { Language = UiLanguage.English });
+
+        Assert.Equal("{\"schemaVersion\":1,\"createRestorePoint\":true,\"theme\":\"system\",\"language\":\"en\"}", json);
+    }
+
+    [Fact]
+    public void RoundTrip_Polish()
+    {
+        var settings = new AppSettings { Language = UiLanguage.Polish };
+
+        Assert.Equal(settings, AppSettingsSerializer.Deserialize(AppSettingsSerializer.Serialize(settings)));
+    }
+
+    [Fact]
+    public void Deserialize_MissingLanguage_IsNull()
+    {
+        var settings = AppSettingsSerializer.Deserialize("{\"schemaVersion\":1}");
+
+        Assert.Null(settings.Language);
+    }
+
+    [Fact]
+    public void Deserialize_UnknownLanguage_IsNotChosenAndKeepsOtherFields()
+    {
+        var settings = AppSettingsSerializer.Deserialize(
+            "{\"schemaVersion\":1,\"createRestorePoint\":false,\"theme\":\"dark\",\"language\":\"de\"}");
+
+        Assert.Null(settings.Language);
+        Assert.False(settings.CreateRestorePoint);
+        Assert.Equal(ThemePreference.Dark, settings.Theme);
+    }
+
+    [Fact]
+    public void Deserialize_LanguageNumber_Throws()
+    {
+        Assert.Throws<SettingsFormatException>(() => AppSettingsSerializer.Deserialize("{\"schemaVersion\":1,\"language\":5}"));
+    }
+
+    [Fact]
+    public void Deserialize_LanguageUpperCase_IsNotChosen()
+    {
+        Assert.Null(AppSettingsSerializer.Deserialize("{\"schemaVersion\":1,\"language\":\"EN\"}").Language);
     }
 }

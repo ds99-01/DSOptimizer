@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using DSOptimizer.Core.Localization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -20,6 +21,11 @@ public static class AppSettingsSerializer
             ["createRestorePoint"] = settings.CreateRestorePoint,
             ["theme"] = ThemeToText(settings.Theme),
         };
+        if (settings.Language is { } language)
+        {
+            document["language"] = UiLanguageCodes.ToCode(language);
+        }
+
         return document.ToString(Formatting.None);
     }
 
@@ -72,6 +78,7 @@ public static class AppSettingsSerializer
         {
             CreateRestorePoint = ReadBoolean(document["createRestorePoint"], AppSettings.Default.CreateRestorePoint),
             Theme = ReadTheme(document["theme"], AppSettings.Default.Theme),
+            Language = ReadLanguage(document["language"]),
         };
     }
 
@@ -138,6 +145,21 @@ public static class AppSettingsSerializer
             "dark" => ThemePreference.Dark,
             _ => throw new SettingsFormatException("Nieznana wartość pola theme (dozwolone: system, light, dark)."),
         };
+    }
+
+    private static UiLanguage? ReadLanguage(JToken? token)
+    {
+        if (token is null || token.Type == JTokenType.Null)
+        {
+            return null;
+        }
+
+        if (token.Type != JTokenType.String)
+        {
+            throw new SettingsFormatException("Pole language musi być tekstem: pl albo en.");
+        }
+
+        return UiLanguageCodes.TryParse(token.Value<string>(), out var language) ? language : null;
     }
 
     private static string ThemeToText(ThemePreference theme) => theme switch
