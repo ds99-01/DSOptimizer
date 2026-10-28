@@ -1,7 +1,8 @@
 ﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
-    Raport braków tłumaczeń: polskie teksty z L.T/L.F/L.P i {l:T '…'} bez angielskiego odpowiednika.
+    Raport braków tłumaczeń: polskie teksty z L.T/L.F/L.P i {l:T '…'} bez angielskiego odpowiednika oraz polska
+    dokumentacja bez aktualnej wersji w docs\en.
 
 .DESCRIPTION
     # Instrukcja uruchomienia (Windows PowerShell 5.1, z katalogu repo):
@@ -21,15 +22,22 @@
     #     src/DSOptimizer.Catalog/catalog/<plik>#<id>.<pole>; teksty danych liczą się jako używane. Z pozycji tweaków (bez
     #     apps*.json) także komunikaty skryptów: pierwszy argument Get-DsoText '…' w polach script.apply/undo/detect/capture
     #     ('' = apostrof), miejsce src/DSOptimizer.Catalog/catalog/<plik>#<id>.script.<pole>. Zły JSON katalogu = kod 2.
-    #     Wypisuje sekcje „Brak tłumaczenia (N)” (plik:linia i tekst, każdy tekst raz, z pierwszym miejscem) oraz
-    #     „Nieużywane tłumaczenia (M)” (wpisy "pl", których nie ma w źródłach), a na końcu „Braki: N, nieużywane: M”.
-    #     Kod wyjścia: 0 zawsze; z -FailOnMissing 1 przy N > 0; 2 przy nieprawidłowym pliku tłumaczeń.
+    #     Dokumentacja: każdy polski docs\tweaks\*.md, docs\apps\*.md i docs\prep\*.md (bez podkatalogów) ma mieć angielski
+    #     docs\en\<to samo>, którego pierwsza linia to odcisk bieżącego polskiego pliku
+    #     (<!-- source: docs/<x>/<plik>.md sha256: <hash> -->, wpisuje go Set-DocsTranslationStamp.ps1); brak pliku = „brak”,
+    #     zły albo stary odcisk = „nieaktualne”. Pliki docs\en\**\*.md bez takiego polskiego źródła są nieużywane.
+    #     Brak katalogu docs = brak dokumentów do sprawdzenia.
+    #     Wypisuje sekcje „Brak tłumaczenia (N)” (plik:linia i tekst, każdy tekst raz, z pierwszym miejscem),
+    #     „Dokumentacja bez aktualnego tłumaczenia (D)” (polska ścieżka i „brak” albo „nieaktualne”) oraz
+    #     „Nieużywane tłumaczenia (M)” (wpisy "pl", których nie ma w źródłach, potem angielskie dokumenty bez źródła),
+    #     a na końcu „Braki: N + D, nieużywane: M”.
+    #     Kod wyjścia: 0 zawsze; z -FailOnMissing 1 przy N + D > 0; 2 przy nieprawidłowym pliku tłumaczeń.
 
 .PARAMETER Root
     Korzeń repo (domyślnie dwa katalogi nad skryptem).
 
 .PARAMETER FailOnMissing
-    Kod wyjścia 1, gdy są teksty bez tłumaczenia.
+    Kod wyjścia 1, gdy są teksty albo dokumenty bez aktualnego tłumaczenia.
 #>
 [CmdletBinding()]
 param(
@@ -198,6 +206,61 @@ function Get-CatalogTexts {
     }
 }
 
+function Get-DocsSourceHash {
+    # Ten sam hash co Get-DocsSourceHash w tools\i18n\Set-DocsTranslationStamp.ps1 – zmiana tu wymaga zmiany tam.
+    param([string]$FullPath)
+    $Text = [System.IO.File]::ReadAllText($FullPath, [System.Text.Encoding]::UTF8)
+    $Bytes = (New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false).GetBytes($Text.Replace("`r`n", "`n"))
+    $Sha = [System.Security.Cryptography.SHA256]::Create()
+    try { $Hash = $Sha.ComputeHash($Bytes) } finally { $Sha.Dispose() }
+    return (($Hash | ForEach-Object { $_.ToString('x2') }) -join '')
+}
+
+function Get-DocsStatus {
+    # Polskie docs/(tweaks|apps|prep)/*.md (bez podkatalogów) bez aktualnego docs/en/<to samo> oraz angielskie sieroty.
+    param([string]$RootPath)
+    $Stale = New-Object -TypeName 'System.Collections.Generic.List[object]'
+    $Orphans = New-Object -TypeName 'System.Collections.Generic.List[string]'
+    $DocsPath = Join-Path -Path $RootPath -ChildPath 'docs'
+    if (-not (Test-Path -LiteralPath $DocsPath -PathType Container)) {
+        return [pscustomobject]@{ Stale = @(); Orphans = @() }
+    }
+    $Sources = New-Object -TypeName 'System.Collections.Generic.HashSet[string]' -ArgumentList ([System.StringComparer]::Ordinal)
+    foreach ($Folder in 'tweaks', 'apps', 'prep') {
+        $FolderPath = Join-Path -Path $DocsPath -ChildPath $Folder
+        if (-not (Test-Path -LiteralPath $FolderPath -PathType Container)) { continue }
+        foreach ($File in Get-ChildItem -LiteralPath $FolderPath -Filter '*.md' -File) {
+            if ($File.Extension -ceq '.md') { $null = $Sources.Add(('docs/{0}/{1}' -f $Folder, $File.Name)) }
+        }
+    }
+    $SortedSources = [string[]]@($Sources)
+    [System.Array]::Sort($SortedSources, [System.StringComparer]::Ordinal)
+    foreach ($Source in $SortedSources) {
+        $English = Join-Path -Path $RootPath -ChildPath ('docs/en/' + $Source.Substring(5)).Replace('/', '\')
+        if (-not (Test-Path -LiteralPath $English -PathType Leaf)) {
+            $Stale.Add([pscustomobject]@{ Where = $Source; State = 'brak' })
+            continue
+        }
+        $FirstLine = ([System.IO.File]::ReadAllText($English, [System.Text.Encoding]::UTF8) -split "`n", 2)[0].TrimEnd("`r")
+        $Expected = '<!-- source: {0} sha256: {1} -->' -f $Source, (Get-DocsSourceHash -FullPath (Join-Path -Path $RootPath -ChildPath $Source.Replace('/', '\')))
+        if (-not ($FirstLine -ceq $Expected)) {
+            $Stale.Add([pscustomobject]@{ Where = $Source; State = 'nieaktualne' })
+        }
+    }
+    $EnglishPath = Join-Path -Path $DocsPath -ChildPath 'en'
+    if (Test-Path -LiteralPath $EnglishPath -PathType Container) {
+        foreach ($File in Get-ChildItem -LiteralPath $EnglishPath -Filter '*.md' -File -Recurse) {
+            if (-not ($File.Extension -ceq '.md')) { continue }
+            $Relative = $File.FullName.Substring($RootPath.Length).TrimStart('\', '/').Replace('\', '/')
+            if (-not $Sources.Contains('docs/' + $Relative.Substring(8))) { $Orphans.Add($Relative) }
+        }
+    }
+    $SortedOrphans = $Orphans.ToArray()
+    [System.Array]::Sort($SortedOrphans, [System.StringComparer]::Ordinal)
+    # ToArray: @() na pustej List[object] w PowerShell 5.1 rzuca wyjątek „Niezgodne typy argumentów”.
+    return [pscustomobject]@{ Stale = $Stale.ToArray(); Orphans = $SortedOrphans }
+}
+
 function Format-Shown {
     param([string]$Text)
     return $Text.Replace("`r", '\r').Replace("`n", '\n').Replace("`t", '\t')
@@ -288,17 +351,30 @@ try {
     $Unused = [string[]]@(@($Translations.Keys) | Where-Object { -not $Used.Contains($_) })
     [System.Array]::Sort($Unused, [System.StringComparer]::Ordinal)
 
+    $Docs = Get-DocsStatus -RootPath $RootPath
+    $StaleDocs = @($Docs.Stale)
+    $OrphanDocs = @($Docs.Orphans)
+    $MissingTotal = $Missing.Count + $StaleDocs.Count
+    $UnusedTotal = $Unused.Count + $OrphanDocs.Count
+
     Write-Output ('Brak tłumaczenia ({0})' -f $Missing.Count)
     foreach ($Item in $Missing) {
         Write-Output ('  {0}  {1}' -f $Item.Where, (Format-Shown -Text $Item.Text))
     }
-    Write-Output ('Nieużywane tłumaczenia ({0})' -f $Unused.Count)
+    Write-Output ('Dokumentacja bez aktualnego tłumaczenia ({0})' -f $StaleDocs.Count)
+    foreach ($Item in $StaleDocs) {
+        Write-Output ('  {0}  {1}' -f $Item.Where, $Item.State)
+    }
+    Write-Output ('Nieużywane tłumaczenia ({0})' -f $UnusedTotal)
     foreach ($Text in $Unused) {
         Write-Output ('  {0}' -f (Format-Shown -Text $Text))
     }
-    Write-Output ('Braki: {0}, nieużywane: {1}' -f $Missing.Count, $Unused.Count)
+    foreach ($Orphan in $OrphanDocs) {
+        Write-Output ('  {0}' -f $Orphan)
+    }
+    Write-Output ('Braki: {0}, nieużywane: {1}' -f $MissingTotal, $UnusedTotal)
 
-    if ($FailOnMissing -and $Missing.Count -gt 0) { exit 1 }
+    if ($FailOnMissing -and $MissingTotal -gt 0) { exit 1 }
     exit 0
 }
 catch {

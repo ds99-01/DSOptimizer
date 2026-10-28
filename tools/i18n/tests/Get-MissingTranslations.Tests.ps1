@@ -57,6 +57,16 @@ BeforeAll {
         }
         return [pscustomobject]@{ Lines = $Lines; Text = ($Lines -join "`n"); Code = $Code }
     }
+
+    function script:Get-DocsStamp {
+        # Odcisk liczony niezależnie od skryptów: SHA-256 bajtów UTF-8 polskiego tekstu z końcami linii LF. Ścieżka z '\'
+        # zamienianym na '/', żeby test nie zawierał literalnych odnośników do docs (pilnuje ich RepoDocsLinksTests).
+        param([string]$Source, [string]$Text)
+        $Bytes = $script:Utf8NoBom.GetBytes($Text.Replace("`r`n", "`n"))
+        $Sha = [System.Security.Cryptography.SHA256]::Create()
+        try { $Hash = $Sha.ComputeHash($Bytes) } finally { $Sha.Dispose() }
+        return ('<!-- source: {0} sha256: {1} -->' -f $Source.Replace('\', '/'), (($Hash | ForEach-Object { $_.ToString('x2') }) -join ''))
+    }
 }
 Describe 'Get-MissingTranslations.ps1' {
     It 'tekst z tłumaczeniem nie jest brakiem' {
@@ -317,5 +327,75 @@ Describe 'Get-MissingTranslations.ps1' {
         $Result = Invoke-Report -Root $Root
         $Result.Code | Should -Be 2
         $Result.Text | Should -Match 'x\.json'
+    }
+
+    It 'docs: brak angielskiego pliku jest brakiem' {
+        $Root = New-TestTree -Files @{ 'docs\tweaks\b.md' = "# b`n"; 'docs\tweaks\a.md' = "# a`n"; 'docs\apps\README.md' = "# apps`n" }
+        $Result = Invoke-Report -Root $Root
+        $Result.Code | Should -Be 0
+        $Result.Text | Should -Match '(?m)^Dokumentacja bez aktualnego tłumaczenia \(3\)$'
+        $Result.Text | Should -Match '(?m)^  docs/apps/README\.md  brak\n  docs/tweaks/a\.md  brak\n  docs/tweaks/b\.md  brak$'
+        $Result.Text | Should -Match 'Braki: 3, nieużywane: 0'
+        $Result.Text.IndexOf('Brak tłumaczenia (') | Should -BeLessThan $Result.Text.IndexOf('Dokumentacja bez aktualnego')
+        $Result.Text.IndexOf('Dokumentacja bez aktualnego') | Should -BeLessThan $Result.Text.IndexOf('Nieużywane tłumaczenia (')
+    }
+
+    It 'docs: aktualny odcisk nie jest brakiem' {
+        $Polish = "# a – Tytuł`r`n`r`nTreść.`r`n"
+        $English = (Get-DocsStamp -Source 'docs\tweaks\a.md' -Text $Polish) + "`r`n`r`n# a – Title`r`n"
+        $Root = New-TestTree -Files @{ 'docs\tweaks\a.md' = $Polish; 'docs\en\tweaks\a.md' = $English }
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match 'Dokumentacja bez aktualnego tłumaczenia \(0\)'
+        $Result.Text | Should -Match 'Braki: 0, nieużywane: 0'
+    }
+
+    It 'docs: zmieniony polski dokument jest nieaktualny' {
+        $English = (Get-DocsStamp -Source 'docs\prep\README.md' -Text "# Stara treść`n") + "`n`n# Old text`n"
+        $Root = New-TestTree -Files @{ 'docs\prep\README.md' = "# Nowa treść`n"; 'docs\en\prep\README.md' = $English }
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match '(?m)^  docs/prep/README\.md  nieaktualne$'
+        $Result.Text | Should -Match 'Braki: 1, nieużywane: 0'
+    }
+
+    It 'docs: pierwsza linia bez odcisku jest nieaktualna' {
+        $Polish = "# a`n"
+        $Stamp = Get-DocsStamp -Source 'docs\tweaks\a.md' -Text $Polish
+        $Root = New-TestTree -Files @{
+            'docs\tweaks\a.md'    = $Polish
+            'docs\en\tweaks\a.md' = "# a – Title`n$Stamp`n"
+            'docs\tweaks\b.md'    = $Polish
+            'docs\en\tweaks\b.md' = "$Stamp`n`n# b`n"
+        }
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match '(?m)^  docs/tweaks/a\.md  nieaktualne$'
+        $Result.Text | Should -Match '(?m)^  docs/tweaks/b\.md  nieaktualne$'
+        $Result.Text | Should -Match 'Braki: 2, nieużywane: 0'
+    }
+
+    It 'docs: sierota w docs/en jest nieużywana' {
+        $Root = New-TestTree -Files @{
+            'docs\en\tweaks\usuniety.md' = "# usuniety`n"
+            'docs\en\zrodla\x.md'        = "# x`n"
+            'docs\zrodla\x.md'           = "# x`n"
+        }
+        $Result = Invoke-Report -Root $Root
+        $Result.Code | Should -Be 0
+        $Result.Text | Should -Match 'Nieużywane tłumaczenia \(2\)'
+        $Result.Text | Should -Match '(?m)^  docs/en/tweaks/usuniety\.md$'
+        $Result.Text | Should -Match '(?m)^  docs/en/zrodla/x\.md$'
+        $Result.Text | Should -Match 'Braki: 0, nieużywane: 2'
+    }
+
+    It 'docs: -FailOnMissing daje 1 przy samym braku dokumentu' {
+        $Root = New-TestTree -Files @{ 'docs\tweaks\a.md' = "# a`n" }
+        (Invoke-Report -Root $Root -FailOnMissing).Code | Should -Be 1
+        (Invoke-Report -Root $Root).Code | Should -Be 0
+    }
+
+    It 'docs: podkatalog docs/tweaks/x/ nie jest czytany' {
+        $Root = New-TestTree -Files @{ 'docs\tweaks\x\a.md' = "# a`n"; 'docs\apps\x\b.md' = "# b`n" }
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match 'Dokumentacja bez aktualnego tłumaczenia \(0\)'
+        $Result.Text | Should -Match 'Braki: 0, nieużywane: 0'
     }
 }

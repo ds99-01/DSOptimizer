@@ -485,6 +485,32 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | wylogowanie | signing out | Style rule 11 |
 | wydanie testowe / szkic (GitHub) | test release / draft | WinUtil description |
 
+## Documentation
+
+English versions of the item documents and lists live in `docs/en/` (`docs/en/tweaks/<id>.md`, `docs/en/apps/`,
+`docs/en/prep/`); the Polish files in `docs/tweaks/`, `docs/apps/` and `docs/prep/` stay the source. The section headings
+come from the template `docs/en/tweaks/README.md`, in the same order as in Polish.
+
+| Polski | English | Notes/source |
+|---|---|---|
+| Werdykt 26H2 | Verdict for 26H2 | Template heading |
+| Co zmienia | What it changes | Template heading; same as the detail panel heading (Concepts) |
+| Źródła | Sources | Template heading |
+| Wartości domyślne na świeżym 26H2 | Defaults on a fresh 26H2 | Template heading |
+| Detekcja i undo | Detection and undo | Template heading |
+| Ryzyka i ostrzeżenia | Risks and warnings | Template heading |
+| Test VM | VM test | Template heading |
+| Obserwacja skutku | Observed effect | Template heading; optional, as in Polish (older documents don't have it) |
+| Reddit | Reddit | Template heading |
+| Do uzupełnienia w części E. | To be added in part E. | Placeholder sentence in the "Reddit" section |
+| do uzupełnienia | to be added | Placeholder value |
+| brak (wartość rejestru) / brak klucza | none / key missing | Values in "Defaults on a fresh 26H2" |
+| Nie sprawdzono: | Not checked: | Start of a line listing what wasn't checked |
+| Sprawdzono: | Checked: | Start of a line listing what was checked |
+| Odczyt VM 26H2 Home i Pro | Reading from 26H2 Home and Pro VMs | Source type in "Sources" |
+| dostęp <data> | accessed <data> | Access date of a source; the date stays ISO ("accessed 2026-10-18") |
+| odwołanie do `docs/zrodla/…` | `docs/zrodla/…` (in Polish) | Added after every reference to a file in `docs/zrodla/`; those records exist only in Polish |
+
 ## Windows names
 
 | Polski | English | Notes/source |
