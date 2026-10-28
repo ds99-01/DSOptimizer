@@ -1,0 +1,97 @@
+{
+ "language": "en",
+ "entries": [
+  {
+   "pl": "DSOptimizer.exe --detect <id> | --apply <id> [--restore-point required|ifavailable|skip] | --undo <id> | --execute <id> [--catalog <plik.json>] --out <plik.json> | DSOptimizer.exe --list-apps | --remove-app <id> [--restore-point required|ifavailable|skip] --out <plik.json> | DSOptimizer.exe --list-install [--apps-catalog <plik.json>] | --install-apps <id>[,<id>…] [--apps-catalog <plik.json>] | --search-apps <tekst> --out <plik.json> [--lang pl|en]",
+   "en": "DSOptimizer.exe --detect <id> | --apply <id> [--restore-point required|ifavailable|skip] | --undo <id> | --execute <id> [--catalog <file.json>] --out <file.json> | DSOptimizer.exe --list-apps | --remove-app <id> [--restore-point required|ifavailable|skip] --out <file.json> | DSOptimizer.exe --list-install [--apps-catalog <file.json>] | --install-apps <id>[,<id>…] [--apps-catalog <file.json>] | --search-apps <text> --out <file.json> [--lang pl|en]"
+  },
+  {
+   "pl": "Nieoczekiwany argument '{0}'.",
+   "en": "Unexpected argument '{0}'."
+  },
+  {
+   "pl": "Nieznana opcja '{0}'.",
+   "en": "Unknown option '{0}'."
+  },
+  {
+   "pl": "Opcja {0} wymaga wartości.",
+   "en": "Option {0} requires a value."
+  },
+  {
+   "pl": "Opcja --out podana więcej niż raz.",
+   "en": "Option --out was given more than once."
+  },
+  {
+   "pl": "Opcja --catalog podana więcej niż raz.",
+   "en": "Option --catalog was given more than once."
+  },
+  {
+   "pl": "Opcja --apps-catalog podana więcej niż raz.",
+   "en": "Option --apps-catalog was given more than once."
+  },
+  {
+   "pl": "Opcja --lang podana więcej niż raz.",
+   "en": "Option --lang was given more than once."
+  },
+  {
+   "pl": "Opcja --restore-point podana więcej niż raz.",
+   "en": "Option --restore-point was given more than once."
+  },
+  {
+   "pl": "Nieznany język '{0}' w --lang (dozwolone: pl, en).",
+   "en": "Unknown language '{0}' in --lang (allowed: pl, en)."
+  },
+  {
+   "pl": "Nieznana wartość --restore-point '{0}' (dozwolone: required, ifavailable, skip).",
+   "en": "Unknown value '{0}' for --restore-point (allowed: required, ifavailable, skip)."
+  },
+  {
+   "pl": "Podaj dokładnie jedno z: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps.",
+   "en": "Give exactly one of: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps."
+  },
+  {
+   "pl": "Brak wymaganej opcji --out.",
+   "en": "The required option --out is missing."
+  },
+  {
+   "pl": "Opcja --restore-point dotyczy tylko --apply i --remove-app.",
+   "en": "Option --restore-point applies only to --apply and --remove-app."
+  },
+  {
+   "pl": "Opcja --catalog nie dotyczy --list-apps ani --remove-app.",
+   "en": "Option --catalog does not apply to --list-apps or --remove-app."
+  },
+  {
+   "pl": "Opcja --catalog nie dotyczy poleceń instalacji (listę aplikacji podmienia --apps-catalog).",
+   "en": "Option --catalog does not apply to the install commands (use --apps-catalog to replace the app list)."
+  },
+  {
+   "pl": "Opcja --apps-catalog dotyczy tylko --list-install i --install-apps.",
+   "en": "Option --apps-catalog applies only to --list-install and --install-apps."
+  },
+  {
+   "pl": "Nieprawidłowe zapytanie --search-apps: {0}",
+   "en": "Invalid --search-apps query: {0}"
+  },
+  {
+   "pl": "{0} Składnia: {1}",
+   "en": "{0} Syntax: {1}"
+  },
+  {
+   "pl": "Lista --install-apps ma pusty element (id rozdziela sam przecinek, bez spacji).",
+   "en": "The --install-apps list has an empty item (separate ids with a comma only, no spaces)."
+  },
+  {
+   "pl": "Nieprawidłowy identyfikator aplikacji '{0}': po winget: musi być pełny identyfikator pakietu, nie skrócony „…” ani pusty (zawęź wyszukiwanie --search-apps).",
+   "en": "Invalid app identifier '{0}': after winget: it must be the full package identifier, not shortened with \"…\" and not empty (narrow down the --search-apps query)."
+  },
+  {
+   "pl": "Nieprawidłowy identyfikator aplikacji '{0}' (dozwolone: install.<nazwa> z listy albo winget:<identyfikator>).",
+   "en": "Invalid app identifier '{0}' (allowed: install.<name> from the list or winget:<identifier>)."
+  },
+  {
+   "pl": "Aplikacja '{0}' podana w --install-apps więcej niż raz.",
+   "en": "App '{0}' was given more than once in --install-apps."
+  }
+ ]
+}

@@ -8,7 +8,9 @@ using DSOptimizer.Catalog;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Cli;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Settings;
 using DSOptimizer.Tests.Windows.Support;
 using DSOptimizer.Windows;
 using Newtonsoft.Json.Linq;
@@ -61,6 +63,58 @@ public class CliHostTests
         var json = JObject.Parse(File.ReadAllText(output));
         Assert.Equal(2, (int)json["exitCode"]!);
         Assert.NotEmpty(json["errors"]!);
+        Assert.False(Directory.Exists(temp.Sub("app")));
+    }
+
+    private static string FirstError(string path) => (string)JObject.Parse(File.ReadAllText(path))["errors"]![0]!;
+
+    [Fact]
+    public void Run_LangEn_ReportErrorInEnglish()
+    {
+        using var temp = new TempDirectory();
+        var output = temp.Sub("wynik.json");
+
+        var code = CliHost.Run(new[] { "--lang", "en", "--foo", "--out", output }, temp.AppRoot, null);
+
+        Assert.Equal(2, code);
+        Assert.StartsWith("Unknown option '--foo'.", FirstError(output), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_SavedEnglish_UsedWithoutLang()
+    {
+        using var temp = new TempDirectory();
+        new JsonFileSettingsStore(temp.AppRoot, new SystemClock()).Save(new AppSettings { Language = UiLanguage.English });
+        var output = temp.Sub("wynik.json");
+
+        var code = CliHost.Run(new[] { "--foo", "--out", output }, temp.AppRoot, null);
+
+        Assert.Equal(2, code);
+        Assert.StartsWith("Unknown option '--foo'.", FirstError(output), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_LangOverridesSaved()
+    {
+        using var temp = new TempDirectory();
+        new JsonFileSettingsStore(temp.AppRoot, new SystemClock()).Save(new AppSettings { Language = UiLanguage.English });
+        var output = temp.Sub("wynik.json");
+
+        var code = CliHost.Run(new[] { "--lang", "pl", "--foo", "--out", output }, temp.AppRoot, null);
+
+        Assert.Equal(2, code);
+        Assert.StartsWith("Nieznana opcja '--foo'.", FirstError(output), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Run_UsageError_DoesNotCreateRootWhenReadingLanguage()
+    {
+        using var temp = new TempDirectory();
+        var output = temp.Sub("wynik.json");
+
+        var code = CliHost.Run(new[] { "--foo", "--out", output }, temp.AppRoot, null);
+
+        Assert.Equal(2, code);
         Assert.False(Directory.Exists(temp.Sub("app")));
     }
 

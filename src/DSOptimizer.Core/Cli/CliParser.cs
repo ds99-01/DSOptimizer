@@ -2,18 +2,41 @@ using System;
 using System.Collections.Generic;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Cli;
 
 public static class CliParser
 {
-    public const string Usage = "DSOptimizer.exe --detect <id> | --apply <id> [--restore-point required|ifavailable|skip] | --undo <id> | --execute <id> [--catalog <plik.json>] --out <plik.json>"
-        + " | DSOptimizer.exe --list-apps | --remove-app <id> [--restore-point required|ifavailable|skip] --out <plik.json>"
-        + " | DSOptimizer.exe --list-install [--apps-catalog <plik.json>] | --install-apps <id>[,<id>…] [--apps-catalog <plik.json>]"
-        + " | --search-apps <tekst> --out <plik.json>";
+    public static string Usage => L.T("DSOptimizer.exe --detect <id> | --apply <id> [--restore-point required|ifavailable|skip] | --undo <id> | --execute <id> [--catalog <plik.json>] --out <plik.json> | DSOptimizer.exe --list-apps | --remove-app <id> [--restore-point required|ifavailable|skip] --out <plik.json> | DSOptimizer.exe --list-install [--apps-catalog <plik.json>] | --install-apps <id>[,<id>…] [--apps-catalog <plik.json>] | --search-apps <tekst> --out <plik.json> [--lang pl|en]");
 
     private const string ListAppsOption = "--list-apps";
     private const string ListInstallOption = "--list-install";
+    private const string LangOption = "--lang";
+
+    /// <summary>
+    /// Wartość pierwszego <c>--lang</c> (nazwa opcji bez wielkości liter, wartość <c>pl</c>/<c>en</c> przez
+    /// <see cref="UiLanguageCodes.TryParse"/>); <c>null</c>, gdy opcji brak albo jej wartość jest zła lub nie ma jej wcale.
+    /// </summary>
+    public static UiLanguage? FindLanguage(IReadOnlyList<string> args)
+    {
+        if (args is null)
+        {
+            throw new ArgumentNullException(nameof(args));
+        }
+
+        for (var i = 0; i < args.Count; i++)
+        {
+            if (!args[i].Equals(LangOption, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            return i + 1 < args.Count && UiLanguageCodes.TryParse(args[i + 1], out var language) ? language : null;
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// Pojedynczy przebieg. Wygrywa pierwszy błąd; po nim przebieg trwa tylko po to, by znaleźć --out.
@@ -31,6 +54,7 @@ public static class CliParser
         string? catalogPath = null;
         string? appsCatalogPath = null;
         RestorePointPolicy? restorePoint = null;
+        var langSeen = false;
         var commands = new List<(CliCommand Command, string Id)>();
 
         for (var i = 0; i < args.Count; i++)
@@ -38,7 +62,7 @@ public static class CliParser
             var arg = args[i];
             if (!arg.StartsWith("--", StringComparison.Ordinal))
             {
-                error ??= $"Nieoczekiwany argument '{arg}'.";
+                error ??= L.F("Nieoczekiwany argument '{0}'.", arg);
                 continue;
             }
 
@@ -54,16 +78,17 @@ public static class CliParser
                 || arg.Equals("--catalog", StringComparison.OrdinalIgnoreCase)
                 || arg.Equals("--apps-catalog", StringComparison.OrdinalIgnoreCase)
                 || arg.Equals("--restore-point", StringComparison.OrdinalIgnoreCase)
+                || arg.Equals(LangOption, StringComparison.OrdinalIgnoreCase)
                 || arg.Equals("--out", StringComparison.OrdinalIgnoreCase);
             if (!isKnownOption)
             {
-                error ??= $"Nieznana opcja '{arg}'.";
+                error ??= L.F("Nieznana opcja '{0}'.", arg);
                 continue;
             }
 
             if (i + 1 >= args.Count || args[i + 1].StartsWith("--", StringComparison.Ordinal))
             {
-                error ??= $"Opcja {arg} wymaga wartości.";
+                error ??= L.F("Opcja {0} wymaga wartości.", arg);
                 continue;
             }
 
@@ -80,7 +105,7 @@ public static class CliParser
                 }
                 else
                 {
-                    error ??= "Opcja --out podana więcej niż raz.";
+                    error ??= L.T("Opcja --out podana więcej niż raz.");
                 }
             }
             else if (arg.Equals("--catalog", StringComparison.OrdinalIgnoreCase))
@@ -91,7 +116,7 @@ public static class CliParser
                 }
                 else
                 {
-                    error ??= "Opcja --catalog podana więcej niż raz.";
+                    error ??= L.T("Opcja --catalog podana więcej niż raz.");
                 }
             }
             else if (arg.Equals("--apps-catalog", StringComparison.OrdinalIgnoreCase))
@@ -102,12 +127,28 @@ public static class CliParser
                 }
                 else
                 {
-                    error ??= "Opcja --apps-catalog podana więcej niż raz.";
+                    error ??= L.T("Opcja --apps-catalog podana więcej niż raz.");
+                }
+            }
+            else if (arg.Equals(LangOption, StringComparison.OrdinalIgnoreCase))
+            {
+                if (langSeen)
+                {
+                    error ??= L.T("Opcja --lang podana więcej niż raz.");
+                }
+                else if (UiLanguageCodes.TryParse(value, out _))
+                {
+                    langSeen = true;
+                }
+                else
+                {
+                    langSeen = true;
+                    error ??= L.F("Nieznany język '{0}' w --lang (dozwolone: pl, en).", value);
                 }
             }
             else if (restorePoint is not null)
             {
-                error ??= "Opcja --restore-point podana więcej niż raz.";
+                error ??= L.T("Opcja --restore-point podana więcej niż raz.");
             }
             else if (TryGetPolicy(value, out var policy))
             {
@@ -115,40 +156,40 @@ public static class CliParser
             }
             else
             {
-                error ??= $"Nieznana wartość --restore-point '{value}' (dozwolone: required, ifavailable, skip).";
+                error ??= L.F("Nieznana wartość --restore-point '{0}' (dozwolone: required, ifavailable, skip).", value);
             }
         }
 
         if (error is null && commands.Count != 1)
         {
-            error = "Podaj dokładnie jedno z: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps.";
+            error = L.T("Podaj dokładnie jedno z: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps.");
         }
 
         if (error is null && outPath is null)
         {
-            error = "Brak wymaganej opcji --out.";
+            error = L.T("Brak wymaganej opcji --out.");
         }
 
         var isAppCommand = commands.Count == 1 && commands[0].Command is CliCommand.ListApps or CliCommand.RemoveApp;
         if (error is null && restorePoint is not null && commands[0].Command is not (CliCommand.Apply or CliCommand.RemoveApp))
         {
-            error = "Opcja --restore-point dotyczy tylko --apply i --remove-app.";
+            error = L.T("Opcja --restore-point dotyczy tylko --apply i --remove-app.");
         }
 
         if (error is null && catalogPath is not null && isAppCommand)
         {
-            error = "Opcja --catalog nie dotyczy --list-apps ani --remove-app.";
+            error = L.T("Opcja --catalog nie dotyczy --list-apps ani --remove-app.");
         }
 
         var isInstallCommand = commands.Count == 1 && IsInstallCommand(commands[0].Command);
         if (error is null && catalogPath is not null && isInstallCommand)
         {
-            error = "Opcja --catalog nie dotyczy poleceń instalacji (listę aplikacji podmienia --apps-catalog).";
+            error = L.T("Opcja --catalog nie dotyczy poleceń instalacji (listę aplikacji podmienia --apps-catalog).");
         }
 
         if (error is null && appsCatalogPath is not null && commands[0].Command is not (CliCommand.ListInstall or CliCommand.InstallApps))
         {
-            error = "Opcja --apps-catalog dotyczy tylko --list-install i --install-apps.";
+            error = L.T("Opcja --apps-catalog dotyczy tylko --list-install i --install-apps.");
         }
 
         IReadOnlyList<string> installIds = Array.Empty<string>();
@@ -159,12 +200,12 @@ public static class CliParser
 
         if (error is null && commands[0].Command == CliCommand.SearchApps && !WingetArguments.TryValidateQuery(commands[0].Id, out var queryError))
         {
-            error = "Nieprawidłowe zapytanie --search-apps: " + queryError;
+            error = L.F("Nieprawidłowe zapytanie --search-apps: {0}", queryError);
         }
 
         if (error is not null)
         {
-            return new CliParseResult { Error = error + " Składnia: " + Usage, OutPath = outPath };
+            return new CliParseResult { Error = L.F("{0} Składnia: {1}", error, Usage), OutPath = outPath };
         }
 
         return new CliParseResult
@@ -205,25 +246,24 @@ public static class CliParser
         {
             if (part.Length == 0)
             {
-                return "Lista --install-apps ma pusty element (id rozdziela sam przecinek, bez spacji).";
+                return L.T("Lista --install-apps ma pusty element (id rozdziela sam przecinek, bez spacji).");
             }
 
             if (part.StartsWith(InstallTarget.SearchPrefix, StringComparison.Ordinal))
             {
                 if (!WingetArguments.IsValidWingetId(part.Substring(InstallTarget.SearchPrefix.Length)))
                 {
-                    return $"Nieprawidłowy identyfikator aplikacji '{part}': po winget: musi być pełny identyfikator pakietu, nie skrócony „…” "
-                        + "ani pusty (zawęź wyszukiwanie --search-apps).";
+                    return L.F("Nieprawidłowy identyfikator aplikacji '{0}': po winget: musi być pełny identyfikator pakietu, nie skrócony „…” ani pusty (zawęź wyszukiwanie --search-apps).", part);
                 }
             }
             else if (!AppsInstallCatalog.IsValidId(part))
             {
-                return $"Nieprawidłowy identyfikator aplikacji '{part}' (dozwolone: install.<nazwa> z listy albo winget:<identyfikator>).";
+                return L.F("Nieprawidłowy identyfikator aplikacji '{0}' (dozwolone: install.<nazwa> z listy albo winget:<identyfikator>).", part);
             }
 
             if (!seen.Add(part))
             {
-                return $"Aplikacja '{part}' podana w --install-apps więcej niż raz.";
+                return L.F("Aplikacja '{0}' podana w --install-apps więcej niż raz.", part);
             }
         }
 

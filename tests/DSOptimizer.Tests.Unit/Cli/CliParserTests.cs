@@ -1,6 +1,7 @@
 using System;
 using DSOptimizer.Core.Cli;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Localization;
 using Xunit;
 
 namespace DSOptimizer.Tests.Unit.Cli;
@@ -208,5 +209,110 @@ public class CliParserTests
     {
         Assert.Contains("--list-apps", CliParser.Usage, StringComparison.Ordinal);
         Assert.Contains("--remove-app <id> [--restore-point required|ifavailable|skip]", CliParser.Usage, StringComparison.Ordinal);
+    }
+    [Fact]
+    public void FindLanguage_En()
+        => Assert.Equal(UiLanguage.English, CliParser.FindLanguage(new[] { "--detect", "a.b", "--LANG", "en", "--out", "o.json" }));
+
+    [Fact]
+    public void FindLanguage_Missing_Null()
+        => Assert.Null(CliParser.FindLanguage(new[] { "--detect", "a.b", "--out", "o.json" }));
+
+    [Theory]
+    [InlineData("de")]
+    [InlineData("EN")]
+    [InlineData("")]
+    public void FindLanguage_Invalid_Null(string value)
+        => Assert.Null(CliParser.FindLanguage(new[] { "--lang", value, "--detect", "a.b" }));
+
+    [Fact]
+    public void FindLanguage_NoValue_Null()
+        => Assert.Null(CliParser.FindLanguage(new[] { "--detect", "a.b", "--lang" }));
+
+    [Fact]
+    public void Parse_LangWithDetect_Succeeds()
+    {
+        var result = CliParser.Parse(new[] { "--detect", "a.b", "--lang", "en", "--out", "o.json" });
+        Assert.True(result.IsSuccess);
+        Assert.Equal(CliCommand.Detect, result.Options!.Command);
+    }
+
+    [Fact]
+    public void Parse_UnknownLang_Error()
+    {
+        var result = CliParser.Parse(new[] { "--detect", "a.b", "--lang", "de", "--out", "o.json" });
+        Assert.False(result.IsSuccess);
+        Assert.Contains("Nieznany język 'de' w --lang (dozwolone: pl, en).", result.Error, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Parse_LangTwice_Error()
+    {
+        var result = CliParser.Parse(new[] { "--detect", "a.b", "--lang", "en", "--lang", "pl", "--out", "o.json" });
+        Assert.False(result.IsSuccess);
+        Assert.Contains("Opcja --lang podana więcej niż raz.", result.Error, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Parse_LangWithoutValue_Error()
+        => Assert.Contains("Opcja --lang wymaga wartości.", CliParser.Parse(new[] { "--detect", "a.b", "--out", "o.json", "--lang" }).Error, StringComparison.Ordinal);
+
+    [Fact]
+    public void Parse_UnknownOption_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var result = CliParser.Parse(new[] { "--foo", "--out", "o.json" });
+            Assert.StartsWith("Unknown option '--foo'.", result.Error, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void Usage_EndsWithLang()
+    {
+        Assert.EndsWith(" [--lang pl|en]", CliParser.Usage, StringComparison.Ordinal);
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.EndsWith(" [--lang pl|en]", CliParser.Usage, StringComparison.Ordinal);
+            Assert.Contains("<file.json>", CliParser.Usage, StringComparison.Ordinal);
+            Assert.Contains("<text>", CliParser.Usage, StringComparison.Ordinal);
+        }
+    }
+
+    public static TheoryData<string[]> ErrorCases => new()
+    {
+        { new[] { "stray", "--out", "o.json" } },
+        { new[] { "--foo", "--out", "o.json" } },
+        { new[] { "--detect", "--out", "o.json" } },
+        { new[] { "--detect", "a.b", "--out", "o.json", "--out", "p.json" } },
+        { new[] { "--detect", "a.b", "--catalog", "k.json", "--catalog", "l.json", "--out", "o.json" } },
+        { new[] { "--list-install", "--apps-catalog", "k.json", "--apps-catalog", "l.json", "--out", "o.json" } },
+        { new[] { "--apply", "a.b", "--restore-point", "skip", "--restore-point", "skip", "--out", "o.json" } },
+        { new[] { "--apply", "a.b", "--restore-point", "maybe", "--out", "o.json" } },
+        { new[] { "--detect", "a.b", "--lang", "de", "--out", "o.json" } },
+        { new[] { "--detect", "a.b", "--lang", "en", "--lang", "en", "--out", "o.json" } },
+        { new[] { "--detect", "a.b", "--out", "o.json", "--lang" } },
+        { new[] { "--restore-point", "skip", "--out", "o.json" } },
+        { new[] { "--detect", "a.b", "--restore-point", "skip" } },
+        { new[] { "--detect", "a.b", "--restore-point", "skip", "--out", "o.json" } },
+        { new[] { "--list-apps", "--catalog", "k.json", "--out", "o.json" } },
+        { new[] { "--list-install", "--catalog", "k.json", "--out", "o.json" } },
+        { new[] { "--detect", "a.b", "--apps-catalog", "k.json", "--out", "o.json" } },
+        { new[] { "--install-apps", "install.a,,install.b", "--out", "o.json" } },
+        { new[] { "--install-apps", "winget:Abc…", "--out", "o.json" } },
+        { new[] { "--install-apps", "zle", "--out", "o.json" } },
+        { new[] { "--install-apps", "install.a,install.a", "--out", "o.json" } },
+    };
+
+    [Theory]
+    [MemberData(nameof(ErrorCases))]
+    public void ParserErrors_English_HaveNoPolishLetters(string[] args)
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var result = CliParser.Parse(args);
+            Assert.False(result.IsSuccess);
+            Assert.DoesNotContain(result.Error!, c => "ąćęłńóśźżĄĆĘŁŃÓŚŹŻ".IndexOf(c) >= 0);
+        }
     }
 }

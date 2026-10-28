@@ -5,10 +5,12 @@ using System.Security;
 using System.Security.Principal;
 using System.Text;
 using DSOptimizer.Catalog;
+using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Cli;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Windows.Apps;
 
 namespace DSOptimizer.Windows;
@@ -46,6 +48,23 @@ public static class CliHost
         serialize ??= CliReportSerializer.Serialize;
         installServices ??= CreateInstallServices;
         var startedAt = DateTimeOffset.UtcNow;
+
+        // Język: --lang > zapamiętany w ustawieniach (tylko odczyt, korzeń nie powstaje) > język interfejsu Windows.
+        // Cały przebieg, od parsowania po zapis raportu, idzie w tym języku; domyślny język procesu nie jest zmieniany.
+        var language = CliParser.FindLanguage(args)
+            ?? new JsonFileSettingsStore(root, new SystemClock()).PeekLanguage()
+            ?? LanguageDetector.DetectCurrent();
+        using (L.Use(language))
+        {
+            return RunInLanguage(args, root, logMirrorDirectory, readAllText, builtInSources, serialize, installServices, startedAt);
+        }
+    }
+
+    private static int RunInLanguage(IReadOnlyList<string> args, SecureRoot root, string? logMirrorDirectory,
+                                     Func<string, string> readAllText, Func<IReadOnlyList<CatalogSource>> builtInSources,
+                                     Func<CliReport, string> serialize, Func<AppComposition, AppsInstallCatalog, CliInstallServices> installServices,
+                                     DateTimeOffset startedAt)
+    {
         string? outPath = null;
         CliOptions? options = null;
         try
