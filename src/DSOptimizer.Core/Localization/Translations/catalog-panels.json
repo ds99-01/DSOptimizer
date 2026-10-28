@@ -8,7 +8,7 @@
     },
     {
       "pl": "Otwiera okno Opcje wydajności, w którym sam włączysz lub wyłączysz animacje, cienie i inne efekty.",
-      "en": "Opens the Performance Options window, where you turn animations, shadows and other effects on or off yourself."
+      "en": "Opens the Performance Options window, where you can turn animations, shadows and other effects on or off yourself."
     },
     {
       "pl": "Otwiera panel systemowy Windows: klasyczne okno „Opcje wydajności” (polecenie: SystemPropertiesPerformance.exe). Pozycja sama niczego nie ustawia – efekty wybierasz w otwartym oknie. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
@@ -32,7 +32,7 @@
     },
     {
       "pl": "Otwiera listę kart sieciowych, w której sam zmienisz ich ustawienia, np. adres IP albo serwery DNS.",
-      "en": "Opens the list of network adapters, where you change their settings yourself, e.g. the IP address or DNS servers."
+      "en": "Opens the list of network adapters, where you can change their settings yourself, e.g. the IP address or DNS servers."
     },
     {
       "pl": "Otwiera panel systemowy Windows: klasyczne okno „Połączenia sieciowe” (polecenie: control.exe netconnections). Pozycja niczego nie zmienia – ustawienia kart (np. IPv6, adres IP, DNS) zmieniasz sam w oknie. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
@@ -88,11 +88,11 @@
     },
     {
       "pl": "Otwiera panel systemowy Windows: okno „Urządzenia i drukarki” w Eksploratorze plików (polecenie: explorer.exe shell:::{A8A91A66-3A7D-4424-8D24-04E180695C7A}). Przed startem sprawdza, czy w bieżącej sesji działa Eksplorator tego samego konta; bez niego kończy się błędem i niczego nie uruchamia, bo podniesiony Eksplorator zostałby osobnym procesem z uprawnieniami administratora. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
-      "en": "Opens a Windows system panel: the \"Devices and Printers\" window in File Explorer (command: explorer.exe shell:::{A8A91A66-3A7D-4424-8D24-04E180695C7A}). Before starting, it checks that File Explorer of the same account is running in the current session; without it, the item ends with an error and starts nothing, because an elevated File Explorer would stay a separate process with administrator rights. DSOptimizer doesn't undo changes made in this window."
+      "en": "Opens a Windows system panel: the \"Devices and Printers\" window in File Explorer (command: explorer.exe shell:::{A8A91A66-3A7D-4424-8D24-04E180695C7A}). Before starting, it checks that File Explorer for the same account is running in the current session; without it, the item fails and starts nothing, because an elevated File Explorer would run as a separate process with administrator rights. DSOptimizer doesn't undo changes made in this window."
     },
     {
       "pl": "Wymaga Eksploratora zalogowanego konta – gdy DSOptimizer działa na innym koncie administratora, pozycja kończy się błędem.",
-      "en": "Needs File Explorer of the signed-in account – when DSOptimizer runs under another administrator account, the item ends with an error."
+      "en": "Needs File Explorer running for the signed-in account – if DSOptimizer runs under another administrator account, the item fails."
     },
     {
       "pl": "Programy i funkcje",
@@ -100,7 +100,7 @@
     },
     {
       "pl": "Otwiera listę zainstalowanych programów, z której sam je odinstalujesz.",
-      "en": "Opens the list of installed programs, where you uninstall them yourself."
+      "en": "Opens the list of installed programs, where you can uninstall them yourself."
     },
     {
       "pl": "Otwiera panel systemowy Windows: klasyczne okno „Programy i funkcje” (polecenie: control.exe /name Microsoft.ProgramsAndFeatures). Pozycja niczego nie odinstalowuje – robisz to sam w oknie. DSOptimizer nie przywróci programu odinstalowanego w tym oknie.",
@@ -148,7 +148,7 @@
     },
     {
       "pl": "Otwiera panel systemowy Windows: klasyczne okno „Właściwości systemu” (polecenie: control.exe sysdm.cpl). Okno startuje na karcie „Nazwa komputera” – to wniosek z nazwy uruchamianego procesu (SystemPropertiesComputerName.exe). Gdy okno Właściwości systemu (na dowolnej karcie) jest już otwarte, kolejne uruchomienie może tylko je przywołać. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
-      "en": "Opens a Windows system panel: the classic \"System Properties\" window (command: control.exe sysdm.cpl). The window opens on the \"Computer Name\" tab – this is inferred from the name of the process it starts (SystemPropertiesComputerName.exe). When the System Properties window (on any tab) is already open, starting it again may only bring it to the front. DSOptimizer doesn't undo changes made in this window."
+      "en": "Opens a Windows system panel: the classic \"System Properties\" window (command: control.exe sysdm.cpl). The window opens on the \"Computer Name\" tab – this is inferred from the name of the process that gets started (SystemPropertiesComputerName.exe). When the System Properties window (on any tab) is already open, starting it again may only bring it to the front. DSOptimizer doesn't undo changes made in this window."
     },
     {
       "pl": "Data i godzina",
@@ -184,7 +184,7 @@
     },
     {
       "pl": "Otwiera panel systemowy Windows: kreator „Przywracanie systemu” (polecenie: rstrui.exe). Samo otwarcie kreatora uruchamia też usługę wbengine.exe (Block Level Backup Engine). Kreator otwiera się także przy wyłączonej ochronie systemu i bez punktów przywracania – wtedy nie ma do czego wrócić. Przywrócenie systemu uruchamiasz sam w kreatorze; DSOptimizer go nie cofa.",
-      "en": "Opens a Windows system panel: the \"System Restore\" wizard (command: rstrui.exe). Just opening the wizard also starts the wbengine.exe service (Block Level Backup Engine). The wizard opens even when System Protection is off and there are no restore points – then there is nothing to go back to. You start the restore yourself in the wizard; DSOptimizer doesn't undo it."
+      "en": "Opens a Windows system panel: the \"System Restore\" wizard (command: rstrui.exe). Just opening the wizard also starts the wbengine.exe service (Block Level Backup Engine). The wizard opens even when System Protection is turned off or there are no restore points – then there is nothing to go back to. You start the restore yourself in the wizard; DSOptimizer doesn't undo it."
     }
   ]
 }

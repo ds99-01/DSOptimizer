@@ -36,7 +36,7 @@
     },
     {
       "pl": "Pamięć DNS nie została wyczyszczona: zostało {0} wpisów.",
-      "en": "The DNS cache wasn't cleared: entries left: {0}."
+      "en": "The DNS cache wasn't cleared: {0} entries remain."
     },
     {
       "pl": "Wyczyszczono pamięć DNS (przed: {0} wpisów, po: 0).",
@@ -76,7 +76,7 @@
     },
     {
       "pl": "netsh int ip reset: kod {0} – wynik spoza zmierzonego wzorca; wyjście: {1}",
-      "en": "netsh int ip reset: code {0} – result outside the measured pattern; output: {1}"
+      "en": "netsh int ip reset: code {0} – result doesn't match the known pattern; output: {1}"
     },
     {
       "pl": "Nie można odczytać konfiguracji IP sprzed resetu: {0}; nic nie zmieniono.",
@@ -136,7 +136,7 @@
     },
     {
       "pl": "Polecenia zakończone powodzeniem. Skutek po restarcie komputera. Konfiguracja IP sprzed resetu jest wyżej i w pliku logu.",
-      "en": "The commands succeeded. The effect comes after the computer restarts. The IP configuration from before the reset is above and in the log file."
+      "en": "The commands succeeded. Takes effect after the computer restarts. The IP configuration from before the reset is above and in the log file."
     },
     {
       "pl": "Zresetuj Windows Update",
@@ -164,7 +164,7 @@
     },
     {
       "pl": "To samo co zwykły reset Windows Update, a do tego usuwa blokady aktualizacji (z kopią) i przywraca domyślne uruchamianie usług.",
-      "en": "Same as the regular Windows Update reset, and it also removes update blocks (with a backup) and restores the default startup of the services."
+      "en": "Same as the regular Windows Update reset, and it also removes update blocks (with a backup) and restores the services' default startup types."
     },
     {
       "pl": "Pomaga, gdy aktualizacje zablokował np. program „optymalizujący” – także przy komunikacie, że ustawieniami zarządza organizacja.",
@@ -244,7 +244,7 @@
     },
     {
       "pl": "Trwa zwykle poniżej 1 min, ale czyszczenie składników Windows może potrwać kilkadziesiąt minut; „Zatrzymaj” działa tylko między krokami.",
-      "en": "Usually takes under 1 min, but cleaning up Windows components can take tens of minutes; \"Stop\" works only between steps."
+      "en": "Usually takes under 1 min, but cleaning up Windows components can take half an hour or more; \"Stop\" works only between steps."
     },
     {
       "pl": "Usuwa tylko pliki tymczasowe starsze niż 24 h – nie rusza Kosza, folderu Pobrane, punktów przywracania ani Windows.old.",
@@ -356,7 +356,7 @@
     },
     {
       "pl": "Działa tylko na koncie, na którym uruchomiono DSOptimizer – z innego konta administratora odmówi.",
-      "en": "Works only on the account that started DSOptimizer – from another administrator account it refuses."
+      "en": "Works only on the account that started DSOptimizer – it refuses when run from another administrator account."
     },
     {
       "pl": "Gdy Instalatora aplikacji nie ma w systemie, naprawa się nie uda – DSOptimizer odeśle do Microsoft Store.",
@@ -380,7 +380,7 @@
     },
     {
       "pl": "brak SID zalogowanego użytkownika – nic nie zmieniono",
-      "en": "no SID of the signed-in user – nothing was changed"
+      "en": "the signed-in user's SID is missing – nothing was changed"
     },
     {
       "pl": "Naprawa winget działa tylko dla konta, na którym działa DSOptimizer: uruchom DSOptimizer na koncie {0}.",
@@ -416,11 +416,11 @@
     },
     {
       "pl": "Może naprawić Microsoft Store, który nie otwiera się na tym koncie. Czy sklep działa, sprawdzisz sam – potrzebny jest internet.",
-      "en": "Can fix Microsoft Store when it doesn't open on this account. You check yourself whether the Store works – it needs an internet connection."
+      "en": "Can fix Microsoft Store when it doesn't open on this account. You'll need to check yourself whether the Store works – that needs an internet connection."
     },
     {
       "pl": "Ponownie rejestruje istniejący pakiet Microsoft.WindowsStore z jego manifestu (Add-AppxPackage -Register -DisableDevelopmentMode) dla konta, które uruchomiło DSOptimizer; pakiet wybiera po dokładnej nazwie. Gdy pakiet jest zainstalowany dla konta, rejestruje go ponownie; gdy jest na dysku, ale konto nie ma wpisu Installed (stan Staged, wpis tylko innego konta albo brak wpisów), rejestruje go z manifestu dla tego konta, bez pobierania. Gdy pakietu nie ma na dysku (np. LTSC), kończy się błędem. Odmawia, gdy SID procesu jest inny niż SID zalogowanego użytkownika – rejestracja trafiłaby do niewłaściwego konta. Sukces dopiero po odczycie zwrotnym: pakiet dla tego konta w stanie Installed i Status = Ok. Czy sklep się uruchamia i loguje, akcja nie sprawdza – to wymaga sieci. Bez cofania – ponowna rejestracja nie ma operacji odwrotnej.",
-      "en": "Registers the existing Microsoft.WindowsStore package again from its manifest (Add-AppxPackage -Register -DisableDevelopmentMode) for the account that started DSOptimizer; it picks the package by its exact name. When the package is installed for the account, it registers it again; when it's on the disk but the account has no Installed entry (Staged state, an entry of another account only, or no entries), it registers it from the manifest for this account, without downloading. When the package isn't on the disk (e.g. LTSC), it ends with an error. Refuses when the SID of the process differs from the SID of the signed-in user – the registration would go to the wrong account. It counts as success only after verification: the package for this account in the Installed state and Status = Ok. Whether the Store starts and signs in, the action doesn't check – that needs the network. No undo – registering again has no reverse operation."
+      "en": "Registers the existing Microsoft.WindowsStore package again from its manifest (Add-AppxPackage -Register -DisableDevelopmentMode) for the account that started DSOptimizer; it picks the package by its exact name. When the package is installed for the account, it registers it again; when it's on the disk but the account has no Installed entry (Staged state, an entry of another account only, or no entries), it registers it from the manifest for this account, without downloading. When the package isn't on the disk (e.g. LTSC), it ends with an error. Refuses when the SID of the process differs from the SID of the signed-in user – the registration would go to the wrong account. It counts as success only after verification: the package for this account in the Installed state and Status = Ok. The action doesn't check whether the Store starts and signs in – that needs the network. No undo – registering again has no reverse operation."
     },
     {
       "pl": "Bez cofania – nieudana próba może zostawić Microsoft Store niezarejestrowany na tym koncie.",

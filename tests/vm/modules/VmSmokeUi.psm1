@@ -239,7 +239,9 @@ function Get-GuiProbeTexts {
     $Texts['InstallSourceProbePrefix'] = Get-GuiCommonPrefix -Text @($Texts.InstallSummaryGitHub, $Texts.InstallSummaryWinget, $Texts.InstallSummaryWingetDown, $Texts.InstallUnavailable)
     if ($Texts.InstallSourceProbePrefix.Length -lt 3) { throw "Podtytuły strony Instalacja nie mają wspólnego prefiksu ('$($Texts.InstallSourceProbePrefix)')." }
     $Unavailable = [string]$Texts.InstallUnavailable
-    $Texts['InstallUnavailableSuffix'] = $Unavailable.Substring($Unavailable.LastIndexOf(' · ') + 3)
+    $SuffixAt = $Unavailable.LastIndexOf(' · ', [System.StringComparison]::Ordinal)
+    if ($SuffixAt -lt 0) { throw "Tekst InstallUnavailable ($Language) nie zawiera separatora ' · ': '$Unavailable'." }
+    $Texts['InstallUnavailableSuffix'] = $Unavailable.Substring($SuffixAt + 3)
     return $Texts
 }
 
@@ -1079,16 +1081,15 @@ function Get-GuiUiCheck {
     # -SettingsOpenable: PrepLinks.SettingsOpenable (domyślnie stała modułu); true = krok 2 strony „Przygotowanie” ma przycisk, false = notatkę.
     # -RepairTitles: wynik Get-GuiRepairTitle (tytuły kategorii repair z katalogu); brak albo pusta lista = RepairPage niezaliczone.
     # -InstallExpected: wynik Get-GuiInstallTitle ({ Titles, Categories } z apps.json); brak albo puste tytuły = InstallPage niezaliczone.
-    # -Texts: wynik Get-GuiProbeTexts w języku okna (ten sam słownik, który dostała sonda); domyślnie polski.
+    # -Texts: wynik Get-GuiProbeTexts w języku okna (ten sam słownik, który dostała sonda); wymagany.
     [CmdletBinding()]
     param(
         [AllowNull()]$Probe, [AllowNull()]$PrivacyExpected, [AllowNull()]$AppsExpected, [bool]$SettingsOpenable = $script:PrepSettingsOpenable,
         [AllowNull()][AllowEmptyCollection()][string[]]$RepairTitles, [AllowNull()]$InstallExpected,
-        [AllowNull()][System.Collections.IDictionary]$Texts
+        [Parameter(Mandatory)][System.Collections.IDictionary]$Texts
     )
     $Names = 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage'
     if ($null -eq $Probe) { return , @($Names | ForEach-Object { New-GuiUiCheck -Name $_ -Passed $false -Detail 'brak odczytu sondy UI' }) }
-    if ($null -eq $Texts) { $Texts = Get-GuiProbeTexts -Language pl }
     $Props = $Probe.PSObject.Properties
     $Get = { param($N, $Default) if ($null -ne $Props[$N] -and $null -ne $Props[$N].Value) { $Props[$N].Value } else { $Default } }
     $ProbeError = & $Get 'Error' $null

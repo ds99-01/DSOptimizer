@@ -309,6 +309,55 @@ public class CatalogCopyRulesEnglishTests
         Assert.True(violations.Count == 0, string.Join(Environment.NewLine, violations));
     }
 
+    [Fact]
+    public void AppsTexts_Lengths_English()
+    {
+        AppsInstallCatalog installPl;
+        AppsBloatCatalog bloatPl;
+        AppsInstallCatalog installEn;
+        AppsBloatCatalog bloatEn;
+        using (L.Use(UiLanguage.Polish))
+        {
+            installPl = AppsInstallCatalog.Load(BuiltInCatalog.AppsInstallSource.Json);
+            bloatPl = AppsBloatCatalog.Load(BuiltInCatalog.AppsBloatSource.Json);
+        }
+
+        using (L.Use(UiLanguage.English))
+        {
+            installEn = AppsInstallCatalog.Load(BuiltInCatalog.AppsInstallSource.Json);
+            bloatEn = AppsBloatCatalog.Load(BuiltInCatalog.AppsBloatSource.Json);
+        }
+
+        var violations = new List<string>();
+        foreach (var pl in installPl.Entries)
+        {
+            var en = installEn.Find(pl.Id)!;
+            if (Translated(pl.Summary, en.Summary) && en.Summary.Length > MaxSummaryLength)
+            {
+                violations.Add($"{pl.Id}: summary {en.Summary.Length} znaków");
+            }
+        }
+
+        foreach (var pl in bloatPl.Entries)
+        {
+            var en = bloatEn.Entries.Single(e => e.Id == pl.Id);
+            if (Translated(pl.Summary, en.Summary) && en.Summary.Length > MaxSummaryLength)
+            {
+                violations.Add($"{pl.Id}: summary {en.Summary.Length} znaków");
+            }
+        }
+
+        foreach (var pl in bloatPl.Protected)
+        {
+            var en = bloatEn.Protected.Single(e => e.Id == pl.Id);
+            if (Translated(pl.Reason, en.Reason) && en.Reason.Length > MaxSummaryLength)
+            {
+                violations.Add($"{pl.Id}: reason {en.Reason.Length} znaków");
+            }
+        }
+
+        Assert.True(violations.Count == 0, string.Join(Environment.NewLine, violations));
+    }
     private static IEnumerable<string?> TranslatedOnly(params (string? Pl, string? En)[] pairs)
         => pairs.Where(p => Translated(p.Pl, p.En)).Select(p => p.En);
 

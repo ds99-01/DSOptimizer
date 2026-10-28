@@ -261,7 +261,7 @@ How to read the tables:
 | folder pobrań / wydanie (GitHub) | downloads folder / release | WinUtil and RustDesk downloads; "test release (prerelease)", "release draft" |
 | Sprawdzenie | Check | Step name after Disk Cleanup in the Windows.old repair |
 | DSOptimizer – punkt ręczny | DSOptimizer – manual restore point | Description of the restore point created on demand; shown by System Restore |
-| Zresetuj Windows Update i usuń blokady | Reset Windows Update and remove blocks | Repair item title quoted in the Windows Update reset result. **do audytu (Etap 5)** – must match the catalog's English title |
+| Zresetuj Windows Update i usuń blokady | Reset Windows Update and remove blocks | Repair item title quoted in the Windows Update reset result. |
 | Procesor i pamięć / Grafika, ekran i dźwięk / Dyski / Sieć / System i zabezpieczenia | Processor and memory / Graphics, display and sound / Disks / Network / System and security | Specification groups (screen and report) |
 | Procesor / Pamięć / Płyta główna / Karta sieciowa / Dźwięk / Dysk {0} | Processor / Memory / Motherboard / Network adapter / Sound / Disk {0} | Specification keys; "Karta graficzna" = Graphics card |
 | {0} rdzeń / {0} wątek / {0} cal | {0} core / {0} thread / {0} inch | Plural rule 8: "1 core", "8 cores", "16 threads", "27 inches" |
@@ -525,9 +525,9 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | Aktywacja Windows | Windows activation | Settings › System › Activation; [Activate Windows](https://support.microsoft.com/en-us/windows/activation/activate-windows) |
 | klucz produktu | product key | Same source |
 | Administrator Protection | Administrator protection | Sentence case as on Microsoft Learn (Polish text keeps its own form); [Administrator protection](https://learn.microsoft.com/en-us/windows/security/application-security/application-control/administrator-protection/) |
-| Opcje zasilania | Power Options | Control Panel name. **do audytu (Etap 5)** |
-| Właściwości systemu | System Properties | **do audytu (Etap 5)** |
-| Połączenia sieciowe | Network Connections | **do audytu (Etap 5)** |
-| Urządzenia i drukarki | Devices and Printers | **do audytu (Etap 5)** |
-| Zabezpieczenia i konserwacja | Security and Maintenance | **do audytu (Etap 5)** |
+| Opcje zasilania | Power Options | Control Panel name; see "Catalog – system panels" |
+| Właściwości systemu | System Properties | See "Catalog – system panels" |
+| Połączenia sieciowe | Network Connections | See "Catalog – system panels" |
+| Urządzenia i drukarki | Devices and Printers | See "Catalog – system panels" |
+| Zabezpieczenia i konserwacja | Security and Maintenance | See "Catalog – system panels" |
 | Home / Pro / Enterprise / Education | Home / Pro / Enterprise / Education | Windows editions, not translated; "Enterprise i Education" → "Enterprise and Education" |

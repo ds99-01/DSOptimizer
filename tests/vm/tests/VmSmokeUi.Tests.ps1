@@ -60,6 +60,7 @@
     function script:Get-Check($Checks, [string]$Name) { $Checks | Where-Object Name -eq $Name }
     # Oczekiwane N obu stron z kompletem zgodnym z New-UiProbe (2 sugerowane privacy, 8 sugerowanych aplikacji).
     $script:PrivacyOk = [pscustomobject]@{ Count = 2; Detail = 'det' }
+    $script:PlTexts = Get-GuiProbeTexts -Language pl
     $script:AppsOk = [pscustomobject]@{ Count = 8; Detail = 'lista' }
     # Oczekiwane tytuły strony „Naprawy” zgodne z New-UiProbe (RepairTexts).
     $script:RepairOk = @('Naprawa A', 'Naprawa B')
@@ -279,36 +280,36 @@ Describe 'Get-GuiPrivacyExpectedCount (N z raportów detekcji)' {
 
 Describe 'Get-GuiUiCheck: PrivacySuggestedApply' {
     It 'przechodzi, gdy przycisk pokazuje N z detekcji' {
-        $Check = Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{}) -PrivacyExpected ([pscustomobject]@{ Count = 2; Detail = 'det' })) 'PrivacySuggestedApply'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{}) -PrivacyExpected ([pscustomobject]@{ Count = 2; Detail = 'det' })) 'PrivacySuggestedApply'
         $Check.Passed | Should -BeTrue
         $Check.Detail | Should -BeLike "*Zastosuj (2)*oczekiwano 2*det*"
     }
     It 'nie przechodzi, gdy N z przycisku różni się od detekcji (opis niesie obie liczby)' {
-        $Check = Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{ PrivacyApplyCount = 3; PrivacyApplyText = 'Zastosuj (3)' }) -PrivacyExpected ([pscustomobject]@{ Count = 2; Detail = 'det' })) 'PrivacySuggestedApply'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ PrivacyApplyCount = 3; PrivacyApplyText = 'Zastosuj (3)' }) -PrivacyExpected ([pscustomobject]@{ Count = 2; Detail = 'det' })) 'PrivacySuggestedApply'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*Zastosuj (3)*oczekiwano 2*'
     }
     It 'nie przechodzi bez oczekiwanego N (brak lub błąd detekcji)' {
-        $Check = Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{}) -PrivacyExpected ([pscustomobject]@{ Count = $null; Detail = 'p.b: brak raportu' })) 'PrivacySuggestedApply'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{}) -PrivacyExpected ([pscustomobject]@{ Count = $null; Detail = 'p.b: brak raportu' })) 'PrivacySuggestedApply'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*p.b: brak raportu*'
-        (Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{})) 'PrivacySuggestedApply').Passed | Should -BeFalse
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{})) 'PrivacySuggestedApply').Passed | Should -BeFalse
     }
     It 'nie przechodzi, gdy sonda nie ma pola wyniku (stara sonda) albo nie znalazła przycisku przy N > 0' {
         $Probe = New-UiProbe @{}
         $Without = [pscustomobject]@{}
         foreach ($P in $Probe.PSObject.Properties | Where-Object { $_.Name -notlike 'Privacy*' }) { $Without | Add-Member -NotePropertyName $P.Name -NotePropertyValue $P.Value }
         $Expected = [pscustomobject]@{ Count = 2; Detail = 'det' }
-        (Get-Check (Get-GuiUiCheck -Probe $Without -PrivacyExpected $Expected) 'PrivacySuggestedApply').Passed | Should -BeFalse
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Without -PrivacyExpected $Expected) 'PrivacySuggestedApply').Passed | Should -BeFalse
         $NoButton = New-UiProbe @{ PrivacyButtonFound = $false; PrivacyApplyCount = $null; PrivacyApplyText = $null; PrivacyError = 'brak przycisku' }
-        $Check = Get-Check (Get-GuiUiCheck -Probe $NoButton -PrivacyExpected $Expected) 'PrivacySuggestedApply'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $NoButton -PrivacyExpected $Expected) 'PrivacySuggestedApply'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*brak przycisku*'
     }
     It 'N = 0: przechodzi przy „Zastosuj (0)” albo przy braku przycisku bez błędu (pasek serii ukryty)' {
         $Zero = [pscustomobject]@{ Count = 0; Detail = 'det' }
-        (Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{ PrivacyApplyCount = 0; PrivacyApplyText = 'Zastosuj (0)' }) -PrivacyExpected $Zero) 'PrivacySuggestedApply').Passed | Should -BeTrue
-        (Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{ PrivacyButtonFound = $false; PrivacyApplyCount = $null; PrivacyApplyText = $null }) -PrivacyExpected $Zero) 'PrivacySuggestedApply').Passed | Should -BeTrue
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ PrivacyApplyCount = 0; PrivacyApplyText = 'Zastosuj (0)' }) -PrivacyExpected $Zero) 'PrivacySuggestedApply').Passed | Should -BeTrue
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ PrivacyButtonFound = $false; PrivacyApplyCount = $null; PrivacyApplyText = $null }) -PrivacyExpected $Zero) 'PrivacySuggestedApply').Passed | Should -BeTrue
     }
 }
 
@@ -388,23 +389,23 @@ Describe 'Get-GuiAppsExpectedCount (N z --list-apps)' {
 
 Describe 'Get-GuiUiCheck: AppsSuggestedRemove' {
     It 'przechodzi, gdy „Usuń (N)” pokazuje N z --list-apps' {
-        $Check = Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{}) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk) 'AppsSuggestedRemove'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{}) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk) 'AppsSuggestedRemove'
         $Check.Passed | Should -BeTrue
         $Check.Detail | Should -BeLike '*Usuń (8)*oczekiwano 8*lista*'
     }
     It 'nie przechodzi, gdy N z przycisku różni się od listy (opis niesie obie liczby)' {
-        $Check = Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{ AppsRemoveCount = 7; AppsRemoveText = 'Usuń (7)' }) -AppsExpected $script:AppsOk) 'AppsSuggestedRemove'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ AppsRemoveCount = 7; AppsRemoveText = 'Usuń (7)' }) -AppsExpected $script:AppsOk) 'AppsSuggestedRemove'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*Usuń (7)*oczekiwano 8*'
     }
     It 'nie przechodzi bez oczekiwanego N (brak lub błąd --list-apps)' {
-        $Check = Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{}) -AppsExpected ([pscustomobject]@{ Count = $null; Detail = 'kod 4' })) 'AppsSuggestedRemove'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{}) -AppsExpected ([pscustomobject]@{ Count = $null; Detail = 'kod 4' })) 'AppsSuggestedRemove'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*kod 4*'
-        (Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{})) 'AppsSuggestedRemove').Passed | Should -BeFalse
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{})) 'AppsSuggestedRemove').Passed | Should -BeFalse
     }
     It 'nie przechodzi, gdy lista nie została odczytana do końca (N sprzed odczytu)' {
-        $Check = Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{ AppsListRead = $false; AppsError = 'odczyt listy nie skonczyl sie w 180 s' }) -AppsExpected $script:AppsOk) 'AppsSuggestedRemove'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ AppsListRead = $false; AppsError = 'odczyt listy nie skonczyl sie w 180 s' }) -AppsExpected $script:AppsOk) 'AppsSuggestedRemove'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*sonda: odczyt listy*'
     }
@@ -412,16 +413,16 @@ Describe 'Get-GuiUiCheck: AppsSuggestedRemove' {
         $Probe = New-UiProbe @{}
         $Without = [pscustomobject]@{}
         foreach ($P in $Probe.PSObject.Properties | Where-Object { $_.Name -notlike 'Apps*' }) { $Without | Add-Member -NotePropertyName $P.Name -NotePropertyValue $P.Value }
-        (Get-Check (Get-GuiUiCheck -Probe $Without -AppsExpected $script:AppsOk) 'AppsSuggestedRemove').Passed | Should -BeFalse
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Without -AppsExpected $script:AppsOk) 'AppsSuggestedRemove').Passed | Should -BeFalse
         $NoButton = New-UiProbe @{ AppsButtonFound = $false; AppsRemoveCount = $null; AppsRemoveText = $null }
         $Zero = [pscustomobject]@{ Count = 0; Detail = 'lista' }
-        $Check = Get-Check (Get-GuiUiCheck -Probe $NoButton -AppsExpected $Zero) 'AppsSuggestedRemove'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $NoButton -AppsExpected $Zero) 'AppsSuggestedRemove'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*brak przycisku*'
     }
     It 'N = 0: przechodzi przy „Usuń (0)”' {
         $Zero = [pscustomobject]@{ Count = 0; Detail = 'lista' }
-        (Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{ AppsRemoveCount = 0; AppsRemoveText = 'Usuń (0)' }) -AppsExpected $Zero) 'AppsSuggestedRemove').Passed | Should -BeTrue
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ AppsRemoveCount = 0; AppsRemoveText = 'Usuń (0)' }) -AppsExpected $Zero) 'AppsSuggestedRemove').Passed | Should -BeTrue
     }
 }
 
@@ -497,7 +498,7 @@ Describe 'Sonda: „Przygotowanie” (krok 9)' {
 Describe 'Get-GuiUiCheck: PrepPage' {
     BeforeAll {
         function script:Get-PrepCheck($Probe, [bool]$SettingsOpenable = $true) {
-            Get-Check (Get-GuiUiCheck -Probe $Probe -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -SettingsOpenable $SettingsOpenable) 'PrepPage'
+            Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -SettingsOpenable $SettingsOpenable) 'PrepPage'
         }
     }
     It 'przechodzi: odczyt skończony, 7 tytułów, przycisk Windows Update, linia karty w kroku „Grafika”' {
@@ -536,7 +537,7 @@ Describe 'Get-GuiUiCheck: PrepPage' {
         $Probe = New-UiProbe @{}
         $Without = [pscustomobject]@{}
         foreach ($P in $Probe.PSObject.Properties | Where-Object { $_.Name -notlike 'Prep*' }) { $Without | Add-Member -NotePropertyName $P.Name -NotePropertyValue $P.Value }
-        $Checks = Get-GuiUiCheck -Probe $Without -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
+        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe $Without -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
         (Get-Check $Checks 'RepairPage').Passed | Should -BeTrue
     }
 }
@@ -635,7 +636,7 @@ Describe 'Get-GuiRepairTitle' {
 Describe 'Get-GuiUiCheck: RepairPage' {
     BeforeAll {
         function script:Get-RepairCheck($Probe, $Titles = $script:RepairOk) {
-            Get-Check (Get-GuiUiCheck -Probe $Probe -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $Titles -InstallExpected $script:InstallOk) 'RepairPage'
+            Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $Titles -InstallExpected $script:InstallOk) 'RepairPage'
         }
     }
     It 'przechodzi: pozycja menu, lista i wszystkie tytuły z katalogu' {
@@ -771,7 +772,7 @@ Describe 'Get-GuiInstallTitle' {
 Describe 'Get-GuiUiCheck: InstallPage' {
     BeforeAll {
         function script:Get-InstallCheck($Probe, $Expected = $script:InstallOk) {
-            Get-Check (Get-GuiUiCheck -Probe $Probe -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $Expected) 'InstallPage'
+            Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $Expected) 'InstallPage'
         }
     }
     It 'prefiks podtytułu (<Language>): sonda w VM łapie tekst, który sprawdza host, a host = InstallText.PageSummary z GitHubem (M6)' -ForEach @(
@@ -833,14 +834,14 @@ Describe 'Get-GuiUiCheck: InstallPage' {
 
 Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
     It 'komplet: szesnaście zaliczonych sprawdzeń w stałej kolejności' {
-        $Checks = Get-GuiUiCheck -Probe (New-UiProbe @{}) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
+        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{}) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
         @($Checks.Name) | Should -Be @('HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage')
         @($Checks | Where-Object { -not $_.Passed }).Count | Should -Be 0
         (Get-Check $Checks 'HistoryEntryActive').Detail | Should -Be 'wiersz: Szybsze otwieranie podmenu, Explorer i wygoda, Aktywna, 20.10.2026 21:00'
         (Get-Check $Checks 'CaptionHitTest').Detail | Should -BeLike '*przekrój x=8: 42..43: 2; 44..44: 1*'
     }
     It 'brak sondy ($null): wszystkie szesnaście niezaliczone' {
-        $Checks = Get-GuiUiCheck -Probe $null -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
+        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe $null -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
         @($Checks).Count | Should -Be 16
         @($Checks | Where-Object Passed).Count | Should -Be 0
     }
@@ -853,7 +854,7 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
         @{ Nazwa = 'HistoryEntryActive'; Powod = 'nazwa ma stary kształt bez rodzaju wpisu'; Override = @{ EntryNames = @('Szybsze otwieranie podmenu, Aktywna, 20.10.2026 21:00') } }
         @{ Nazwa = 'CaptionHitTest'; Powod = 'brak pomiaru'; Override = @{ HitTest = @(); HitTestError = 'UIA' } }
     ) {
-        (Get-Check (Get-GuiUiCheck -Probe (New-UiProbe $Override)) $Nazwa).Passed | Should -BeFalse
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe $Override)) $Nazwa).Passed | Should -BeFalse
     }
     It 'CaptionHitTest nie przechodzi przy <Opis> (<Stan>)' -ForEach @(
         @{ Opis = 'HTCLIENT w dolnych pikselach paska (stan sprzed poprawki)'; Stan = 'Maximized'; Indeks = 1; Punkt = 1; Kod = 1 }
@@ -864,7 +865,7 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
     ) {
         $Probe = New-UiProbe @{}
         $Probe.HitTest[$Indeks].Points[$Punkt].Ht = $Kod
-        $Check = Get-Check (Get-GuiUiCheck -Probe $Probe) 'CaptionHitTest'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe) 'CaptionHitTest'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*Normal: pasek 36..79*Maximized: pasek 0..43*'
     }
@@ -876,14 +877,14 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
     ) {
         $Probe = New-UiProbe @{}
         ($Probe.HitTest[$Indeks].Scan | Where-Object Y -eq $Y).Ht = $Kod
-        $Check = Get-Check (Get-GuiUiCheck -Probe $Probe) 'CaptionHitTest'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe) 'CaptionHitTest'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike "*$Stan`: pasek*krawędź*y=$Y=$Kod*"
     }
     It 'przekrój bez wierszy na granicy paska nie przechodzi' {
         $Probe = New-UiProbe @{}
         $Probe.HitTest[1].Scan = @([pscustomobject]@{ Y = 10; Ht = 2 })
-        $Check = Get-Check (Get-GuiUiCheck -Probe $Probe) 'CaptionHitTest'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe) 'CaptionHitTest'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*y=43=brak, y=44=brak*'
     }
@@ -893,31 +894,31 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
     ) {
         $Probe = New-UiProbe @{}
         ($Probe.HitTest[$Indeks].Points | Where-Object { $_.XDip -eq 'srodek' -and $_.Name -eq 'mid' }).Ht = 1
-        $Check = Get-Check (Get-GuiUiCheck -Probe $Probe) 'CaptionHitTest'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe) 'CaptionHitTest'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike "*$Stan`: pasek*mid@srodekDIP(y=0)=1*"
     }
     It 'pomiar bez punktów na środku paska (stara sonda) nie przechodzi' {
         $Probe = New-UiProbe @{}
         $Probe.HitTest[0].Points = @($Probe.HitTest[0].Points | Where-Object { $_.XDip -ne 'srodek' })
-        (Get-Check (Get-GuiUiCheck -Probe $Probe) 'CaptionHitTest').Passed | Should -BeFalse
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe) 'CaptionHitTest').Passed | Should -BeFalse
     }
     It 'stan z pustą listą punktów nie przechodzi' {
         $Probe = New-UiProbe @{}
         $Probe.HitTest[0].Points = @()
-        (Get-Check (Get-GuiUiCheck -Probe $Probe) 'CaptionHitTest').Passed | Should -BeFalse
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe) 'CaptionHitTest').Passed | Should -BeFalse
     }
     It 'Ht = -1000 (SendMessageTimeout nie zdążył) nie przechodzi' {
         $Probe = New-UiProbe @{}
         $Probe.HitTest[1].Points[0].Ht = -1000
-        $Check = Get-Check (Get-GuiUiCheck -Probe $Probe) 'CaptionHitTest'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe) 'CaptionHitTest'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*mid@8DIP(y=0)=-1000*'
     }
     It 'brak pomiaru jednego ze stanów nie przechodzi' {
         $Probe = New-UiProbe @{}
         $Probe.HitTest = @($Probe.HitTest[1])
-        $Check = Get-Check (Get-GuiUiCheck -Probe $Probe) 'CaptionHitTest'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe) 'CaptionHitTest'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*Normal: brak pomiaru*'
     }
@@ -927,7 +928,7 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
         @{ Nazwa = 'FilterHistoryOpened' }
         @{ Nazwa = 'FilterHistorySelected' }
     ) {
-        $Checks = Get-GuiUiCheck -Probe (New-UiProbe @{ $Nazwa = $false }) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
+        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ $Nazwa = $false }) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
         $Check = Get-Check $Checks $Nazwa
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike 'NIE: *'
@@ -942,7 +943,7 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
         $Probe = New-UiProbe @{}
         $Without = [pscustomobject]@{}
         foreach ($P in $Probe.PSObject.Properties | Where-Object { $_.Name -ne $Nazwa }) { $Without | Add-Member -NotePropertyName $P.Name -NotePropertyValue $P.Value }
-        $Check = Get-Check (Get-GuiUiCheck -Probe $Without) $Nazwa
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Without) $Nazwa
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike "brak pola $Nazwa*"
     }
@@ -952,7 +953,7 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
         @{ Nazwa = 'RunIconRuns' }
         @{ Nazwa = 'RunIconDoubleClickOnce' }
     ) {
-        $Checks = Get-GuiUiCheck -Probe (New-UiProbe @{ $Nazwa = $false }) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
+        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ $Nazwa = $false }) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
         $Check = Get-Check $Checks $Nazwa
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike 'NIE: *'
@@ -967,24 +968,24 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
         $Probe = New-UiProbe @{}
         $Without = [pscustomobject]@{}
         foreach ($P in $Probe.PSObject.Properties | Where-Object { $_.Name -ne $Nazwa }) { $Without | Add-Member -NotePropertyName $P.Name -NotePropertyValue $P.Value }
-        $Check = Get-Check (Get-GuiUiCheck -Probe $Without) $Nazwa
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Without) $Nazwa
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike "brak pola $Nazwa*"
     }
     It 'błąd klikania wierszy trafia do opisu sprawdzeń wierszy, a nie do filtrów' {
-        $Checks = Get-GuiUiCheck -Probe (New-UiProbe @{ RunIconRuns = $false; RowError = 'panel: Brak listy Pozycje.' })
+        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ RunIconRuns = $false; RowError = 'panel: Brak listy Pozycje.' })
         (Get-Check $Checks 'RunIconRuns').Detail | Should -BeLike '*wiersze: panel: Brak listy Pozycje.*'
         (Get-Check $Checks 'RowClickPreview').Passed | Should -BeTrue
         (Get-Check $Checks 'FilterRiskOpened').Detail | Should -Not -BeLike '*wiersze:*'
     }
     It 'błąd klikania filtrów trafia do opisu sprawdzeń filtrów' {
-        $Check = Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{ FilterRiskOpened = $false; FilterError = 'Brak ComboBox' })) 'FilterRiskOpened'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ FilterRiskOpened = $false; FilterError = 'Brak ComboBox' })) 'FilterRiskOpened'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*filtry: Brak ComboBox*'
     }
     It 'błąd jednego pola filtra (z nazwą pola) nie unieważnia wyniku drugiego, a opis niesie oba błędy' {
         $Probe = New-UiProbe @{ FilterRiskOpened = $true; FilterRiskSelected = $false; FilterError = 'Ryzyko: lista nie zamknela sie po wyborze opcji; Filtr: Brak ComboBox' }
-        $Checks = Get-GuiUiCheck -Probe $Probe
+        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe
         (Get-Check $Checks 'FilterRiskOpened').Passed | Should -BeTrue
         (Get-Check $Checks 'FilterHistoryOpened').Passed | Should -BeTrue
         $Selected = Get-Check $Checks 'FilterRiskSelected'
@@ -992,12 +993,12 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
         $Selected.Detail | Should -BeLike '*Ryzyko: lista nie zamknela sie*Filtr: Brak ComboBox*'
     }
     It 'błędy zastosowania i odczytu historii trafiają do opisu wiersza historii' {
-        $Check = Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{ EntryNames = @(); ApplyError = 'brak przycisku'; HistoryError = 'brak listy' })) 'HistoryEntryActive'
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ EntryNames = @(); ApplyError = 'brak przycisku'; HistoryError = 'brak listy' })) 'HistoryEntryActive'
         $Check.Detail | Should -BeLike '*zastosowanie: brak przycisku*'
         $Check.Detail | Should -BeLike '*historia: brak listy*'
     }
     It 'błąd sondy jest w opisie HistoryMenu' {
-        (Get-Check (Get-GuiUiCheck -Probe (New-UiProbe @{ Ok = $false; Error = 'brak okna'; HistoryMenuFound = $false })) 'HistoryMenu').Detail | Should -BeLike '*sonda: brak okna*'
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ Ok = $false; Error = 'brak okna'; HistoryMenuFound = $false })) 'HistoryMenu').Detail | Should -BeLike '*sonda: brak okna*'
     }
 }
 

@@ -5,9 +5,9 @@ using System.Text;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Tests.Unit.Support;
-using DSOptimizer.Core.Localization;
 using Xunit;
 
 namespace DSOptimizer.Tests.Unit.Catalog;
@@ -1292,7 +1292,7 @@ public class RepairCatalogTests
         Assert.Contains(run.Output, l => l.Contains("Ethernet: IPv4: 192.168.1.20/24 (mask 255.255.255.0), gateway: 192.168.1.1, DNS: 1.1.1.1, 8.8.8.8, DHCP: no", StringComparison.Ordinal));
         Assert.Contains(run.Output, l => l.Contains("Wi-Fi: IPv4: 10.0.0.7/16 (mask 255.255.0.0), gateway: none, DNS: none, DHCP: yes", StringComparison.Ordinal));
         Assert.Contains("One item protected by the system denied access – on a fresh Windows 11 26H2 this always happens, the rest was reset.", run.Output);
-        Assert.Equal("The commands succeeded. The effect comes after the computer restarts. The IP configuration from before the reset is above and in the log file.", run.LastLine);
+        Assert.Equal("The commands succeeded. Takes effect after the computer restarts. The IP configuration from before the reset is above and in the log file.", run.LastLine);
     }
 
     [Fact]
