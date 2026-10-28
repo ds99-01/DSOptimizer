@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Errors;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
@@ -21,6 +22,7 @@ namespace DSOptimizer.Tests.Unit.Localization.English;
 public class RepairEnglishTests
 {
     private const string Win = @"C:\Windows";
+    private const string PolicyKey = @"HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate";
     private const long Mb = 1024L * 1024;
     private const long Gb = 1024L * Mb;
 
@@ -73,8 +75,8 @@ public class RepairEnglishTests
             Paths = new RepairPaths { SystemRoot = Win, EnsureBackupDirectory = () => @"C:\ProgramData\DSOptimizer\backups" },
         };
 
-        public ActionHandlerResult Run(IActionHandler handler, string name)
-            => handler.Run(TestTweaks.Action() with { Script = null, Handler = name }, Output, Progress, CancellationToken.None);
+        public ActionHandlerResult Run(IActionHandler handler, string name, CancellationToken cancellationToken = default)
+            => handler.Run(TestTweaks.Action() with { Script = null, Handler = name }, Output, Progress, cancellationToken);
     }
 
     private static string[] Lines(ActionHandlerResult result) => (result.Message ?? string.Empty).Split(new[] { Environment.NewLine }, StringSplitOptions.None);
@@ -153,8 +155,97 @@ public class RepairEnglishTests
             var result = rig.Run(new WindowsUpdateResetHandler(false, rig.Build()), ActionHandlerNames.WuReset);
 
             Assert.Equal(TweakOutcome.Failed, result.Outcome);
-            Assert.StartsWith("Couldn't stop service bits: ", Lines(result)[0], StringComparison.Ordinal);
-            Assert.EndsWith(" Nothing was changed.", Lines(result)[0], StringComparison.Ordinal);
+            // Środek zdania to komunikat fake'a (FakeServiceManager.StopService) – deterministyczny.
+            Assert.Equal("Couldn't stop service bits: Zatrzymanie bits nie powiodło się (fake). Nothing was changed.", Lines(result)[0]);
+        }
+    }
+
+    [Fact]
+    public void WuReset_CanceledBeforeChanges_WholeSentenceEnglish()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var rig = WuRig();
+            using var cancel = new CancellationTokenSource();
+            cancel.Cancel();
+
+            var result = rig.Run(new WindowsUpdateResetHandler(false, rig.Build()), ActionHandlerNames.WuReset, cancel.Token);
+
+            Assert.Equal(TweakOutcome.Failed, result.Outcome);
+            Assert.Equal("Canceled before any changes. Nothing was changed.", result.Message);
+        }
+    }
+
+    [Fact]
+    public void WuReset_VerificationFailed_WholeSentenceEnglish()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var rig = WuRig();
+            const string catrootCopy = Win + @"\System32\catroot2.dso-20261022-143005";
+            rig.Files.AfterMove = (_, destination) =>
+            {
+                if (destination == catrootCopy)
+                {
+                    rig.Files.RemoveDirectory(destination);
+                }
+            };
+
+            var result = rig.Run(new WindowsUpdateResetHandler(false, rig.Build()), ActionHandlerNames.WuReset);
+
+            Assert.Equal(TweakOutcome.Failed, result.Outcome);
+            Assert.Equal($"Verification didn't confirm the reset: copy {catrootCopy} is missing.", Lines(result)[0]);
+        }
+    }
+
+    [Fact]
+    public void WuReset_ServiceReadFailed_WholeSentenceEnglish()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var rig = WuRig();
+            rig.Services.DenyQuery("bits");
+
+            var result = rig.Run(new WindowsUpdateResetHandler(false, rig.Build()), ActionHandlerNames.WuReset);
+
+            Assert.Equal(TweakOutcome.Failed, result.Outcome);
+            // „Odmowa dostępu (fake).” to błąd z FakeServiceManager.Query.
+            Assert.Equal("Couldn't read service bits: Odmowa dostępu (fake). Nothing was changed.", result.Message);
+        }
+    }
+
+    [Fact]
+    public void WuResetFull_PolicyCheckFailed_WholeSentenceEnglish()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var rig = WuRig();
+            rig.Registry.DenyKey(PolicyKey);
+
+            var result = rig.Run(new WindowsUpdateResetHandler(true, rig.Build()), ActionHandlerNames.WuResetFull);
+
+            Assert.Equal(TweakOutcome.Failed, result.Outcome);
+            Assert.Equal(
+                $"Couldn't check the Windows Update policies ({PolicyKey}: AccessDenied); the policies stay unchanged. Nothing was changed.",
+                result.Message);
+        }
+    }
+
+    [Fact]
+    public void WuResetFull_PolicyBackupFailed_WholeSentenceEnglish()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var rig = WuRig();
+            rig.Registry.Set(PolicyKey, "WUServer", RegValue.FromString("http://dso-wsus.invalid:8530"));
+            rig.Tools.OnRun = _ => new ToolResult { ExitCode = 1, Output = new[] { "ERROR" } };
+
+            var result = rig.Run(new WindowsUpdateResetHandler(true, rig.Build()), ActionHandlerNames.WuResetFull);
+
+            Assert.Equal(TweakOutcome.Failed, result.Outcome);
+            Assert.Equal(
+                "Couldn't save a backup of the Windows Update policies (reg export ended with code 1: ERROR); the policies stay unchanged. Nothing was changed.",
+                result.Message);
         }
     }
 
@@ -352,6 +443,44 @@ public class RepairEnglishTests
         }
     }
 
+    [Fact]
+    public void WindowsOld_FlagAlreadySet_WholeSentenceEnglish()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var rig = new Rig();
+            rig.Registry.CreateKey(WindowsOldHandler.VolumeCachesKey + @"\Previous Installations");
+            rig.Registry.Set(WindowsOldHandler.PreviousInstallationsKey, WindowsOldHandler.StateFlagsName, RegValue.FromDWord(2));
+            rig.Files.AddDirectory(@"C:\Windows.old");
+
+            var result = rig.Run(new WindowsOldHandler(rig.Build()), ActionHandlerNames.WindowsOld);
+
+            Assert.Equal(TweakOutcome.Failed, result.Outcome);
+            Assert.Equal(
+                @"Value StateFlags7351 is already in the Disk Cleanup settings (VolumeCaches\Previous Installations) – another program or an interrupted earlier run set it; nothing was changed.",
+                result.Message);
+        }
+    }
+
+    [Fact]
+    public void WindowsOld_FlagNotRemoved_WholeSentenceEnglish()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var rig = new Rig();
+            rig.Registry.CreateKey(WindowsOldHandler.VolumeCachesKey + @"\Previous Installations");
+            rig.Files.AddDirectory(@"C:\Windows.old");
+            rig.Registry.WriteInterceptor = (_, _, value) => value.Exists ? null : new OperationException(OperationErrorKind.AccessDenied, "denied");
+
+            var result = rig.Run(new WindowsOldHandler(rig.Build()), ActionHandlerNames.WindowsOld);
+
+            Assert.Equal(TweakOutcome.Failed, result.Outcome);
+            Assert.Contains(
+                @"Couldn't remove value StateFlags7351 from VolumeCaches\Previous Installations (denied) – remove it manually, otherwise the next run will refuse.",
+                Lines(result));
+        }
+    }
+
     // ---- pliki systemowe ----
 
     [Fact]
@@ -454,6 +583,39 @@ public class RepairEnglishTests
             Assert.Equal("Not done – test release (prerelease).", result.Message);
             Assert.Equal("Opened the WinUtil 26.10.07 window (file from the GitHub release, SHA256 matches).", WinUtilHandler.Executed("26.10.07"));
             Assert.Equal("Downloading WinUtil 26.10.07 from GitHub…", WinUtilHandler.Downloading("26.10.07"));
+        }
+    }
+
+    [Fact]
+    public void WinUtil_LaunchFailed_WholeSentenceEnglish()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var root = JObject.Parse(File.ReadAllText(RepoRoot.Combine("tests", "DSOptimizer.Tests.Unit", "Tools", "Samples", "winutil-release-26.10.07.json")));
+            var web = new FakeWebDownloader();
+            web.EnqueueText(FakeWebDownloader.Ok(root.ToString()));
+            web.ByteSteps.Add(927798);
+            var files = new FakeDownloadFiles { Hash = "eeae69922fbe6354ea4e2a37f705eaa17bdaf45cc7889618a313178a513b13ee" };
+            var launcher = new FakeProcessLauncher { Failure = new OperationException(OperationErrorKind.Unexpected, "access denied.") };
+
+            var result = new WinUtilHandler(new WinUtilServices { Web = web, Files = files, Launcher = launcher, Log = new ListLog() })
+                .Run(TestTweaks.Action() with { Script = null, Handler = ActionHandlerNames.WinUtil }, null, null, CancellationToken.None);
+
+            Assert.Equal(TweakOutcome.Failed, result.Outcome);
+            Assert.Equal("Not done – couldn't open the PowerShell window: access denied.", result.Message);
+        }
+    }
+
+    /// <summary>
+    /// Ścieżka handlera niedostępna na fake'ach (<see cref="FakeDownloadFiles.NewDownloadPath"/> nigdy nie rzuca), więc test sprawdza
+    /// metodę, która buduje zdanie, a handler zwraca dokładnie jej wynik.
+    /// </summary>
+    [Fact]
+    public void WinUtil_DownloadFolderFailed_WholeSentenceEnglish()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("Not done – couldn't prepare the downloads folder (Access is denied).", WinUtilHandler.DownloadFolderFailed("Access is denied."));
         }
     }
 }
