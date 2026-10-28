@@ -41,7 +41,7 @@ public sealed class ProgramRelauncher : IProgramRelauncher
             var exe = _exePath();
             if (string.IsNullOrWhiteSpace(exe))
             {
-                throw new Win32Exception("Nie znaleziono pliku programu.");
+                throw new OperationException(OperationErrorKind.Unexpected, L.T("Nie znaleziono pliku programu."));
             }
 
             var directory = Path.GetDirectoryName(exe) ?? string.Empty;
@@ -65,7 +65,7 @@ public sealed class ProgramRelauncher : IProgramRelauncher
     private void Fail(Exception ex)
     {
         var message = L.F("Nie udało się ponownie uruchomić programu: {0}", ex.Message);
-        _log.Info(Component, "Ponowne uruchomienie nie powiodło się: " + ex.Message);
+        _log.Warn(Component, "Ponowne uruchomienie nie powiodło się: " + ex.Message);
         throw new OperationException(OperationErrorKind.Unexpected, message, ex);
     }
 

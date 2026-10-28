@@ -192,6 +192,7 @@ Describe 'Get-MissingTranslations.ps1' {
             'src\P\obj\G.cs'                              = 'var s = L.T("Obj");'
             'src\P\bin\G.cs'                              = 'var s = L.T("Bin");'
             'src\DSOptimizer.Core\Localization\L.cs'      = 'var s = L.T("Definicja");'
+            'src\DSOptimizer.App\Gui\TExtension.cs'       = 'return L.T(Text);'
             'src\P\X.cs'                                  = 'var s = xL.T("Obce"); var t = a.L.T("Obce2");'
         }
         $Result = Invoke-Report -Root $Root

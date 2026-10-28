@@ -164,7 +164,9 @@ try {
                 $Relative = $File.FullName.Substring($RootPath.Length).TrimStart('\', '/').Replace('\', '/')
                 $Segments = $Relative.Split('/')
                 if (($Segments -contains 'obj') -or ($Segments -contains 'bin')) { continue }
+                # L.cs to definicja; TExtension.cs dostaje tekst z XAML {l:T '...'}, który raport czyta osobno.
                 if ($Relative.EndsWith('Localization/L.cs', [System.StringComparison]::Ordinal)) { continue }
+                if ($Relative.EndsWith('App/Gui/TExtension.cs', [System.StringComparison]::Ordinal)) { continue }
                 $Paths.Add($Relative)
                 $Full.Add($File.FullName)
             }

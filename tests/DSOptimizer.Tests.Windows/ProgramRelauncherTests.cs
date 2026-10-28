@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Windows;
 using Xunit;
 
@@ -26,6 +27,7 @@ public class ProgramRelauncherTests
 
         Assert.Equal(2, _events.Count);
         Assert.StartsWith("Info ", _events[0], StringComparison.Ordinal);
+        Assert.Contains(@"C:\Narzedzia\DSOptimizer\DSOptimizer.exe", _events[0], StringComparison.Ordinal);
         Assert.Equal(@"start C:\Narzedzia\DSOptimizer\DSOptimizer.exe||C:\Narzedzia\DSOptimizer", _events[1]);
     }
 
@@ -49,7 +51,12 @@ public class ProgramRelauncherTests
         var started = false;
         var relauncher = new ProgramRelauncher(new RecordingLog(_events), () => string.Empty, (_, _, _) => started = true);
 
-        Assert.Throws<OperationException>(() => relauncher.Relaunch());
+        using (L.Use(UiLanguage.English))
+        {
+            var ex = Assert.Throws<OperationException>(() => relauncher.Relaunch());
+            Assert.Equal("The program file was not found.", ex.Message);
+        }
+
         Assert.False(started);
     }
 

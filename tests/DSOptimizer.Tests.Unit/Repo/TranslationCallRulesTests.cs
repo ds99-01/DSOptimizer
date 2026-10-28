@@ -184,7 +184,9 @@ public class TranslationCallRulesTests
                 continue;
             }
 
-            if (relative.EndsWith("Localization/L.cs", StringComparison.Ordinal))
+            // L.cs to definicja; TExtension.cs dostaje tekst z XAML {l:T '…'}, który sprawdzają ten strażnik i raport braków.
+            if (relative.EndsWith("Localization/L.cs", StringComparison.Ordinal)
+                || relative.EndsWith("App/Gui/TExtension.cs", StringComparison.Ordinal))
             {
                 continue;
             }

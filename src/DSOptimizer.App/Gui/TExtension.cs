@@ -16,13 +16,7 @@ public sealed class TExtension : MarkupExtension
     [ConstructorArgument("text")]
     public string Text { get; set; }
 
-    /// <summary>
-    /// Tekst jest znany dopiero w XAML (skrypt raportu braków czyta go stamtąd), więc wywołanie idzie przez grupę metod,
-    /// a nie przez literał <c>L.T("…")</c>, którego pilnuje strażnik wywołań.
-    /// </summary>
-    public override object ProvideValue(IServiceProvider serviceProvider)
-    {
-        Func<string, string> translate = L.T;
-        return translate(Text);
-    }
+    // Tekst trafia tu z XAML {l:T '…'}: literały w XAML sprawdzają strażnik wywołań i raport braków,
+    // a ten plik jest z obu wyłączony (jak definicja L.cs).
+    public override object ProvideValue(IServiceProvider serviceProvider) => L.T(Text);
 }

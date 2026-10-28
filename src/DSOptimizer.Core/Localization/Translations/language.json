@@ -6,6 +6,10 @@
       "en": "Could not save the selected language: {0} The language prompt will appear again the next time the program starts."
     },
     {
+      "pl": "Nie znaleziono pliku programu.",
+      "en": "The program file was not found."
+    },
+    {
       "pl": "Nie udało się ponownie uruchomić programu: {0}",
       "en": "Could not restart the program: {0}"
     }
