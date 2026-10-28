@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Apps;
 
@@ -194,7 +195,7 @@ public static class AppsPageText
         }
 
         var rest = message.Substring(prefix.Length);
-        return char.ToUpper(rest[0], CultureInfo.GetCultureInfo("pl-PL")) + rest.Substring(1);
+        return char.ToUpper(rest[0], L.Culture) + rest.Substring(1);
     }
 
     /// <summary>Blok restartu w wyniku serii usuwania, np. „1 aplikacja dokończy usuwanie po ponownym uruchomieniu komputera.”.</summary>

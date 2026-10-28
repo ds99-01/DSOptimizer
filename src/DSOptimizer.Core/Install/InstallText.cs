@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Install;
 
@@ -510,7 +511,7 @@ public static class InstallText
             if (message!.StartsWith(prefix, StringComparison.Ordinal) && message.Length > prefix.Length)
             {
                 var rest = message.Substring(prefix.Length);
-                return capitalize ? char.ToUpper(rest[0], CultureInfo.GetCultureInfo("pl-PL")) + rest.Substring(1) : rest;
+                return capitalize ? char.ToUpper(rest[0], L.Culture) + rest.Substring(1) : rest;
             }
         }
 

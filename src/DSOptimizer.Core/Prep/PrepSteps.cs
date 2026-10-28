@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using DSOptimizer.Core.Hardware;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Prep;
 
@@ -118,7 +119,7 @@ public static class PrepSteps
     }
 
     private static string BiosText(BoardInfo board)
-        => OrUnknown(Comma(Clean(board.BiosVersion), board.BiosDate?.ToString("dd.MM.yyyy", Invariant)));
+        => OrUnknown(Comma(Clean(board.BiosVersion), board.BiosDate?.ToString(L.DatePattern, L.Culture)));
 
     private static PrepLine BitLockerLine(BitLockerState state)
     {
@@ -217,7 +218,7 @@ public static class PrepSteps
         var version = Clean(gpu.DriverVersion);
         var value = Comma(
             version is null ? null : "sterownik " + version,
-            gpu.DriverDate?.ToString("dd.MM.yyyy", Invariant),
+            gpu.DriverDate?.ToString(L.DatePattern, L.Culture),
             Clean(gpu.DriverProvider));
         return new PrepLine(Clean(gpu.Name) ?? PrepText.GraphicsCardLabel, OrUnknown(value), PrepTone.Normal, Action: action);
     }

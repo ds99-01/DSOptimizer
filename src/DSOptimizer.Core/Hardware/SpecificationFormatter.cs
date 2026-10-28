@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Hardware;
 
@@ -13,7 +14,7 @@ public sealed record SpecGroup(string Title, IReadOnlyList<SpecField> Fields);
 /// <summary>
 /// Zamiana <see cref="HardwareSnapshot"/> na grupy ekranu „Specyfikacja” i na raport tekstowy.
 /// Brakujące części wartości (null, zero) są pomijane razem z przecinkiem; wynik nie zależy od kultury wątku
-/// (przecinek dziesiętny tylko przez pl-PL, daty i liczby niezmiennicze).
+/// (separator dziesiętny z kultury wybranego języka; pozostałe daty i liczby niezmiennicze).
 /// </summary>
 public static class SpecificationFormatter
 {
@@ -28,7 +29,6 @@ public static class SpecificationFormatter
     private const string NewLine = "\r\n";
 
     private static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
-    private static readonly CultureInfo Polish = new("pl-PL");
 
     private static readonly string[] PlaceholderNames =
     {
@@ -448,8 +448,9 @@ public static class SpecificationFormatter
 
     private static string OneDecimal(double value)
     {
-        const string zero = ",0";
-        var text = value.ToString("0.0", Polish);
+        var culture = L.Culture;
+        var zero = culture.NumberFormat.NumberDecimalSeparator + "0";
+        var text = value.ToString("0.0", culture);
         return text.EndsWith(zero, StringComparison.Ordinal) ? text.Substring(0, text.Length - zero.Length) : text;
     }
 

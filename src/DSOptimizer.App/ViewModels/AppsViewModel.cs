@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 using TextFolding = DSOptimizer.Core.Gui.SearchText;
 
 namespace DSOptimizer.App.ViewModels;
@@ -21,7 +22,7 @@ namespace DSOptimizer.App.ViewModels;
 public sealed class AppsViewModel : ObservableObject
 {
     private static readonly char[] WordSeparators = { ' ' };
-    private static readonly StringComparer NameOrder = StringComparer.Create(new CultureInfo("pl-PL"), true);
+    private static StringComparer NameOrder => StringComparer.Create(L.Culture, true);
 
     private readonly AppsSession _session;
     private readonly IAccountNames _names;

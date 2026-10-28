@@ -3,6 +3,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.App.ViewModels;
@@ -130,7 +131,7 @@ public sealed class ItemViewModel : ObservableObject
     public string DetailStateText => IsTweak ? StateText : GuiText.StateName(null);
 
     /// <summary>Nazwa ryzyka z <see cref="GuiText.RiskName"/>, w tabeli zaczęta wielką literą jak pozostałe wartości.</summary>
-    public string DetailRiskText => CultureInfo.GetCultureInfo("pl-PL").TextInfo.ToUpper(RiskName[0]) + RiskName.Substring(1);
+    public string DetailRiskText => L.Culture.TextInfo.ToUpper(RiskName[0]) + RiskName.Substring(1);
 
     public string DetailRebootText => Definition.RequiresReboot ? "Wymagany" : "Niewymagany";
 

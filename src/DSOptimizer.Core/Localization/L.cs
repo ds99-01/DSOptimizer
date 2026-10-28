@@ -35,6 +35,18 @@ public static class L
     /// <summary>Kultura formatowania liczb i dat dla bieżącego języka: pl-PL albo en-GB (instancje tylko do odczytu).</summary>
     public static CultureInfo Culture => CultureInfo.GetCultureInfo(Current == UiLanguage.English ? "en-GB" : "pl-PL");
 
+    /// <summary>
+    /// Wzorzec daty: po polsku jawnie <c>dd.MM.yyyy</c> (NLS dla pl-PL daje <c>d.MM.yyyy</c>, więc wzorzec "d" zmieniłby wygląd),
+    /// po angielsku standardowy "d" kultury en-GB.
+    /// </summary>
+    public static string DatePattern => Current == UiLanguage.English ? "d" : "dd.MM.yyyy";
+
+    /// <summary>Wzorzec daty z godziną (bez sekund): po polsku <c>dd.MM.yyyy HH:mm</c>, po angielsku "g".</summary>
+    public static string DateTimePattern => Current == UiLanguage.English ? "g" : "dd.MM.yyyy HH:mm";
+
+    /// <summary>Wzorzec daty z godziną i sekundami: po polsku <c>dd.MM.yyyy HH:mm:ss</c>, po angielsku "G".</summary>
+    public static string DateTimeSecondsPattern => Current == UiLanguage.English ? "G" : "dd.MM.yyyy HH:mm:ss";
+
     /// <summary>Komunikat, jeśli wbudowane tłumaczenia nie dało się wczytać (wtedy tabela jest pusta); inaczej <c>null</c>.</summary>
     public static string? LoadWarning
     {

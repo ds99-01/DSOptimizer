@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Gui;
 
@@ -129,10 +130,10 @@ public static class HistoryText
         => $"{title}, {kindText}, {stateText}, {Date(appliedAt)}";
 
     public static string Date(DateTimeOffset at)
-        => at.ToLocalTime().ToString("dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture);
+        => at.ToLocalTime().ToString(L.DateTimePattern, L.Culture);
 
     public static string Time(DateTimeOffset at)
-        => at.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+        => at.ToLocalTime().ToString(L.DateTimeSecondsPattern, L.Culture);
 
     internal static bool TryParseOutcome(string outcome, out TweakOutcome parsed)
         => Enum.TryParse(outcome, ignoreCase: false, out parsed) && Enum.IsDefined(typeof(TweakOutcome), parsed);
