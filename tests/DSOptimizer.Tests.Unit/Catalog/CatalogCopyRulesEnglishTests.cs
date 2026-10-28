@@ -23,7 +23,7 @@ public class CatalogCopyRulesEnglishTests
     /// <summary>Frazy zakazane w każdym polu widocznym w programie (także w <c>description</c>).</summary>
     private static readonly Regex[] ForbiddenPhrases =
     {
-        new(@"\bVM\b", RegexOptions.CultureInvariant),
+        new(@"\bVM\b", Ci),
         new(@"26H2", Ci),
         new(@"\bfresh", Ci),
         new(@"measur", Ci),
@@ -56,6 +56,8 @@ public class CatalogCopyRulesEnglishTests
     private static readonly Regex NoUndoWords = new(@"undo|revers|revert", Ci);
 
     private const int MaxTitleLength = 60;
+    private const int MaxSummaryLength = 160;
+    private const int MaxBenefitLength = 220;
     private const int MaxWarnings = 2;
     private const int MaxWarningLength = 140;
     private const int MaxBenefitSentences = 2;
@@ -131,6 +133,20 @@ public class CatalogCopyRulesEnglishTests
     internal static int CountSentences(string text)
         => SentenceEnd.Matches(Abbreviations.Replace(text, "x")).Count;
 
+    internal static bool TooLong(string text, int max) => text.Length > max;
+
+    [Theory]
+    [InlineData(160, false)]
+    [InlineData(161, true)]
+    public void EnglishSummary_LengthLimit(int length, bool flagged)
+        => Assert.Equal(flagged, TooLong(new string('a', length), MaxSummaryLength));
+
+    [Theory]
+    [InlineData(220, false)]
+    [InlineData(221, true)]
+    public void EnglishBenefit_LengthLimit(int length, bool flagged)
+        => Assert.Equal(flagged, TooLong(new string('a', length), MaxBenefitLength));
+
     internal static bool MentionsRestart(string text) => RestartWords.IsMatch(text);
 
     internal static bool MentionsNoUndo(string text) => NoUndoWords.IsMatch(text);
@@ -188,6 +204,16 @@ public class CatalogCopyRulesEnglishTests
             if (Translated(pl.Title, en.Title) && en.Title.Length > MaxTitleLength)
             {
                 violations.Add($"{pl.Id}: title has {en.Title.Length} characters (limit {MaxTitleLength})");
+            }
+
+            if (Translated(pl.Summary, en.Summary) && TooLong(en.Summary, MaxSummaryLength))
+            {
+                violations.Add($"{pl.Id}: summary has {en.Summary.Length} characters (limit {MaxSummaryLength})");
+            }
+
+            if (Translated(pl.Benefit, en.Benefit) && TooLong(en.Benefit!, MaxBenefitLength))
+            {
+                violations.Add($"{pl.Id}: benefit has {en.Benefit!.Length} characters (limit {MaxBenefitLength})");
             }
 
             if (en.Warnings.Count > MaxWarnings)
