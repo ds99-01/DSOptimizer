@@ -428,6 +428,32 @@ the Polish text sometimes uses a descriptive name, the English text then uses th
 | pakiet aplikacji / menu kontekstowe | app package / context menu | Install list warnings ("Also adds the … app package") |
 | Autostart (wszystkich kont) | Startup (for all accounts) | RustDesk warning: the Startup folder |
 
+### Catalog – repairs
+
+Titles of the "Repairs" items (other texts quote them exactly) and the terms of their descriptions and script messages.
+
+| Polski | English | Notes/source |
+|---|---|---|
+| Wyczyść pamięć DNS / Zresetuj ustawienia sieci | Clear the DNS cache / Reset network settings | Item titles |
+| Zresetuj Windows Update / Zresetuj Windows Update i usuń blokady | Reset Windows Update / Reset Windows Update and remove blocks | Item titles; the second is quoted in the Windows Update reset result and in the description of the first |
+| Utwórz punkt przywracania teraz / Ochrona systemu | Create a restore point now / System Protection | Item titles; both are quoted in warnings of the other item |
+| Sprawdź i napraw pliki systemowe / Wyczyść dysk / Usuń poprzednią instalację Windows | Check and repair system files / Clean up the disk / Remove the previous Windows installation | Item titles; "Clean up the disk" is the program's own item, not the Windows tool Disk Cleanup |
+| Napraw winget (Instalator aplikacji) / Napraw Microsoft Store na tym koncie | Repair winget (App Installer) / Repair Microsoft Store on this account | Item titles; "Repair winget" as in "Go to: Repair winget" |
+| Bez cofania – … / Bez cofania w DSOptimizerze – … | No undo – … / No undo in DSOptimizer – … | Uniform start of the "no undo" sentence in repair descriptions and warnings |
+| skutku nie potwierdzono | the effect wasn't confirmed | Script messages after a failed verification; see "odczyt zwrotny" = verification ("(odczyt zwrotny)" = "(verified)") |
+| Sukces dopiero po … | It counts as success only after … | Descriptions |
+| pamięć DNS | DNS cache | [Clear-DnsClientCache](https://learn.microsoft.com/en-us/powershell/module/dnsclient/clear-dnsclientcache) ("Clears the contents of the DNS client cache") |
+| brama / maska / karta (sieciowa) | gateway / mask / adapter | IP configuration lines of the network reset ("gateway: none", "(mask 255.255.255.0)"); "brak" = "none" as elsewhere |
+| tak / nie (wartość DHCP) | yes / no | Lower case values in the network reset log lines; not the same key as "Nie" = "No" |
+| zasady grupy | Group Policy | Style rule 1 |
+| typ uruchamiania | startup type | Same as "typ startu" (Concepts) |
+| Kosz / folder Pobrane | Recycle Bin / Downloads folder | [Free up drive space in Windows](https://support.microsoft.com/en-us/windows/experience/storage-filemanagement/free-up-drive-space-in-windows) |
+| okno „Ochrona systemu” (Konfiguruj → Usuń) | "System Protection" window (Configure → Delete) | "Configure..." on the System Protection tab: [System Protection](https://support.microsoft.com/en-us/windows/experience/backup-recovery/system-protection); the "Delete" button of that dialog is not named on that page. **do audytu (Etap 5)** |
+| „Zatrzymaj” (w uwagach długich napraw) | "Stop" | Short form of the "Stop after this step" button, as the Polish warning shortens it |
+| program „optymalizujący” | "optimizing" program | |
+| komunikat, że ustawieniami zarządza organizacja | Windows says that your organization manages the settings | Windows shows "Some of these settings are managed by your organization". **do audytu (Etap 5)** |
+| Sklep (Microsoft Store) | the Store | Short form after "Microsoft Store" was named in the same text |
+
 ## Windows names
 
 | Polski | English | Notes/source |

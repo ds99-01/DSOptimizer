@@ -3,6 +3,5 @@
 # Plik po przerobieniu usuwa swoją linię (plik bez polskich napisów poza Get-DsoText na tej liście = błąd testu); na końcu lista jest pusta.
 disk.json
 net.json
-repair.json
 sec.json
 tools.json

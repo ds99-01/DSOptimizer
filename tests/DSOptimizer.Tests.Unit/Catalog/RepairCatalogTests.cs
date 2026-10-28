@@ -7,6 +7,7 @@ using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Tests.Unit.Support;
+using DSOptimizer.Core.Localization;
 using Xunit;
 
 namespace DSOptimizer.Tests.Unit.Catalog;
@@ -1261,6 +1262,65 @@ public class RepairCatalogTests
         Assert.Contains("niezmierzon", doc, StringComparison.Ordinal);
         Assert.Contains("R18", doc, StringComparison.Ordinal);
     }
+
+    // ---- komunikaty skryptów po angielsku (Get-DsoText, tabela catalog-repair.json) ----
+
+    [Fact]
+    public void DnsFlush_English_Message()
+    {
+        ScriptRun run;
+        using (L.Use(UiLanguage.English))
+        {
+            run = RunDns(DnsMocks(Join(DnsEntry("www.microsoft.com")), string.Empty));
+        }
+
+        Assert.Equal(0, run.ExitCode);
+        Assert.Equal("Cleared the DNS cache (entries before: 1, after: 0).", run.LastLine);
+    }
+
+    [Fact]
+    public void NetworkReset_English_Message()
+    {
+        ScriptRun run;
+        using (L.Use(UiLanguage.English))
+        {
+            run = RunNet(NetMocks(PsLines(WinsockOk), 0, PsLines(RealIpResetOutput), 1));
+        }
+
+        Assert.Equal(0, run.ExitCode);
+        Assert.Contains("IP configuration before the reset:", run.Output);
+        Assert.Contains(run.Output, l => l.Contains("Ethernet: IPv4: 192.168.1.20/24 (mask 255.255.255.0), gateway: 192.168.1.1, DNS: 1.1.1.1, 8.8.8.8, DHCP: no", StringComparison.Ordinal));
+        Assert.Contains(run.Output, l => l.Contains("Wi-Fi: IPv4: 10.0.0.7/16 (mask 255.255.0.0), gateway: none, DNS: none, DHCP: yes", StringComparison.Ordinal));
+        Assert.Contains("One item protected by the system denied access – on a fresh Windows 11 26H2 this always happens, the rest was reset.", run.Output);
+        Assert.Equal("The commands succeeded. The effect comes after the computer restarts. The IP configuration from before the reset is above and in the log file.", run.LastLine);
+    }
+
+    [Fact]
+    public void SystemProtection_English_Message()
+    {
+        ScriptRun run;
+        using (L.Use(UiLanguage.English))
+        {
+            run = PowerShellHarness.Run(Apply(SystemProtectionId), ProtectionMocks(string.Empty), string.Empty);
+        }
+
+        Assert.Equal(0, run.ExitCode);
+        Assert.Equal("Turned on System Protection for drive C: (Windows sets the space limit, 3% of the disk by default).", run.LastLine);
+    }
+
+    [Fact]
+    public void Winget_English_Message()
+    {
+        ScriptRun run;
+        using (L.Use(UiLanguage.English))
+        {
+            run = RunWinget(WingetMocks(processSid: "S-1-5-21-0-0-0-500"));
+        }
+
+        Assert.NotEqual(0, run.ExitCode);
+        Assert.Contains("The winget repair works only for the account DSOptimizer runs on: run DSOptimizer on account TESTPC\\dso.", run.Error, StringComparison.Ordinal);
+        Assert.DoesNotContain("CALL register", run.Output);
+    }
 }
 
 /// <summary>
@@ -1742,5 +1802,24 @@ public class RepairStoreCatalogTests
         Assert.Equal(new[] { "REGISTER " + System.IO.Path.Combine(dir.Path, "AppxManifest.xml") }, run.Output.Where(l => l.StartsWith("REGISTER ", StringComparison.Ordinal)));
         Assert.Contains(run.Output, l => l.Contains("zarejestrowany", StringComparison.Ordinal) && l.Contains("22506.1400.3.0", StringComparison.Ordinal));
         Assert.Empty(run.Error);
+    }
+
+    [Fact]
+    public void Store_English_Message()
+    {
+        using var dir = new StoreDir(true);
+        var before = Pkg(StoreName, dir.Path, "Ok", "22506.1400.2.0", User("S-1-5-18", "Staged"));
+        var after = Pkg(StoreName, dir.Path, "Ok", "22506.1400.2.0", User(UserSid));
+        ScriptRun run;
+        using (L.Use(UiLanguage.English))
+        {
+            run = Run(Mocks(UserSid, before, after));
+        }
+
+        Assert.Equal(0, run.ExitCode);
+        Assert.True(Registered(run));
+        Assert.Equal(
+            "Microsoft Store package registered for account " + UserSid + " (it was on the disk without an Installed entry for this account): version 22506.1400.2.0 (" + StoreFull + "), Status Ok (verified).",
+            run.LastLine);
     }
 }
