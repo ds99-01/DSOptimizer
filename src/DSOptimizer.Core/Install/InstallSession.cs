@@ -186,7 +186,7 @@ public sealed class InstallSession : IInstallPageSession
         return new SeriesConfirmation(
             GuiOperation.InstallApps,
             InstallText.ConfirmTitle,
-            GuiText.Count(sorted.Count, "aplikacja", "aplikacje", "aplikacji"),
+            InstallText.AppCount(sorted.Count),
             facts,
             sorted.Select(Item).ToList(),
             InstallText.InstallButton(sorted.Count),
@@ -276,6 +276,14 @@ public sealed class InstallSession : IInstallPageSession
         {
             var result = batch.Results[i];
             var title = i < install.Items.Count ? install.Items[i].Title : result.TweakId;
+            if (result.Outcome == TweakOutcome.Skipped && string.Equals(result.Message, TweakEngine.StoppedMessage, StringComparison.Ordinal))
+            {
+                // Jedno zdanie zamiast „Nie wykonano – ” + „Pominięte – zatrzymano.” (po angielsku status powtórzyłby się dwa razy).
+                lines.Add(Line(LevelOf(result.Outcome), InstallText.StoppedLine(title)));
+                lines.AddRange(result.Warnings.Select(warning => Line(GuiLogLevel.Warning, warning)));
+                continue;
+            }
+
             var text = title + ": " + InstallText.OutcomeName(result.Outcome);
             if (InstallText.ResultDetail(result, capitalize: false) is { } detail)
             {

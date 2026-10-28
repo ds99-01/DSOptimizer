@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Install;
 
@@ -44,7 +45,7 @@ internal sealed class GitHubInstallStep
     public InstallStepOutcome Run(InstallTarget target, InstallOptions options, Action<string?, int?> progress)
     {
         var repository = target.GitHub
-            ?? throw new InvalidOperationException($"Pozycja {target.Id} nie ma repozytorium GitHuba.");
+            ?? throw new InvalidOperationException(L.F("Pozycja {0} nie ma repozytorium GitHuba.", target.Id));
         var warnings = new List<string>();
         if (target.Match is not null && _readback.IsMatched(target, out _) == true)
         {
@@ -64,8 +65,8 @@ internal sealed class GitHubInstallStep
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, $"Nieoczekiwany błąd instalacji {target.Id} z GitHuba.", ex);
-            attempt.Fail($"Nieoczekiwany błąd: {ex.Message}");
+            _log.Fail(Component, L.F("Nieoczekiwany błąd instalacji {0} z GitHuba.", target.Id), ex);
+            attempt.Fail(L.F("Nieoczekiwany błąd: {0}", ex.Message));
         }
 
         var reason = attempt.Outcome is TweakOutcome.Failed or TweakOutcome.NotConfirmed ? InstallText.WithoutLog(attempt.Message) : null;
@@ -107,7 +108,12 @@ internal sealed class GitHubInstallStep
             // M3 final review: jedyny wyjątek od „program niczego nie pobiera” – log mówi, CO pobrano i zweryfikowano, także przy sukcesie.
             _log.Info(
                 Component,
-                $"Pobrano i sprawdzono {release.FileName} ({release.Tag}): {release.Size.ToString(System.Globalization.CultureInfo.InvariantCulture)} B, SHA256 {release.Sha256}, podpis: {signer}");
+                L.F("Pobrano i sprawdzono {0} ({1}): {2} B, SHA256 {3}, podpis: {4}",
+                    release.FileName,
+                    release.Tag,
+                    release.Size.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    release.Sha256,
+                    signer));
             tracker.Stage(InstallText.StageInstalling);
             keepFile = RunMsi(target, options, path, progress, attempt);
         }
@@ -116,7 +122,7 @@ internal sealed class GitHubInstallStep
             if (keepFile)
             {
                 // Decyzja planu 7: msiexec nadal działa i może czytać plik – zostaje, z ostrzeżeniem w logu.
-                _log.Warn(Component, $"Limit czasu msiexec: pobrany plik zostaje na dysku ({path}).");
+                _log.Warn(Component, L.F("Limit czasu msiexec: pobrany plik zostaje na dysku ({0}).", path));
             }
             else
             {
@@ -131,7 +137,7 @@ internal sealed class GitHubInstallStep
         var api = _services.Web.GetText(RustDeskSource.ReleasesLatestUrl, RustDeskSource.ApiAccept, RustDeskSource.ApiTimeout);
         if (api.Failure != WebFailure.None)
         {
-            _log.Warn(Component, $"GitHub API: {api.Failure}, kod {api.StatusCode?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "-"}: {api.Error}");
+            _log.Warn(Component, L.F("GitHub API: {0}, kod {1}: {2}", api.Failure, api.StatusCode?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "-", api.Error));
             switch (api.Failure)
             {
                 case WebFailure.Network:
@@ -162,7 +168,7 @@ internal sealed class GitHubInstallStep
         attempt.Version = release!.Tag;
         if (!RustDeskSource.IsAllowedDownloadUrl(release.DownloadUrl, release))
         {
-            _log.Warn(Component, $"Adres pobrania spoza GitHuba RustDesk: {release.DownloadUrl.OriginalString}");
+            _log.Warn(Component, L.F("Adres pobrania spoza GitHuba RustDesk: {0}", release.DownloadUrl.OriginalString));
             attempt.Fail(InstallText.ReleaseRefused(InstallText.ReasonForeignDownloadUrl));
             return null;
         }
@@ -189,13 +195,13 @@ internal sealed class GitHubInstallStep
         {
             // Ruling (Task 3): błąd zapisu pliku (pełny dysk, plik istnieje) to wyjątek, nie WebFailure – porażka
             // tej pozycji, nie brak sieci, więc seria idzie dalej; plik częściowy usuwa finally.
-            _log.Fail(Component, $"Nie udało się zapisać pobranego pliku {path}.", ex);
+            _log.Fail(Component, L.F("Nie udało się zapisać pobranego pliku {0}.", path), ex);
             attempt.Fail(InstallText.DownloadWriteFailed(ex.Message));
             return false;
         }
         if (file.Failure != WebFailure.None)
         {
-            _log.Warn(Component, $"Pobranie {release.FileName}: {file.Failure}, kod {file.StatusCode?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "-"}: {file.Error}");
+            _log.Warn(Component, L.F("Pobranie {0}: {1}, kod {2}: {3}", release.FileName, file.Failure, file.StatusCode?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "-", file.Error));
         }
 
         switch (file.Failure)
@@ -240,7 +246,7 @@ internal sealed class GitHubInstallStep
             var hash = _services.Files.Sha256(path);
             if (!string.Equals(hash, release.Sha256, StringComparison.OrdinalIgnoreCase))
             {
-                _log.Warn(Component, $"SHA256 pobranego pliku {hash} ≠ {release.Sha256} z GitHuba.");
+                _log.Warn(Component, L.F("SHA256 pobranego pliku {0} ≠ {1} z GitHuba.", hash, release.Sha256));
                 return InstallText.ReasonHashMismatch;
             }
 
@@ -258,7 +264,7 @@ internal sealed class GitHubInstallStep
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, $"Sprawdzenie pobranego pliku {path} nie powiodło się.", ex);
+            _log.Fail(Component, L.F("Sprawdzenie pobranego pliku {0} nie powiodło się.", path), ex);
             return ex.Message;
         }
     }
@@ -273,7 +279,7 @@ internal sealed class GitHubInstallStep
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, "Nie udało się przygotować pliku logu MSI.", ex);
+            _log.Fail(Component, L.T("Nie udało się przygotować pliku logu MSI."), ex);
             attempt.Fail(InstallText.MsiLogPathFailed(ex.Message));
             return false;
         }
@@ -286,7 +292,7 @@ internal sealed class GitHubInstallStep
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, $"Nie udało się uruchomić msiexec dla {target.Id}.", ex);
+            _log.Fail(Component, L.F("Nie udało się uruchomić msiexec dla {0}.", target.Id), ex);
             attempt.Fail(InstallText.MsiStartFailed(ex.Message));
             return false;
         }
@@ -331,7 +337,7 @@ internal sealed class GitHubInstallStep
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, $"Usuwanie pobranego pliku {path} rzuciło wyjątek.", ex);
+            _log.Fail(Component, L.F("Usuwanie pobranego pliku {0} rzuciło wyjątek.", path), ex);
             deleted = false;
         }
 

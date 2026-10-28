@@ -4,6 +4,7 @@ using System.Linq;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Install;
 
@@ -46,7 +47,7 @@ internal sealed class AppInstallStep
     {
         // Review Tasku 1 (M5): pozycja bez identyfikatora winget nigdy nie trafia do winget (rozgałęzienie po Origin w silniku).
         var wingetId = target.WingetId
-            ?? throw new InvalidOperationException($"Pozycja {target.Id} nie ma identyfikatora winget – nie może iść do winget.");
+            ?? throw new InvalidOperationException(L.F("Pozycja {0} nie ma identyfikatora winget – nie może iść do winget.", target.Id));
 
         if (target.Match is not null && _readback.IsMatched(target, out _) == true)
         {
@@ -142,7 +143,7 @@ internal sealed class AppInstallStep
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, $"Nie udało się przygotować pliku logu winget dla {wingetId}.", ex);
+            _log.Fail(Component, L.F("Nie udało się przygotować pliku logu winget dla {0}.", wingetId), ex);
             return new InstallAttempt(null, null, InstallText.LogPathFailed(ex.Message), false);
         }
 
@@ -154,7 +155,7 @@ internal sealed class AppInstallStep
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, $"Nie udało się uruchomić winget dla {wingetId}.", ex);
+            _log.Fail(Component, L.F("Nie udało się uruchomić winget dla {0}.", wingetId), ex);
             return new InstallAttempt(null, logPath, InstallText.StartFailed(ex.Message), true);
         }
     }
@@ -210,7 +211,7 @@ internal sealed class AppInstallStep
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, $"winget list dla {wingetId} nie powiódł się.", ex);
+            _log.Fail(Component, L.F("winget list dla {0} nie powiódł się.", wingetId), ex);
             return (TweakOutcome.InstalledUnverified, InstallText.InstalledUnverified);
         }
     }

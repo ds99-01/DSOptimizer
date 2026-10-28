@@ -1,4 +1,5 @@
 using System.Globalization;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Install;
 
@@ -85,24 +86,24 @@ public static class WingetExitCodes
     /// </summary>
     public static string Describe(int exitCode) => Classify(exitCode) switch
     {
-        WingetVerdict.Success => "winget zgłosił sukces.",
-        WingetVerdict.SuccessRebootRequired => "winget zgłosił sukces, potrzebny restart.",
-        WingetVerdict.AlreadyInstalled => "Już zainstalowane.",
-        WingetVerdict.RebootBeforeInstall => "Nie wykonano – wymaga restartu przed instalacją.",
-        WingetVerdict.NoNetwork => "Nie wykonano – brak połączenia z internetem albo ze źródłem winget.",
+        WingetVerdict.Success => L.T("winget zgłosił sukces."),
+        WingetVerdict.SuccessRebootRequired => L.T("winget zgłosił sukces, potrzebny restart."),
+        WingetVerdict.AlreadyInstalled => L.T("Już zainstalowane."),
+        WingetVerdict.RebootBeforeInstall => L.T("Nie wykonano – wymaga restartu przed instalacją."),
+        WingetVerdict.NoNetwork => L.T("Nie wykonano – brak połączenia z internetem albo ze źródłem winget."),
         WingetVerdict.AdminContextProhibited
-            => "Nie wykonano – ten instalator nie działa z uprawnieniami administratora; zainstaluj aplikację ręcznie.",
-        WingetVerdict.InstallInProgress => "Nie wykonano – trwa inna instalacja, spróbuj za chwilę.",
+            => L.T("Nie wykonano – ten instalator nie działa z uprawnieniami administratora; zainstaluj aplikację ręcznie."),
+        WingetVerdict.InstallInProgress => L.T("Nie wykonano – trwa inna instalacja, spróbuj za chwilę."),
         WingetVerdict.NotFound or WingetVerdict.NoApplicableInstaller
-            => "Nie wykonano – pakietu nie ma w winget albo nie pasuje do tego komputera.",
-        WingetVerdict.HashMismatch => "Nie wykonano – plik instalatora nie zgadza się z manifestem, nie zainstalowano.",
-        WingetVerdict.DiskFull => "Nie wykonano – za mało miejsca na dysku.",
-        WingetVerdict.BlockedByPolicy => "Nie wykonano – instalację zablokowały zasady tego komputera.",
-        WingetVerdict.AgreementsNotAccepted => "Nie wykonano – nie udało się zaakceptować umowy pakietu albo źródła.",
+            => L.T("Nie wykonano – pakietu nie ma w winget albo nie pasuje do tego komputera."),
+        WingetVerdict.HashMismatch => L.T("Nie wykonano – plik instalatora nie zgadza się z manifestem, nie zainstalowano."),
+        WingetVerdict.DiskFull => L.T("Nie wykonano – za mało miejsca na dysku."),
+        WingetVerdict.BlockedByPolicy => L.T("Nie wykonano – instalację zablokowały zasady tego komputera."),
+        WingetVerdict.AgreementsNotAccepted => L.T("Nie wykonano – nie udało się zaakceptować umowy pakietu albo źródła."),
         WingetVerdict.Cancelled
-            => "Nie wykonano – instalator został przerwany (kod " + Hex(exitCode)
-                + "). Jeśli Windows pokazał komunikat o wirusie albo niechcianym oprogramowaniu, zablokował go antywirus.",
-        WingetVerdict.BlockedByAntivirus => "Nie wykonano – antywirus zablokował instalator jako zagrożenie.",
-        _ => "Nie wykonano – winget zakończył się kodem " + Hex(exitCode) + ".",
+            => L.F("Nie wykonano – instalator został przerwany (kod {0}). Jeśli Windows pokazał komunikat o wirusie albo niechcianym oprogramowaniu, zablokował go antywirus.",
+                Hex(exitCode)),
+        WingetVerdict.BlockedByAntivirus => L.T("Nie wykonano – antywirus zablokował instalator jako zagrożenie."),
+        _ => L.F("Nie wykonano – winget zakończył się kodem {0}.", Hex(exitCode)),
     };
 }

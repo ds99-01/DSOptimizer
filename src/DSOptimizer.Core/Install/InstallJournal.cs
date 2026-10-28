@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Install;
 
@@ -50,10 +51,10 @@ internal sealed class InstallJournal
         {
             if (ex is not JournalStoreException)
             {
-                _log.Fail(Component, $"Nieoczekiwany błąd journala przy {target.Id}.", ex);
+                _log.Fail(Component, L.F("Nieoczekiwany błąd journala przy {0}.", target.Id), ex);
             }
 
-            _log.Warn(Component, $"Nie udało się zapisać journala przy {target.Id}: {ex.Message}");
+            _log.Warn(Component, L.F("Nie udało się zapisać journala przy {0}: {1}", target.Id, ex.Message));
             return null;
         }
     }
@@ -74,8 +75,8 @@ internal sealed class InstallJournal
         }
         catch (Exception ex)
         {
-            _log.Warn(Component, $"Nie udało się zapisać journala: {ex.Message}");
-            warnings.Add($"Nie udało się zapisać journala: {ex.Message}");
+            _log.Warn(Component, L.F("Nie udało się zapisać journala: {0}", ex.Message));
+            warnings.Add(L.F("Nie udało się zapisać journala: {0}", ex.Message));
         }
     }
 

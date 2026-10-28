@@ -6,6 +6,7 @@ using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Install;
 
@@ -94,7 +95,7 @@ public sealed class AppInstallEngine
         {
             if (targets.Count > 0)
             {
-                _log.Warn(Component, "Instalacja nie rozpoczęta: " + winget.Text);
+                _log.Warn(Component, L.F("Instalacja nie rozpoczęta: {0}", winget.Text));
             }
 
             var refused = targets.Select(target => Unstarted(target, TweakOutcome.Refused, winget.Text)).ToList();
@@ -103,7 +104,7 @@ public sealed class AppInstallEngine
 
         if (!wingetReady && targets.Any(target => target.Origin == InstallOrigin.Winget))
         {
-            _log.Warn(Component, "Pozycje winget nie rozpoczęte: " + winget.Text);
+            _log.Warn(Component, L.F("Pozycje winget nie rozpoczęte: {0}", winget.Text));
         }
 
         var items = new List<(InstallItemReport Item, TweakResult Result)>(targets.Count);
@@ -151,8 +152,8 @@ public sealed class AppInstallEngine
             }
             catch (Exception ex)
             {
-                _log.Fail(Component, $"Nieoczekiwany błąd instalacji {target.Id}.", ex);
-                var failed = Unstarted(target, TweakOutcome.Failed, $"Nieoczekiwany błąd: {ex.Message}");
+                _log.Fail(Component, L.F("Nieoczekiwany błąd instalacji {0}.", target.Id), ex);
+                var failed = Unstarted(target, TweakOutcome.Failed, L.F("Nieoczekiwany błąd: {0}", ex.Message));
                 step = new InstallStepOutcome(failed.Item, failed.Result, false, false);
             }
 
@@ -233,7 +234,7 @@ public sealed class AppInstallEngine
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, "Odczyt listy zainstalowanych aplikacji nie powiódł się.", ex);
+            _log.Fail(Component, L.T("Odczyt listy zainstalowanych aplikacji nie powiódł się."), ex);
             readFailed = true;
             return WingetAvailability.CheckAccount(_user, _processSid, _accountName)
                 ?? new WingetStatus(WingetState.NotWorking, null, InstallText.ReadFailed(ex.Message));
@@ -256,7 +257,7 @@ public sealed class AppInstallEngine
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, $"Odbiornik postępu instalacji rzucił wyjątek ({step.Kind} {step.Phase}).", ex);
+            _log.Fail(Component, L.F("Odbiornik postępu instalacji rzucił wyjątek ({0} {1}).", step.Kind, step.Phase), ex);
         }
     }
 

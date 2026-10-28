@@ -235,6 +235,14 @@ How to read the tables:
 | źródło winget | winget source | "the official winget source (Microsoft)" |
 | Zdalna pomoc | Remote support | Install group (RustDesk). **do audytu (Etap 5)** – not to be confused with Windows Quick Assist |
 | Przeglądarki | Browsers | Install group |
+| Komunikatory / Multimedia / Dokumenty / Gry / Środowiska uruchomieniowe | Messaging / Multimedia / Documents / Games / Runtimes | Install groups (with Browsers, Tools, Remote support) |
+| instalacja (proces) | installation | "The previous installation is still running"; the page and log component stay "Install" |
+| Pobieranie / Instalowanie / Sprawdzanie instalacji | Downloading / Installing / Verifying the installation | Install batch stages; "Pobieranie (z GitHuba)" = "Downloading (from GitHub)", "Sprawdzanie podpisu" = "Checking the signature" |
+| Identyfikator winget | winget ID | Confirmation window fact; "nieprawidłowy identyfikator winget" = "invalid winget ID" |
+| `Log winget: ` / `Log MSI: ` | `winget log: ` / `MSI log: ` | Log path marker after a result ("… Code 0x8A150010. winget log: C:\…"); the program recognizes both the English and the Polish marker |
+| podpis wydawcy / skrót SHA256 | publisher signature / SHA256 hash | RustDesk download check ("no publisher signature", "SHA256 hash doesn't match GitHub") |
+| Repozytorium GitHub / GitHub RustDesk | GitHub repository / RustDesk's GitHub | RustDesk source in the confirmation window and selection bar |
+| Wymaga internetu. | Requires an internet connection. | Install selection bar and batch warning |
 | Instalacja aplikacji / Usunięcie aplikacji | App install / App removal | Change history kinds |
 | Działa w edycjach: {0}. | Works in editions: {0}. | "Home, Pro and Enterprise and Education" lists keep edition names unchanged |
 | wykonano / pominięto – / błąd – | done / skipped – / error – | Lower case step results after the step name in long repairs ("Component store: done (…)", "Account thumbnails: skipped – …") |

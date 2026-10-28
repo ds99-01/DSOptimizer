@@ -402,18 +402,4 @@ public static class GuiText
 
     /// <summary>„Krok 1 z 2” (indeks liczony od 0).</summary>
     public static string ActionStepText(int stepIndex, int stepCount) => L.F("Krok {0} z {1}", stepIndex + 1, stepCount);
-
-    /// <summary>
-    /// Liczba z polskim rzeczownikiem (1 → one; końcówki 2–4 poza 12–14 → few; reszta, także 0 → many), bez tłumaczenia. Tylko dla
-    /// obszarów jeszcze nieprzetłumaczonych; teksty z liczbą w nowych miejscach idą przez <see cref="L.P"/> (formy z <c>{0}</c>).
-    /// </summary>
-    internal static string Count(int value, string one, string few, string many)
-    {
-        var lastDigit = value % 10;
-        var lastTwo = value % 100;
-        var word = value == 1
-            ? one
-            : (lastDigit is >= 2 and <= 4) && (lastTwo is < 12 or > 14) ? few : many;
-        return string.Format(CultureInfo.InvariantCulture, "{0} {1}", value, word);
-    }
 }

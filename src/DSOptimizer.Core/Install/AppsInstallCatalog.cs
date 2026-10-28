@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Localization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -67,7 +68,7 @@ public sealed class InstallCatalogException : Exception
     public string Field { get; }
 
     private static string Format(string entryId, string field, string message)
-        => string.Format(CultureInfo.InvariantCulture, "apps: {0}, pole {1}: {2}", entryId, field, message);
+        => L.F("apps: {0}, pole {1}: {2}", entryId, field, message);
 }
 
 /// <summary>Plik <c>apps.json</c> (obiekt <c>{ "entries": [ … ] }</c>): lista aplikacji do instalacji, kolejność ma znaczenie.</summary>
@@ -75,10 +76,6 @@ public sealed class AppsInstallCatalog
 {
     private const int MaxTitle = 60;
     private const int MaxSummary = 160;
-    private const string FileLabel = "(plik)";
-    private const string GitHubNotAllowed =
-        "pole github jest dozwolone tylko dla pozycji z listy w kodzie (install.rustdesk → rustdesk/rustdesk)";
-
     private static readonly Regex IdPattern = new(@"^install\.[a-z0-9-]+\z", RegexOptions.CultureInvariant);
 
     private static readonly IReadOnlyDictionary<string, InstallCategory> Categories = new Dictionary<string, InstallCategory>(StringComparer.Ordinal)
@@ -94,6 +91,11 @@ public sealed class AppsInstallCatalog
     };
 
     private AppsInstallCatalog(IReadOnlyList<InstallEntry> entries) => Entries = entries;
+
+    private static string FileLabel => L.T("(plik)");
+
+    private static string GitHubNotAllowed
+        => L.T("pole github jest dozwolone tylko dla pozycji z listy w kodzie (install.rustdesk → rustdesk/rustdesk)");
 
     public IReadOnlyList<InstallEntry> Entries { get; }
 
@@ -119,12 +121,12 @@ public sealed class AppsInstallCatalog
         }
         catch (JsonReaderException ex)
         {
-            throw new InstallCatalogException(FileLabel, "json", "błędny JSON – " + ex.Message, ex);
+            throw new InstallCatalogException(FileLabel, "json", L.F("błędny JSON – {0}", ex.Message), ex);
         }
 
         if (root["entries"] is not JArray items)
         {
-            throw new InstallCatalogException(FileLabel, "entries", "brak tablicy „entries”");
+            throw new InstallCatalogException(FileLabel, "entries", L.F("brak tablicy „{0}”", "entries"));
         }
 
         var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -134,10 +136,10 @@ public sealed class AppsInstallCatalog
         foreach (var item in items)
         {
             index++;
-            var label = "(wpis " + index.ToString(CultureInfo.InvariantCulture) + ")";
+            var label = L.F("(wpis {0})", index.ToString(CultureInfo.InvariantCulture));
             if (item is not JObject obj)
             {
-                throw new InstallCatalogException(label, "entries", "element musi być obiektem");
+                throw new InstallCatalogException(label, "entries", L.T("element musi być obiektem"));
             }
 
             entries.Add(ParseEntry(obj, label, ids, wingetIds));
@@ -151,22 +153,22 @@ public sealed class AppsInstallCatalog
 
     private static InstallEntry ParseEntry(JObject obj, string label, HashSet<string> ids, HashSet<string> wingetIds)
     {
-        var id = Text(obj, "id", label) ?? throw new InstallCatalogException(label, "id", "id jest wymagane");
+        var id = Text(obj, "id", label) ?? throw new InstallCatalogException(label, "id", L.T("id jest wymagane"));
         if (!IsValidId(id))
         {
-            throw new InstallCatalogException(id, "id", "id musi mieć postać install.<nazwa> (małe litery, cyfry, „-”)");
+            throw new InstallCatalogException(id, "id", L.T("id musi mieć postać install.<nazwa> (małe litery, cyfry, „-”)"));
         }
 
         if (!ids.Add(id))
         {
-            throw new InstallCatalogException(id, "id", "id występuje więcej niż raz");
+            throw new InstallCatalogException(id, "id", L.T("id występuje więcej niż raz"));
         }
 
         var wingetId = Text(obj, "wingetId", id);
         var gitHub = Text(obj, "github", id);
         if (wingetId is not null && gitHub is not null)
         {
-            throw new InstallCatalogException(id, "github", "podaj dokładnie jedno z pól wingetId albo github");
+            throw new InstallCatalogException(id, "github", L.T("podaj dokładnie jedno z pól wingetId albo github"));
         }
 
         if (gitHub is not null)
@@ -178,15 +180,15 @@ public sealed class AppsInstallCatalog
         }
         else if (wingetId is null)
         {
-            throw new InstallCatalogException(id, "wingetId", "pole jest wymagane i niepuste (albo github dla pozycji z listy w kodzie)");
+            throw new InstallCatalogException(id, "wingetId", L.T("pole jest wymagane i niepuste (albo github dla pozycji z listy w kodzie)"));
         }
         else if (!WingetArguments.IsValidWingetId(wingetId))
         {
-            throw new InstallCatalogException(id, "wingetId", "nieprawidłowy identyfikator winget");
+            throw new InstallCatalogException(id, "wingetId", L.T("nieprawidłowy identyfikator winget"));
         }
         else if (!wingetIds.Add(wingetId))
         {
-            throw new InstallCatalogException(id, "wingetId", "identyfikator winget występuje więcej niż raz");
+            throw new InstallCatalogException(id, "wingetId", L.T("identyfikator winget występuje więcej niż raz"));
         }
 
         var title = Limited(obj, id, "title", MaxTitle);
@@ -194,7 +196,7 @@ public sealed class AppsInstallCatalog
         var categoryName = Required(obj, id, "category");
         if (!Categories.TryGetValue(categoryName, out var category))
         {
-            throw new InstallCatalogException(id, "category", "dozwolone: " + string.Join(", ", Categories.Keys));
+            throw new InstallCatalogException(id, "category", L.F("dozwolone: {0}", string.Join(", ", Categories.Keys)));
         }
 
         var match = AppMatchJson.Parse(obj, id, Fail);
@@ -202,7 +204,7 @@ public sealed class AppsInstallCatalog
         var source = Required(obj, id, "source");
         if (!Uri.TryCreate(source, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
         {
-            throw new InstallCatalogException(id, "source", "adres musi być bezwzględnym https");
+            throw new InstallCatalogException(id, "source", L.T("adres musi być bezwzględnym https"));
         }
 
         return new InstallEntry(id, wingetId, title, summary, category, match, warning, source, gitHub);
@@ -214,12 +216,12 @@ public sealed class AppsInstallCatalog
     {
         var value = Required(obj, id, field);
         return value.Length > max
-            ? throw new InstallCatalogException(id, field, "najwyżej " + max.ToString(CultureInfo.InvariantCulture) + " znaków")
+            ? throw new InstallCatalogException(id, field, L.F("najwyżej {0} znaków", max.ToString(CultureInfo.InvariantCulture)))
             : value;
     }
 
     private static string Required(JObject obj, string id, string field)
-        => Text(obj, field, id) ?? throw new InstallCatalogException(id, field, "pole jest wymagane i niepuste");
+        => Text(obj, field, id) ?? throw new InstallCatalogException(id, field, L.T("pole jest wymagane i niepuste"));
 
     private static string? Text(JObject obj, string field, string id) => AppMatchJson.Text(obj, field, id, Fail);
 }

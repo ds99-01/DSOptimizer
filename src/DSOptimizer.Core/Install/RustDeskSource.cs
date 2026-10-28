@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using DSOptimizer.Core.Localization;
 using Newtonsoft.Json.Linq;
 
 namespace DSOptimizer.Core.Install;
@@ -35,18 +36,24 @@ public static class RustDeskSource
 
     public static readonly TimeSpan DownloadTimeout = TimeSpan.FromMinutes(10);
 
-    private const string RefusedPrerelease = "wydanie testowe (prerelease)";
-    private const string RefusedDraft = "szkic wydania";
-    private const string RefusedTag = "nieoczekiwany numer wersji";
-    private const string RefusedDigest = "brak skrótu SHA256";
-    internal const string RefusedSize = "plik większy niż 200 MB";
-    internal const string RefusedResponse = "błędna odpowiedź GitHuba";
     private const string DownloadPathPrefix = "/rustdesk/rustdesk/releases/download/";
     private const string DownloadHost = "github.com";
 
     private static readonly Regex TagPattern = new(@"^[0-9]+\.[0-9]+\.[0-9]+\z", RegexOptions.CultureInvariant);
     private static readonly char[] KeyForbidden = { ',', '"', '+' };
     private static readonly char[] UnquotedForbidden = { '"', '=', '+', '\\' };
+
+    internal static string RefusedSize => L.T("plik większy niż 200 MB");
+
+    internal static string RefusedResponse => L.T("błędna odpowiedź GitHuba");
+
+    private static string RefusedPrerelease => L.T("wydanie testowe (prerelease)");
+
+    private static string RefusedDraft => L.T("szkic wydania");
+
+    private static string RefusedTag => L.T("nieoczekiwany numer wersji");
+
+    private static string RefusedDigest => L.T("brak skrótu SHA256");
 
     /// <summary>
     /// Wybiera MSI z odpowiedzi <c>releases/latest</c>. <c>true</c> = <paramref name="release"/> gotowe do pobrania. <c>false</c> z

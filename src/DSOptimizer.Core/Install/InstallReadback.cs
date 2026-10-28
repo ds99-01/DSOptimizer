@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Install;
 
@@ -75,11 +76,11 @@ internal sealed class InstallReadback
             error = ex.Message;
             if (failures is null || !failures.Logged)
             {
-                _log.Fail(Component, $"Odczyt listy zainstalowanych dla {target.Id} nie powiódł się.", ex);
+                _log.Fail(Component, L.F("Odczyt listy zainstalowanych dla {0} nie powiódł się.", target.Id), ex);
             }
             else if (!string.Equals(failures.LastMessage, ex.Message, StringComparison.Ordinal))
             {
-                _log.Warn(Component, $"Odczyt listy zainstalowanych dla {target.Id} nadal się nie udaje: {ex.Message}");
+                _log.Warn(Component, L.F("Odczyt listy zainstalowanych dla {0} nadal się nie udaje: {1}", target.Id, ex.Message));
             }
 
             if (failures is not null)

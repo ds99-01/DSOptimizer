@@ -1,0 +1,701 @@
+{
+  "language": "en",
+  "entries": [
+    {
+      "pl": "Przeglądarki",
+      "en": "Browsers"
+    },
+    {
+      "pl": "Komunikatory",
+      "en": "Messaging"
+    },
+    {
+      "pl": "Multimedia",
+      "en": "Multimedia"
+    },
+    {
+      "pl": "Dokumenty",
+      "en": "Documents"
+    },
+    {
+      "pl": "Zdalna pomoc",
+      "en": "Remote support"
+    },
+    {
+      "pl": "Gry",
+      "en": "Games"
+    },
+    {
+      "pl": "Środowiska uruchomieniowe",
+      "en": "Runtimes"
+    },
+    {
+      "pl": "winget (Instalator aplikacji) nie jest zarejestrowany dla tego konta. Użyj „Naprawy → Napraw winget”.",
+      "en": "winget (App Installer) isn't registered for this account. Use \"Repairs → Repair winget\"."
+    },
+    {
+      "pl": "Instalacja działa tylko na koncie zalogowanego użytkownika: uruchom DSOptimizer na koncie {0} (Administrator Protection: program podniesiony działa na ukrytym koncie {1}).",
+      "en": "Installing only works on the signed-in user's account: run DSOptimizer on account {0} (Administrator protection: the elevated program runs on hidden account {1})."
+    },
+    {
+      "pl": "Instalacja działa tylko na koncie zalogowanego użytkownika: uruchom DSOptimizer na koncie {0}.",
+      "en": "Installing only works on the signed-in user's account: run DSOptimizer on account {0}."
+    },
+    {
+      "pl": "winget działa (wersja {0}).",
+      "en": "winget works (version {0})."
+    },
+    {
+      "pl": "winget nie działa ({0}). Użyj „Naprawy → Napraw winget”.",
+      "en": "winget doesn't work ({0}). Use \"Repairs → Repair winget\"."
+    },
+    {
+      "pl": "winget --version: kod {0}",
+      "en": "winget --version: code {0}"
+    },
+    {
+      "pl": "winget --version: kod 0, ale w wyjściu brak numeru wersji",
+      "en": "winget --version: code 0, but there's no version number in the output"
+    },
+    {
+      "pl": "winget --version nie odpowiedział w {0} s",
+      "en": "winget --version didn't respond within {0} s"
+    },
+    {
+      "pl": "nie udało się uruchomić winget: {0}",
+      "en": "couldn't start winget: {0}"
+    },
+    {
+      "pl": "Nie udało się odczytać listy zainstalowanych aplikacji: {0}",
+      "en": "Couldn't read the list of installed apps: {0}"
+    },
+    {
+      "pl": "Zainstalowano i sprawdzono.",
+      "en": "Installed and verified."
+    },
+    {
+      "pl": "Zainstalowano (zgłoszone przez winget).",
+      "en": "Installed (reported by winget)."
+    },
+    {
+      "pl": "Była już zainstalowana – nic nie uruchomiono.",
+      "en": "It was already installed – nothing was run."
+    },
+    {
+      "pl": "Była już zainstalowana (zgłoszone przez winget).",
+      "en": "It was already installed (reported by winget)."
+    },
+    {
+      "pl": "winget zgłosił sukces, ale programu nie widać na liście zainstalowanych",
+      "en": "winget reported success, but the program isn't on the list of installed apps"
+    },
+    {
+      "pl": "Nie udało się zapisać journala – instalacja nie została uruchomiona.",
+      "en": "Couldn't save the journal – the installation wasn't started."
+    },
+    {
+      "pl": "Nie wykonano – brak połączenia z internetem albo ze źródłem winget",
+      "en": "Not done – no connection to the internet or to the winget source"
+    },
+    {
+      "pl": "Nie wykonano – poprzednia instalacja nadal trwa",
+      "en": "Not done – the previous installation is still running"
+    },
+    {
+      "pl": "Pobieranie",
+      "en": "Downloading"
+    },
+    {
+      "pl": "Instalowanie",
+      "en": "Installing"
+    },
+    {
+      "pl": "Sprawdzanie instalacji",
+      "en": "Verifying the installation"
+    },
+    {
+      "pl": "Nie wykonano – nie udało się uruchomić winget: {0}",
+      "en": "Not done – couldn't start winget: {0}"
+    },
+    {
+      "pl": "Nie wykonano – nie udało się przygotować pliku logu winget: {0}",
+      "en": "Not done – couldn't prepare the winget log file: {0}"
+    },
+    {
+      "pl": "Nie potwierdzono – instalacja nadal trwa w tle (program przestał czekać po {0} min).",
+      "en": "Not confirmed – the installation is still running in the background (the program stopped waiting after {0} min)."
+    },
+    {
+      "pl": "winget zgłosił sukces, ale nie udało się odczytać listy zainstalowanych: {0}",
+      "en": "winget reported success, but the list of installed apps couldn't be read: {0}"
+    },
+    {
+      "pl": "Kod {0}.",
+      "en": "Code {0}."
+    },
+    {
+      "pl": "Nie potwierdzono – winget zakończył się kodem {0}, ale program jest widoczny na liście zainstalowanych; sprawdź log winget.",
+      "en": "Not confirmed – winget ended with code {0}, but the program is on the list of installed apps; check the winget log."
+    },
+    {
+      "pl": " Log winget: ",
+      "en": " winget log: "
+    },
+    {
+      "pl": " Log MSI: ",
+      "en": " MSI log: "
+    },
+    {
+      "pl": ", wersja {0}",
+      "en": ", version {0}"
+    },
+    {
+      "pl": "Pobieranie (z GitHuba)",
+      "en": "Downloading (from GitHub)"
+    },
+    {
+      "pl": "Sprawdzanie podpisu",
+      "en": "Checking the signature"
+    },
+    {
+      "pl": "Nie wykonano – brak połączenia z GitHubem",
+      "en": "Not done – no connection to GitHub"
+    },
+    {
+      "pl": "Nie wykonano – pobieranie z GitHuba przekroczyło limit 10 min (wolne lub zerwane łącze)",
+      "en": "Not done – the download from GitHub went over the 10 min limit (slow or broken connection)"
+    },
+    {
+      "pl": "Nie wykonano – GitHub chwilowo odmawia (limit zapytań), spróbuj za godzinę",
+      "en": "Not done – GitHub is temporarily refusing requests (rate limit), try again in an hour"
+    },
+    {
+      "pl": "Nie wykonano – GitHub odpowiedział kodem {0}",
+      "en": "Not done – GitHub responded with code {0}"
+    },
+    {
+      "pl": "Nie wykonano – na GitHubie RustDesk nie ma instalatora MSI dla tej wersji",
+      "en": "Not done – RustDesk on GitHub has no MSI installer for this version"
+    },
+    {
+      "pl": "Nie wykonano – wydanie RustDesk na GitHubie nie przeszło sprawdzenia ({0})",
+      "en": "Not done – the RustDesk release on GitHub failed the check ({0})"
+    },
+    {
+      "pl": "Nie wykonano – pobrany plik nie przeszedł sprawdzenia ({0})",
+      "en": "Not done – the downloaded file failed the check ({0})"
+    },
+    {
+      "pl": "Nie wykonano – nie udało się zapisać pobranego pliku ({0})",
+      "en": "Not done – couldn't save the downloaded file ({0})"
+    },
+    {
+      "pl": "adres pobrania spoza GitHuba RustDesk",
+      "en": "download address outside RustDesk's GitHub"
+    },
+    {
+      "pl": "przekierowanie na nieznany serwer",
+      "en": "redirect to an unknown server"
+    },
+    {
+      "pl": "przekierowanie na nieznany serwer {0}",
+      "en": "redirect to an unknown server {0}"
+    },
+    {
+      "pl": "rozmiar inny niż w GitHubie",
+      "en": "size doesn't match GitHub"
+    },
+    {
+      "pl": "skrót SHA256 inny niż w GitHubie",
+      "en": "SHA256 hash doesn't match GitHub"
+    },
+    {
+      "pl": "brak podpisu wydawcy",
+      "en": "no publisher signature"
+    },
+    {
+      "pl": "podpis nieważny",
+      "en": "invalid signature"
+    },
+    {
+      "pl": "podpis nieważny ({0})",
+      "en": "invalid signature ({0})"
+    },
+    {
+      "pl": "podpis innego wydawcy: (brak podmiotu)",
+      "en": "signature of another publisher: (no subject)"
+    },
+    {
+      "pl": "podpis innego wydawcy: {0}",
+      "en": "signature of another publisher: {0}"
+    },
+    {
+      "pl": "Nie wykonano – instalator MSI zakończył się kodem {0}.",
+      "en": "Not done – the MSI installer ended with code {0}."
+    },
+    {
+      "pl": "Nie wykonano – nie udało się przygotować pliku logu MSI: {0}",
+      "en": "Not done – couldn't prepare the MSI log file: {0}"
+    },
+    {
+      "pl": "Nie wykonano – nie udało się uruchomić instalatora MSI: {0}",
+      "en": "Not done – couldn't start the MSI installer: {0}"
+    },
+    {
+      "pl": "instalator MSI zgłosił sukces, ale programu nie widać na liście zainstalowanych",
+      "en": "the MSI installer reported success, but the program isn't on the list of installed apps"
+    },
+    {
+      "pl": "instalator MSI zgłosił sukces, ale nie udało się odczytać listy zainstalowanych: {0}",
+      "en": "the MSI installer reported success, but the list of installed apps couldn't be read: {0}"
+    },
+    {
+      "pl": "Nie wykonano – brak połączenia z internetem",
+      "en": "Not done – no internet connection"
+    },
+    {
+      "pl": "Nie wykonano – instalacja z GitHuba nie jest dostępna w tym uruchomieniu",
+      "en": "Not done – installing from GitHub isn't available in this run"
+    },
+    {
+      "pl": "Nie udało się usunąć pobranego pliku {0}",
+      "en": "Couldn't delete the downloaded file {0}"
+    },
+    {
+      "pl": "Odśwież",
+      "en": "Refresh"
+    },
+    {
+      "pl": "Źródło: winget (Microsoft) · niedostępne",
+      "en": "Source: winget (Microsoft) · unavailable"
+    },
+    {
+      "pl": "Szukaj aplikacji, np. VLC",
+      "en": "Search apps, e.g. VLC"
+    },
+    {
+      "pl": "Szukaj aplikacji na liście, np. VLC",
+      "en": "Search apps on the list, e.g. VLC"
+    },
+    {
+      "pl": "Szukaj też w winget",
+      "en": "Also search winget"
+    },
+    {
+      "pl": "Zaznaczone",
+      "en": "Selected"
+    },
+    {
+      "pl": "Nic nie jest zaznaczone. Zaznacz aplikacje na liście albo w wynikach winget.",
+      "en": "Nothing is selected. Select apps on the list or in the winget results."
+    },
+    {
+      "pl": "Z listy ({0})",
+      "en": "From the list ({0})"
+    },
+    {
+      "pl": "W winget ({0})",
+      "en": "In winget ({0})"
+    },
+    {
+      "pl": "Pakiety spoza listy DSOptimizera – pobierane z oficjalnego źródła winget (Microsoft), bez wcześniejszego sprawdzenia przez autora programu.",
+      "en": "Packages not on the DSOptimizer list – downloaded from the official winget source (Microsoft), without being checked by the program's author first."
+    },
+    {
+      "pl": "Brak na liście. Naciśnij Enter, żeby poszukać w winget.",
+      "en": "Not on the list. Press Enter to search winget."
+    },
+    {
+      "pl": "Brak na liście. Winget nie działa – wyszukiwanie w winget niedostępne.",
+      "en": "Not on the list. Winget doesn't work – searching winget isn't available."
+    },
+    {
+      "pl": "Brak na liście.",
+      "en": "Not on the list."
+    },
+    {
+      "pl": "{0} instaluje się z listy: użyj {1}.",
+      "en": "{0} is installed from the list: use {1}."
+    },
+    {
+      "pl": "{0} jest na liście – wyżej",
+      "en": "{0} is on the list – above"
+    },
+    {
+      "pl": "{0} jest na liście – wyżej (instalowany z GitHuba)",
+      "en": "{0} is on the list – above (installed from GitHub)"
+    },
+    {
+      "pl": "Wpisz, czego szukać.",
+      "en": "Type what to search for."
+    },
+    {
+      "pl": "Zapytanie może mieć najwyżej {0} znaków.",
+      "en": "The query can have at most {0} characters."
+    },
+    {
+      "pl": "Zapytanie nie może zawierać cudzysłowu ani znaków sterujących.",
+      "en": "The query can't contain quotation marks or control characters."
+    },
+    {
+      "pl": "Zapytanie nie może zaczynać się od „-”.",
+      "en": "The query can't start with \"-\"."
+    },
+    {
+      "pl": "Szukanie w winget",
+      "en": "Searching winget"
+    },
+    {
+      "pl": "Winget nie działa na tym komputerze",
+      "en": "Winget doesn't work on this computer"
+    },
+    {
+      "pl": "Przejdź do: Napraw winget",
+      "en": "Go to: Repair winget"
+    },
+    {
+      "pl": "Zatrzymaj po tej aplikacji",
+      "en": "Stop after this app"
+    },
+    {
+      "pl": "Zatrzymam po bieżącej aplikacji…",
+      "en": "Stopping after the current app…"
+    },
+    {
+      "pl": "Bieżąca instalacja zawsze się kończy.",
+      "en": "The current installation always finishes."
+    },
+    {
+      "pl": "Źródła: winget (Microsoft) i GitHub (RustDesk) · {0} · zainstalowane: {1}",
+      "en": "Sources: winget (Microsoft) and GitHub (RustDesk) · {0} · installed: {1}"
+    },
+    {
+      "pl": "Źródło: winget (Microsoft) · {0} · zainstalowane: {1}",
+      "en": "Source: winget (Microsoft) · {0} · installed: {1}"
+    },
+    {
+      "pl": "Źródła: GitHub (RustDesk) · winget (Microsoft) niedostępny · {0} · zainstalowane: {1}",
+      "en": "Sources: GitHub (RustDesk) · winget (Microsoft) unavailable · {0} · installed: {1}"
+    },
+    {
+      "pl": "Kliknij dwukrotnie wiersz albo pole wyboru, żeby dodać do instalacji.",
+      "en": "Double-click a row or checkbox to select it for installation."
+    },
+    {
+      "pl": "Zaznaczono {0} aplikację",
+      "en": "{0} app selected"
+    },
+    {
+      "pl": "Zaznaczono {0} aplikacje",
+      "en": "{0} apps selected"
+    },
+    {
+      "pl": "Zaznaczono {0} aplikacji",
+      "en": "{0} apps selected"
+    },
+    {
+      "pl": "Z 1 kategorii, pobierane z winget (Microsoft) i z GitHuba RustDesk. Wymaga internetu.",
+      "en": "From 1 category, downloaded from winget (Microsoft) and from RustDesk's GitHub. Requires an internet connection."
+    },
+    {
+      "pl": "Z 1 kategorii, pobierane z winget (Microsoft). Wymaga internetu.",
+      "en": "From 1 category, downloaded from winget (Microsoft). Requires an internet connection."
+    },
+    {
+      "pl": "Z 1 kategorii, pobierane z GitHuba RustDesk. Wymaga internetu.",
+      "en": "From 1 category, downloaded from RustDesk's GitHub. Requires an internet connection."
+    },
+    {
+      "pl": "Z {0} kategorii, pobierane z winget (Microsoft) i z GitHuba RustDesk. Wymaga internetu.",
+      "en": "From {0} categories, downloaded from winget (Microsoft) and from RustDesk's GitHub. Requires an internet connection."
+    },
+    {
+      "pl": "Z {0} kategorii, pobierane z winget (Microsoft). Wymaga internetu.",
+      "en": "From {0} categories, downloaded from winget (Microsoft). Requires an internet connection."
+    },
+    {
+      "pl": "Z {0} kategorii, pobierane z GitHuba RustDesk. Wymaga internetu.",
+      "en": "From {0} categories, downloaded from RustDesk's GitHub. Requires an internet connection."
+    },
+    {
+      "pl": "RustDesk (z GitHuba) można zainstalować także bez winget.",
+      "en": "RustDesk (from GitHub) can be installed without winget too."
+    },
+    {
+      "pl": "Pokaż RustDesk",
+      "en": "Show RustDesk"
+    },
+    {
+      "pl": "Zainstaluj ({0})",
+      "en": "Install ({0})"
+    },
+    {
+      "pl": "nazwa pakietu skrócona – zawęź wyszukiwanie",
+      "en": "package name shortened – narrow the search"
+    },
+    {
+      "pl": "Trwa inna operacja – spróbuj za chwilę.",
+      "en": "Another operation is in progress – try again in a moment."
+    },
+    {
+      "pl": "Nic nie znaleziono w winget.",
+      "en": "Nothing found in winget."
+    },
+    {
+      "pl": "Brak połączenia z internetem albo ze źródłem winget.",
+      "en": "No connection to the internet or to the winget source."
+    },
+    {
+      "pl": "Znalezione aplikacje są na liście – wyżej.",
+      "en": "The apps found are on the list – above."
+    },
+    {
+      "pl": "Wyszukiwanie nie powiodło się (kod {0}).",
+      "en": "The search failed (code {0})."
+    },
+    {
+      "pl": "winget nie odpowiedział w {0} min.",
+      "en": "winget didn't respond within {0} min."
+    },
+    {
+      "pl": "Nie udało się uruchomić winget: {0}",
+      "en": "Couldn't start winget: {0}"
+    },
+    {
+      "pl": "Pozycji ze skróconą nazwą pakietu nie da się zainstalować – nic nie zmieniono.",
+      "en": "An item with a shortened package name can't be installed – nothing was changed."
+    },
+    {
+      "pl": "Zainstaluj zaznaczone",
+      "en": "Install selected"
+    },
+    {
+      "pl": "Aplikacje zostaną pobrane z oficjalnego źródła winget (Microsoft) i zainstalowane bez okien instalatorów. Wymaga internetu. Instalacja może potrwać kilka–kilkanaście minut.",
+      "en": "The apps will be downloaded from the official winget source (Microsoft) and installed without installer windows. Requires an internet connection. Installation can take from a few to over ten minutes."
+    },
+    {
+      "pl": "RustDesk zostanie pobrany i zainstalowany bez okna instalatora dopiero po sprawdzeniu skrótu SHA256 i podpisu wydawcy.",
+      "en": "RustDesk will be downloaded and installed without an installer window only after its SHA256 hash and publisher signature are checked."
+    },
+    {
+      "pl": "RustDesk zostanie pobrany i zainstalowany bez okna instalatora dopiero po sprawdzeniu skrótu SHA256 i podpisu wydawcy. Wymaga internetu.",
+      "en": "RustDesk will be downloaded and installed without an installer window only after its SHA256 hash and publisher signature are checked. Requires an internet connection."
+    },
+    {
+      "pl": "Źródło",
+      "en": "Source"
+    },
+    {
+      "pl": "GitHub RustDesk (rustdesk/rustdesk), podpis PURSLANE",
+      "en": "GitHub RustDesk (rustdesk/rustdesk), PURSLANE signature"
+    },
+    {
+      "pl": "Repozytorium GitHub",
+      "en": "GitHub repository"
+    },
+    {
+      "pl": "nie – instalację cofa się usunięciem na stronie „Aplikacje”",
+      "en": "no – to undo an installation, remove the app on the \"Apps\" page"
+    },
+    {
+      "pl": "tylko gdy instalator go zgłosi",
+      "en": "only if the installer asks for it"
+    },
+    {
+      "pl": "Identyfikator winget",
+      "en": "winget ID"
+    },
+    {
+      "pl": "Wynik wyszukiwania w winget (spoza listy).",
+      "en": "winget search result (not on the list)."
+    },
+    {
+      "pl": "{0}: Nie wykonano – Pominięte – zatrzymano.",
+      "en": "{0}: Not done – skipped because the batch was stopped."
+    },
+    {
+      "pl": "{0} aplikacja potrzebuje ponownego uruchomienia komputera.",
+      "en": "{0} app needs the computer to restart."
+    },
+    {
+      "pl": "{0} aplikacje potrzebują ponownego uruchomienia komputera.",
+      "en": "{0} apps need the computer to restart."
+    },
+    {
+      "pl": "{0} aplikacji potrzebuje ponownego uruchomienia komputera.",
+      "en": "{0} apps need the computer to restart."
+    },
+    {
+      "pl": "{0} z {1} zainstalowane",
+      "en": "{0} of {1} installed"
+    },
+    {
+      "pl": "Instalacja nie rozpoczęta: {0}",
+      "en": "Installation not started: {0}"
+    },
+    {
+      "pl": "Pozycje winget nie rozpoczęte: {0}",
+      "en": "winget items not started: {0}"
+    },
+    {
+      "pl": "Nieoczekiwany błąd instalacji {0}.",
+      "en": "Unexpected error while installing {0}."
+    },
+    {
+      "pl": "Odbiornik postępu instalacji rzucił wyjątek ({0} {1}).",
+      "en": "The install progress receiver threw an exception ({0} {1})."
+    },
+    {
+      "pl": "Pozycja {0} nie ma identyfikatora winget – nie może iść do winget.",
+      "en": "Item {0} has no winget ID – it can't go to winget."
+    },
+    {
+      "pl": "Nie udało się przygotować pliku logu winget dla {0}.",
+      "en": "Couldn't prepare the winget log file for {0}."
+    },
+    {
+      "pl": "Nie udało się uruchomić winget dla {0}.",
+      "en": "Couldn't start winget for {0}."
+    },
+    {
+      "pl": "winget list dla {0} nie powiódł się.",
+      "en": "winget list for {0} failed."
+    },
+    {
+      "pl": "Pozycja {0} nie ma repozytorium GitHuba.",
+      "en": "Item {0} has no GitHub repository."
+    },
+    {
+      "pl": "Nieoczekiwany błąd instalacji {0} z GitHuba.",
+      "en": "Unexpected error while installing {0} from GitHub."
+    },
+    {
+      "pl": "Pobrano i sprawdzono {0} ({1}): {2} B, SHA256 {3}, podpis: {4}",
+      "en": "Downloaded and verified {0} ({1}): {2} B, SHA256 {3}, signature: {4}"
+    },
+    {
+      "pl": "Limit czasu msiexec: pobrany plik zostaje na dysku ({0}).",
+      "en": "msiexec time limit reached: the downloaded file stays on the disk ({0})."
+    },
+    {
+      "pl": "Adres pobrania spoza GitHuba RustDesk: {0}",
+      "en": "Download address outside RustDesk's GitHub: {0}"
+    },
+    {
+      "pl": "Sprawdzenie pobranego pliku {0} nie powiodło się.",
+      "en": "Checking the downloaded file {0} failed."
+    },
+    {
+      "pl": "Nie udało się przygotować pliku logu MSI.",
+      "en": "Couldn't prepare the MSI log file."
+    },
+    {
+      "pl": "Nie udało się uruchomić msiexec dla {0}.",
+      "en": "Couldn't start msiexec for {0}."
+    },
+    {
+      "pl": "Nie udało się zapisać journala przy {0}: {1}",
+      "en": "Couldn't save the journal for {0}: {1}"
+    },
+    {
+      "pl": "Odczyt listy zainstalowanych dla {0} nie powiódł się.",
+      "en": "Couldn't read the list of installed apps for {0}."
+    },
+    {
+      "pl": "Odczyt listy zainstalowanych dla {0} nadal się nie udaje: {1}",
+      "en": "Reading the list of installed apps for {0} still fails: {1}"
+    },
+    {
+      "pl": "winget zgłosił sukces.",
+      "en": "winget reported success."
+    },
+    {
+      "pl": "winget zgłosił sukces, potrzebny restart.",
+      "en": "winget reported success, a restart is needed."
+    },
+    {
+      "pl": "Już zainstalowane.",
+      "en": "Already installed."
+    },
+    {
+      "pl": "Nie wykonano – wymaga restartu przed instalacją.",
+      "en": "Not done – a restart is required before installing."
+    },
+    {
+      "pl": "Nie wykonano – brak połączenia z internetem albo ze źródłem winget.",
+      "en": "Not done – no connection to the internet or to the winget source."
+    },
+    {
+      "pl": "Nie wykonano – ten instalator nie działa z uprawnieniami administratora; zainstaluj aplikację ręcznie.",
+      "en": "Not done – this installer doesn't work with administrator rights; install the app manually."
+    },
+    {
+      "pl": "Nie wykonano – trwa inna instalacja, spróbuj za chwilę.",
+      "en": "Not done – another installation is in progress, try again in a moment."
+    },
+    {
+      "pl": "Nie wykonano – pakietu nie ma w winget albo nie pasuje do tego komputera.",
+      "en": "Not done – the package isn't in winget or doesn't suit this computer."
+    },
+    {
+      "pl": "Nie wykonano – plik instalatora nie zgadza się z manifestem, nie zainstalowano.",
+      "en": "Not done – the installer file doesn't match the manifest, nothing was installed."
+    },
+    {
+      "pl": "Nie wykonano – za mało miejsca na dysku.",
+      "en": "Not done – not enough disk space."
+    },
+    {
+      "pl": "Nie wykonano – instalację zablokowały zasady tego komputera.",
+      "en": "Not done – the installation was blocked by this computer's policies."
+    },
+    {
+      "pl": "Nie wykonano – nie udało się zaakceptować umowy pakietu albo źródła.",
+      "en": "Not done – couldn't accept the package or source agreement."
+    },
+    {
+      "pl": "Nie wykonano – instalator został przerwany (kod {0}). Jeśli Windows pokazał komunikat o wirusie albo niechcianym oprogramowaniu, zablokował go antywirus.",
+      "en": "Not done – the installer was interrupted (code {0}). If Windows showed a message about a virus or unwanted software, the antivirus blocked it."
+    },
+    {
+      "pl": "Nie wykonano – antywirus zablokował instalator jako zagrożenie.",
+      "en": "Not done – the antivirus blocked the installer as a threat."
+    },
+    {
+      "pl": "Nie wykonano – winget zakończył się kodem {0}.",
+      "en": "Not done – winget ended with code {0}."
+    },
+    {
+      "pl": "plik większy niż 200 MB",
+      "en": "file larger than 200 MB"
+    },
+    {
+      "pl": "apps: {0}, pole {1}: {2}",
+      "en": "apps: {0}, field {1}: {2}"
+    },
+    {
+      "pl": "pole github jest dozwolone tylko dla pozycji z listy w kodzie (install.rustdesk → rustdesk/rustdesk)",
+      "en": "the github field is allowed only for items listed in the code (install.rustdesk → rustdesk/rustdesk)"
+    },
+    {
+      "pl": "id musi mieć postać install.<nazwa> (małe litery, cyfry, „-”)",
+      "en": "id must have the form install.<name> (lower-case letters, digits, \"-\")"
+    },
+    {
+      "pl": "podaj dokładnie jedno z pól wingetId albo github",
+      "en": "give exactly one of the fields wingetId or github"
+    },
+    {
+      "pl": "pole jest wymagane i niepuste (albo github dla pozycji z listy w kodzie)",
+      "en": "the field is required and can't be empty (or github for items listed in the code)"
+    },
+    {
+      "pl": "nieprawidłowy identyfikator winget",
+      "en": "invalid winget ID"
+    },
+    {
+      "pl": "identyfikator winget występuje więcej niż raz",
+      "en": "the winget ID appears more than once"
+    }
+  ]
+}
