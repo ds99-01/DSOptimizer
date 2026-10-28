@@ -99,6 +99,22 @@ public class PolishLiteralRulesTests
     }
 
     [Fact]
+    public void Xaml_FlagsSetterValue()
+    {
+        Assert.StartsWith("a.xaml:2: Przywróć", Assert.Single(ScanXaml("<Style>\n  <Setter Property=\"ToolTip\" Value=\"Przywróć\" />\n</Style>")), StringComparison.Ordinal);
+        Assert.Single(ScanXaml("<Style><Setter Property=\"AutomationProperties.Name\" Value=\"Przywróć\" /></Style>"));
+        Assert.Single(ScanXaml("<Style><Setter Property=\"Button.Content\" Value=\"Zapisz\" /></Style>"));
+        Assert.Empty(ScanXaml("<Style><Setter Property=\"ToolTip\" Value=\"{l:T 'Przywróć'}\" /><Setter Property=\"Text\" Value=\"{Binding X}\" /></Style>"));
+    }
+
+    [Fact]
+    public void Xaml_IgnoresSetterOfNonTextProperty()
+    {
+        Assert.Empty(ScanXaml("<Style><Setter Property=\"Margin\" Value=\"Auto\" /><Setter Property=\"FontFamily\" Value=\"Segoe UI\" /></Style>"));
+        Assert.Empty(ScanXaml("<Style><Setter Property=\"AutomationProperties.AutomationId\" Value=\"Restore\" /><Setter Property=\"TextWrapping\" Value=\"Wrap\" /></Style>"));
+    }
+
+    [Fact]
     public void Xaml_IgnoresBindingAndTranslate()
     {
         Assert.Empty(ScanXaml("<TextBlock Text=\"{Binding Title}\" ToolTip=\"{l:T 'Kopiuj'}\" Tag=\"Zwykły tag\" />"));
@@ -301,8 +317,11 @@ public sealed class AllowedLiteral
 /// wielkość liter istotna). Pomijane: pierwszy argument <c>L.T(</c>/<c>L.F(</c>, trzy pierwsze <c>L.P(</c> oraz literały w linii
 /// z <c>throw new Argument(Null|OutOfRange)?Exception(</c>. Czego nie łapie: tekstu zapisanego sekwencją <c>\x</c>, wywołania
 /// <c>L.T</c> przez alias albo <c>using static</c>.
-/// XAML: atrybuty z <see cref="TextAttributes"/> i tekst wewnątrz <c>TextBlock</c>/<c>Run</c>/<c>Hyperlink</c> z literą, poza
-/// rozszerzeniem <c>{…}</c> (prefiks <c>{}</c> to zwykły tekst) i nazwami własnymi <see cref="XamlProperNames"/>.
+/// XAML: atrybuty z <see cref="TextAttributes"/>, <c>Value</c> elementu <c>Setter</c> z <c>Property</c> z tej listy (też
+/// <c>Typ.Właściwość</c>) i tekst wewnątrz <c>TextBlock</c>/<c>Run</c>/<c>Hyperlink</c> z literą, poza rozszerzeniem <c>{…}</c>
+/// (prefiks <c>{}</c> to zwykły tekst) i nazwami własnymi <see cref="XamlProperNames"/>. Czego nie sprawdza: treści innych elementów
+/// (<c>&lt;Button&gt;Zapisz&lt;/Button&gt;</c>, <c>&lt;sys:String&gt;</c>), elementów właściwości (<c>&lt;Button.ToolTip&gt;</c> z samym
+/// tekstem) i tekstu w <c>StringFormat</c> powiązania – dziś w repo takich miejsc nie ma.
 /// </summary>
 public static class PolishLiteralScanner
 {
@@ -408,6 +427,17 @@ public static class PolishLiteralScanner
                         reader.MoveToElement();
                     }
 
+                    // <Setter Property="ToolTip" Value="…" /> – wartość właściwości tekstowej ustawiana stylem albo wyzwalaczem.
+                    if (name == "Setter" && IsTextProperty(reader.GetAttribute("Property")) && reader.MoveToAttribute("Value"))
+                    {
+                        if (IsPlainXamlText(reader.Value))
+                        {
+                            result.Add(new PolishLiteralHit(info.LineNumber, reader.Value));
+                        }
+
+                        reader.MoveToElement();
+                    }
+
                     if (!empty)
                     {
                         open.Add(name);
@@ -452,6 +482,25 @@ public static class PolishLiteralScanner
         }
 
         return result;
+    }
+
+    /// <summary>Właściwość z <see cref="TextAttributes"/>, także z typem przed kropką (<c>Button.Content</c>, <c>TextBlock.Text</c>).</summary>
+    private static bool IsTextProperty(string? property)
+    {
+        if (property is null)
+        {
+            return false;
+        }
+
+        if (TextAttributes.Contains(property))
+        {
+            return true;
+        }
+
+        var dot = property.LastIndexOf('.');
+        return dot > 0
+            && !property.StartsWith("AutomationProperties.", StringComparison.Ordinal)
+            && TextAttributes.Contains(property.Substring(dot + 1));
     }
 
     private static bool IsPlainXamlText(string value)
