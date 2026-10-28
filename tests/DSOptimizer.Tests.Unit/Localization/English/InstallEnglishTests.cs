@@ -243,6 +243,29 @@ public class InstallEnglishTests
         }
     }
 
+    [Fact]
+    public void RustDesk_RedirectRefused_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var withHost = new Fixture();
+            withHost.Web.RedirectHops.Add(new Uri("https://evil.example/rustdesk.msi"));
+            Assert.Equal(
+                "Not done – the downloaded file failed the check (redirect to an unknown server evil.example)",
+                withHost.Install(RustDesk).Batch.Results.Single().Message);
+
+            var withoutHost = new Fixture();
+            withoutHost.Web.FileResult = new WebFile(WebFailure.RedirectRefused, 302, 0, null, "redirect refused");
+            Assert.Equal(
+                "Not done – the downloaded file failed the check (redirect to an unknown server)",
+                withoutHost.Install(RustDesk).Batch.Results.Single().Message);
+
+            Assert.Equal("redirect to an unknown server", InstallText.ReasonRedirect(null));
+            Assert.Equal("redirect to an unknown server", InstallText.ReasonRedirect(string.Empty));
+            Assert.Equal("redirect to an unknown server evil.example", InstallText.ReasonRedirect("evil.example"));
+        }
+    }
+
     [Theory]
     [InlineData(SignatureStatus.Invalid, null, "0x80096010", "invalid signature (0x80096010)")]
     [InlineData(SignatureStatus.Invalid, null, null, "invalid signature")]
