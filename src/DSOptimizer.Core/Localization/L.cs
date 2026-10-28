@@ -36,16 +36,16 @@ public static class L
     public static CultureInfo Culture => CultureInfo.GetCultureInfo(Current == UiLanguage.English ? "en-GB" : "pl-PL");
 
     /// <summary>
-    /// Wzorzec daty: po polsku jawnie <c>dd.MM.yyyy</c> (NLS dla pl-PL daje <c>d.MM.yyyy</c>, więc wzorzec "d" zmieniłby wygląd),
-    /// po angielsku standardowy "d" kultury en-GB.
+    /// Wzorzec daty, w obu językach jawny: dane NLS hosta bywają inne niż oczekiwane (dla pl-PL standardowy "d" daje
+    /// <c>d.MM.yyyy</c>), więc wynik nie może zależeć od systemu. Ukośnik jest w apostrofach, by separator daty kultury go nie zmienił.
     /// </summary>
-    public static string DatePattern => Current == UiLanguage.English ? "d" : "dd.MM.yyyy";
+    public static string DatePattern => Current == UiLanguage.English ? "dd'/'MM'/'yyyy" : "dd.MM.yyyy";
 
-    /// <summary>Wzorzec daty z godziną (bez sekund): po polsku <c>dd.MM.yyyy HH:mm</c>, po angielsku "g".</summary>
-    public static string DateTimePattern => Current == UiLanguage.English ? "g" : "dd.MM.yyyy HH:mm";
+    /// <summary>Wzorzec daty z godziną (bez sekund), jawny w obu językach.</summary>
+    public static string DateTimePattern => Current == UiLanguage.English ? "dd'/'MM'/'yyyy HH:mm" : "dd.MM.yyyy HH:mm";
 
-    /// <summary>Wzorzec daty z godziną i sekundami: po polsku <c>dd.MM.yyyy HH:mm:ss</c>, po angielsku "G".</summary>
-    public static string DateTimeSecondsPattern => Current == UiLanguage.English ? "G" : "dd.MM.yyyy HH:mm:ss";
+    /// <summary>Wzorzec daty z godziną i sekundami, jawny w obu językach.</summary>
+    public static string DateTimeSecondsPattern => Current == UiLanguage.English ? "dd'/'MM'/'yyyy HH:mm:ss" : "dd.MM.yyyy HH:mm:ss";
 
     /// <summary>Komunikat, jeśli wbudowane tłumaczenia nie dało się wczytać (wtedy tabela jest pusta); inaczej <c>null</c>.</summary>
     public static string? LoadWarning

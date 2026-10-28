@@ -25,6 +25,31 @@ public class CultureFormattingTests
         return steps.Single(s => s.Kind == PrepStepKind.Computer).Lines.Single(l => l.Label == "BIOS").Value;
     }
 
+    private static string GpuLine()
+    {
+        var snapshot = new PrepSnapshot
+        {
+            Graphics = Reading<IReadOnlyList<PrepGpu>>.Done(new[]
+            {
+                new PrepGpu("Intel Iris Xe", @"PCI\VEN_8086&DEV_9A49", "oem42.inf", "31.0.1", new DateTime(2024, 1, 2), "Intel"),
+            }),
+        };
+        var steps = PrepSteps.Build(snapshot, "C:", settingsOpenable: true);
+        return steps.SelectMany(s => s.Lines).Single(l => l.Label == "Intel Iris Xe").Value;
+    }
+
+    [Fact]
+    public void Prep_DriverDate_PolishUnchanged() => Assert.Equal("sterownik 31.0.1, 02.01.2024, Intel", GpuLine());
+
+    [Fact]
+    public void Prep_DriverDate_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("sterownik 31.0.1, 02/01/2024, Intel", GpuLine());
+        }
+    }
+
     private static string DiskValue()
     {
         var snapshot = new HardwareSnapshot
