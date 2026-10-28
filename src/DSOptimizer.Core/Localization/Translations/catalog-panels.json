@@ -1,0 +1,190 @@
+{
+  "language": "en",
+  "data": true,
+  "entries": [
+    {
+      "pl": "Efekty wizualne (Opcje wydajności)",
+      "en": "Visual effects (Performance Options)"
+    },
+    {
+      "pl": "Otwiera okno Opcje wydajności, w którym sam włączysz lub wyłączysz animacje, cienie i inne efekty.",
+      "en": "Opens the Performance Options window, where you turn animations, shadows and other effects on or off yourself."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: klasyczne okno „Opcje wydajności” (polecenie: SystemPropertiesPerformance.exe). Pozycja sama niczego nie ustawia – efekty wybierasz w otwartym oknie. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+      "en": "Opens a Windows system panel: the classic \"Performance Options\" window (command: SystemPropertiesPerformance.exe). The item doesn't set anything itself – you choose the effects in the window that opens. DSOptimizer doesn't undo changes made in this window."
+    },
+    {
+      "pl": "Opcje zasilania",
+      "en": "Power Options"
+    },
+    {
+      "pl": "Otwiera okno Opcje zasilania, w którym wybierzesz plan zasilania i zmienisz jego ustawienia.",
+      "en": "Opens the Power Options window, where you choose a power plan and change its settings."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: klasyczne okno „Opcje zasilania” (polecenie: control.exe /name Microsoft.PowerOptions). Pozycja nie tworzy ani nie zmienia planów zasilania – plan wybierasz sam w oknie. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+      "en": "Opens a Windows system panel: the classic \"Power Options\" window (command: control.exe /name Microsoft.PowerOptions). The item doesn't create or change power plans – you choose the plan yourself in the window. DSOptimizer doesn't undo changes made in this window."
+    },
+    {
+      "pl": "Połączenia sieciowe",
+      "en": "Network Connections"
+    },
+    {
+      "pl": "Otwiera listę kart sieciowych, w której sam zmienisz ich ustawienia, np. adres IP albo serwery DNS.",
+      "en": "Opens the list of network adapters, where you change their settings yourself, e.g. the IP address or DNS servers."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: klasyczne okno „Połączenia sieciowe” (polecenie: control.exe netconnections). Pozycja niczego nie zmienia – ustawienia kart (np. IPv6, adres IP, DNS) zmieniasz sam w oknie. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+      "en": "Opens a Windows system panel: the classic \"Network Connections\" window (command: control.exe netconnections). The item doesn't change anything – you change adapter settings (e.g. IPv6, IP address, DNS) yourself in the window. DSOptimizer doesn't undo changes made in this window."
+    },
+    {
+      "pl": "Zarządzanie komputerem",
+      "en": "Computer Management"
+    },
+    {
+      "pl": "Otwiera Zarządzanie komputerem: dyski, usługi, Menedżer urządzeń i dzienniki zdarzeń.",
+      "en": "Opens Computer Management: disks, services, Device Manager and event logs."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: konsolę MMC „Zarządzanie komputerem” (compmgmt.msc, uruchamiane przez mmc.exe). Pozycja tylko otwiera konsolę i sama niczego nie zmienia.",
+      "en": "Opens a Windows system panel: the \"Computer Management\" MMC console (compmgmt.msc, started through mmc.exe). The item only opens the console and doesn't change anything itself."
+    },
+    {
+      "pl": "Konsola działa z uprawnieniami administratora – DSOptimizer nie cofa zmian zrobionych w niej (usługi, dyski).",
+      "en": "The console runs with administrator rights – DSOptimizer doesn't undo changes made in it (services, disks)."
+    },
+    {
+      "pl": "Panel sterowania",
+      "en": "Control Panel"
+    },
+    {
+      "pl": "Otwiera klasyczny Panel sterowania.",
+      "en": "Opens the classic Control Panel."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: klasyczne okno „Panel sterowania” (polecenie: control.exe). DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+      "en": "Opens a Windows system panel: the classic \"Control Panel\" window (command: control.exe). DSOptimizer doesn't undo changes made in this window."
+    },
+    {
+      "pl": "Właściwości: Mysz",
+      "en": "Mouse Properties"
+    },
+    {
+      "pl": "Otwiera ustawienia myszy: przyciski, kółko, wygląd i prędkość wskaźnika.",
+      "en": "Opens the mouse settings: buttons, wheel, pointer appearance and speed."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: klasyczne okno „Właściwości: Mysz” (polecenie: control.exe /name Microsoft.Mouse). DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+      "en": "Opens a Windows system panel: the classic \"Mouse Properties\" window (command: control.exe /name Microsoft.Mouse). DSOptimizer doesn't undo changes made in this window."
+    },
+    {
+      "pl": "Urządzenia i drukarki",
+      "en": "Devices and Printers"
+    },
+    {
+      "pl": "Otwiera okno Urządzenia i drukarki z podłączonymi drukarkami i innymi urządzeniami.",
+      "en": "Opens the Devices and Printers window with connected printers and other devices."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: okno „Urządzenia i drukarki” w Eksploratorze plików (polecenie: explorer.exe shell:::{A8A91A66-3A7D-4424-8D24-04E180695C7A}). Przed startem sprawdza, czy w bieżącej sesji działa Eksplorator tego samego konta; bez niego kończy się błędem i niczego nie uruchamia, bo podniesiony Eksplorator zostałby osobnym procesem z uprawnieniami administratora. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+      "en": "Opens a Windows system panel: the \"Devices and Printers\" window in File Explorer (command: explorer.exe shell:::{A8A91A66-3A7D-4424-8D24-04E180695C7A}). Before starting, it checks that File Explorer of the same account is running in the current session; without it, the item ends with an error and starts nothing, because an elevated File Explorer would stay a separate process with administrator rights. DSOptimizer doesn't undo changes made in this window."
+    },
+    {
+      "pl": "Wymaga Eksploratora zalogowanego konta – gdy DSOptimizer działa na innym koncie administratora, pozycja kończy się błędem.",
+      "en": "Needs File Explorer of the signed-in account – when DSOptimizer runs under another administrator account, the item ends with an error."
+    },
+    {
+      "pl": "Programy i funkcje",
+      "en": "Programs and Features"
+    },
+    {
+      "pl": "Otwiera listę zainstalowanych programów, z której sam je odinstalujesz.",
+      "en": "Opens the list of installed programs, where you uninstall them yourself."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: klasyczne okno „Programy i funkcje” (polecenie: control.exe /name Microsoft.ProgramsAndFeatures). Pozycja niczego nie odinstalowuje – robisz to sam w oknie. DSOptimizer nie przywróci programu odinstalowanego w tym oknie.",
+      "en": "Opens a Windows system panel: the classic \"Programs and Features\" window (command: control.exe /name Microsoft.ProgramsAndFeatures). The item doesn't uninstall anything – you do it yourself in the window. DSOptimizer can't bring back a program uninstalled in this window."
+    },
+    {
+      "pl": "Region",
+      "en": "Region"
+    },
+    {
+      "pl": "Otwiera ustawienia regionu: format daty, godziny i liczb.",
+      "en": "Opens the region settings: date, time and number formats."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: klasyczne okno „Region” (polecenie: control.exe /name Microsoft.RegionAndLanguage). DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+      "en": "Opens a Windows system panel: the classic \"Region\" window (command: control.exe /name Microsoft.RegionAndLanguage). DSOptimizer doesn't undo changes made in this window."
+    },
+    {
+      "pl": "Zabezpieczenia i konserwacja",
+      "en": "Security and Maintenance"
+    },
+    {
+      "pl": "Otwiera okno Zabezpieczenia i konserwacja z komunikatami Windows o problemach.",
+      "en": "Opens the Security and Maintenance window with Windows messages about problems."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: klasyczne okno „Zabezpieczenia i konserwacja” (polecenie: control.exe wscui.cpl). DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+      "en": "Opens a Windows system panel: the classic \"Security and Maintenance\" window (command: control.exe wscui.cpl). DSOptimizer doesn't undo changes made in this window."
+    },
+    {
+      "pl": "Otwiera klasyczne okno Dźwięk z urządzeniami odtwarzania i nagrywania.",
+      "en": "Opens the classic Sound window with playback and recording devices."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: klasyczne okno „Dźwięk” (polecenie: control.exe /name Microsoft.Sound). DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+      "en": "Opens a Windows system panel: the classic \"Sound\" window (command: control.exe /name Microsoft.Sound). DSOptimizer doesn't undo changes made in this window."
+    },
+    {
+      "pl": "Właściwości systemu",
+      "en": "System Properties"
+    },
+    {
+      "pl": "Otwiera Właściwości systemu: nazwa komputera, grupa robocza i domena.",
+      "en": "Opens System Properties: computer name, workgroup and domain."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: klasyczne okno „Właściwości systemu” (polecenie: control.exe sysdm.cpl). Okno startuje na karcie „Nazwa komputera” – to wniosek z nazwy uruchamianego procesu (SystemPropertiesComputerName.exe). Gdy okno Właściwości systemu (na dowolnej karcie) jest już otwarte, kolejne uruchomienie może tylko je przywołać. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+      "en": "Opens a Windows system panel: the classic \"System Properties\" window (command: control.exe sysdm.cpl). The window opens on the \"Computer Name\" tab – this is inferred from the name of the process it starts (SystemPropertiesComputerName.exe). When the System Properties window (on any tab) is already open, starting it again may only bring it to the front. DSOptimizer doesn't undo changes made in this window."
+    },
+    {
+      "pl": "Data i godzina",
+      "en": "Date and Time"
+    },
+    {
+      "pl": "Otwiera okno Data i godzina: strefa czasowa i synchronizacja zegara.",
+      "en": "Opens the Date and Time window: time zone and clock synchronization."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: klasyczne okno „Data i godzina” (polecenie: control.exe /name Microsoft.DateAndTime). DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+      "en": "Opens a Windows system panel: the classic \"Date and Time\" window (command: control.exe /name Microsoft.DateAndTime). DSOptimizer doesn't undo changes made in this window."
+    },
+    {
+      "pl": "Zapora Windows Defender",
+      "en": "Windows Defender Firewall"
+    },
+    {
+      "pl": "Otwiera ustawienia Zapory Windows Defender: włączanie zapory i dostęp programów do sieci.",
+      "en": "Opens the Windows Defender Firewall settings: turning the firewall on or off and which apps can access the network."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: klasyczne okno „Zapora Windows Defender” (polecenie: control.exe /name Microsoft.WindowsFirewall). Pozycja nie zmienia reguł zapory. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
+      "en": "Opens a Windows system panel: the classic \"Windows Defender Firewall\" window (command: control.exe /name Microsoft.WindowsFirewall). The item doesn't change firewall rules. DSOptimizer doesn't undo changes made in this window."
+    },
+    {
+      "pl": "Przywracanie systemu",
+      "en": "System Restore"
+    },
+    {
+      "pl": "Otwiera kreator Przywracania systemu, w którym sam wybierasz punkt przywracania.",
+      "en": "Opens the System Restore wizard, where you choose a restore point yourself."
+    },
+    {
+      "pl": "Otwiera panel systemowy Windows: kreator „Przywracanie systemu” (polecenie: rstrui.exe). Samo otwarcie kreatora uruchamia też usługę wbengine.exe (Block Level Backup Engine). Kreator otwiera się także przy wyłączonej ochronie systemu i bez punktów przywracania – wtedy nie ma do czego wrócić. Przywrócenie systemu uruchamiasz sam w kreatorze; DSOptimizer go nie cofa.",
+      "en": "Opens a Windows system panel: the \"System Restore\" wizard (command: rstrui.exe). Just opening the wizard also starts the wbengine.exe service (Block Level Backup Engine). The wizard opens even when System Protection is off and there are no restore points – then there is nothing to go back to. You start the restore yourself in the wizard; DSOptimizer doesn't undo it."
+    }
+  ]
+}

@@ -332,6 +332,33 @@ translated field.
 - **Warnings** are the short notes that change the decision (restart, no undo, something stops working); the
   interface has no heading for them, so there is no fixed term.
 
+### Catalog – system panels
+
+Titles of the "System panels" items are the English names of the Windows windows they open, as Windows 11 shows them.
+Commands, `*.msc`/`*.cpl` file names, canonical names (`Microsoft.PowerOptions`) and `shell:::{GUID}` stay unchanged.
+Recurring sentences: "Otwiera panel systemowy Windows: klasyczne okno „…”" = "Opens a Windows system panel: the classic
+"…" window"; "DSOptimizer nie cofa zmian zrobionych w tym oknie." = "DSOptimizer doesn't undo changes made in this window."
+
+| Polski | English | Notes/source |
+|---|---|---|
+| Efekty wizualne (Opcje wydajności) | Visual effects (Performance Options) | "Visual Effects" tab of the Performance Options window (SystemPropertiesPerformance.exe); [Tips to improve PC performance in Windows](https://support.microsoft.com/en-us/windows/experience/performance-optimization/tips-to-improve-pc-performance-in-windows) ("On the Visual Effects tab…"). Window title "Performance Options": no official page found, only [Microsoft Q&A](https://learn.microsoft.com/en-us/answers/questions/2184811/how-to-change-performance-settings-in-gpo). **do audytu (Etap 5)** |
+| Opcje zasilania | Power Options | [Canonical Names of Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names); [Automatic maintenance](https://learn.microsoft.com/en-us/windows/win32/taskschd/task-maintenence) ("Control Panel > Hardware and Sound > Power Options") |
+| Połączenia sieciowe | Network Connections | `control.exe netconnections` "Displays the Network Connections folder"; [Executing Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/executing-control-panel-items) |
+| Zarządzanie komputerem | Computer Management | See "Windows names" |
+| Panel sterowania | Control Panel | See "Windows names" |
+| Właściwości: Mysz | Mouse Properties | `control.exe mouse` "Launches the Mouse Properties window"; [Executing Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/executing-control-panel-items) |
+| Urządzenia i drukarki | Devices and Printers | [Canonical Names of Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names) (`Microsoft.DevicesAndPrinters`) |
+| Programy i funkcje | Programs and Features | See "Windows names"; also [Canonical Names of Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names) |
+| Region | Region | Same text in both languages; [Canonical Names of Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names) (`Microsoft.RegionAndLanguage` opens the Region item) |
+| Zabezpieczenia i konserwacja | Security and Maintenance | [Automatic maintenance](https://learn.microsoft.com/en-us/windows/win32/taskschd/task-maintenence) ("Control Panel > System and Security > Security and Maintenance") |
+| Dźwięk | Sound | Shared with the Specification key "Sound"; [Canonical Names of Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names) (`Microsoft.Sound`) |
+| Właściwości systemu / karta „Nazwa komputera” | System Properties / "Computer Name" tab | Tab opened by SystemPropertiesComputerName.exe ([Executing Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/executing-control-panel-items)); tab label only in [Microsoft Q&A](https://learn.microsoft.com/en-us/answers/questions/6008607/renaming-my-computer). **do audytu (Etap 5)** |
+| Data i godzina | Date and Time | [Canonical Names of Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names) (`Microsoft.DateAndTime`) |
+| Zapora Windows Defender | Windows Defender Firewall | See "Windows names" (same audit note) |
+| Przywracanie systemu | System Restore | See "Windows names"; the panel opens the System Restore wizard (rstrui.exe) |
+| kreator | wizard | "the System Restore wizard" |
+| karta sieciowa (w Połączeniach sieciowych) | network adapter | Same as in Specification |
+
 ## Windows names
 
 | Polski | English | Notes/source |
