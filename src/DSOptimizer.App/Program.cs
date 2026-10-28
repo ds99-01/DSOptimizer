@@ -141,7 +141,17 @@ internal static class Program
         var shell = new ShellActions(revealer, new ShellUrlOpener(new WindowsExplorerProcessQuery()), log);
         var specification = CreateSpecification(composition, sink, shell);
         var prep = CreatePrep(composition, sink, shell);
-        var settingsPage = new SettingsViewModel(new SettingsLoadResult(language.Settings, settings.Warning), settingsStore, session, theme, shell, log);
+        // „Uruchom ponownie teraz” (zmiana języka): najpierw nowa instancja, zamknięcie tej dopiero po udanym starcie.
+        var settingsPage = new SettingsViewModel(
+            new SettingsLoadResult(language.Settings, settings.Warning),
+            settingsStore,
+            session,
+            theme,
+            shell,
+            log,
+            language.Language,
+            new ProgramRelauncher(log),
+            () => Application.Current.Shutdown());
         var seriesDialogs = new SeriesDialogs(log, sink.Add, composition.Services.Clock);
         // Baner restartu: czas startu systemu z CIM (tylko odczyt); restart przez shutdown.exe – wyłącznie po potwierdzeniu w oknie,
         // ze śladem w pliku logu (zlecenie i przyczyna błędu).

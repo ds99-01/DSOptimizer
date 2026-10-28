@@ -16,6 +16,18 @@
     {
       "pl": "Nie udało się pokazać okna wyboru języka. Program używa języka systemu.",
       "en": "Could not show the language prompt. The program uses the system language."
+    },
+    {
+      "pl": "Język",
+      "en": "Language"
+    },
+    {
+      "pl": "Język zmieni się po ponownym uruchomieniu programu.",
+      "en": "The language changes after the program restarts."
+    },
+    {
+      "pl": "Uruchom ponownie teraz",
+      "en": "Restart now"
     }
   ]
 }

@@ -12,6 +12,7 @@ using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Hardware;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Prep;
 using DSOptimizer.Core.Settings;
 using DSOptimizer.Tests.Windows.Support;
@@ -35,6 +36,11 @@ public class MainViewModelTests
     private sealed class NoRestart : IRestarter
     {
         public void Restart() => throw new InvalidOperationException("Test nie restartuje komputera.");
+    }
+
+    private sealed class NoRelaunch : IProgramRelauncher
+    {
+        public void Relaunch() => throw new InvalidOperationException("Test nie uruchamia programu ponownie.");
     }
 
     private sealed class NoLastBoot : ILastBootTime
@@ -113,7 +119,8 @@ public class MainViewModelTests
         var prep = new PrepViewModel(
             new PrepLoader(new WindowsHardwareReader(), new WindowsPrepReader(), log, PrepLoader.DefaultTimeout), shell, "C:", (level, text) => sink.Add(level, text));
         var settingsStore = new JsonFileSettingsStore(temp.AppRoot, services.Clock);
-        var settings = new SettingsViewModel(new SettingsLoadResult(AppSettings.Default, null), settingsStore, session, new ThemeController(log), shell, log);
+        var settings = new SettingsViewModel(
+            new SettingsLoadResult(AppSettings.Default, null), settingsStore, session, new ThemeController(log), shell, log, UiLanguage.Polish, new NoRelaunch(), () => { });
         return new MainViewModel(
             session,
             sink,
