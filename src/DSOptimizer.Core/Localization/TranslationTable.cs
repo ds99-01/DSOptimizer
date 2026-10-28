@@ -10,7 +10,9 @@ using Newtonsoft.Json.Linq;
 namespace DSOptimizer.Core.Localization;
 
 /// <summary>
-/// Tabela tłumaczeń polski → angielski. Format pliku: <c>{"language":"en","entries":[{"pl":"…","en":"…"}]}</c>.
+/// Tabela tłumaczeń polski → angielski. Format pliku: <c>{"language":"en","entries":[{"pl":"…","en":"…"}]}</c>, opcjonalnie
+/// z <c>"data": true</c> (teksty z danych – katalog, listy aplikacji): wtedy zamiast reguł napisu formatującego obowiązują te same
+/// grupy <c>{…}</c> w obu językach (np. <c>shell:::{GUID}</c>, <c>{0:X8}</c>) i ta sama liczba nawiasów klamrowych.
 /// Klucz to dokładny tekst polski. Ładowanie sprawdza wszystkie reguły i zgłasza wszystkie błędy naraz.
 /// </summary>
 public sealed class TranslationTable
@@ -18,6 +20,8 @@ public sealed class TranslationTable
     private static readonly Regex Placeholder = new(
         @"\{(\d+)(?:,[^}:]*)?(?::[^}]*)?\}",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+    private static readonly Regex BraceGroup = new(@"\{[^{}]*\}", RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private static readonly char[] Braces = { '{', '}' };
 
@@ -115,6 +119,19 @@ public sealed class TranslationTable
             errors.Add(name + ": pole \"language\" musi mieć dokładnie wartość \"en\".");
         }
 
+        var data = false;
+        if (root["data"] is { } dataToken)
+        {
+            if (dataToken is JValue { Type: JTokenType.Boolean } flag)
+            {
+                data = (bool)flag.Value!;
+            }
+            else
+            {
+                errors.Add(name + ": pole \"data\" musi mieć wartość true albo false.");
+            }
+        }
+
         if (root["entries"] is not JArray entries)
         {
             errors.Add(name + ": brak tablicy \"entries\".");
@@ -123,7 +140,7 @@ public sealed class TranslationTable
 
         for (var i = 0; i < entries.Count; i++)
         {
-            ValidateEntry(name, i, entries[i], table, origin, errors);
+            ValidateEntry(name, i, entries[i], data, table, origin, errors);
         }
     }
 
@@ -131,6 +148,7 @@ public sealed class TranslationTable
         string file,
         int index,
         JToken token,
+        bool data,
         Dictionary<string, string> table,
         Dictionary<string, string> origin,
         List<string> errors)
@@ -157,19 +175,7 @@ public sealed class TranslationTable
             return;
         }
 
-        var ok = true;
-        if (!PlaceholderNumbers(pl).SetEquals(PlaceholderNumbers(en)))
-        {
-            errors.Add(where + ": inny zbiór symboli zastępczych w \"pl\" i \"en\" (" + Shorten(pl) + ").");
-            ok = false;
-        }
-
-        if (ok && (HasBrace(pl) || HasBrace(en)) && (!IsValidFormat(pl) || !IsValidFormat(en)))
-        {
-            errors.Add(where + ": \"pl\" lub \"en\" nie jest poprawnym napisem formatującym (zabłąkany nawias klamrowy) (" + Shorten(pl) + ").");
-            ok = false;
-        }
-
+        var ok = data ? ValidateDataBraces(where, pl, en, errors) : ValidateFormat(where, pl, en, errors);
         if (!string.Equals(Leading(pl), Leading(en), StringComparison.Ordinal)
             || !string.Equals(Trailing(pl), Trailing(en), StringComparison.Ordinal))
         {
@@ -189,6 +195,46 @@ public sealed class TranslationTable
             table[pl] = en;
         }
     }
+
+    /// <summary>Reguły tabeli kodu: ten sam zbiór symboli zastępczych i poprawny napis formatujący.</summary>
+    private static bool ValidateFormat(string where, string pl, string en, List<string> errors)
+    {
+        if (!PlaceholderNumbers(pl).SetEquals(PlaceholderNumbers(en)))
+        {
+            errors.Add(where + ": inny zbiór symboli zastępczych w \"pl\" i \"en\" (" + Shorten(pl) + ").");
+            return false;
+        }
+
+        if ((HasBrace(pl) || HasBrace(en)) && (!IsValidFormat(pl) || !IsValidFormat(en)))
+        {
+            errors.Add(where + ": \"pl\" lub \"en\" nie jest poprawnym napisem formatującym (zabłąkany nawias klamrowy) (" + Shorten(pl) + ").");
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Reguła tabeli danych: grupy <c>{…}</c> (bez zagnieżdżeń) w „pl” i „en” równe jako multizbiory (porównanie dokładne), a liczba
+    /// znaków <c>{</c> i <c>}</c> taka sama w obu językach – tłumacz nie zgubi ani nie zmieni GUID-u ani symbolu zastępczego.
+    /// </summary>
+    private static bool ValidateDataBraces(string where, string pl, string en, List<string> errors)
+    {
+        if (!BraceGroups(pl).SequenceEqual(BraceGroups(en), StringComparer.Ordinal)
+            || CountOf(pl, '{') != CountOf(en, '{')
+            || CountOf(pl, '}') != CountOf(en, '}'))
+        {
+            errors.Add(where + ": inne grupy w nawiasach klamrowych w \"pl\" i \"en\" (" + Shorten(pl) + ").");
+            return false;
+        }
+
+        return true;
+    }
+
+    private static List<string> BraceGroups(string text) =>
+        BraceGroup.Matches(text).Cast<Match>().Select(m => m.Value).OrderBy(v => v, StringComparer.Ordinal).ToList();
+
+    private static int CountOf(string text, char c) => text.Count(x => x == c);
 
     private static bool HasBrace(string text) => text.IndexOfAny(Braces) >= 0;
 

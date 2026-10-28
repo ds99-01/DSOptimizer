@@ -184,6 +184,35 @@ public class TranslationCallRulesTests
         Assert.Single(Scan("private static readonly string X = L.P(\"a {0}\", \"b {0}\", \"c {0}\", 1);"));
     }
 
+    [Fact]
+    public void DataCalls_OnlyInDataLoaders()
+    {
+        var violations = ScanRepo(".cs").Where(v => v.IndexOf(TranslationCallScanner.DataCallReason, StringComparison.Ordinal) >= 0).ToList();
+        Assert.True(violations.Count == 0, string.Join(Environment.NewLine, violations));
+    }
+
+    [Fact]
+    public void Scanner_FlagsDataCallOutsideLoaders()
+    {
+        var v = Assert.Single(Scan("var s = L.Data(text);"));
+        Assert.Contains(TranslationCallScanner.DataCallReason, v, StringComparison.Ordinal);
+        Assert.Single(TranslationCallScanner.Violations("src/DSOptimizer.Core/Gui/GuiSession.cs", "var s = L.Data(t.Title);"));
+        Assert.Single(Scan("private static readonly string X = L.Data(y);"), x => x.Contains(TranslationCallScanner.StaticFieldReason));
+        Assert.Empty(Scan("var s = XL.Data(text); // L.Data(x)"));
+    }
+
+    [Fact]
+    public void Scanner_AcceptsDataCallInDataLoaders()
+    {
+        foreach (var file in TranslationCallScanner.DataCallFiles)
+        {
+            Assert.Empty(TranslationCallScanner.Violations(file, "    return L.Data(definition.Title);"));
+        }
+
+        Assert.Contains("src/DSOptimizer.Core/Catalog/CatalogTranslation.cs", TranslationCallScanner.DataCallFiles);
+        Assert.Contains("src/DSOptimizer.Core/Scripts/ScriptWrapper.cs", TranslationCallScanner.DataCallFiles);
+    }
+
     private static IReadOnlyList<string> Scan(string text) => TranslationCallScanner.Violations("x.cs", text);
 
     private static IReadOnlyList<string> ScanXaml(string text) => TranslationCallScanner.Violations("x.xaml", text);
@@ -229,12 +258,25 @@ public class TranslationCallRulesTests
 /// Czego nie łapie: literału samego argumentu rozbitego na kilka linii, komentarzy blokowych (<c>/* */</c>), w pełni kwalifikowanego
 /// <c>X.L.T(</c>, <c>L.T</c> przez alias, <c>using static</c> albo grupę metod, statycznego pola z krotką przed <c>=</c> bez <c>readonly</c>,
 /// inicjalizatorów statycznych wywołanych pośrednio (np. przez metodę pomocniczą).
+/// <c>L.Data</c> (wywołanie albo grupa metod) tylko w plikach z <see cref="DataCallFiles"/>, nigdy w polu statycznym.
 /// </summary>
 public static class TranslationCallScanner
 {
     public const string StaticFieldReason = "static field";
 
+    public const string DataCallReason = "L.Data outside data loaders";
+
+    /// <summary>Jedyne pliki, w których wolno wołać <c>L.Data</c> (teksty z danych: katalog, listy aplikacji, komunikaty skryptów).</summary>
+    public static IReadOnlyList<string> DataCallFiles { get; } = new[]
+    {
+        "src/DSOptimizer.Core/Catalog/CatalogTranslation.cs",
+        "src/DSOptimizer.Core/Apps/AppsBloatCatalog.cs",
+        "src/DSOptimizer.Core/Install/AppsInstallCatalog.cs",
+        "src/DSOptimizer.Core/Scripts/ScriptWrapper.cs",
+    };
+
     private static readonly Regex CallStart = new(@"(?<![\w.])L\.([TFP])\(", RegexOptions.Compiled);
+    private static readonly Regex DataStart = new(@"(?<![\w.])L\.Data\b", RegexOptions.Compiled);
     private static readonly Regex StaticStart = new(@"\bconst\b|\bstatic\s+readonly\b|\bstatic\b[^=(]*=(?!>)", RegexOptions.Compiled);
     private static readonly Regex XamlStart = new(@"\{l:T(?!\w)", RegexOptions.Compiled);
     private static readonly Regex XamlValid = new(@"\G\{l:T '(?:[^'\\]|\\.)*'\}", RegexOptions.Compiled);
@@ -277,6 +319,20 @@ public static class TranslationCallScanner
                 if (ranges.Any(r => call.Index >= r.Start && call.Index < r.End))
                 {
                     result.Add(where + name + "( in a " + StaticFieldReason + " or const (use a => property or a method body)");
+                }
+            }
+
+            var dataAllowed = DataCallFiles.Contains(fileName, StringComparer.Ordinal);
+            foreach (Match call in DataStart.Matches(code))
+            {
+                if (!dataAllowed)
+                {
+                    result.Add(where + DataCallReason + " (allowed only in: " + string.Join(", ", DataCallFiles) + ")");
+                }
+
+                if (ranges.Any(r => call.Index >= r.Start && call.Index < r.End))
+                {
+                    result.Add(where + "L.Data in a " + StaticFieldReason + " or const (use a => property or a method body)");
                 }
             }
         }

@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
+using DSOptimizer.Tests.Unit.Catalog;
 using DSOptimizer.Tests.Unit.Engine;
 using Xunit;
 
@@ -702,5 +705,22 @@ public class ChangeHistoryTests
 
         Assert.Equal("Tools", item.IconKind);
     }
-}
 
+    [Fact]
+    public void History_EntryWrittenInPolish_ShowsEnglishTitle()
+    {
+        var entry = Entry("a", Me, JournalEntryStatus.Active, Before, ("apply", "Applied", Before));
+        entry.Title = "Tytuł a";
+        var catalog = new LoadedCatalog(new[] { Plain("a") }, "sha256:x");
+        using (L.UseTable(CatalogTranslationTests.DataTable(("Tytuł a", "Title a"))))
+        using (L.Use(UiLanguage.English))
+        {
+            var translated = CatalogTranslation.Translate(catalog);
+
+            var item = Assert.Single(Build(Doc(entry), Cats(translated.Definitions.ToArray())));
+
+            Assert.Equal("Title a", item.Title);
+            Assert.True(item.InCatalog);
+        }
+    }
+}

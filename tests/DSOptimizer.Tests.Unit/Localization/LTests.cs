@@ -214,6 +214,40 @@ public class LTests
     }
 
     [Fact]
+    public void Data_English_Translates()
+    {
+        var polish = "Pozycja z danych";
+        using (L.UseTable(Table("Pozycja z danych", "Item from data")))
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("Item from data", L.Data(polish));
+        }
+    }
+
+    [Fact]
+    public void Data_Missing_ReturnsPolish()
+    {
+        var polish = "Inny tekst z danych";
+        using (L.UseTable(Table("Pozycja z danych", "Item from data")))
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Same(polish, L.Data(polish));
+        }
+
+        using (L.UseTable(Table("Pozycja z danych", "Item from data")))
+        using (L.Use(UiLanguage.Polish))
+        {
+            Assert.Equal("Pozycja z danych", L.Data("Pozycja z danych"));
+        }
+    }
+
+    [Fact]
+    public void Data_Null_Throws()
+    {
+        Assert.Throws<ArgumentNullException>(() => L.Data(null!));
+    }
+
+    [Fact]
     public void LoadBuiltIn_ThrowingSource_YieldsEmptyTableAndWarning()
     {
         var table = L.LoadBuiltIn(() => throw new UnauthorizedAccessException("brak dostepu"), out var warning);

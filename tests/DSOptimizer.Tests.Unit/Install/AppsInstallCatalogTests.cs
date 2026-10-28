@@ -6,6 +6,8 @@ using System.Text;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
+using DSOptimizer.Tests.Unit.Catalog;
 using DSOptimizer.Tests.Unit.Support;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -685,5 +687,36 @@ public class AppsInstallCatalogTests
     {
         // Reguły listy są tylko Win32 (widoczny wpis Uninstall); pakiety AppX doinstalowane obok nie dają statusu.
         Assert.DoesNotContain(BuiltIn().Entries, e => InstallStatus.IsInstalled(e, new[] { Appx(package) }));
+    }
+
+    [Fact]
+    public void Load_English_TranslatesSummaryWarning_TitleUnchanged()
+    {
+        var table = CatalogTranslationTests.DataTable(
+            ("Odtwarzacz.", "Player."),
+            ("Uwaga.", "Note."),
+            ("VLC", "VLC player"));
+        using (L.UseTable(table))
+        using (L.Use(UiLanguage.English))
+        {
+            var vlc = Assert.Single(AppsInstallCatalog.Load(Wrap(GoodVlc)).Entries);
+
+            Assert.Equal("Player.", vlc.Summary);
+            Assert.Equal("Note.", vlc.Warning);
+            Assert.Equal("VLC", vlc.Title);
+            Assert.Equal("VideoLAN.VLC", vlc.WingetId);
+            Assert.Equal("https://www.videolan.org/vlc/", vlc.Source);
+        }
+    }
+
+    [Fact]
+    public void Load_EnglishTooLongTranslation_DoesNotFailLoad()
+    {
+        var longEnglish = new string('e', 200);
+        using (L.UseTable(CatalogTranslationTests.DataTable(("Archiwizator.", longEnglish))))
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal(longEnglish, AppsInstallCatalog.Load(Wrap(Good7Zip)).Entries[0].Summary);
+        }
     }
 }

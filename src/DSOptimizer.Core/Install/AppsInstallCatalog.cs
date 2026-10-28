@@ -207,7 +207,17 @@ public sealed class AppsInstallCatalog
             throw new InstallCatalogException(id, "source", L.T("adres musi być bezwzględnym https"));
         }
 
-        return new InstallEntry(id, wingetId, title, summary, category, match, warning, source, gitHub);
+        // Opis i uwaga w języku interfejsu dopiero po walidacji (limit dotyczy polskiego oryginału); tytuł to nazwa produktu – bez tłumaczenia.
+        return new InstallEntry(
+            id,
+            wingetId,
+            title,
+            L.Data(summary),
+            category,
+            match,
+            warning is null ? null : L.Data(warning),
+            source,
+            gitHub);
     }
 
     private static InstallCatalogException Fail(string id, string field, string message) => new(id, field, message);

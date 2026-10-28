@@ -153,4 +153,82 @@ public class TranslationTableTests
     {
         Assert.Throws<TranslationFormatException>(() => LoadOne("{nie json"));
     }
+
+    private const string Guid = "{21EC2020-3AEA-1069-A2DD-08002B30309D}";
+
+    private static string DataJson(string data, params (string Pl, string En)[] entries) =>
+        Json(entries).Replace("{\"language\":\"en\",", "{\"language\":\"en\",\"data\":" + data + ",");
+
+    [Fact]
+    public void Data_GuidInText_Loads()
+    {
+        var table = LoadOne(DataJson("true", ("Otwiera shell:::" + Guid + ".", "Opens shell:::" + Guid + ".")));
+        Assert.Equal("Opens shell:::" + Guid + ".", table.Find(UiLanguage.English, "Otwiera shell:::" + Guid + "."));
+    }
+
+    [Fact]
+    public void Data_BraceGroupsDiffer_Rejected()
+    {
+        Assert.Throws<TranslationFormatException>(() => LoadOne(DataJson(
+            "true",
+            ("Otwiera shell:::" + Guid + ".", "Opens shell:::{21EC2020-3AEA-1069-A2DD-08002B30309E}."))));
+    }
+
+    [Fact]
+    public void Data_FormatGroupKept_Loads()
+    {
+        var table = LoadOne(DataJson("true", ("Kod {0:X8}.", "Code {0:X8}.")));
+        Assert.Equal("Code {0:X8}.", table.Find(UiLanguage.English, "Kod {0:X8}."));
+    }
+
+    [Fact]
+    public void Data_DroppedPlaceholder_Rejected()
+    {
+        Assert.Throws<TranslationFormatException>(() => LoadOne(DataJson("true", ("Plik {0} usunięty.", "File removed."))));
+    }
+
+    [Fact]
+    public void Data_ExtraBrace_Rejected()
+    {
+        Assert.Throws<TranslationFormatException>(() => LoadOne(DataJson("true", ("Plik {0}.", "File {0} {."))));
+    }
+
+    [Fact]
+    public void Data_NotBoolean_Rejected()
+    {
+        var ex = Assert.Throws<TranslationFormatException>(() => LoadOne(DataJson("\"true\"", ("Tak", "Yes"))));
+        Assert.Contains("a.json", ex.Message, StringComparison.Ordinal);
+        Assert.Throws<TranslationFormatException>(() => LoadOne(DataJson("1", ("Tak", "Yes"))));
+    }
+
+    [Fact]
+    public void Data_False_KeepsFormatRules()
+    {
+        Assert.Throws<TranslationFormatException>(() => LoadOne(DataJson("false", ("Plik " + Guid, "File " + Guid))));
+        Assert.Equal(1, LoadOne(DataJson("false", ("Tak", "Yes"))).Count);
+    }
+
+    [Fact]
+    public void NonData_GuidStillRejected()
+    {
+        Assert.Throws<TranslationFormatException>(() => LoadOne(Json(("Otwiera shell:::" + Guid + ".", "Opens shell:::" + Guid + "."))));
+    }
+
+    [Fact]
+    public void Data_WhitespaceRulesStillApply()
+    {
+        Assert.Throws<TranslationFormatException>(() => LoadOne(DataJson("true", ("Tekst ", "Text"))));
+    }
+
+    [Fact]
+    public void Data_DuplicateWithCodeTable_Rejected()
+    {
+        var ex = Assert.Throws<TranslationFormatException>(() => TranslationTable.Load(new[]
+        {
+            new TranslationSource("gui.json", Json(("Zapisz", "Save"))),
+            new TranslationSource("catalog-x.json", DataJson("true", ("Zapisz", "Save it"))),
+        }));
+        Assert.Contains("gui.json", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("catalog-x.json", ex.Message, StringComparison.Ordinal);
+    }
 }

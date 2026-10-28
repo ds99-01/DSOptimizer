@@ -227,4 +227,75 @@ Describe 'Get-MissingTranslations.ps1' {
         $Result = Invoke-Report -Root $Root
         $Result.Code | Should -Be 2
     }
+
+    It 'teksty pozycji katalogu: przetłumaczony tytuł nie jest brakiem, nieprzetłumaczona uwaga jest, z miejscem pliku i pola' {
+        $Catalog = '[{"id":"x.y","kind":"tweak","title":"Tytuł pozycji","summary":"Opis.","benefit":"Zysk.","description":"Szczegóły.","warnings":["Uwaga bez tłumaczenia."],"script":{"apply":["throw ''Komunikat skryptu''"]}}]'
+        $Translations = '{"language":"en","data":true,"entries":[{"pl":"Tytuł pozycji","en":"Item title"},{"pl":"Opis.","en":"Summary."},{"pl":"Zysk.","en":"Gain."},{"pl":"Szczegóły.","en":"Details."}]}'
+        $Root = New-TestTree -Files @{ 'src\DSOptimizer.Catalog\catalog\x.json' = $Catalog } -Translations $Translations
+        $Result = Invoke-Report -Root $Root
+        $Result.Code | Should -Be 0
+        $Result.Text | Should -Match 'Brak tłumaczenia \(1\)'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/x\.json#x\.y\.warnings  Uwaga bez tłumaczenia\.$'
+        $Result.Text | Should -Match 'Braki: 1, nieużywane: 0'
+        $Result.Text | Should -Not -Match 'Komunikat skryptu'
+    }
+
+    It 'katalog: brakujące title, summary, benefit i description mają własne miejsca' {
+        $Catalog = '[{"id":"a.b","title":"T","summary":"S","benefit":"B","description":"D","warnings":[]},{"id":"a.c","title":"T2","summary":"S2","description":"D2"}]'
+        $Root = New-TestTree -Files @{ 'src\DSOptimizer.Catalog\catalog\a.json' = $Catalog }
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match 'Braki: 7, nieużywane: 0'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/a\.json#a\.b\.title  T$'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/a\.json#a\.b\.summary  S$'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/a\.json#a\.b\.benefit  B$'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/a\.json#a\.b\.description  D$'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/a\.json#a\.c\.description  D2$'
+    }
+
+    It 'apps.json: summary i warning są zbierane, title nie' {
+        $Apps = '{"entries":[{"id":"install.vlc","wingetId":"VideoLAN.VLC","title":"VLC bez tłumaczenia","summary":"Odtwarzacz.","warning":"Uwaga listy.","category":"multimedia","source":"https://x"}]}'
+        $Root = New-TestTree -Files @{ 'src\DSOptimizer.Catalog\catalog\apps.json' = $Apps }
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match 'Braki: 2, nieużywane: 0'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/apps\.json#install\.vlc\.summary  Odtwarzacz\.$'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/apps\.json#install\.vlc\.warning  Uwaga listy\.$'
+        $Result.Text | Should -Not -Match 'VLC bez tłumaczenia'
+    }
+
+    It 'apps-bloat.json: summary i warning wpisów oraz reason listy chronionej, bez source' {
+        $Bloat = '{"entries":[{"id":"ms.a","group":"microsoft","suggested":true,"summary":"Opis A.","warning":"Ostrzeżenie A.","source":"Źródło A"}],"protected":[{"id":"ms.calc","reason":"Powód chroniony."}]}'
+        $Root = New-TestTree -Files @{ 'src\DSOptimizer.Catalog\catalog\apps-bloat.json' = $Bloat }
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match 'Braki: 3, nieużywane: 0'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/apps-bloat\.json#ms\.a\.summary  Opis A\.$'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/apps-bloat\.json#ms\.a\.warning  Ostrzeżenie A\.$'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/apps-bloat\.json#ms\.calc\.reason  Powód chroniony\.$'
+        $Result.Text | Should -Not -Match 'Źródło A'
+    }
+
+    It 'wpis tabeli danych bez użycia w katalogu jest nieużywany' {
+        $Catalog = '[{"id":"x.y","title":"Tytuł","summary":"Opis.","description":"D","warnings":[]}]'
+        $Translations = '{"language":"en","data":true,"entries":[{"pl":"Tytuł","en":"Title"},{"pl":"Opis.","en":"Summary."},{"pl":"D","en":"D"},{"pl":"Usunięta pozycja","en":"Removed item"}]}'
+        $Root = New-TestTree -Files @{ 'src\DSOptimizer.Catalog\catalog\x.json' = $Catalog } -Translations $Translations
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match 'Nieużywane tłumaczenia \(1\)'
+        $Result.Text | Should -Match '(?m)^  Usunięta pozycja$'
+        $Result.Text | Should -Match 'Braki: 0, nieużywane: 1'
+    }
+
+    It 'tekst z kodu i z katalogu liczy się raz, z miejscem w kodzie' {
+        $Catalog = '[{"id":"x.y","title":"Wspólny","summary":"S","description":"D"}]'
+        $Translations = '{"language":"en","entries":[{"pl":"S","en":"S"},{"pl":"D","en":"D"}]}'
+        $Root = New-TestTree -Files @{ 'src\A.cs' = 'var s = L.T("Wspólny");'; 'src\DSOptimizer.Catalog\catalog\x.json' = $Catalog } -Translations $Translations
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match 'Braki: 1, nieużywane: 0'
+        $Result.Text | Should -Match 'src/A\.cs:1  Wspólny'
+    }
+
+    It 'nieprawidłowy JSON pliku katalogu daje kod 2' {
+        $Root = New-TestTree -Files @{ 'src\DSOptimizer.Catalog\catalog\x.json' = '[{ zly' }
+        $Result = Invoke-Report -Root $Root
+        $Result.Code | Should -Be 2
+        $Result.Text | Should -Match 'x\.json'
+    }
 }

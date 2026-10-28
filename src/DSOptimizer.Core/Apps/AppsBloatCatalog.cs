@@ -214,14 +214,24 @@ public sealed class AppsBloatCatalog
             throw new AppsCatalogException(id, "cleanupUrl", L.T("adres musi być bezwzględnym https"));
         }
 
-        return new BloatEntry(id, match, group, obj["suggested"]!.Value<bool>(), summary, Text(obj, "warning", id), source, url);
+        // Teksty dla człowieka w języku interfejsu dopiero po walidacji: limit długości dotyczy polskiego oryginału.
+        var warning = Text(obj, "warning", id);
+        return new BloatEntry(
+            id,
+            match,
+            group,
+            obj["suggested"]!.Value<bool>(),
+            L.Data(summary),
+            warning is null ? null : L.Data(warning),
+            source,
+            url);
     }
 
     private static ProtectedEntry ParseProtected(JObject obj, string id, HashSet<string> ids)
     {
         CheckUnique(id, ids);
         var match = ParseMatch(obj, id);
-        return new ProtectedEntry(id, match, Required(obj, id, "reason"));
+        return new ProtectedEntry(id, match, L.Data(Required(obj, id, "reason")));
     }
 
     private static void CheckUnique(string id, HashSet<string> ids)

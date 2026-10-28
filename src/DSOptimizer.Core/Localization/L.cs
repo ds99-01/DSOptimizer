@@ -82,6 +82,21 @@ public static class L
         return Table().Find(Current, polish) ?? polish;
     }
 
+    /// <summary>
+    /// Tłumaczy tekst z danych (katalog, listy aplikacji, komunikaty skryptów) – to samo co <see cref="T"/>, ale argument nie jest
+    /// literałem w kodzie, więc wolno go używać tylko w plikach wczytujących dane (pilnuje tego test strażnika wywołań).
+    /// Bez tłumaczenia albo po polsku zwraca tę samą instancję tekstu.
+    /// </summary>
+    public static string Data(string polish)
+    {
+        if (polish is null)
+        {
+            throw new ArgumentNullException(nameof(polish));
+        }
+
+        return Table().Find(Current, polish) ?? polish;
+    }
+
     /// <summary>Formatuje przetłumaczony format w kulturze bieżącego języka.</summary>
     public static string F(string polishFormat, params object?[] args) =>
         string.Format(Culture, T(polishFormat), args);

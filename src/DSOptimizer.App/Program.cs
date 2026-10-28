@@ -12,6 +12,7 @@ using DSOptimizer.App.Views;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Cli;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Hardware;
@@ -48,6 +49,8 @@ internal static class Program
         L.SetDefault(new JsonFileSettingsStore(SecureRoot.ProgramData, new SystemClock()).PeekLanguage() ?? detected);
 
         var sink = new UiLogSink(Dispatcher.CurrentDispatcher, new SystemClock());
+        // Katalog wczytany po polsku (polski tekst = klucz tłumaczenia); teksty pozycji tłumaczy dopiero CatalogTranslation.Translate
+        // przy tworzeniu GuiSession, po ostatecznym wyborze języka (okno wyboru może zmienić język ustawiony wyżej).
         var catalog = CliCatalog.Load(null, path => File.ReadAllText(path, Encoding.UTF8), BuiltInCatalog.Sources);
         if (catalog.Catalog is null)
         {
@@ -118,7 +121,7 @@ internal static class Program
 
         // Od tego miejsca wszystko, co liczy teksty przy tworzeniu (nazwy kategorii w GuiSession, sesje stron „Aplikacje”
         // i „Instalacja” z komunikatami listy), powstaje już w ostatecznym języku.
-        var session = new GuiSession(catalog.Catalog, composition.Services) { CreateRestorePoint = settings.Settings.CreateRestorePoint };
+        var session = new GuiSession(CatalogTranslation.Translate(catalog.Catalog), composition.Services) { CreateRestorePoint = settings.Settings.CreateRestorePoint };
         var accountNames = new CachedAccountNames(new WindowsAccountNames());
         AppsSession apps;
         try

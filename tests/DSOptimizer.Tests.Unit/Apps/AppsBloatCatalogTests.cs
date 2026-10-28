@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Localization;
+using DSOptimizer.Tests.Unit.Catalog;
 using Xunit;
 
 namespace DSOptimizer.Tests.Unit.Apps;
@@ -404,5 +406,62 @@ public class AppsBloatCatalogTests
     public void Load_NullJson_Throws()
     {
         Assert.Throws<ArgumentNullException>(() => AppsBloatCatalog.Load(null!));
+    }
+
+    private const string WarnedEntry = """
+        { "id": "ms.mail", "match": { "packageName": "Microsoft.Mail" }, "group": "microsoft", "suggested": false,
+          "summary": "Poczta.", "warning": "Stracisz pocztę.", "source": "spec 6.2" }
+        """;
+
+    private const string ProtectedCalc = """
+        { "id": "ms.calc", "match": { "packageName": "Microsoft.WindowsCalculator" }, "reason": "Część systemu." }
+        """;
+
+    [Fact]
+    public void Load_English_TranslatesSummaryWarningReason()
+    {
+        var table = CatalogTranslationTests.DataTable(
+            ("Wiadomości.", "News."),
+            ("Poczta.", "Mail."),
+            ("Stracisz pocztę.", "You lose your mail."),
+            ("Część systemu.", "Part of the system."));
+        using (L.UseTable(table))
+        using (L.Use(UiLanguage.English))
+        {
+            var catalog = AppsBloatCatalog.Load(Wrap(GoodEntry + "," + WarnedEntry, ProtectedCalc));
+
+            Assert.Equal("News.", catalog.Entries[0].Summary);
+            Assert.Null(catalog.Entries[0].Warning);
+            Assert.Equal("Mail.", catalog.Entries[1].Summary);
+            Assert.Equal("You lose your mail.", catalog.Entries[1].Warning);
+            Assert.Equal("Part of the system.", Assert.Single(catalog.Protected).Reason);
+            Assert.Equal("spec 6.2", catalog.Entries[1].Source);
+            Assert.Equal("ms.mail", catalog.Entries[1].Id);
+        }
+    }
+
+    [Fact]
+    public void Load_Polish_KeepsOriginalTexts()
+    {
+        var table = CatalogTranslationTests.DataTable(("Wiadomości.", "News."), ("Część systemu.", "Part of the system."));
+        using (L.UseTable(table))
+        using (L.Use(UiLanguage.Polish))
+        {
+            var catalog = AppsBloatCatalog.Load(Wrap(GoodEntry, ProtectedCalc));
+
+            Assert.Equal("Wiadomości.", catalog.Entries[0].Summary);
+            Assert.Equal("Część systemu.", Assert.Single(catalog.Protected).Reason);
+        }
+    }
+
+    [Fact]
+    public void Load_EnglishTooLongTranslation_DoesNotFailLoad()
+    {
+        var longEnglish = new string('e', 200);
+        using (L.UseTable(CatalogTranslationTests.DataTable(("Wiadomości.", longEnglish))))
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal(longEnglish, AppsBloatCatalog.Load(Wrap(GoodEntry)).Entries[0].Summary);
+        }
     }
 }

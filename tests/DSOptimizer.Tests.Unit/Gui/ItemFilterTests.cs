@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
+using DSOptimizer.Tests.Unit.Catalog;
 using Xunit;
 
 namespace DSOptimizer.Tests.Unit.Gui;
@@ -181,5 +184,35 @@ public class ItemFilterTests
             Pair(Item(RiskLevel.Experimental, TweakKind.Action, id: "a"), DetectionState.Applied),
         };
         Assert.Equal(0, ItemFilter.CountShownDespiteFilter(items, null, RiskFilter.SafeOnly));
+    }
+
+    [Fact]
+    public void Search_English_FindsByEnglishSummary()
+    {
+        var item = English(Item());
+
+        Assert.True(ItemFilter.MatchesQuery(item, "space"));
+        Assert.True(ItemFilter.MatchesQuery(item, "hibernation"));
+    }
+
+    [Fact]
+    public void Search_English_PolishWordFindsNothing()
+    {
+        var item = English(Item());
+
+        Assert.False(ItemFilter.MatchesQuery(item, "miejsce"));
+        Assert.False(ItemFilter.MatchesQuery(item, "wylacz"));
+    }
+
+    private static TweakDefinition English(TweakDefinition item)
+    {
+        var table = CatalogTranslationTests.DataTable(
+            ("Wyłącz hibernację", "Turn off hibernation"),
+            ("Zwalnia miejsce na dysku C:.", "Frees up space on drive C:."));
+        using (L.UseTable(table))
+        using (L.Use(UiLanguage.English))
+        {
+            return CatalogTranslation.Translate(new LoadedCatalog(new[] { item }, "sha256:x")).Definitions[0];
+        }
     }
 }

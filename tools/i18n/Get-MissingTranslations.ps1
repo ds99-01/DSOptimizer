@@ -14,7 +14,11 @@
     #     oraz src\DSOptimizer.Core\Localization\L.cs. Zasady literałów pilnuje test TranslationCallRulesTests, więc wystarczą
     #     proste wyrażenia regularne. Teksty są rozkodowywane (C#: \\ \" \' \0 \n \r \t \uXXXX; XAML: encje XML,
     #     potem \' i \\). Tłumaczenia czyta z src\DSOptimizer.Core\Localization\Translations\*.json
-    #     ({"language":"en","entries":[{"pl":"…","en":"…"}]}); tekst jest przetłumaczony, gdy ma wpis z niepustym "en".
+    #     ({"language":"en","entries":[{"pl":"…","en":"…"}]}, tabele danych z "data": true tak samo); tekst jest przetłumaczony,
+    #     gdy ma wpis z niepustym "en". Teksty danych (L.Data) czyta z src\DSOptimizer.Catalog\catalog\*.json: pozycje tablic
+    #     tweaków – title, summary, benefit, description, każda uwaga z warnings; apps.json – summary, warning (bez title, to nazwy
+    #     produktów); apps-bloat.json – entries[].summary, entries[].warning, protected[].reason. Miejsce takiego tekstu:
+    #     src/DSOptimizer.Catalog/catalog/<plik>#<id>.<pole>; teksty danych liczą się jako używane. Zły JSON katalogu = kod 2.
     #     Wypisuje sekcje „Brak tłumaczenia (N)” (plik:linia i tekst, każdy tekst raz, z pierwszym miejscem) oraz
     #     „Nieużywane tłumaczenia (M)” (wpisy "pl", których nie ma w źródłach), a na końcu „Braki: N, nieużywane: M”.
     #     Kod wyjścia: 0 zawsze; z -FailOnMissing 1 przy N > 0; 2 przy nieprawidłowym pliku tłumaczeń.
@@ -125,6 +129,58 @@ function Get-SourceTexts {
     }
 }
 
+function Get-OptionalText {
+    param($Object, [string]$Name)
+    if ($null -eq $Object -or $null -eq $Object.PSObject.Properties[$Name]) { return $null }
+    $Value = $Object.$Name
+    if ($Value -is [string] -and $Value.Length -gt 0) { return $Value }
+    return $null
+}
+
+function Get-Items {
+    param($Object, [string]$Name)
+    if ($null -eq $Object -or $Object -is [array] -or $null -eq $Object.PSObject.Properties[$Name]) { return @() }
+    return @($Object.$Name)
+}
+
+function Get-CatalogTexts {
+    param([string]$Path, [string]$Relative)
+    # Teksty dla człowieka z plików katalogu (tłumaczone przez L.Data): pozycje tweaków – title, summary, benefit, description, warnings;
+    # apps.json – summary, warning (title to nazwa produktu); apps-bloat.json – entries[].summary/warning, protected[].reason.
+    try {
+        $Json = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+    }
+    catch {
+        throw ('Nieprawidłowy JSON pliku katalogu {0}: {1}' -f $Relative, $_.Exception.Message)
+    }
+    $Name = [System.IO.Path]::GetFileName($Path)
+    $Fields = New-Object -TypeName 'System.Collections.Generic.List[object]'
+    if ($Name -ceq 'apps.json') {
+        foreach ($Entry in @(Get-Items -Object $Json -Name 'entries')) { $Fields.Add(@($Entry, @('summary', 'warning'))) }
+    }
+    elseif ($Name -ceq 'apps-bloat.json') {
+        foreach ($Entry in @(Get-Items -Object $Json -Name 'entries')) { $Fields.Add(@($Entry, @('summary', 'warning'))) }
+        foreach ($Entry in @(Get-Items -Object $Json -Name 'protected')) { $Fields.Add(@($Entry, @('reason'))) }
+    }
+    else {
+        foreach ($Entry in @($Json)) { $Fields.Add(@($Entry, @('title', 'summary', 'benefit', 'description', 'warnings'))) }
+    }
+    foreach ($Item in $Fields) {
+        $Entry = $Item[0]
+        $Id = Get-OptionalText -Object $Entry -Name 'id'
+        foreach ($Field in $Item[1]) {
+            if ($null -eq $Entry -or $null -eq $Entry.PSObject.Properties[$Field]) { continue }
+            foreach ($Value in @($Entry.$Field)) {
+                if (-not ($Value -is [string]) -or $Value.Length -eq 0) { continue }
+                [pscustomobject]@{
+                    Text  = [string]$Value
+                    Where = ('{0}#{1}.{2}' -f $Relative, $Id, $Field)
+                }
+            }
+        }
+    }
+}
+
 function Format-Shown {
     param([string]$Text)
     return $Text.Replace("`r", '\r').Replace("`n", '\n').Replace("`t", '\t')
@@ -193,6 +249,21 @@ try {
             if (-not $Used.Add($Item.Text)) { continue }
             if (-not ($Translations.ContainsKey($Item.Text) -and $Translations[$Item.Text].Length -gt 0)) {
                 $Missing.Add($Item)
+            }
+        }
+    }
+
+    $CatalogPath = Join-Path -Path $SrcPath -ChildPath 'DSOptimizer.Catalog\catalog'
+    if (Test-Path -LiteralPath $CatalogPath) {
+        $CatalogFiles = [string[]]@(Get-ChildItem -LiteralPath $CatalogPath -Filter '*.json' -File | Where-Object { $_.Extension -ceq '.json' } | ForEach-Object { $_.FullName })
+        [System.Array]::Sort($CatalogFiles, [System.StringComparer]::Ordinal)
+        foreach ($CatalogFile in $CatalogFiles) {
+            $Relative = $CatalogFile.Substring($RootPath.Length).TrimStart('\', '/').Replace('\', '/')
+            foreach ($Item in @(Get-CatalogTexts -Path $CatalogFile -Relative $Relative)) {
+                if (-not $Used.Add($Item.Text)) { continue }
+                if (-not ($Translations.ContainsKey($Item.Text) -and $Translations[$Item.Text].Length -gt 0)) {
+                    $Missing.Add($Item)
+                }
             }
         }
     }
