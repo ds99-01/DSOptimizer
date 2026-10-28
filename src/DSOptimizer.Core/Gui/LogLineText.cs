@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Storage;
 
 namespace DSOptimizer.Core.Gui;
@@ -28,8 +29,6 @@ public sealed record LogLineParts(string Before, string? Path, string After);
 /// <summary>Tekst linii dziennika w oknie i w schowku (bez WPF).</summary>
 public static class LogLineText
 {
-    private const string CopiedNote = "Skopiowano ścieżkę.";
-
     /// <summary>Godzina linii w czasie lokalnym, <c>HH:mm:ss</c>.</summary>
     public static string Time(DateTimeOffset at) => at.LocalDateTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
@@ -116,13 +115,13 @@ public static class LogLineText
         }
 
         var sentence = message.EndsWith(".", StringComparison.Ordinal) ? message : message + ".";
-        return $"{sentence} {CopiedNote}";
+        return L.F("{0} Skopiowano ścieżkę.", sentence);
     }
 
     private static string LevelName(GuiLogLevel level) => level switch
     {
-        GuiLogLevel.Error => "[Błąd]",
-        GuiLogLevel.Warning => "[Ostrzeżenie]",
+        GuiLogLevel.Error => L.T("[Błąd]"),
+        GuiLogLevel.Warning => L.T("[Ostrzeżenie]"),
         _ => "[Info]",
     };
 }

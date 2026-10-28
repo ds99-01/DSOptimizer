@@ -1,0 +1,1101 @@
+{
+  "language": "en",
+  "entries": [
+    {
+      "pl": "Brak wyniku akcji.",
+      "en": "No action result."
+    },
+    {
+      "pl": "Nie przywrócono: {0}",
+      "en": "Not restored: {0}"
+    },
+    {
+      "pl": "Zatrzymano",
+      "en": "Stopped"
+    },
+    {
+      "pl": "Zakończono",
+      "en": "Finished"
+    },
+    {
+      "pl": "Wymagany restart. {0}",
+      "en": "Restart required. {0}"
+    },
+    {
+      "pl": "Zakończono z błędem",
+      "en": "Finished with an error"
+    },
+    {
+      "pl": "Czeka",
+      "en": "Waiting"
+    },
+    {
+      "pl": "Punkt przywracania",
+      "en": "Restore point"
+    },
+    {
+      "pl": "Instalowanie aplikacji",
+      "en": "Installing apps"
+    },
+    {
+      "pl": "Usuwanie aplikacji",
+      "en": "Removing apps"
+    },
+    {
+      "pl": "Cofanie zmian",
+      "en": "Undoing changes"
+    },
+    {
+      "pl": "Zastosowywanie zmian",
+      "en": "Applying changes"
+    },
+    {
+      "pl": "W toku",
+      "en": "In progress"
+    },
+    {
+      "pl": "Brak wyniku serii.",
+      "en": "No batch result."
+    },
+    {
+      "pl": "Pominięte",
+      "en": "Skipped"
+    },
+    {
+      "pl": "Błąd",
+      "en": "Error"
+    },
+    {
+      "pl": "krok {0} z {1}",
+      "en": "step {0} of {1}"
+    },
+    {
+      "pl": "Aplikacja {0} z {1}",
+      "en": "App {0} of {1}"
+    },
+    {
+      "pl": "Aplikacja {0} z {1} · Dalej: {2}",
+      "en": "App {0} of {1} · Next: {2}"
+    },
+    {
+      "pl": "{0} z {1} usunięte",
+      "en": "{0} of {1} removed"
+    },
+    {
+      "pl": "{0} z {1} cofnięte",
+      "en": "{0} of {1} undone"
+    },
+    {
+      "pl": "{0} z {1} zastosowane",
+      "en": "{0} of {1} applied"
+    },
+    {
+      "pl": "Utworzony, {0} s",
+      "en": "Created, {0} s"
+    },
+    {
+      "pl": "Utworzony",
+      "en": "Created"
+    },
+    {
+      "pl": "Nie powstał",
+      "en": "Not created"
+    },
+    {
+      "pl": "Zastosowane i sprawdzone",
+      "en": "Applied and verified"
+    },
+    {
+      "pl": "Zastosowane, po restarcie",
+      "en": "Applied, after restart"
+    },
+    {
+      "pl": "Było już zastosowane",
+      "en": "Was already applied"
+    },
+    {
+      "pl": "Cofnięte i sprawdzone",
+      "en": "Undone and verified"
+    },
+    {
+      "pl": "Cofnięte do wartości domyślnych",
+      "en": "Undone to defaults"
+    },
+    {
+      "pl": "Nie było już na komputerze",
+      "en": "Was no longer on the computer"
+    },
+    {
+      "pl": "Usunięte i sprawdzone",
+      "en": "Removed and verified"
+    },
+    {
+      "pl": "Zainstalowane i sprawdzone",
+      "en": "Installed and verified"
+    },
+    {
+      "pl": "Była już zainstalowana",
+      "en": "Was already installed"
+    },
+    {
+      "pl": "Zainstalowane (zgłoszone przez winget)",
+      "en": "Installed (reported by winget)"
+    },
+    {
+      "pl": "Nie potwierdzono",
+      "en": "Not confirmed"
+    },
+    {
+      "pl": "Nieobsługiwane w tym systemie",
+      "en": "Not supported on this system"
+    },
+    {
+      "pl": "Odmowa",
+      "en": "Refused"
+    },
+    {
+      "pl": "Pominięte – zatrzymano",
+      "en": "Skipped – stopped"
+    },
+    {
+      "pl": "Zmiana została wycofana, stan jak przed operacją.",
+      "en": "The change was rolled back; the state is as before the operation."
+    },
+    {
+      "pl": "Nie wszystko udało się wycofać:",
+      "en": "Couldn't roll back everything:"
+    },
+    {
+      "pl": "Nie wszystko udało się przywrócić:",
+      "en": "Couldn't restore everything:"
+    },
+    {
+      "pl": "Nie udało się sprawdzić, czy czeka restart: {0}",
+      "en": "Couldn't check whether a restart is pending: {0}"
+    },
+    {
+      "pl": "Operacja wymaga potwierdzenia – nic nie zmieniono.",
+      "en": "The operation requires confirmation – nothing was changed."
+    },
+    {
+      "pl": "Trwa inna operacja – nic nie zmieniono.",
+      "en": "Another operation is in progress – nothing was changed."
+    },
+    {
+      "pl": "Seria: {0} z {1} zakończonych powodzeniem.",
+      "en": "Batch: {0} of {1} succeeded."
+    },
+    {
+      "pl": "DSOptimizer – przed zmianami ({0})",
+      "en": "DSOptimizer – before changes ({0})"
+    },
+    {
+      "pl": "Nieoczekiwany błąd serii Zastosuj ({0}).",
+      "en": "Unexpected error in the Apply batch ({0})."
+    },
+    {
+      "pl": "Nieoczekiwany błąd serii Cofnij ({0}).",
+      "en": "Unexpected error in the Undo batch ({0})."
+    },
+    {
+      "pl": "Seria przerwana.",
+      "en": "Batch interrupted."
+    },
+    {
+      "pl": "Nieoczekiwany błąd: {0}",
+      "en": "Unexpected error: {0}"
+    },
+    {
+      "pl": "Nieoczekiwany błąd operacji {0} {1}.",
+      "en": "Unexpected error in operation {0} {1}."
+    },
+    {
+      "pl": "DSOptimizer – przed {0}",
+      "en": "DSOptimizer – before {0}"
+    },
+    {
+      "pl": "Silnik nie zwrócił wyniku.",
+      "en": "The engine returned no result."
+    },
+    {
+      "pl": "{0} – zatrzymano.",
+      "en": "{0} – stopped."
+    },
+    {
+      "pl": "{0} – {1} (pełny wynik w pliku logu)",
+      "en": "{0} – {1} (full result in the log file)"
+    },
+    {
+      "pl": "{0}: pełny wynik:{1}{2}",
+      "en": "{0}: full result:{1}{2}"
+    },
+    {
+      "pl": "Wymagany restart, żeby zmiana zadziałała.",
+      "en": "Restart required for the change to take effect."
+    },
+    {
+      "pl": "Detekcja {0} po operacji przerwana nieoczekiwanym błędem.",
+      "en": "Status check of {0} after the operation was interrupted by an unexpected error."
+    },
+    {
+      "pl": "{0}: nie udało się sprawdzić stanu po operacji – {1}",
+      "en": "{0}: couldn't check the status after the operation – {1}"
+    },
+    {
+      "pl": "Prywatność i AI",
+      "en": "Privacy and AI"
+    },
+    {
+      "pl": "Wydajność",
+      "en": "Performance"
+    },
+    {
+      "pl": "Dysk i system plików",
+      "en": "Disk and file system"
+    },
+    {
+      "pl": "Sieć i LAN",
+      "en": "Network and LAN"
+    },
+    {
+      "pl": "Bezpieczeństwo i szyfrowanie",
+      "en": "Security and encryption"
+    },
+    {
+      "pl": "Explorer i wygoda",
+      "en": "Explorer and convenience"
+    },
+    {
+      "pl": "Panele systemowe",
+      "en": "System panels"
+    },
+    {
+      "pl": "Naprawy",
+      "en": "Repairs"
+    },
+    {
+      "pl": "Narzędzia",
+      "en": "Tools"
+    },
+    {
+      "pl": "Sugerowane. Przy pierwszym wejściu na stronę program sam zaznacza tę pozycję, jeśli nie jest jeszcze zastosowana. Możesz ją odznaczyć.",
+      "en": "Suggested. The first time you open the page, the program selects this item if it isn't applied yet. You can clear it."
+    },
+    {
+      "pl": "Enterprise i Education",
+      "en": "Enterprise and Education"
+    },
+    {
+      "pl": "{0} i {1}",
+      "en": "{0} and {1}"
+    },
+    {
+      "pl": "Działa w edycjach: {0}.",
+      "en": "Works in editions: {0}."
+    },
+    {
+      "pl": "bezpieczne",
+      "en": "safe"
+    },
+    {
+      "pl": "ostrożnie",
+      "en": "caution"
+    },
+    {
+      "pl": "eksperymentalne",
+      "en": "experimental"
+    },
+    {
+      "pl": "Ryzyko: {0}",
+      "en": "Risk: {0}"
+    },
+    {
+      "pl": "Zastosowane",
+      "en": "Applied"
+    },
+    {
+      "pl": "Niezastosowane",
+      "en": "Not applied"
+    },
+    {
+      "pl": "Częściowo",
+      "en": "Partially applied"
+    },
+    {
+      "pl": "Nieznany (błąd detekcji)",
+      "en": "Unknown (check failed)"
+    },
+    {
+      "pl": "Zastosowano",
+      "en": "Applied"
+    },
+    {
+      "pl": "Już zastosowane",
+      "en": "Already applied"
+    },
+    {
+      "pl": "Zastosowano – wymaga restartu",
+      "en": "Applied – restart required"
+    },
+    {
+      "pl": "Błąd – zmiany wycofane",
+      "en": "Error – changes rolled back"
+    },
+    {
+      "pl": "Błąd – wycofanie niepełne",
+      "en": "Error – rollback incomplete"
+    },
+    {
+      "pl": "Cofnięto",
+      "en": "Undone"
+    },
+    {
+      "pl": "Cofnięcie niepełne",
+      "en": "Undo incomplete"
+    },
+    {
+      "pl": "Cofnięto do wartości domyślnych",
+      "en": "Undone to defaults"
+    },
+    {
+      "pl": "Wykonano",
+      "en": "Done"
+    },
+    {
+      "pl": "Pominięto",
+      "en": "Skipped"
+    },
+    {
+      "pl": "Usunięto",
+      "en": "Removed"
+    },
+    {
+      "pl": "Zainstalowano",
+      "en": "Installed"
+    },
+    {
+      "pl": "Już zainstalowane",
+      "en": "Already installed"
+    },
+    {
+      "pl": "Zainstalowano (zgłoszone przez winget)",
+      "en": "Installed (reported by winget)"
+    },
+    {
+      "pl": "{0} błąd",
+      "en": "{0} error"
+    },
+    {
+      "pl": "{0} błędy",
+      "en": "{0} errors"
+    },
+    {
+      "pl": "{0} błędów",
+      "en": "{0} errors"
+    },
+    {
+      "pl": "{0} ostrzeżenie",
+      "en": "{0} warning"
+    },
+    {
+      "pl": "{0} ostrzeżenia",
+      "en": "{0} warnings"
+    },
+    {
+      "pl": "{0} ostrzeżeń",
+      "en": "{0} warnings"
+    },
+    {
+      "pl": "Zastosuj",
+      "en": "Apply"
+    },
+    {
+      "pl": "Cofnij",
+      "en": "Undo"
+    },
+    {
+      "pl": "Uruchom",
+      "en": "Run"
+    },
+    {
+      "pl": "Usuń",
+      "en": "Remove"
+    },
+    {
+      "pl": "Zainstaluj",
+      "en": "Install"
+    },
+    {
+      "pl": "{0}. Czeka na ponowne uruchomienie.",
+      "en": "{0}. Waiting for a restart."
+    },
+    {
+      "pl": "Cofnięta. Czeka na ponowne uruchomienie.",
+      "en": "Undone. Waiting for a restart."
+    },
+    {
+      "pl": "Sugerowane.",
+      "en": "Suggested."
+    },
+    {
+      "pl": "{0} Sugerowane.",
+      "en": "{0} Suggested."
+    },
+    {
+      "pl": "{0}: nie ma pozycji „{1}” w katalogu – nic nie zmieniono.",
+      "en": "{0}: item \"{1}\" isn't in the catalog – nothing was changed."
+    },
+    {
+      "pl": "Wyniki wyszukiwania",
+      "en": "Search results"
+    },
+    {
+      "pl": "Szukaj we wszystkich kategoriach",
+      "en": "Search all categories"
+    },
+    {
+      "pl": "Wszystkie",
+      "en": "All"
+    },
+    {
+      "pl": "Bez eksperymentalnych",
+      "en": "No experimental"
+    },
+    {
+      "pl": "Tylko bezpieczne",
+      "en": "Safe only"
+    },
+    {
+      "pl": "{0} z {1}",
+      "en": "{0} of {1}"
+    },
+    {
+      "pl": "{0} ustawienia zastosowanych",
+      "en": "{0} setting applied"
+    },
+    {
+      "pl": "{0} ustawień zastosowanych",
+      "en": "{0} settings applied"
+    },
+    {
+      "pl": "{0} panel",
+      "en": "{0} panel"
+    },
+    {
+      "pl": "{0} panele",
+      "en": "{0} panels"
+    },
+    {
+      "pl": "{0} paneli",
+      "en": "{0} panels"
+    },
+    {
+      "pl": "{0} akcja",
+      "en": "{0} action"
+    },
+    {
+      "pl": "{0} akcje",
+      "en": "{0} actions"
+    },
+    {
+      "pl": "{0} akcji",
+      "en": "{0} actions"
+    },
+    {
+      "pl": "{0} pozycja",
+      "en": "{0} item"
+    },
+    {
+      "pl": "{0} pozycje",
+      "en": "{0} items"
+    },
+    {
+      "pl": "{0} pozycji",
+      "en": "{0} items"
+    },
+    {
+      "pl": "{0} aplikacja",
+      "en": "{0} app"
+    },
+    {
+      "pl": "{0} aplikacje",
+      "en": "{0} apps"
+    },
+    {
+      "pl": "{0} aplikacji",
+      "en": "{0} apps"
+    },
+    {
+      "pl": "{0} aplikacja na liście",
+      "en": "{0} app on the list"
+    },
+    {
+      "pl": "{0} aplikacje na liście",
+      "en": "{0} apps on the list"
+    },
+    {
+      "pl": "{0} aplikacji na liście",
+      "en": "{0} apps on the list"
+    },
+    {
+      "pl": "{0} aktywna zmiana",
+      "en": "{0} active change"
+    },
+    {
+      "pl": "{0} aktywne zmiany",
+      "en": "{0} active changes"
+    },
+    {
+      "pl": "{0} aktywnych zmian",
+      "en": "{0} active changes"
+    },
+    {
+      "pl": "Ukryte przez filtr: {0}",
+      "en": "Hidden by the filter: {0}"
+    },
+    {
+      "pl": "Zastosowane pozycje widoczne mimo filtra: {0}",
+      "en": "Applied items shown despite the filter: {0}"
+    },
+    {
+      "pl": "Ukryte przez filtr: {0}. Zastosowane pozycje widoczne mimo filtra: {1}",
+      "en": "Hidden by the filter: {0}. Applied items shown despite the filter: {1}"
+    },
+    {
+      "pl": "Brak wyników",
+      "en": "No results"
+    },
+    {
+      "pl": "{0} w {1}",
+      "en": "{0} in {1}"
+    },
+    {
+      "pl": "{0} kategorii",
+      "en": "{0} category"
+    },
+    {
+      "pl": "{0} kategoriach",
+      "en": "{0} categories"
+    },
+    {
+      "pl": "Nic nie pasuje do „{0}”.",
+      "en": "Nothing matches \"{0}\"."
+    },
+    {
+      "pl": "Kliknij dwukrotnie wiersz albo pole wyboru, żeby dodać do zmiany.",
+      "en": "Double-click a row or checkbox to add it to the change."
+    },
+    {
+      "pl": "Zaznaczono {0} pozycję",
+      "en": "{0} item selected"
+    },
+    {
+      "pl": "Zaznaczono {0} pozycje",
+      "en": "{0} items selected"
+    },
+    {
+      "pl": "Zaznaczono {0} pozycji",
+      "en": "{0} items selected"
+    },
+    {
+      "pl": "{0}: {1} do cofnięcia",
+      "en": "{0}: {1} to undo"
+    },
+    {
+      "pl": "{0}: {1} do zastosowania, {2} do cofnięcia",
+      "en": "{0}: {1} to apply, {2} to undo"
+    },
+    {
+      "pl": "1 wymaga restartu.",
+      "en": "1 requires a restart."
+    },
+    {
+      "pl": "{0} wymaga restartu.",
+      "en": "{0} require a restart."
+    },
+    {
+      "pl": "{0} wymagają restartu.",
+      "en": "{0} require a restart."
+    },
+    {
+      "pl": "Przed zastosowaniem program spróbuje utworzyć punkt przywracania.",
+      "en": "The program will try to create a restore point before applying."
+    },
+    {
+      "pl": "Bez punktu przywracania.",
+      "en": "No restore point."
+    },
+    {
+      "pl": "Przed zmianami zostanie utworzony punkt przywracania, jeśli ochrona systemu jest włączona.",
+      "en": "A restore point will be created before the changes if System Protection is turned on."
+    },
+    {
+      "pl": "Punkt przywracania nie zostanie utworzony (wyłączony w Ustawieniach).",
+      "en": "A restore point won't be created (turned off in Settings)."
+    },
+    {
+      "pl": "Nie w serii – kliknij dwukrotnie wiersz, żeby dodać",
+      "en": "Not in the batch – double-click the row to add it"
+    },
+    {
+      "pl": "W serii – trafi do „Zastosuj”",
+      "en": "In the batch – goes to \"Apply\""
+    },
+    {
+      "pl": "W serii – już zastosowana, trafi do „Cofnij”",
+      "en": "In the batch – already applied, goes to \"Undo\""
+    },
+    {
+      "pl": "W serii – możesz ją zastosować albo cofnąć",
+      "en": "In the batch – you can apply or undo it"
+    },
+    {
+      "pl": "W serii – teraz nie da się jej zastosować ani cofnąć",
+      "en": "In the batch – it can't be applied or undone right now"
+    },
+    {
+      "pl": "Zaznacz, żeby zastosować w serii (przycisk „Zastosuj”)",
+      "en": "Select to apply in the batch (\"Apply\" button)"
+    },
+    {
+      "pl": "Już zastosowana – zaznacz, żeby cofnąć w serii (przycisk „Cofnij”)",
+      "en": "Already applied – select to undo in the batch (\"Undo\" button)"
+    },
+    {
+      "pl": "Zaznacz, żeby zastosować albo cofnąć w serii",
+      "en": "Select to apply or undo in the batch"
+    },
+    {
+      "pl": "Teraz nie da się jej zastosować ani cofnąć",
+      "en": "It can't be applied or undone right now"
+    },
+    {
+      "pl": "{0} inna",
+      "en": "{0} other"
+    },
+    {
+      "pl": "{0} inne",
+      "en": "{0} others"
+    },
+    {
+      "pl": "{0} innych",
+      "en": "{0} others"
+    },
+    {
+      "pl": "Anulowano serię: {0} – {1} ({2}).",
+      "en": "Batch canceled: {0} – {1} ({2})."
+    },
+    {
+      "pl": "Pasujące pozycje ukrył filtr ryzyka.",
+      "en": "The risk filter hid the matching items."
+    },
+    {
+      "pl": "Skopiowano adres: {0}",
+      "en": "Address copied: {0}"
+    },
+    {
+      "pl": "Nie udało się otworzyć strony: {0} Skopiowano adres: {1}",
+      "en": "Couldn't open the page: {0} Address copied: {1}"
+    },
+    {
+      "pl": "Nie udało się otworzyć strony: {0} Nie udało się też skopiować adresu.",
+      "en": "Couldn't open the page: {0} Couldn't copy the address either."
+    },
+    {
+      "pl": "Kolejne błędy okna trafiają tylko do pliku logu (więcej niż 5 w ciągu 10 s).",
+      "en": "Further window errors go only to the log file (more than 5 within 10 s)."
+    },
+    {
+      "pl": "Wymagany restart.",
+      "en": "Restart required."
+    },
+    {
+      "pl": "Komputer uruchomi się ponownie. Zapisz pracę w otwartych programach.",
+      "en": "The computer will restart. Save your work in open programs."
+    },
+    {
+      "pl": "{0} zmiana zadziała dopiero po ponownym uruchomieniu komputera.",
+      "en": "{0} change takes effect only after the computer restarts."
+    },
+    {
+      "pl": "{0} zmiany zadziałają dopiero po ponownym uruchomieniu komputera.",
+      "en": "{0} changes take effect only after the computer restarts."
+    },
+    {
+      "pl": "{0} zmian zadziała dopiero po ponownym uruchomieniu komputera.",
+      "en": "{0} changes take effect only after the computer restarts."
+    },
+    {
+      "pl": "w toku",
+      "en": "in progress"
+    },
+    {
+      "pl": "Przygotowanie…",
+      "en": "Preparing…"
+    },
+    {
+      "pl": "Nie wyłączaj komputera, dopóki naprawa trwa.",
+      "en": "Don't turn off the computer while the repair is running."
+    },
+    {
+      "pl": "Zatrzymaj po tym kroku",
+      "en": "Stop after this step"
+    },
+    {
+      "pl": "Zatrzymam po bieżącym kroku…",
+      "en": "Stopping after the current step…"
+    },
+    {
+      "pl": "Naprawa zadziała w pełni dopiero po ponownym uruchomieniu komputera.",
+      "en": "The repair takes full effect only after the computer restarts."
+    },
+    {
+      "pl": "Dalej: {0}",
+      "en": "Next: {0}"
+    },
+    {
+      "pl": "Krok {0} z {1}",
+      "en": "Step {0} of {1}"
+    },
+    {
+      "pl": "Historia zmian",
+      "en": "Change history"
+    },
+    {
+      "pl": "Zmiany zrobione programem na tym komputerze, od najnowszej.",
+      "en": "Changes made by the program on this computer, newest first."
+    },
+    {
+      "pl": "Program nie zmienił jeszcze niczego na tym komputerze.",
+      "en": "The program hasn't changed anything on this computer yet."
+    },
+    {
+      "pl": "Żaden wpis nie pasuje do filtra.",
+      "en": "No entries match the filter."
+    },
+    {
+      "pl": "Data",
+      "en": "Date"
+    },
+    {
+      "pl": "Pozycja",
+      "en": "Item"
+    },
+    {
+      "pl": "Filtr",
+      "en": "Filter"
+    },
+    {
+      "pl": "Stan",
+      "en": "Status"
+    },
+    {
+      "pl": "Konto",
+      "en": "Account"
+    },
+    {
+      "pl": "Kategoria",
+      "en": "Category"
+    },
+    {
+      "pl": "Przebieg",
+      "en": "Events"
+    },
+    {
+      "pl": "cały komputer",
+      "en": "whole computer"
+    },
+    {
+      "pl": "nieznane",
+      "en": "unknown"
+    },
+    {
+      "pl": "Aplikacje",
+      "en": "Apps"
+    },
+    {
+      "pl": "Instalacja",
+      "en": "Install"
+    },
+    {
+      "pl": "pozycja spoza tego katalogu",
+      "en": "item not in this catalog"
+    },
+    {
+      "pl": "Tej pozycji nie ma w katalogu tej wersji programu, więc nie da się jej cofnąć.",
+      "en": "This item isn't in the catalog of this program version, so it can't be undone."
+    },
+    {
+      "pl": "Nowszy wpis tej pozycji jest aktywny – cofnięcie dotyczy tamtego wpisu.",
+      "en": "A newer entry for this item is active – undo applies to that entry."
+    },
+    {
+      "pl": "Instalacji nie cofa się z programu – aplikację usuniesz na stronie „Aplikacje”.",
+      "en": "Installs can't be undone from the program – remove the app on the \"Apps\" page."
+    },
+    {
+      "pl": "Przejdź do: Aplikacje",
+      "en": "Go to: Apps"
+    },
+    {
+      "pl": "Ta zmiana dotyczy konta {0}. Żeby ją cofnąć, uruchom program na tym koncie.",
+      "en": "This change applies to account {0}. To undo it, run the program on that account."
+    },
+    {
+      "pl": "Nie udało się odczytać historii zmian: {0}",
+      "en": "Couldn't read the change history: {0}"
+    },
+    {
+      "pl": "Aktywna",
+      "en": "Active"
+    },
+    {
+      "pl": "Czeka na restart",
+      "en": "Waiting for restart"
+    },
+    {
+      "pl": "Cofnięta, czeka na restart",
+      "en": "Undone, waiting for restart"
+    },
+    {
+      "pl": "Cofnięta",
+      "en": "Undone"
+    },
+    {
+      "pl": "Przerwana",
+      "en": "Interrupted"
+    },
+    {
+      "pl": "Usunięta",
+      "en": "Removed"
+    },
+    {
+      "pl": "Nie potwierdzono usunięcia",
+      "en": "Removal not confirmed"
+    },
+    {
+      "pl": "Usuwanie nie powiodło się",
+      "en": "Removal failed"
+    },
+    {
+      "pl": "Zainstalowana",
+      "en": "Installed"
+    },
+    {
+      "pl": "Nie potwierdzono instalacji",
+      "en": "Install not confirmed"
+    },
+    {
+      "pl": "Nie zainstalowano",
+      "en": "Not installed"
+    },
+    {
+      "pl": "Nie wykonano – ",
+      "en": "Not done – "
+    },
+    {
+      "pl": "Nie potwierdzono – ",
+      "en": "Not confirmed – "
+    },
+    {
+      "pl": "Instalacja aplikacji",
+      "en": "App install"
+    },
+    {
+      "pl": "Usunięcie aplikacji",
+      "en": "App removal"
+    },
+    {
+      "pl": "Wszystkie wpisy",
+      "en": "All entries"
+    },
+    {
+      "pl": "Aktywne",
+      "en": "Active"
+    },
+    {
+      "pl": "Czekające na restart",
+      "en": "Waiting for restart"
+    },
+    {
+      "pl": "Cofnięte i przerwane",
+      "en": "Undone and interrupted"
+    },
+    {
+      "pl": "Zmiana aktywna po restarcie.",
+      "en": "The change is active after the restart."
+    },
+    {
+      "pl": "Zastosowanie rozpoczęte",
+      "en": "Apply started"
+    },
+    {
+      "pl": "Usuwanie rozpoczęte",
+      "en": "Removal started"
+    },
+    {
+      "pl": "Usunięto i sprawdzono",
+      "en": "Removed and verified"
+    },
+    {
+      "pl": "Instalacja rozpoczęta",
+      "en": "Install started"
+    },
+    {
+      "pl": "Zainstalowano i sprawdzono",
+      "en": "Installed and verified"
+    },
+    {
+      "pl": "Nie wykonano",
+      "en": "Not done"
+    },
+    {
+      "pl": "Zastosowano – zadziała po restarcie",
+      "en": "Applied – takes effect after restart"
+    },
+    {
+      "pl": "Zastosowanie: {0}",
+      "en": "Apply: {0}"
+    },
+    {
+      "pl": "Cofnięcie: {0}",
+      "en": "Undo: {0}"
+    },
+    {
+      "pl": "Po restarcie: zmiana aktywna",
+      "en": "After restart: change active"
+    },
+    {
+      "pl": "{0} Skopiowano ścieżkę.",
+      "en": "{0} Path copied."
+    },
+    {
+      "pl": "[Błąd]",
+      "en": "[Error]"
+    },
+    {
+      "pl": "[Ostrzeżenie]",
+      "en": "[Warning]"
+    },
+    {
+      "pl": "Zastosuj zaznaczone",
+      "en": "Apply selected"
+    },
+    {
+      "pl": "Cofnij zaznaczone",
+      "en": "Undo selected"
+    },
+    {
+      "pl": "Program spróbuje go utworzyć przed pierwszą zmianą",
+      "en": "The program will try to create one before the first change"
+    },
+    {
+      "pl": "Nie – wyłączony w Ustawieniach",
+      "en": "No – turned off in Settings"
+    },
+    {
+      "pl": "Nie – cofanie go nie tworzy",
+      "en": "No – undo doesn't create one"
+    },
+    {
+      "pl": "Niepotrzebny",
+      "en": "Not needed"
+    },
+    {
+      "pl": "Wymagany dla 1 pozycji",
+      "en": "Required for 1 item"
+    },
+    {
+      "pl": "Wymagany dla {0} pozycji",
+      "en": "Required for {0} items"
+    },
+    {
+      "pl": "Restart",
+      "en": "Restart"
+    },
+    {
+      "pl": "Cofanie",
+      "en": "Undo"
+    },
+    {
+      "pl": "Niemożliwe – akcji nie da się cofnąć",
+      "en": "Not possible – actions can't be undone"
+    },
+    {
+      "pl": "Możliwe dla wszystkich, z historii zmian",
+      "en": "Possible for all, from the change history"
+    },
+    {
+      "pl": "Niemożliwe dla: {0}",
+      "en": "Not possible for: {0}"
+    },
+    {
+      "pl": "Dotyczy bieżącego konta.",
+      "en": "Applies to the current account."
+    },
+    {
+      "pl": "Dotyczy konta {0}.",
+      "en": "Applies to account {0}."
+    },
+    {
+      "pl": "Zadziała po ponownym uruchomieniu.",
+      "en": "Takes effect after a restart."
+    },
+    {
+      "pl": "Polecenie",
+      "en": "Command"
+    },
+    {
+      "pl": "Gdzie",
+      "en": "Where"
+    },
+    {
+      "pl": "Zmiana",
+      "en": "Change"
+    },
+    {
+      "pl": "przywrócenie stanu sprzed zmiany z historii",
+      "en": "restore the state from before the change, from history"
+    },
+    {
+      "pl": "{0} na {1}",
+      "en": "{0} to {1}"
+    },
+    {
+      "pl": "Podgląd zmian {0} niedostępny: {1}",
+      "en": "Change preview for {0} unavailable: {1}"
+    },
+    {
+      "pl": "Szczegóły",
+      "en": "Details"
+    },
+    {
+      "pl": "niedostępne: {0}",
+      "en": "unavailable: {0}"
+    },
+    {
+      "pl": "Specyfikacja",
+      "en": "Specification"
+    },
+    {
+      "pl": "Skopiowano specyfikację do schowka.",
+      "en": "Specification copied to the clipboard."
+    },
+    {
+      "pl": "Nie skopiowano specyfikacji do schowka: {0}",
+      "en": "Couldn't copy the specification to the clipboard: {0}"
+    },
+    {
+      "pl": "Zapisano raport: {0}",
+      "en": "Report saved: {0}"
+    },
+    {
+      "pl": "Nie zapisano raportu w {0}: {1}",
+      "en": "Couldn't save the report to {0}: {1}"
+    },
+    {
+      "pl": "Schowek zgłosił błąd 0x{0:X8} ({1}), ale tekst jest w schowku – uznano za skopiowane.",
+      "en": "The clipboard reported error 0x{0:X8} ({1}), but the text is on the clipboard – treated as copied."
+    }
+  ]
+}

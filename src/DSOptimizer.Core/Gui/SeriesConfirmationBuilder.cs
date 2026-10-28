@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Core.Operations;
 
 namespace DSOptimizer.Core.Gui;
 
-/// <summary>Składa <see cref="SeriesConfirmation"/> z definicji pozycji i podglądu zmian (teksty PL, bez WPF).</summary>
+/// <summary>Składa <see cref="SeriesConfirmation"/> z definicji pozycji i podglądu zmian (teksty przez <see cref="L"/>, bez WPF).</summary>
 internal static class SeriesConfirmationBuilder
 {
     private const string Component = "Gui";
@@ -30,8 +31,8 @@ internal static class SeriesConfirmationBuilder
     {
         var createsRestorePoint = operation == GuiOperation.Apply && restorePointEnabled;
         var operationName = GuiText.OperationName(operation);
-        var title = isSeries ? (operation == GuiOperation.Apply ? "Zastosuj zaznaczone" : "Cofnij zaznaczone") : operationName;
-        var subtitle = isSeries ? GuiText.Count(tweaks.Count, "pozycja", "pozycje", "pozycji") : tweaks[0].Title;
+        var title = isSeries ? (operation == GuiOperation.Apply ? L.T("Zastosuj zaznaczone") : L.T("Cofnij zaznaczone")) : operationName;
+        var subtitle = isSeries ? L.P("{0} pozycja", "{0} pozycje", "{0} pozycji", tweaks.Count) : tweaks[0].Title;
         var primary = isSeries ? $"{operationName} ({tweaks.Count})" : operationName;
         var items = tweaks.Select(tweak => BuildItem(tweak, operation, userName, preview, log)).ToList();
         return new SeriesConfirmation(operation, title, subtitle, BuildFacts(operation, tweaks, restorePointEnabled), items, primary, createsRestorePoint);
@@ -43,32 +44,37 @@ internal static class SeriesConfirmationBuilder
         if (operation == GuiOperation.Apply)
         {
             facts.Add(new SeriesFact(
-                "Punkt przywracania",
-                restorePointEnabled ? "Program spróbuje go utworzyć przed pierwszą zmianą" : "Nie – wyłączony w Ustawieniach"));
+                L.T("Punkt przywracania"),
+                restorePointEnabled ? L.T("Program spróbuje go utworzyć przed pierwszą zmianą") : L.T("Nie – wyłączony w Ustawieniach")));
         }
         else if (operation == GuiOperation.Undo)
         {
-            facts.Add(new SeriesFact("Punkt przywracania", "Nie – cofanie go nie tworzy"));
+            facts.Add(new SeriesFact(L.T("Punkt przywracania"), L.T("Nie – cofanie go nie tworzy")));
         }
 
         if (operation != GuiOperation.Execute)
         {
             var reboots = tweaks.Count(tweak => tweak.RequiresReboot);
-            facts.Add(new SeriesFact(
-                "Restart",
-                reboots > 0 ? "Wymagany dla " + GuiText.Count(reboots, "pozycji", "pozycji", "pozycji") : "Niepotrzebny"));
+            // Polski tekst dla 1 i dla 2+ jest ten sam („pozycji”), więc 1 ma własny klucz – po angielsku „1 item”, nie „1 items”.
+            var rebootText = reboots switch
+            {
+                0 => L.T("Niepotrzebny"),
+                1 => L.T("Wymagany dla 1 pozycji"),
+                _ => L.P("Wymagany dla {0} pozycji", "Wymagany dla {0} pozycji", "Wymagany dla {0} pozycji", reboots),
+            };
+            facts.Add(new SeriesFact(L.T("Restart"), rebootText));
         }
 
         if (operation == GuiOperation.Execute)
         {
-            facts.Add(new SeriesFact("Cofanie", "Niemożliwe – akcji nie da się cofnąć"));
+            facts.Add(new SeriesFact(L.T("Cofanie"), L.T("Niemożliwe – akcji nie da się cofnąć")));
         }
         else if (operation == GuiOperation.Apply)
         {
             var irreversible = tweaks.Where(tweak => !tweak.Reversible).Select(tweak => tweak.Title).ToList();
             facts.Add(new SeriesFact(
-                "Cofanie",
-                irreversible.Count == 0 ? "Możliwe dla wszystkich, z historii zmian" : "Niemożliwe dla: " + string.Join("; ", irreversible)));
+                L.T("Cofanie"),
+                irreversible.Count == 0 ? L.T("Możliwe dla wszystkich, z historii zmian") : L.F("Niemożliwe dla: {0}", string.Join("; ", irreversible))));
         }
 
         return facts;
@@ -84,12 +90,12 @@ internal static class SeriesConfirmationBuilder
         var notes = new List<string>();
         if (tweak.Scope == TweakScope.User)
         {
-            notes.Add(string.IsNullOrWhiteSpace(userName) ? "Dotyczy bieżącego konta." : $"Dotyczy konta {userName}.");
+            notes.Add(string.IsNullOrWhiteSpace(userName) ? L.T("Dotyczy bieżącego konta.") : L.F("Dotyczy konta {0}.", userName));
         }
 
         if (tweak.RequiresReboot)
         {
-            notes.Add("Zadziała po ponownym uruchomieniu.");
+            notes.Add(L.T("Zadziała po ponownym uruchomieniu."));
         }
 
         return new SeriesItem(
@@ -116,23 +122,23 @@ internal static class SeriesConfirmationBuilder
                 switch (operation)
                 {
                     case GuiOperation.Execute:
-                        technical.Add(new SeriesFact("Polecenie", change.Description));
+                        technical.Add(new SeriesFact(L.T("Polecenie"), change.Description));
                         break;
                     case GuiOperation.Undo:
-                        technical.Add(new SeriesFact("Gdzie", change.Description));
-                        technical.Add(new SeriesFact("Zmiana", "przywrócenie stanu sprzed zmiany z historii"));
+                        technical.Add(new SeriesFact(L.T("Gdzie"), change.Description));
+                        technical.Add(new SeriesFact(L.T("Zmiana"), L.T("przywrócenie stanu sprzed zmiany z historii")));
                         break;
                     default:
-                        technical.Add(new SeriesFact("Gdzie", change.Description));
-                        technical.Add(new SeriesFact("Zmiana", $"{change.Current} na {change.Target}"));
+                        technical.Add(new SeriesFact(L.T("Gdzie"), change.Description));
+                        technical.Add(new SeriesFact(L.T("Zmiana"), L.F("{0} na {1}", change.Current, change.Target)));
                         break;
                 }
             }
         }
         catch (Exception ex)
         {
-            log.Warn(Component, $"Podgląd zmian {tweak.Id} niedostępny: {ex.Message}");
-            return new List<SeriesFact> { new("Szczegóły", $"niedostępne: {ex.Message}") };
+            log.Warn(Component, L.F("Podgląd zmian {0} niedostępny: {1}", tweak.Id, ex.Message));
+            return new List<SeriesFact> { new(L.T("Szczegóły"), L.F("niedostępne: {0}", ex.Message)) };
         }
 
         return technical;

@@ -5,6 +5,7 @@ using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Gui;
@@ -110,7 +111,7 @@ public sealed class GuiSession
                 Array.Empty<string>(),
                 Array.Empty<string>(),
                 Array.Empty<string>(),
-                "Nie udało się sprawdzić, czy czeka restart: " + ex.Message);
+                L.F("Nie udało się sprawdzić, czy czeka restart: {0}", ex.Message));
         }
     }
 
@@ -150,12 +151,12 @@ public sealed class GuiSession
 
         if (GuiRules.RequiresConfirmation(tweak) && !confirmed)
         {
-            return Refusal(tweak, operation, "Operacja wymaga potwierdzenia – nic nie zmieniono.");
+            return Refusal(tweak, operation, L.T("Operacja wymaga potwierdzenia – nic nie zmieniono."));
         }
 
         if (!Monitor.TryEnter(_gate))
         {
-            return Refusal(tweak, operation, "Trwa inna operacja – nic nie zmieniono.");
+            return Refusal(tweak, operation, L.T("Trwa inna operacja – nic nie zmieniono."));
         }
 
         try
@@ -183,12 +184,12 @@ public sealed class GuiSession
 
         if (GuiRules.RequiresConfirmation(tweak) && !confirmed)
         {
-            return Refusal(tweak, GuiOperation.Execute, "Operacja wymaga potwierdzenia – nic nie zmieniono.");
+            return Refusal(tweak, GuiOperation.Execute, L.T("Operacja wymaga potwierdzenia – nic nie zmieniono."));
         }
 
         if (!Monitor.TryEnter(_gate))
         {
-            return Refusal(tweak, GuiOperation.Execute, "Trwa inna operacja – nic nie zmieniono.");
+            return Refusal(tweak, GuiOperation.Execute, L.T("Trwa inna operacja – nic nie zmieniono."));
         }
 
         try
@@ -240,12 +241,12 @@ public sealed class GuiSession
         var tweaks = ResolveBatch(ids, operation);
         if (GuiRules.SeriesRequiresConfirmation(tweaks) && !confirmed)
         {
-            return BatchRefusal(operation, "Operacja wymaga potwierdzenia – nic nie zmieniono.");
+            return BatchRefusal(operation, L.T("Operacja wymaga potwierdzenia – nic nie zmieniono."));
         }
 
         if (!Monitor.TryEnter(_gate))
         {
-            return BatchRefusal(operation, "Trwa inna operacja – nic nie zmieniono.");
+            return BatchRefusal(operation, L.T("Trwa inna operacja – nic nie zmieniono."));
         }
 
         try
@@ -307,7 +308,7 @@ public sealed class GuiSession
         }
 
         var succeeded = results.Where(result => result.IsSuccess).Select(result => result.TweakId).ToList();
-        lines.Add(Line(GuiLogLevel.Info, $"Seria: {succeeded.Count} z {tweaks.Count} zakończonych powodzeniem."));
+        lines.Add(Line(GuiLogLevel.Info, L.F("Seria: {0} z {1} zakończonych powodzeniem.", succeeded.Count, tweaks.Count)));
         var refreshed = RefreshAfterOperation(lines);
         return new GuiOperationReport
         {
@@ -331,11 +332,11 @@ public sealed class GuiSession
     {
         try
         {
-            return ApplyViaEngine(tweaks, $"DSOptimizer – przed zmianami ({tweaks.Count})", lines, steps, stop, ct);
+            return ApplyViaEngine(tweaks, L.F("DSOptimizer – przed zmianami ({0})", tweaks.Count), lines, steps, stop, ct);
         }
         catch (Exception ex)
         {
-            _services.Log.Fail(Component, $"Nieoczekiwany błąd serii Zastosuj ({tweaks.Count}).", ex);
+            _services.Log.Fail(Component, L.F("Nieoczekiwany błąd serii Zastosuj ({0}).", tweaks.Count), ex);
             return new BatchResult { Results = tweaks.Select(tweak => Failure(tweak, ex)).ToList() };
         }
     }
@@ -352,7 +353,7 @@ public sealed class GuiSession
         }
         catch (Exception ex)
         {
-            _services.Log.Fail(Component, $"Nieoczekiwany błąd serii Cofnij ({tweaks.Count}).", ex);
+            _services.Log.Fail(Component, L.F("Nieoczekiwany błąd serii Cofnij ({0}).", tweaks.Count), ex);
             return new BatchResult { Results = tweaks.Select(tweak => Failure(tweak, ex)).ToList() };
         }
     }
@@ -385,7 +386,7 @@ public sealed class GuiSession
 
         if (batch.Aborted)
         {
-            lines.Add(Line(GuiLogLevel.Error, batch.AbortReason ?? "Seria przerwana."));
+            lines.Add(Line(GuiLogLevel.Error, batch.AbortReason ?? L.T("Seria przerwana.")));
         }
 
         return batch;
@@ -401,7 +402,7 @@ public sealed class GuiSession
     }
 
     private static TweakResult Failure(TweakDefinition tweak, Exception ex)
-        => new() { TweakId = tweak.Id, Outcome = TweakOutcome.Failed, Message = $"Nieoczekiwany błąd: {ex.Message}" };
+        => new() { TweakId = tweak.Id, Outcome = TweakOutcome.Failed, Message = L.F("Nieoczekiwany błąd: {0}", ex.Message) };
 
     private List<TweakDefinition> ResolveBatch(IReadOnlyList<string> ids, GuiOperation operation)
     {
@@ -443,7 +444,7 @@ public sealed class GuiSession
         }
         catch (Exception ex)
         {
-            _services.Log.Fail(Component, $"Nieoczekiwany błąd operacji {operation} {tweak.Id}.", ex);
+            _services.Log.Fail(Component, L.F("Nieoczekiwany błąd operacji {0} {1}.", operation, tweak.Id), ex);
             result = Failure(tweak, ex);
         }
 
@@ -474,10 +475,10 @@ public sealed class GuiSession
             case GuiOperation.Execute:
                 return _engine.Execute(tweak, null, progress, ct);
             default:
-                var results = ApplyViaEngine(new[] { tweak }, $"DSOptimizer – przed {tweak.Id}", lines, null, null, ct).Results;
+                var results = ApplyViaEngine(new[] { tweak }, L.F("DSOptimizer – przed {0}", tweak.Id), lines, null, null, ct).Results;
                 return results.Count > 0
                     ? results[0]
-                    : new TweakResult { TweakId = tweak.Id, Outcome = TweakOutcome.Failed, Message = "Silnik nie zwrócił wyniku." };
+                    : new TweakResult { TweakId = tweak.Id, Outcome = TweakOutcome.Failed, Message = L.T("Silnik nie zwrócił wyniku.") };
         }
     }
 
@@ -492,17 +493,20 @@ public sealed class GuiSession
         if (result.Outcome == TweakOutcome.Skipped && string.Equals(result.Message, TweakEngine.StoppedMessage, StringComparison.Ordinal))
         {
             // „Pominięto” już jest w nazwie wyniku – bez powtórzenia „Pominięte” z komunikatu silnika.
-            text += " – zatrzymano.";
+            text = L.F("{0} – zatrzymano.", text);
         }
         else if (!string.IsNullOrWhiteSpace(result.Message))
         {
             var message = GuiText.OneLine(result.Message!, GuiText.MaxResultMessageLength);
-            text += $" – {message}";
-            if (!string.Equals(message, result.Message, StringComparison.Ordinal))
+            if (string.Equals(message, result.Message, StringComparison.Ordinal))
+            {
+                text += $" – {message}";
+            }
+            else
             {
                 // Dziennik w oknie: jedna czytelna linia; pełny tekst (wielolinijkowy albo długi) tylko w pliku logu.
-                text += " (pełny wynik w pliku logu)";
-                _services.Log.Info(Component, $"{tweak.Id}: pełny wynik:{Environment.NewLine}{result.Message}");
+                text = L.F("{0} – {1} (pełny wynik w pliku logu)", text, message);
+                _services.Log.Info(Component, L.F("{0}: pełny wynik:{1}{2}", tweak.Id, Environment.NewLine, result.Message));
             }
         }
 
@@ -514,12 +518,12 @@ public sealed class GuiSession
 
         foreach (var item in result.NotRestored)
         {
-            lines.Add(Line(GuiLogLevel.Error, $"Nie przywrócono: {item}"));
+            lines.Add(Line(GuiLogLevel.Error, L.F("Nie przywrócono: {0}", item)));
         }
 
         if (result.RequiresReboot)
         {
-            lines.Add(Line(GuiLogLevel.Warning, "Wymagany restart, żeby zmiana zadziałała."));
+            lines.Add(Line(GuiLogLevel.Warning, L.T("Wymagany restart, żeby zmiana zadziałała.")));
         }
     }
 
@@ -564,9 +568,9 @@ public sealed class GuiSession
             }
             catch (Exception ex)
             {
-                _services.Log.Fail(Component, $"Detekcja {tweak.Id} po operacji przerwana nieoczekiwanym błędem.", ex);
+                _services.Log.Fail(Component, L.F("Detekcja {0} po operacji przerwana nieoczekiwanym błędem.", tweak.Id), ex);
                 states[tweak.Id] = DetectionState.Unknown;
-                lines.Add(Line(GuiLogLevel.Error, $"{tweak.Title}: nie udało się sprawdzić stanu po operacji – {ex.Message}"));
+                lines.Add(Line(GuiLogLevel.Error, L.F("{0}: nie udało się sprawdzić stanu po operacji – {1}", tweak.Title, ex.Message)));
             }
         }
 

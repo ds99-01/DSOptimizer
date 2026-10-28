@@ -4,31 +4,32 @@ using System.Globalization;
 using System.Linq;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Hardware;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Gui;
 
-/// <summary>Teksty okna (PL).</summary>
+/// <summary>Teksty okna (polskie źródło, tłumaczenie przez <see cref="L"/>).</summary>
 public static class GuiText
 {
     public static IReadOnlyList<string> CategoryOrder { get; } = new[] { "privacy", "perf", "disk", "net", "sec", "ux", "panels", "repair", "tools" };
 
     public static string CategoryName(string category) => category switch
     {
-        "privacy" => "Prywatność i AI",
-        "perf" => "Wydajność",
-        "disk" => "Dysk i system plików",
-        "net" => "Sieć i LAN",
-        "sec" => "Bezpieczeństwo i szyfrowanie",
-        "ux" => "Explorer i wygoda",
-        "panels" => "Panele systemowe",
-        "repair" => "Naprawy",
-        "tools" => "Narzędzia",
+        "privacy" => L.T("Prywatność i AI"),
+        "perf" => L.T("Wydajność"),
+        "disk" => L.T("Dysk i system plików"),
+        "net" => L.T("Sieć i LAN"),
+        "sec" => L.T("Bezpieczeństwo i szyfrowanie"),
+        "ux" => L.T("Explorer i wygoda"),
+        "panels" => L.T("Panele systemowe"),
+        "repair" => L.T("Naprawy"),
+        "tools" => L.T("Narzędzia"),
         _ => category,
     };
 
     /// <summary>Podpowiedź przy żarówce na pozycji sugerowanej (wariant C, wybór Dawida 2026-10-21).</summary>
-    public const string SuggestedTooltip = "Sugerowane. Przy pierwszym wejściu na stronę program sam zaznacza tę pozycję, jeśli nie jest jeszcze zastosowana. Możesz ją odznaczyć.";
+    public static string SuggestedTooltip => L.T("Sugerowane. Przy pierwszym wejściu na stronę program sam zaznacza tę pozycję, jeśli nie jest jeszcze zastosowana. Możesz ją odznaczyć.");
 
     /// <summary>Wiersz „Działa w edycjach: …” dla pozycji z polem editions.</summary>
     public static string EditionsLine(IReadOnlyList<EditionFamily> editions)
@@ -37,61 +38,61 @@ public static class GuiText
         {
             EditionFamily.Home => "Home",
             EditionFamily.Pro => "Pro",
-            _ => "Enterprise i Education",
+            _ => L.T("Enterprise i Education"),
         }).ToList();
         // Business to jedna jednostka „Enterprise i Education” - przed nią zawsze przecinek, żeby nie było dwóch „i” z rzędu.
         var list = names.Count < 2 || editions.Contains(EditionFamily.Business)
             ? string.Join(", ", names)
-            : string.Join(", ", names.Take(names.Count - 1)) + " i " + names[names.Count - 1];
-        return $"Działa w edycjach: {list}.";
+            : L.F("{0} i {1}", string.Join(", ", names.Take(names.Count - 1)), names[names.Count - 1]);
+        return L.F("Działa w edycjach: {0}.", list);
     }
 
     public static string RiskName(RiskLevel risk) => risk switch
     {
-        RiskLevel.Safe => "bezpieczne",
-        RiskLevel.Caution => "ostrożnie",
-        RiskLevel.Experimental => "eksperymentalne",
+        RiskLevel.Safe => L.T("bezpieczne"),
+        RiskLevel.Caution => L.T("ostrożnie"),
+        RiskLevel.Experimental => L.T("eksperymentalne"),
         _ => throw new ArgumentOutOfRangeException(nameof(risk), risk, null),
     };
 
     /// <summary>Podpowiedź i nazwa dla czytnika ekranu wskaźnika ryzyka (trzy kreski): „Ryzyko: bezpieczne”.</summary>
-    public static string RiskToolTip(RiskLevel risk) => "Ryzyko: " + RiskName(risk);
+    public static string RiskToolTip(RiskLevel risk) => L.F("Ryzyko: {0}", RiskName(risk));
 
     public static string StateName(DetectionState? state) => state switch
     {
         null => "—",
-        DetectionState.Applied => "Zastosowane",
-        DetectionState.NotApplied => "Niezastosowane",
-        DetectionState.Partial => "Częściowo",
-        DetectionState.NotSupported => "Nieobsługiwane w tym systemie",
-        DetectionState.Unknown => "Nieznany (błąd detekcji)",
+        DetectionState.Applied => L.T("Zastosowane"),
+        DetectionState.NotApplied => L.T("Niezastosowane"),
+        DetectionState.Partial => L.T("Częściowo"),
+        DetectionState.NotSupported => L.T("Nieobsługiwane w tym systemie"),
+        DetectionState.Unknown => L.T("Nieznany (błąd detekcji)"),
         _ => throw new ArgumentOutOfRangeException(nameof(state), state, null),
     };
 
     public static string OutcomeName(TweakOutcome outcome) => outcome switch
     {
-        TweakOutcome.Applied => "Zastosowano",
-        TweakOutcome.AlreadyApplied => "Już zastosowane",
-        TweakOutcome.PendingReboot => "Zastosowano – wymaga restartu",
-        TweakOutcome.NotSupported => "Nieobsługiwane w tym systemie",
-        TweakOutcome.Failed => "Błąd",
-        TweakOutcome.FailedRolledBack => "Błąd – zmiany wycofane",
-        TweakOutcome.FailedRollbackIncomplete => "Błąd – wycofanie niepełne",
-        TweakOutcome.Undone => "Cofnięto",
-        TweakOutcome.UndoIncomplete => "Cofnięcie niepełne",
-        TweakOutcome.UndoneFromDefaults => "Cofnięto do wartości domyślnych",
-        TweakOutcome.Refused => "Odmowa",
-        TweakOutcome.Executed => "Wykonano",
-        TweakOutcome.Skipped => "Pominięto",
-        TweakOutcome.Removed => "Usunięto",
-        TweakOutcome.NotConfirmed => "Nie potwierdzono",
-        TweakOutcome.Installed => "Zainstalowano",
-        TweakOutcome.AlreadyInstalled => "Już zainstalowane",
-        TweakOutcome.InstalledUnverified => "Zainstalowano (zgłoszone przez winget)",
+        TweakOutcome.Applied => L.T("Zastosowano"),
+        TweakOutcome.AlreadyApplied => L.T("Już zastosowane"),
+        TweakOutcome.PendingReboot => L.T("Zastosowano – wymaga restartu"),
+        TweakOutcome.NotSupported => L.T("Nieobsługiwane w tym systemie"),
+        TweakOutcome.Failed => L.T("Błąd"),
+        TweakOutcome.FailedRolledBack => L.T("Błąd – zmiany wycofane"),
+        TweakOutcome.FailedRollbackIncomplete => L.T("Błąd – wycofanie niepełne"),
+        TweakOutcome.Undone => L.T("Cofnięto"),
+        TweakOutcome.UndoIncomplete => L.T("Cofnięcie niepełne"),
+        TweakOutcome.UndoneFromDefaults => L.T("Cofnięto do wartości domyślnych"),
+        TweakOutcome.Refused => L.T("Odmowa"),
+        TweakOutcome.Executed => L.T("Wykonano"),
+        TweakOutcome.Skipped => L.T("Pominięto"),
+        TweakOutcome.Removed => L.T("Usunięto"),
+        TweakOutcome.NotConfirmed => L.T("Nie potwierdzono"),
+        TweakOutcome.Installed => L.T("Zainstalowano"),
+        TweakOutcome.AlreadyInstalled => L.T("Już zainstalowane"),
+        TweakOutcome.InstalledUnverified => L.T("Zainstalowano (zgłoszone przez winget)"),
         _ => throw new ArgumentOutOfRangeException(nameof(outcome), outcome, null),
     };
 
-    /// <summary>Licznik nad dziennikiem, np. „1 błąd, 3 ostrzeżenia” (polska odmiana liczebników).</summary>
+    /// <summary>Licznik nad dziennikiem, np. „1 błąd, 3 ostrzeżenia” (odmiana liczebników przez <see cref="L.P"/>).</summary>
     public static string LogSummary(int errors, int warnings)
     {
         if (errors < 0)
@@ -104,16 +105,21 @@ public static class GuiText
             throw new ArgumentOutOfRangeException(nameof(warnings), warnings, null);
         }
 
-        return $"{Count(errors, "błąd", "błędy", "błędów")}, {Count(warnings, "ostrzeżenie", "ostrzeżenia", "ostrzeżeń")}";
+        // Bez L.P: licznik dziennika bywa ≥ 1000, a L.P wstawia separator tysięcy („1 000”) – polski tekst ma zostać „1000 błędów”.
+        // Forma wybierana polską regułą (1 → one, poza 1 zawsze forma mnoga), więc po angielsku „1 error”, „2 errors”, „5 errors”.
+        var errorsText = PolishPlural.Choose(errors, L.F("{0} błąd", errors), L.F("{0} błędy", errors), L.F("{0} błędów", errors));
+        var warningsText = PolishPlural.Choose(
+            warnings, L.F("{0} ostrzeżenie", warnings), L.F("{0} ostrzeżenia", warnings), L.F("{0} ostrzeżeń", warnings));
+        return $"{errorsText}, {warningsText}";
     }
 
     public static string OperationName(GuiOperation operation) => operation switch
     {
-        GuiOperation.Apply => "Zastosuj",
-        GuiOperation.Undo => "Cofnij",
-        GuiOperation.Execute => "Uruchom",
-        GuiOperation.RemoveApps => "Usuń",
-        GuiOperation.InstallApps => "Zainstaluj",
+        GuiOperation.Apply => L.T("Zastosuj"),
+        GuiOperation.Undo => L.T("Cofnij"),
+        GuiOperation.Execute => L.T("Uruchom"),
+        GuiOperation.RemoveApps => L.T("Usuń"),
+        GuiOperation.InstallApps => L.T("Zainstaluj"),
         _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, null),
     };
 
@@ -123,8 +129,8 @@ public static class GuiText
     /// </summary>
     public static string ItemRowSubtitle(string stateText, RebootPendingKind? pending) => pending switch
     {
-        RebootPendingKind.Applied => $"{stateText}. Czeka na ponowne uruchomienie.",
-        RebootPendingKind.Undone => "Cofnięta. Czeka na ponowne uruchomienie.",
+        RebootPendingKind.Applied => L.F("{0}. Czeka na ponowne uruchomienie.", stateText),
+        RebootPendingKind.Undone => L.T("Cofnięta. Czeka na ponowne uruchomienie."),
         _ => stateText,
     };
 
@@ -133,21 +139,21 @@ public static class GuiText
 
     /// <summary>Opis wiersza dla czytnika ekranu: podsumowanie, a dla pozycji sugerowanej dopisek „Sugerowane.” (nazwa wiersza bez zmian).</summary>
     public static string ItemRowHelp(string summary, bool suggested)
-        => !suggested ? summary : summary.Length == 0 ? "Sugerowane." : $"{summary} Sugerowane.";
+        => !suggested ? summary : summary.Length == 0 ? L.T("Sugerowane.") : L.F("{0} Sugerowane.", summary);
 
     /// <summary>Linia dziennika, gdy operacja dostała id spoza wczytanego katalogu (np. „Cofnij” z historii).</summary>
     public static string ItemNotFound(GuiOperation operation, string id)
-        => $"{OperationName(operation)}: nie ma pozycji „{id}” w katalogu – nic nie zmieniono.";
+        => L.F("{0}: nie ma pozycji „{1}” w katalogu – nic nie zmieniono.", OperationName(operation), id);
 
-    public const string SearchTitle = "Wyniki wyszukiwania";
+    public static string SearchTitle => L.T("Wyniki wyszukiwania");
 
-    public const string SearchPlaceholder = "Szukaj we wszystkich kategoriach";
+    public static string SearchPlaceholder => L.T("Szukaj we wszystkich kategoriach");
 
     public static string RiskFilterName(RiskFilter filter) => filter switch
     {
-        RiskFilter.All => "Wszystkie",
-        RiskFilter.NoExperimental => "Bez eksperymentalnych",
-        RiskFilter.SafeOnly => "Tylko bezpieczne",
+        RiskFilter.All => L.T("Wszystkie"),
+        RiskFilter.NoExperimental => L.T("Bez eksperymentalnych"),
+        RiskFilter.SafeOnly => L.T("Tylko bezpieczne"),
         _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
     };
 
@@ -168,58 +174,44 @@ public static class GuiText
     {
         if (tweaks > 0)
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0} z {1} {2} zastosowanych",
-                applied, tweaks, tweaks == 1 ? "ustawienia" : "ustawień");
+            // Po polsku „ustawienia” tylko przy 1, inaczej „ustawień” (także 2–4: „z 3 ustawień”).
+            return L.F("{0} z {1}", applied, L.P("{0} ustawienia zastosowanych", "{0} ustawień zastosowanych", "{0} ustawień zastosowanych", tweaks));
         }
 
         var total = actions + panels;
         return (actions, panels) switch
         {
-            (0, _) => Counted(panels, "panel", "panele", "paneli"),
-            (_, 0) => Counted(actions, "akcja", "akcje", "akcji"),
-            _ => Counted(total, "pozycja", "pozycje", "pozycji"),
+            (0, _) => L.P("{0} panel", "{0} panele", "{0} paneli", panels),
+            (_, 0) => L.P("{0} akcja", "{0} akcje", "{0} akcji", actions),
+            _ => L.P("{0} pozycja", "{0} pozycje", "{0} pozycji", total),
         };
     }
 
     /// <summary>Opis licznika strony „Aplikacje” w menu: „34 aplikacje”.</summary>
-    public static string AppsCounterDescription(int count) => Counted(count, "aplikacja", "aplikacje", "aplikacji");
+    public static string AppsCounterDescription(int count) => L.P("{0} aplikacja", "{0} aplikacje", "{0} aplikacji", count);
 
     /// <summary>Opis licznika strony „Instalacja” w menu (pozycje listy apps.json): „35 aplikacji na liście”.</summary>
-    public static string InstallCounterDescription(int count) => AppsCounterDescription(count) + " na liście";
+    public static string InstallCounterDescription(int count)
+        => L.P("{0} aplikacja na liście", "{0} aplikacje na liście", "{0} aplikacji na liście", count);
 
     /// <summary>Opis licznika strony „Historia zmian” w menu (aktywne zmiany): „3 aktywne zmiany”.</summary>
-    public static string HistoryCounterDescription(int count) => Counted(count, "aktywna zmiana", "aktywne zmiany", "aktywnych zmian");
-
-    private static string Counted(int count, string one, string few, string many)
-        => count.ToString(CultureInfo.InvariantCulture) + " " + PolishPlural.Choose(count, one, few, many);
+    public static string HistoryCounterDescription(int count) => L.P("{0} aktywna zmiana", "{0} aktywne zmiany", "{0} aktywnych zmian", count);
 
     /// <summary>Linia pod listą: ile pozycji ukrył filtr i ile zastosowanych jest widocznych mimo niego; null, gdy nie ma czego mówić.</summary>
-    public static string? FilterNote(int hidden, int shownDespiteFilter)
+    public static string? FilterNote(int hidden, int shownDespiteFilter) => (hidden > 0, shownDespiteFilter > 0) switch
     {
-        var hiddenPart = string.Format(CultureInfo.InvariantCulture, "Ukryte przez filtr: {0}", hidden);
-        var shownPart = string.Format(CultureInfo.InvariantCulture, "Zastosowane pozycje widoczne mimo filtra: {0}", shownDespiteFilter);
-        return (hidden > 0, shownDespiteFilter > 0) switch
-        {
-            (false, false) => null,
-            (true, false) => hiddenPart,
-            (false, true) => shownPart,
-            _ => hiddenPart + ". " + shownPart,
-        };
-    }
+        (false, false) => null,
+        (true, false) => L.F("Ukryte przez filtr: {0}", hidden),
+        (false, true) => L.F("Zastosowane pozycje widoczne mimo filtra: {0}", shownDespiteFilter),
+        _ => L.F("Ukryte przez filtr: {0}. Zastosowane pozycje widoczne mimo filtra: {1}", hidden, shownDespiteFilter),
+    };
 
     public static string SearchSummary(int items, int categories)
         => items == 0
-            ? "Brak wyników"
-            : string.Format(
-                CultureInfo.InvariantCulture,
-                "{0} {1} w {2} {3}",
-                items,
-                PolishPlural.Choose(items, "pozycja", "pozycje", "pozycji"),
-                categories,
-                PolishPlural.Choose(categories, "kategorii", "kategoriach", "kategoriach"));
+            ? L.T("Brak wyników")
+            : L.F("{0} w {1}", L.P("{0} pozycja", "{0} pozycje", "{0} pozycji", items), L.P("{0} kategorii", "{0} kategoriach", "{0} kategoriach", categories));
 
-    public static string NoSearchResults(string query)
-        => string.Format(CultureInfo.InvariantCulture, "Nic nie pasuje do „{0}”.", query.Trim());
+    public static string NoSearchResults(string query) => L.F("Nic nie pasuje do „{0}”.", query.Trim());
 
     /// <summary>
     /// Tytuł stałego paska akcji: ile pozycji zaznaczono (0 → podpowiedź, jak zacząć). Zaznaczenie znaczy „dodaj do serii”, a skutek
@@ -244,18 +236,18 @@ public static class GuiText
 
         if (selected == 0)
         {
-            return "Kliknij dwukrotnie wiersz albo pole wyboru, żeby dodać do zmiany.";
+            return L.T("Kliknij dwukrotnie wiersz albo pole wyboru, żeby dodać do zmiany.");
         }
 
-        var title = "Zaznaczono " + Count(selected, "pozycję", "pozycje", "pozycji");
+        var title = L.P("Zaznaczono {0} pozycję", "Zaznaczono {0} pozycje", "Zaznaczono {0} pozycji", selected);
         if (toUndo == 0)
         {
             return title;
         }
 
         return toApply == 0
-            ? $"{title}: {toUndo} do cofnięcia"
-            : $"{title}: {toApply} do zastosowania, {toUndo} do cofnięcia";
+            ? L.F("{0}: {1} do cofnięcia", title, toUndo)
+            : L.F("{0}: {1} do zastosowania, {2} do cofnięcia", title, toApply, toUndo);
     }
 
     /// <summary>Druga linia paska: restarty i punkt przywracania (ten dotyczy tylko „Zastosuj”, więc wymaga <paramref name="hasApplicable"/>).</summary>
@@ -269,14 +261,17 @@ public static class GuiText
         var parts = new List<string>();
         if (rebootCount > 0)
         {
-            parts.Add(Count(rebootCount, "wymaga", "wymagają", "wymaga") + " restartu.");
+            // Polska forma dla 1 i dla 5+ jest ta sama („wymaga”), więc 1 ma własny klucz – po angielsku „requires”, nie „require”.
+            parts.Add(rebootCount == 1
+                ? L.T("1 wymaga restartu.")
+                : L.P("{0} wymaga restartu.", "{0} wymagają restartu.", "{0} wymaga restartu.", rebootCount));
         }
 
         if (hasApplicable)
         {
             parts.Add(restorePoint
-                ? "Przed zastosowaniem program spróbuje utworzyć punkt przywracania."
-                : "Bez punktu przywracania.");
+                ? L.T("Przed zastosowaniem program spróbuje utworzyć punkt przywracania.")
+                : L.T("Bez punktu przywracania."));
         }
 
         return string.Join(" ", parts);
@@ -285,33 +280,33 @@ public static class GuiText
     /// <summary>Linia okna potwierdzenia serii „Zastosuj”: czy powstanie punkt przywracania.</summary>
     public static string BatchRestorePointNotice(bool createsRestorePoint)
         => createsRestorePoint
-            ? "Przed zmianami zostanie utworzony punkt przywracania, jeśli ochrona systemu jest włączona."
-            : "Punkt przywracania nie zostanie utworzony (wyłączony w Ustawieniach).";
+            ? L.T("Przed zmianami zostanie utworzony punkt przywracania, jeśli ochrona systemu jest włączona.")
+            : L.T("Punkt przywracania nie zostanie utworzony (wyłączony w Ustawieniach).");
 
     /// <summary>Linia panelu szczegółów: czy tweak jest w serii i do którego przycisku trafi (stan już zastosowany → „Cofnij”).</summary>
     public static string SeriesLine(bool inSeries, bool canApply, bool canUndo)
     {
         if (!inSeries)
         {
-            return "Nie w serii – kliknij dwukrotnie wiersz, żeby dodać";
+            return L.T("Nie w serii – kliknij dwukrotnie wiersz, żeby dodać");
         }
 
         return (canApply, canUndo) switch
         {
-            (true, false) => "W serii – trafi do „Zastosuj”",
-            (false, true) => "W serii – już zastosowana, trafi do „Cofnij”",
-            (true, true) => "W serii – możesz ją zastosować albo cofnąć",
-            _ => "W serii – teraz nie da się jej zastosować ani cofnąć",
+            (true, false) => L.T("W serii – trafi do „Zastosuj”"),
+            (false, true) => L.T("W serii – już zastosowana, trafi do „Cofnij”"),
+            (true, true) => L.T("W serii – możesz ją zastosować albo cofnąć"),
+            _ => L.T("W serii – teraz nie da się jej zastosować ani cofnąć"),
         };
     }
 
     /// <summary>Podpowiedź pola wyboru tweaka: co da zaznaczenie przy bieżącym stanie.</summary>
     public static string SelectHint(bool canApply, bool canUndo) => (canApply, canUndo) switch
     {
-        (true, false) => "Zaznacz, żeby zastosować w serii (przycisk „Zastosuj”)",
-        (false, true) => "Już zastosowana – zaznacz, żeby cofnąć w serii (przycisk „Cofnij”)",
-        (true, true) => "Zaznacz, żeby zastosować albo cofnąć w serii",
-        _ => "Teraz nie da się jej zastosować ani cofnąć",
+        (true, false) => L.T("Zaznacz, żeby zastosować w serii (przycisk „Zastosuj”)"),
+        (false, true) => L.T("Już zastosowana – zaznacz, żeby cofnąć w serii (przycisk „Cofnij”)"),
+        (true, true) => L.T("Zaznacz, żeby zastosować albo cofnąć w serii"),
+        _ => L.T("Teraz nie da się jej zastosować ani cofnąć"),
     };
 
     /// <summary>Komunikat o anulowanej serii: do trzech tytułów dosłownie, reszta jako „i N innych”.</summary>
@@ -331,24 +326,20 @@ public static class GuiText
         var list = string.Join("; ", titles.Take(shown));
         if (titles.Count > shown)
         {
-            list += " i " + Count(titles.Count - shown, "inna", "inne", "innych");
+            list = L.F("{0} i {1}", list, L.P("{0} inna", "{0} inne", "{0} innych", titles.Count - shown));
         }
 
-        return string.Format(
-            CultureInfo.InvariantCulture,
-            "Anulowano serię: {0} – {1} ({2}).",
-            OperationName(operation),
-            Count(titles.Count, "pozycja", "pozycje", "pozycji"),
-            list);
+        var items = L.P("{0} pozycja", "{0} pozycje", "{0} pozycji", titles.Count);
+        return L.F("Anulowano serię: {0} – {1} ({2}).", OperationName(operation), items, list);
     }
 
     /// <summary>Pusta lista przy wyszukiwaniu: brak dopasowań albo dopasowania ukryte przez filtr ryzyka.</summary>
     public static string EmptySearchText(string query, int hiddenCount)
-        => hiddenCount == 0 ? NoSearchResults(query) : "Pasujące pozycje ukrył filtr ryzyka.";
+        => hiddenCount == 0 ? NoSearchResults(query) : L.T("Pasujące pozycje ukrył filtr ryzyka.");
 
     /// <summary>Linia Info, gdy program tylko kopiuje adres strony repozytorium (wariant bez otwierania przeglądarki).</summary>
     public static string UrlCopied(string url)
-        => "Skopiowano adres: " + (url ?? throw new ArgumentNullException(nameof(url)));
+        => L.F("Skopiowano adres: {0}", url ?? throw new ArgumentNullException(nameof(url)));
 
     /// <summary>Linia ostrzeżenia po odmowie otwarcia strony repozytorium: powód i wynik kopiowania adresu do schowka.</summary>
     public static string OpenUrlFailed(string reason, bool copied)
@@ -359,11 +350,11 @@ public static class GuiText
         }
 
         return copied
-            ? $"Nie udało się otworzyć strony: {reason} Skopiowano adres: {ProductInfo.RepositoryUrl}"
-            : $"Nie udało się otworzyć strony: {reason} Nie udało się też skopiować adresu.";
+            ? L.F("Nie udało się otworzyć strony: {0} Skopiowano adres: {1}", reason, ProductInfo.RepositoryUrl)
+            : L.F("Nie udało się otworzyć strony: {0} Nie udało się też skopiować adresu.", reason);
     }
 
-    public const string WindowErrorsMuted = "Kolejne błędy okna trafiają tylko do pliku logu (więcej niż 5 w ciągu 10 s).";
+    public static string WindowErrorsMuted => L.T("Kolejne błędy okna trafiają tylko do pliku logu (więcej niż 5 w ciągu 10 s).");
 
     /// <summary>Najdłuższy komunikat wyniku w jednej linii dziennika; reszta tylko w pliku logu.</summary>
     public const int MaxResultMessageLength = 300;
@@ -385,38 +376,40 @@ public static class GuiText
         return joined.Length <= maxLength ? joined : joined.Substring(0, Math.Max(0, maxLength - 1)) + "…";
     }
 
-    public const string RebootTitle = "Wymagany restart.";
+    public static string RebootTitle => L.T("Wymagany restart.");
 
-    public const string RestartConfirmText = "Komputer uruchomi się ponownie. Zapisz pracę w otwartych programach.";
+    public static string RestartConfirmText => L.T("Komputer uruchomi się ponownie. Zapisz pracę w otwartych programach.");
 
     /// <summary>Baner restartu po serii: ile zmian zadziała dopiero po ponownym uruchomieniu komputera.</summary>
     public static string RebootBannerText(int count)
-        => Count(count, "zmiana zadziała", "zmiany zadziałają", "zmian zadziała") + " dopiero po ponownym uruchomieniu komputera.";
+        => L.P("{0} zmiana zadziała dopiero po ponownym uruchomieniu komputera.", "{0} zmiany zadziałają dopiero po ponownym uruchomieniu komputera.", "{0} zmian zadziała dopiero po ponownym uruchomieniu komputera.", count);
 
     /// <summary>Okno postępu długiej naprawy: podtytuł paska w trakcie.</summary>
-    public const string ActionRunningSubtitle = "w toku";
+    public static string ActionRunningSubtitle => L.T("w toku");
 
     /// <summary>Etap przed pierwszym zdarzeniem postępu z handlera.</summary>
-    public const string ActionStarting = "Przygotowanie…";
+    public static string ActionStarting => L.T("Przygotowanie…");
 
     /// <summary>Podpowiedź pod paskiem postępu (bez obietnic czasu – czas trwania jest w ostrzeżeniach pozycji).</summary>
-    public const string ActionProgressHint = "Nie wyłączaj komputera, dopóki naprawa trwa.";
+    public static string ActionProgressHint => L.T("Nie wyłączaj komputera, dopóki naprawa trwa.");
 
-    public const string ActionStopText = "Zatrzymaj po tym kroku";
+    public static string ActionStopText => L.T("Zatrzymaj po tym kroku");
 
-    public const string ActionStoppingText = "Zatrzymam po bieżącym kroku…";
+    public static string ActionStoppingText => L.T("Zatrzymam po bieżącym kroku…");
 
     /// <summary>Blok restartu w wyniku długiej naprawy (handler zgłosił <c>RequiresReboot</c> przy <c>Executed</c>).</summary>
-    public const string ActionRebootText = "Naprawa zadziała w pełni dopiero po ponownym uruchomieniu komputera.";
+    public static string ActionRebootText => L.T("Naprawa zadziała w pełni dopiero po ponownym uruchomieniu komputera.");
 
     /// <summary>„Dalej: SFC – …” obok „Krok N z M” (nazwa następnego kroku z handlera).</summary>
-    public static string ActionNextStageText(string nextStage) => "Dalej: " + nextStage;
+    public static string ActionNextStageText(string nextStage) => L.F("Dalej: {0}", nextStage);
 
     /// <summary>„Krok 1 z 2” (indeks liczony od 0).</summary>
-    public static string ActionStepText(int stepIndex, int stepCount)
-        => string.Format(CultureInfo.InvariantCulture, "Krok {0} z {1}", stepIndex + 1, stepCount);
+    public static string ActionStepText(int stepIndex, int stepCount) => L.F("Krok {0} z {1}", stepIndex + 1, stepCount);
 
-    /// <summary>1 → one; końcówki 2–4 (poza 12–14) → few; reszta (także 0) → many.</summary>
+    /// <summary>
+    /// Liczba z polskim rzeczownikiem (1 → one; końcówki 2–4 poza 12–14 → few; reszta, także 0 → many), bez tłumaczenia. Tylko dla
+    /// obszarów jeszcze nieprzetłumaczonych; teksty z liczbą w nowych miejscach idą przez <see cref="L.P"/> (formy z <c>{0}</c>).
+    /// </summary>
     internal static string Count(int value, string one, string few, string many)
     {
         var lastDigit = value % 10;

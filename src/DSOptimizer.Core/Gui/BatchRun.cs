@@ -6,6 +6,7 @@ using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Install;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Gui;
 
@@ -36,7 +37,7 @@ public sealed class BatchRunStep
 
     public BatchStepState State { get; internal set; } = BatchStepState.Waiting;
 
-    public string StatusText { get; internal set; } = "Czeka";
+    public string StatusText { get; internal set; } = L.T("Czeka");
 
     public IReadOnlyList<string> Details { get; internal set; } = Array.Empty<string>();
 }
@@ -77,7 +78,7 @@ public sealed class BatchRun
         _itemCount = confirmation.Items.Count;
         if (confirmation.CreatesRestorePoint)
         {
-            _restorePointStep = new BatchRunStep(null, "Punkt przywracania");
+            _restorePointStep = new BatchRunStep(null, L.T("Punkt przywracania"));
             _steps.Add(_restorePointStep);
         }
 
@@ -86,7 +87,7 @@ public sealed class BatchRun
             _steps.Add(new BatchRunStep(item.Id, item.Title));
         }
 
-        Title = _install ? "Instalowanie aplikacji" : _remove ? "Usuwanie aplikacji" : _undo ? "Cofanie zmian" : "Zastosowywanie zmian";
+        Title = _install ? L.T("Instalowanie aplikacji") : _remove ? L.T("Usuwanie aplikacji") : _undo ? L.T("Cofanie zmian") : L.T("Zastosowywanie zmian");
         Subtitle = ProgressSubtitle();
     }
 
@@ -160,7 +161,7 @@ public sealed class BatchRun
         {
             _currentIndex = Math.Max(0, Math.Min(_steps.Count - 1, _steps.IndexOf(step)));
             step.State = BatchStepState.Running;
-            step.StatusText = "W toku";
+            step.StatusText = L.T("W toku");
             if (ReferenceEquals(step, _restorePointStep))
             {
                 _restorePointStarted = e.At;
@@ -198,7 +199,7 @@ public sealed class BatchRun
         if (batch is null)
         {
             // Odmowa lokalna (np. „Trwa inna operacja”): powód z raportu zamiast ogólnego tekstu.
-            Fail(report.Lines.Count > 0 ? report.Lines[0].Text : "Brak wyniku serii.");
+            Fail(report.Lines.Count > 0 ? report.Lines[0].Text : L.T("Brak wyniku serii."));
             return;
         }
 
@@ -213,7 +214,7 @@ public sealed class BatchRun
             if (result is null)
             {
                 step.State = BatchStepState.Skipped;
-                step.StatusText = "Pominięte";
+                step.StatusText = L.T("Pominięte");
                 step.Details = Array.Empty<string>();
             }
             else
@@ -233,7 +234,7 @@ public sealed class BatchRun
         RebootCount = _install
             ? batch.Results.Count(r => r.RequiresReboot)
             : batch.Results.Count(r => (r.IsSuccess || r.Outcome == TweakOutcome.NotConfirmed) && r.RequiresReboot);
-        Title = batch.Stopped ? "Zatrzymano" : "Zakończono";
+        Title = batch.Stopped ? L.T("Zatrzymano") : L.T("Zakończono");
         Subtitle = _install
             ? InstallText.BatchSummary(batch.Results.Count(r => InstallPage.CountsAsInstalled(r.Outcome)), _itemCount)
             : SucceededSubtitle(batch.SucceededCount);
@@ -247,11 +248,11 @@ public sealed class BatchRun
         foreach (var step in _steps.Where(step => step.State is BatchStepState.Waiting or BatchStepState.Running))
         {
             step.State = BatchStepState.Failed;
-            step.StatusText = _install ? InstallText.NotDone : _remove ? AppsPageText.FailedStatus : "Błąd";
+            step.StatusText = _install ? InstallText.NotDone : _remove ? AppsPageText.FailedStatus : L.T("Błąd");
             step.Details = new[] { message };
         }
 
-        Title = "Zakończono z błędem";
+        Title = L.T("Zakończono z błędem");
         Subtitle = _install
             ? InstallText.BatchSummary(_installOutcomes.Values.Count(InstallPage.CountsAsInstalled), _itemCount)
             : SucceededSubtitle(_steps.Count(step => step.TweakId is not null && step.State == BatchStepState.Done));
@@ -272,7 +273,7 @@ public sealed class BatchRun
         lines.AddRange(_warnings);
         if (RebootText is not null)
         {
-            lines.Add("Wymagany restart. " + RebootText);
+            lines.Add(L.F("Wymagany restart. {0}", RebootText));
         }
 
         return string.Join("\r\n", lines);
@@ -287,7 +288,7 @@ public sealed class BatchRun
     {
         if (!_install)
         {
-            return string.Format(CultureInfo.InvariantCulture, "krok {0} z {1}", _currentIndex + 1, _steps.Count);
+            return L.F("krok {0} z {1}", _currentIndex + 1, _steps.Count);
         }
 
         // Instalacja (spec 5.2): „Aplikacja N z M · Dalej: <tytuł>”. „Dalej” = pierwsza czekająca pozycja po bieżącej – pozycja
@@ -295,20 +296,23 @@ public sealed class BatchRun
         // czekających – bez „Dalej”.
         var items = _steps.Where(step => step.TweakId is not null).ToList();
         var index = _steps.Count == 0 ? 0 : Math.Max(0, items.IndexOf(_steps[_currentIndex]));
-        var text = string.Format(CultureInfo.InvariantCulture, "Aplikacja {0} z {1}", index + 1, items.Count);
         var next = items.Skip(index + 1).FirstOrDefault(step => step.State == BatchStepState.Waiting);
-        return next is null ? text : text + " · Dalej: " + next.Title;
+        return next is null
+            ? L.F("Aplikacja {0} z {1}", index + 1, items.Count)
+            : L.F("Aplikacja {0} z {1} · Dalej: {2}", index + 1, items.Count, next.Title);
     }
 
     /// <summary>Status kroku w trakcie instalacji: „Pobieranie 45%”, „Pobieranie”, „Instalowanie”; bez etapu – „W toku”.</summary>
     private static string InstallProgressText(string? stage, int? percent)
     {
-        var text = string.IsNullOrWhiteSpace(stage) ? "W toku" : stage!;
+        var text = string.IsNullOrWhiteSpace(stage) ? L.T("W toku") : stage!;
         return percent is { } value ? string.Format(CultureInfo.InvariantCulture, "{0} {1}%", text, value) : text;
     }
 
     private string SucceededSubtitle(int succeeded)
-        => string.Format(CultureInfo.InvariantCulture, "{0} z {1} {2}", succeeded, _itemCount, _remove ? "usunięte" : _undo ? "cofnięte" : "zastosowane");
+        => _remove ? L.F("{0} z {1} usunięte", succeeded, _itemCount)
+            : _undo ? L.F("{0} z {1} cofnięte", succeeded, _itemCount)
+            : L.F("{0} z {1} zastosowane", succeeded, _itemCount);
 
     private void ApplyRestorePoint(RestorePointResult? result)
     {
@@ -317,21 +321,21 @@ public sealed class BatchRun
         if (result is null)
         {
             step.State = BatchStepState.Skipped;
-            step.StatusText = "Pominięte";
+            step.StatusText = L.T("Pominięte");
         }
         else if (result.Status == RestorePointStatus.Created)
         {
             step.State = BatchStepState.Done;
             step.StatusText = _restorePointStarted is { } start && _restorePointFinished is { } end
-                ? string.Format(CultureInfo.InvariantCulture, "Utworzony, {0} s", Math.Max(1, (int)Math.Ceiling((end - start).TotalSeconds)))
-                : "Utworzony";
+                ? L.F("Utworzony, {0} s", Math.Max(1, (int)Math.Ceiling((end - start).TotalSeconds)))
+                : L.T("Utworzony");
         }
         else
         {
             // Usuwanie z programem: punkt nie powstał = porażka kroku (render pytania). Seria samych AppX idzie dalej bez pytania,
             // więc jak tweaki: ostrzeżenie (R20).
             step.State = _remove && _restorePointRequired ? BatchStepState.Failed : BatchStepState.Warning;
-            step.StatusText = "Nie powstał";
+            step.StatusText = L.T("Nie powstał");
             if (!string.IsNullOrEmpty(result.Message))
             {
                 step.Details = new[] { result.Message! };
@@ -383,44 +387,44 @@ public sealed class BatchRun
         {
             case TweakOutcome.Applied:
             case TweakOutcome.Executed:
-                Set(step, BatchStepState.Done, "Zastosowane i sprawdzone");
+                Set(step, BatchStepState.Done, L.T("Zastosowane i sprawdzone"));
                 break;
             case TweakOutcome.PendingReboot:
-                Set(step, BatchStepState.Done, "Zastosowane, po restarcie");
+                Set(step, BatchStepState.Done, L.T("Zastosowane, po restarcie"));
                 break;
             case TweakOutcome.AlreadyApplied:
-                Set(step, BatchStepState.Done, "Było już zastosowane");
+                Set(step, BatchStepState.Done, L.T("Było już zastosowane"));
                 break;
             case TweakOutcome.Undone:
-                Set(step, BatchStepState.Done, "Cofnięte i sprawdzone");
+                Set(step, BatchStepState.Done, L.T("Cofnięte i sprawdzone"));
                 break;
             case TweakOutcome.UndoneFromDefaults:
-                Set(step, BatchStepState.Done, "Cofnięte do wartości domyślnych");
+                Set(step, BatchStepState.Done, L.T("Cofnięte do wartości domyślnych"));
                 break;
             case TweakOutcome.Removed:
                 // „Już nie było” (wzorzec jak StoppedMessage przy Skipped): DSOptimizer nic nie usunął, więc nie „Usunięte i sprawdzone”.
                 if (string.Equals(result.Message, AppsText.AlreadyGone, StringComparison.Ordinal))
                 {
-                    Set(step, BatchStepState.Done, "Nie było już na komputerze");
+                    Set(step, BatchStepState.Done, L.T("Nie było już na komputerze"));
                 }
                 else
                 {
-                    Set(step, BatchStepState.Done, "Usunięte i sprawdzone");
+                    Set(step, BatchStepState.Done, L.T("Usunięte i sprawdzone"));
                     AddMessage(details, result);
                 }
 
                 break;
             case TweakOutcome.Installed:
-                Set(step, BatchStepState.Done, "Zainstalowane i sprawdzone");
+                Set(step, BatchStepState.Done, L.T("Zainstalowane i sprawdzone"));
                 AddMessage(details, result);
                 break;
             case TweakOutcome.AlreadyInstalled:
-                Set(step, BatchStepState.Done, "Była już zainstalowana");
+                Set(step, BatchStepState.Done, L.T("Była już zainstalowana"));
                 AddMessage(details, result);
                 break;
             case TweakOutcome.InstalledUnverified:
                 // Słabszy dowód (zgłoszone przez winget, bez odczytu zwrotnego): ostrzeżenie, nie „sprawdzone”.
-                Set(step, BatchStepState.Warning, "Zainstalowane (zgłoszone przez winget)");
+                Set(step, BatchStepState.Warning, L.T("Zainstalowane (zgłoszone przez winget)"));
                 AddMessage(details, result);
                 break;
             case TweakOutcome.NotConfirmed:
@@ -431,23 +435,23 @@ public sealed class BatchRun
                 }
                 else
                 {
-                    Set(step, BatchStepState.Warning, "Nie potwierdzono");
+                    Set(step, BatchStepState.Warning, L.T("Nie potwierdzono"));
                     AddMessage(details, result);
                 }
 
                 break;
             case TweakOutcome.NotSupported:
-                Set(step, BatchStepState.Warning, "Nieobsługiwane w tym systemie");
+                Set(step, BatchStepState.Warning, L.T("Nieobsługiwane w tym systemie"));
                 break;
             case TweakOutcome.Refused:
-                Set(step, BatchStepState.Warning, "Odmowa");
+                Set(step, BatchStepState.Warning, L.T("Odmowa"));
                 AddMessage(details, result);
                 break;
             case TweakOutcome.Skipped:
                 Set(
                     step,
                     BatchStepState.Skipped,
-                    string.Equals(result.Message, TweakEngine.StoppedMessage, StringComparison.Ordinal) ? "Pominięte – zatrzymano" : "Pominięte");
+                    string.Equals(result.Message, TweakEngine.StoppedMessage, StringComparison.Ordinal) ? L.T("Pominięte – zatrzymano") : L.T("Pominięte"));
                 break;
             default:
                 if (remove)
@@ -462,20 +466,20 @@ public sealed class BatchRun
                     break;
                 }
 
-                Set(step, BatchStepState.Failed, "Błąd");
+                Set(step, BatchStepState.Failed, L.T("Błąd"));
                 AddMessage(details, result);
                 if (result.Outcome == TweakOutcome.FailedRolledBack)
                 {
-                    details.Add("Zmiana została wycofana, stan jak przed operacją.");
+                    details.Add(L.T("Zmiana została wycofana, stan jak przed operacją."));
                 }
                 else if (result.Outcome == TweakOutcome.FailedRollbackIncomplete)
                 {
-                    details.Add("Nie wszystko udało się wycofać:");
+                    details.Add(L.T("Nie wszystko udało się wycofać:"));
                     details.AddRange(result.NotRestored);
                 }
                 else if (result.Outcome == TweakOutcome.UndoIncomplete)
                 {
-                    details.Add("Nie wszystko udało się przywrócić:");
+                    details.Add(L.T("Nie wszystko udało się przywrócić:"));
                     details.AddRange(result.NotRestored);
                 }
 

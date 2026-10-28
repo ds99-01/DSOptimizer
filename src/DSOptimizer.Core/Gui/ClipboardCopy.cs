@@ -1,6 +1,6 @@
 using System;
-using System.Globalization;
 using System.Runtime.InteropServices;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Gui;
 
@@ -58,11 +58,7 @@ public static class ClipboardCopy
             throw new ArgumentNullException(nameof(error));
         }
 
-        return string.Format(
-            CultureInfo.InvariantCulture,
-            "Schowek zgłosił błąd 0x{0:X8} ({1}), ale tekst jest w schowku – uznano za skopiowane.",
-            error.HResult,
-            error.Message);
+        return L.F("Schowek zgłosił błąd 0x{0:X8} ({1}), ale tekst jest w schowku – uznano za skopiowane.", error.HResult, error.Message);
     }
 
     /// <summary>Czy schowek ma już ten tekst (końce linii bez znaczenia); zablokowany odczyt = nie.</summary>

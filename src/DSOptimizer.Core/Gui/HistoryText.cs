@@ -1,5 +1,5 @@
 using System;
-using System.Globalization;
+using System.Linq;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Localization;
 
@@ -8,64 +8,62 @@ namespace DSOptimizer.Core.Gui;
 /// <summary>Teksty ekranu „Historia zmian”.</summary>
 public static class HistoryText
 {
-    public const string PageTitle = "Historia zmian";
-    public const string PageSubtitle = "Zmiany zrobione programem na tym komputerze, od najnowszej.";
-    public const string Empty = "Program nie zmienił jeszcze niczego na tym komputerze.";
-    public const string EmptyFiltered = "Żaden wpis nie pasuje do filtra.";
+    public static string PageTitle => L.T("Historia zmian");
+    public static string PageSubtitle => L.T("Zmiany zrobione programem na tym komputerze, od najnowszej.");
+    public static string Empty => L.T("Program nie zmienił jeszcze niczego na tym komputerze.");
+    public static string EmptyFiltered => L.T("Żaden wpis nie pasuje do filtra.");
 
-    public const string DateLabel = "Data";
-    public const string ItemLabel = "Pozycja";
-    public const string FilterLabel = "Filtr";
-    public const string StateLabel = "Stan";
-    public const string AccountLabel = "Konto";
-    public const string CategoryLabel = "Kategoria";
-    public const string AppliedLabel = "Zastosowano";
-    public const string EventsLabel = "Przebieg";
-    public const string UndoButton = "Cofnij";
+    public static string DateLabel => L.T("Data");
+    public static string ItemLabel => L.T("Pozycja");
+    public static string FilterLabel => L.T("Filtr");
+    public static string StateLabel => L.T("Stan");
+    public static string AccountLabel => L.T("Konto");
+    public static string CategoryLabel => L.T("Kategoria");
+    public static string AppliedLabel => L.T("Zastosowano");
+    public static string EventsLabel => L.T("Przebieg");
+    public static string UndoButton => L.T("Cofnij");
 
-    public const string WholeComputer = "cały komputer";
-    public const string UnknownAccount = "nieznane";
-    public const string AppsCategory = "Aplikacje";
-    public const string InstallCategory = "Instalacja";
-    public const string OutOfCatalog = "pozycja spoza tego katalogu";
+    public static string WholeComputer => L.T("cały komputer");
+    public static string UnknownAccount => L.T("nieznane");
+    public static string AppsCategory => L.T("Aplikacje");
+    public static string InstallCategory => L.T("Instalacja");
+    public static string OutOfCatalog => L.T("pozycja spoza tego katalogu");
 
-    public const string UndoOutOfCatalog = "Tej pozycji nie ma w katalogu tej wersji programu, więc nie da się jej cofnąć.";
-    public const string UndoNotNewest = "Nowszy wpis tej pozycji jest aktywny – cofnięcie dotyczy tamtego wpisu.";
+    public static string UndoOutOfCatalog => L.T("Tej pozycji nie ma w katalogu tej wersji programu, więc nie da się jej cofnąć.");
+    public static string UndoNotNewest => L.T("Nowszy wpis tej pozycji jest aktywny – cofnięcie dotyczy tamtego wpisu.");
 
     /// <summary>Wpis instalacji zamiast „Cofnij”: instalacji nie cofa się z programu, aplikację usuwa się na stronie „Aplikacje”.</summary>
-    public const string InstallUndoBlocked = "Instalacji nie cofa się z programu – aplikację usuniesz na stronie „Aplikacje”.";
+    public static string InstallUndoBlocked => L.T("Instalacji nie cofa się z programu – aplikację usuniesz na stronie „Aplikacje”.");
 
     /// <summary>Link w wpisie instalacji/usunięcia, który prowadzi na stronę „Aplikacje”.</summary>
-    public const string GoToAppsLink = "Przejdź do: Aplikacje";
-
-    private const string NotDonePrefix = "Nie wykonano – ";
-    private const string NotConfirmedPrefix = "Nie potwierdzono – ";
-
-    private const string RebootDetectMessage = "Zmiana aktywna po restarcie.";
+    public static string GoToAppsLink => L.T("Przejdź do: Aplikacje");
 
     public static string UndoOtherAccount(string name)
-        => $"Ta zmiana dotyczy konta {name}. Żeby ją cofnąć, uruchom program na tym koncie.";
+        => L.F("Ta zmiana dotyczy konta {0}. Żeby ją cofnąć, uruchom program na tym koncie.", name);
 
     public static string LoadFailed(string message)
-        => $"Nie udało się odczytać historii zmian: {message}";
+        => L.F("Nie udało się odczytać historii zmian: {0}", message);
 
     public static string State(HistoryState state) => state switch
     {
-        HistoryState.Active => "Aktywna",
-        HistoryState.PendingReboot => "Czeka na restart",
-        HistoryState.UndonePendingReboot => "Cofnięta, czeka na restart",
-        HistoryState.Undone => "Cofnięta",
-        HistoryState.Aborted => "Przerwana",
-        HistoryState.Removed => "Usunięta",
-        HistoryState.RemovalNotConfirmed => "Nie potwierdzono usunięcia",
-        HistoryState.RemovalFailed => "Usuwanie nie powiodło się",
-        HistoryState.Installed => "Zainstalowana",
-        HistoryState.InstallNotConfirmed => "Nie potwierdzono instalacji",
-        HistoryState.InstallNotDone => "Nie zainstalowano",
+        HistoryState.Active => L.T("Aktywna"),
+        HistoryState.PendingReboot => L.T("Czeka na restart"),
+        HistoryState.UndonePendingReboot => L.T("Cofnięta, czeka na restart"),
+        HistoryState.Undone => L.T("Cofnięta"),
+        HistoryState.Aborted => L.T("Przerwana"),
+        HistoryState.Removed => L.T("Usunięta"),
+        HistoryState.RemovalNotConfirmed => L.T("Nie potwierdzono usunięcia"),
+        HistoryState.RemovalFailed => L.T("Usuwanie nie powiodło się"),
+        HistoryState.Installed => L.T("Zainstalowana"),
+        HistoryState.InstallNotConfirmed => L.T("Nie potwierdzono instalacji"),
+        HistoryState.InstallNotDone => L.T("Nie zainstalowano"),
         _ => throw new ArgumentOutOfRangeException(nameof(state), state, null),
     };
 
-    /// <summary>Powód bez przedrostka „Nie wykonano – ”/„Nie potwierdzono – ”; null/biały tekst = null.</summary>
+    /// <summary>
+    /// Powód bez przedrostka „Nie wykonano – ”/„Nie potwierdzono – ”; null/biały tekst = null. Przedrostek rozpoznawany w bieżącym
+    /// języku i po polsku: journal trzyma tekst z chwili zapisu, więc wpis sprzed przełączenia na angielski nadal jest polski.
+    /// </summary>
     public static string? ShortReason(string? text)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -73,7 +71,7 @@ public static class HistoryText
             return null;
         }
 
-        foreach (var prefix in new[] { NotDonePrefix, NotConfirmedPrefix })
+        foreach (var prefix in CurrentAndPolish(() => L.T("Nie wykonano – ")).Concat(CurrentAndPolish(() => L.T("Nie potwierdzono – "))))
         {
             if (text!.StartsWith(prefix, StringComparison.Ordinal))
             {
@@ -91,25 +89,30 @@ public static class HistoryText
     /// <summary>Wiersz „rodzaj” wpisu: instalacja, usunięcie albo nazwa kategorii (spoza katalogu: <see cref="OutOfCatalog"/>).</summary>
     public static string KindLine(HistoryKind kind, string? categoryName) => kind switch
     {
-        HistoryKind.AppInstall => "Instalacja aplikacji",
-        HistoryKind.AppRemoval => "Usunięcie aplikacji",
+        HistoryKind.AppInstall => L.T("Instalacja aplikacji"),
+        HistoryKind.AppRemoval => L.T("Usunięcie aplikacji"),
         _ => categoryName ?? OutOfCatalog,
     };
 
     public static string FilterName(HistoryFilter filter) => filter switch
     {
-        HistoryFilter.All => "Wszystkie wpisy",
-        HistoryFilter.Active => "Aktywne",
-        HistoryFilter.PendingReboot => "Czekające na restart",
-        HistoryFilter.Inactive => "Cofnięte i przerwane",
+        HistoryFilter.All => L.T("Wszystkie wpisy"),
+        HistoryFilter.Active => L.T("Aktywne"),
+        HistoryFilter.PendingReboot => L.T("Czekające na restart"),
+        HistoryFilter.Inactive => L.T("Cofnięte i przerwane"),
         _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
     };
 
-    /// <summary>Tekst zdarzenia journala; <paramref name="message"/> dopisywany po „ – ”.</summary>
+    /// <summary>
+    /// Tekst zdarzenia journala; <paramref name="message"/> dopisywany po „ – ”. Komunikat silnika o zmianie aktywnej po restarcie
+    /// (w bieżącym języku albo zapisany po polsku) nie jest dopisywany – mówi to już sam tekst zdarzenia.
+    /// </summary>
     public static string Event(string action, string outcome, string? message)
     {
         var text = BaseEventText(action, outcome);
-        return string.IsNullOrEmpty(message) || message == RebootDetectMessage ? text : $"{text} – {message}";
+        return string.IsNullOrEmpty(message) || CurrentAndPolish(() => L.T("Zmiana aktywna po restarcie.")).Contains(message!, StringComparer.Ordinal)
+            ? text
+            : $"{text} – {message}";
     }
 
     /// <summary>
@@ -138,11 +141,24 @@ public static class HistoryText
     internal static bool TryParseOutcome(string outcome, out TweakOutcome parsed)
         => Enum.TryParse(outcome, ignoreCase: false, out parsed) && Enum.IsDefined(typeof(TweakOutcome), parsed);
 
+    /// <summary>Tekst w bieżącym języku i (gdy inny) po polsku – tak, jak mógł zostać zapisany w journalu przez wcześniejsze uruchomienie.</summary>
+    private static string[] CurrentAndPolish(Func<string> text)
+    {
+        var current = text();
+        string polish;
+        using (L.Use(UiLanguage.Polish))
+        {
+            polish = text();
+        }
+
+        return string.Equals(current, polish, StringComparison.Ordinal) ? new[] { current } : new[] { current, polish };
+    }
+
     private static string BaseEventText(string action, string outcome)
     {
         if (action == "apply" && outcome == "Started")
         {
-            return "Zastosowanie rozpoczęte";
+            return L.T("Zastosowanie rozpoczęte");
         }
 
         var known = TryParseOutcome(outcome, out var parsed);
@@ -151,34 +167,34 @@ public static class HistoryText
             case "remove-app":
                 return outcome switch
                 {
-                    "Started" => "Usuwanie rozpoczęte",
-                    "Removed" => "Usunięto i sprawdzono",
-                    "NotConfirmed" => "Nie potwierdzono usunięcia",
-                    "Failed" => "Usuwanie nie powiodło się",
+                    "Started" => L.T("Usuwanie rozpoczęte"),
+                    "Removed" => L.T("Usunięto i sprawdzono"),
+                    "NotConfirmed" => L.T("Nie potwierdzono usunięcia"),
+                    "Failed" => L.T("Usuwanie nie powiodło się"),
                     _ => $"{action}: {outcome}",
                 };
             case "install-app":
                 return outcome switch
                 {
-                    "Started" => "Instalacja rozpoczęta",
-                    "Installed" => "Zainstalowano i sprawdzono",
-                    "InstalledUnverified" => "Zainstalowano (zgłoszone przez winget)",
-                    "AlreadyInstalled" => "Była już zainstalowana",
-                    "NotConfirmed" => "Nie potwierdzono instalacji",
-                    "Failed" => "Nie wykonano",
+                    "Started" => L.T("Instalacja rozpoczęta"),
+                    "Installed" => L.T("Zainstalowano i sprawdzono"),
+                    "InstalledUnverified" => L.T("Zainstalowano (zgłoszone przez winget)"),
+                    "AlreadyInstalled" => L.T("Była już zainstalowana"),
+                    "NotConfirmed" => L.T("Nie potwierdzono instalacji"),
+                    "Failed" => L.T("Nie wykonano"),
                     _ => $"{action}: {outcome}",
                 };
             case "apply" when known:
                 return parsed switch
                 {
-                    TweakOutcome.Applied => "Zastosowano",
-                    TweakOutcome.PendingReboot => "Zastosowano – zadziała po restarcie",
-                    _ => $"Zastosowanie: {GuiText.OutcomeName(parsed)}",
+                    TweakOutcome.Applied => L.T("Zastosowano"),
+                    TweakOutcome.PendingReboot => L.T("Zastosowano – zadziała po restarcie"),
+                    _ => L.F("Zastosowanie: {0}", GuiText.OutcomeName(parsed)),
                 };
             case "undo" when known:
-                return parsed == TweakOutcome.Undone ? "Cofnięto" : $"Cofnięcie: {GuiText.OutcomeName(parsed)}";
+                return parsed == TweakOutcome.Undone ? L.T("Cofnięto") : L.F("Cofnięcie: {0}", GuiText.OutcomeName(parsed));
             case "detect" when known && parsed == TweakOutcome.Applied:
-                return "Po restarcie: zmiana aktywna";
+                return L.T("Po restarcie: zmiana aktywna");
             default:
                 return $"{action}: {outcome}";
         }

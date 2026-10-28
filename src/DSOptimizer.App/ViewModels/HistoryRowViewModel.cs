@@ -40,7 +40,7 @@ public sealed class HistoryRowViewModel
     public string AccountText => Entry.AccountText;
 
     /// <summary>„cały komputer” i „nieznane” kolorem drugorzędnym; nazwa konta (albo SID) kolorem podstawowym.</summary>
-    public bool IsAccountGeneric => Entry.AccountText is HistoryText.WholeComputer or HistoryText.UnknownAccount;
+    public bool IsAccountGeneric => Entry.AccountText == HistoryText.WholeComputer || Entry.AccountText == HistoryText.UnknownAccount;
 
     /// <summary>Kategoria GUI; dla pozycji spoza katalogu <see cref="HistoryText.OutOfCatalog"/>.</summary>
     public string CategoryText => Entry.CategoryName ?? HistoryText.OutOfCatalog;

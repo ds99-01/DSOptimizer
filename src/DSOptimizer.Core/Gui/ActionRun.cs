@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Gui;
 
@@ -18,10 +19,6 @@ namespace DSOptimizer.Core.Gui;
 /// </summary>
 public sealed class ActionRun
 {
-    private const string Finished = "Zakończono";
-    private const string FinishedWithError = "Zakończono z błędem";
-    private const string Stopped = "Zatrzymano";
-
     private static readonly string[] LineBreaks = { "\r\n", "\n", "\r" };
 
     private readonly string _itemTitle;
@@ -149,7 +146,7 @@ public sealed class ActionRun
 
         if (report.Result is not { } result)
         {
-            Fail(report.Lines.Count > 0 ? report.Lines[0].Text : "Brak wyniku akcji.");
+            Fail(report.Lines.Count > 0 ? report.Lines[0].Text : L.T("Brak wyniku akcji."));
             return;
         }
 
@@ -161,12 +158,12 @@ public sealed class ActionRun
                 .Where(line => line.Length > 0));
         }
 
-        lines.AddRange(result.NotRestored.Select(item => "Nie przywrócono: " + item));
+        lines.AddRange(result.NotRestored.Select(item => L.F("Nie przywrócono: {0}", item)));
         _resultLines = lines;
         _warnings = result.Warnings.ToList();
         Outcome = result.Outcome;
         RequiresReboot = result.Outcome == TweakOutcome.Executed && result.RequiresReboot;
-        Title = IsFailure(result.Outcome) ? FinishedWithError : StopRequested && !result.IsSuccess ? Stopped : Finished;
+        Title = IsFailure(result.Outcome) ? FinishedWithError : StopRequested && !result.IsSuccess ? L.T("Zatrzymano") : L.T("Zakończono");
         Subtitle = GuiText.OutcomeName(result.Outcome);
         Finish(result.IsSuccess ? 100 : null);
     }
@@ -191,11 +188,13 @@ public sealed class ActionRun
         lines.AddRange(_warnings);
         if (RebootText is not null)
         {
-            lines.Add("Wymagany restart. " + RebootText);
+            lines.Add(L.F("Wymagany restart. {0}", RebootText));
         }
 
         return string.Join("\r\n", lines);
     }
+
+    private static string FinishedWithError => L.T("Zakończono z błędem");
 
     private static bool IsFailure(TweakOutcome outcome)
         => outcome is TweakOutcome.Failed or TweakOutcome.FailedRolledBack or TweakOutcome.FailedRollbackIncomplete or TweakOutcome.UndoIncomplete;

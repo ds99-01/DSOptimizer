@@ -166,6 +166,11 @@ How to read the tables:
 | Ryzyko / Ryzyko: {0} | Risk / Risk: {0} | Column header, tooltip |
 | Wszystkie / Bez eksperymentalnych / Tylko bezpieczne | All / No experimental / Safe only | Risk filter |
 | [Błąd] / [Ostrzeżenie] / [Info] | [Error] / [Warning] / [Info] | Log line levels |
+| Zastosowane i sprawdzone / Cofnięte i sprawdzone / Usunięte i sprawdzone | Applied and verified / Undone and verified / Removed and verified | Batch step status; "sprawdzone/sprawdzono" = verified (read back after the change) |
+| Było już zastosowane / Była już zainstalowana / Nie było już na komputerze | Was already applied / Was already installed / Was no longer on the computer | Batch step status |
+| Pominięte / Pominięte – zatrzymano / zatrzymano | Skipped / Skipped – stopped / stopped | Batch step status; "Zatrzymano" (title) = Stopped |
+| Utworzony / Nie powstał | Created / Not created | Restore point step status |
+| Zastosowanie: {0} / Cofnięcie: {0} | Apply: {0} / Undo: {0} | Change history event with a result name |
 
 ## Concepts
 
@@ -195,6 +200,16 @@ How to read the tables:
 | Komputer uruchomi się ponownie. Zapisz pracę w otwartych programach. | The computer will restart. Save your work in open programs. | Restart confirmation |
 | Przygotowanie… | Preparing… | Progress stage, not the page name |
 | Krok {0} z {1} / Dalej: {0} | Step {0} of {1} / Next: {0} | Long repair window |
+| krok {0} z {1} / Aplikacja {0} z {1} | step {0} of {1} / App {0} of {1} | Batch window subtitle (lower case "step" as in Polish) |
+| W serii / Nie w serii | In the batch / Not in the batch | Detail panel line |
+| Przebieg | Events | Change history detail section: the journal events of one entry |
+| Polecenie / Gdzie / Zmiana | Command / Where / Change | Technical details labels in the confirmation window; "{0} na {1}" = "{0} to {1}" |
+| Cofanie | Undo | Confirmation window fact name (whether the change can be undone) |
+| Wymagany dla {N} pozycji / Niepotrzebny | Required for {N} items / Not needed | Confirmation window "Restart" fact |
+| Ukryte przez filtr: {0} | Hidden by the filter: {0} | Note under the list |
+| Skopiowano adres / Skopiowano ścieżkę | Address copied / Path copied | Log lines after copying to the clipboard |
+| Nieoczekiwany błąd | Unexpected error | Log and result messages |
+| detekcja (stanu) | status check | "Detekcja … przerwana" → "Status check of … was interrupted"; same word as in "Unknown (check failed)" |
 | Zaznaczono {N} pozycji | {N} items selected | Selection bar; plural rule 8 |
 | Kliknij dwukrotnie wiersz albo pole wyboru, … | Double-click a row or checkbox, … | "pole wyboru" = checkbox |
 | Nie udało się … | Couldn't … | Style rule 4 |

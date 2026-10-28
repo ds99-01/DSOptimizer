@@ -1,19 +1,21 @@
 using System;
 using System.Text;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Gui;
 
 /// <summary>Teksty strony „Specyfikacja”: linie dziennika po zapisie i kopiowaniu raportu oraz łamanie wartości na ekranie.</summary>
 public static class SpecificationText
 {
-    public const string Component = "Specyfikacja";
+    /// <summary>Nazwa komponentu w pliku logu i Dzienniku (tłumaczona, jak nazwa strony).</summary>
+    public static string Component => L.T("Specyfikacja");
 
-    public const string CopiedMessage = "Skopiowano specyfikację do schowka.";
+    public static string CopiedMessage => L.T("Skopiowano specyfikację do schowka.");
 
     private const char NoBreakSpace = '\u00A0';
 
-    public static string CopyFailedMessage(string reason) => $"Nie skopiowano specyfikacji do schowka: {reason}";
+    public static string CopyFailedMessage(string reason) => L.F("Nie skopiowano specyfikacji do schowka: {0}", reason);
 
     /// <summary>
     /// Wynik zapisu jednej kopii raportu do dziennika: zapisana = Info ze ścieżką (plik logu oraz, gdy podano
@@ -29,13 +31,13 @@ public static class SpecificationText
 
         if (saved)
         {
-            var text = $"Zapisano raport: {path}";
+            var text = L.F("Zapisano raport: {0}", path);
             log.Info(Component, text);
             panel?.Invoke(GuiLogLevel.Info, text, path);
         }
         else
         {
-            log.Warn(Component, $"Nie zapisano raportu w {path}: {error}");
+            log.Warn(Component, L.F("Nie zapisano raportu w {0}: {1}", path, error));
         }
     }
 
@@ -47,8 +49,9 @@ public static class SpecificationText
             throw new ArgumentNullException(nameof(log));
         }
 
-        log.Info(Component, CopiedMessage);
-        panel?.Invoke(GuiLogLevel.Info, CopiedMessage, null);
+        var message = CopiedMessage;
+        log.Info(Component, message);
+        panel?.Invoke(GuiLogLevel.Info, message, null);
     }
 
     /// <summary>
