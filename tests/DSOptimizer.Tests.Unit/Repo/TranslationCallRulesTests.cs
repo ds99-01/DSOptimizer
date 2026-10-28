@@ -121,6 +121,51 @@ public class TranslationCallRulesTests
         Assert.Single(ScanXaml("<TextBlock Text=\"{l:T}\" />"));
     }
 
+    [Fact]
+    public void Scanner_FlagsStaticAutoPropertyInitializer()
+    {
+        Assert.Single(Scan("public static string X { get; } = L.T(\"x\");"));
+        Assert.Single(Scan("public static string Y { get; set; } = L.T(\"x\");"));
+    }
+
+    [Fact]
+    public void Scanner_FlagsMultiLineStaticInitializer()
+    {
+        const string Text = """
+            private static readonly (string, string)[] Items = {
+                ("a", L.T("x")),
+            };
+            """;
+        var v = Scan(Text);
+        Assert.StartsWith("x.cs:2:", Assert.Single(v), StringComparison.Ordinal);
+        const string Second = """
+            private static string[] A =
+                new[] { L.T("x") };
+            """;
+        Assert.Single(Scan(Second));
+    }
+
+    [Fact]
+    public void Scanner_AcceptsCallInMethodAfterStaticField()
+    {
+        const string Text = """
+            private static int Count = 3;
+            private static readonly string Name = "n";
+            public string M()
+            {
+                return L.T("x");
+            }
+            """;
+        Assert.Empty(Scan(Text));
+    }
+
+    [Fact]
+    public void Scanner_AcceptsKeywordInsideLiteral()
+    {
+        Assert.Empty(Scan("    var x = L.T(\"Use const here\");"));
+        Assert.Empty(Scan("    var y = L.T(\"a\"); // static readonly"));
+    }
+
     private static IReadOnlyList<string> Scan(string text) => TranslationCallScanner.Violations("x.cs", text);
 
     private static IReadOnlyList<string> ScanXaml(string text) => TranslationCallScanner.Violations("x.xaml", text);
@@ -129,9 +174,10 @@ public class TranslationCallRulesTests
     {
         var src = RepoRoot.Combine("src");
         var result = new List<string>();
+        var scanned = 0;
         foreach (var file in Directory.EnumerateFiles(src, "*" + extension, SearchOption.AllDirectories))
         {
-            var relative = file.Substring(RepoRoot.Path.Length).TrimStart((char)92, (char)47).Replace('\\', '/');
+            var relative = file.Substring(RepoRoot.Path.Length).TrimStart('\\', '/').Replace('\\', '/');
             var segments = relative.Split('/');
             if (segments.Contains("obj") || segments.Contains("bin"))
             {
@@ -143,29 +189,32 @@ public class TranslationCallRulesTests
                 continue;
             }
 
+            scanned++;
             result.AddRange(TranslationCallScanner.Violations(relative, File.ReadAllText(file)));
         }
 
+        Assert.True(scanned > 0, "Skan nie znalazl zadnego pliku " + extension + " w src.");
         return result;
     }
 }
 
 /// <summary>
-/// Prosty skaner liniowy (tylko do testów). C#: <c>L.T(</c>/<c>L.F(</c> musi dostać pierwszym argumentem jeden zwykły
-/// literał <c>"…"</c> (z <c>\"</c> i <c>\\</c>), po nim od razu <c>)</c> albo <c>,</c>; zakaz w linii z <c>static readonly</c>/<c>const</c>
-/// i w inicjalizatorze pola statycznego (<c>static T X = …L.T(</c>, nie <c>=&gt;</c>). XAML: <c>{l:T '…'}</c> z literałem w apostrofach
-/// (<c>\'</c> i <c>\\</c> dozwolone) i <c>}</c> zaraz po nim.
-/// Czego nie łapie: literału lub inicjalizatora rozbitego na kilka linii, wywołań w komentarzach blokowych (<c>/* */</c>) i w tekstach,
-/// <c>L.T</c> przez alias lub <c>using static</c>, inicjalizatorów statycznych wywołanych pośrednio (np. przez metodę pomocniczą).
-/// Linie zaczynające się od <c>//</c> są pomijane.
+/// Prosty skaner (tylko do testów), stanowy po liniach. C#: <c>L.T(</c>/<c>L.F(</c> musi dostać pierwszym argumentem jeden zwykły
+/// literał <c>"…"</c> (z <c>\"</c> i <c>\\</c>), po nim od razu <c>)</c> albo <c>,</c>. Zakaz wywołania wewnątrz instrukcji pola lub
+/// właściwości statycznej z inicjalizatorem: od słowa <c>const</c>, <c>static readonly</c> albo <c>static … =</c> (nie <c>=&gt;</c>, więc też
+/// <c>static T X { get; } = …</c>) do pierwszego <c>;</c> na zerowej głębokości nawiasów, także gdy instrukcja ma kilka linii.
+/// Przed analizą z linii usuwana jest treść literałów tekstowych i znakowych oraz komentarze <c>//</c>, więc słowa kluczowe i wywołania w
+/// tekście lub komentarzu nie liczą się. XAML: <c>{l:T '…'}</c> z literałem w apostrofach (<c>\'</c> i <c>\\</c> dozwolone) i <c>}</c> zaraz po nim.
+/// Czego nie łapie: literału samego argumentu rozbitego na kilka linii, komentarzy blokowych (<c>/* */</c>), w pełni kwalifikowanego
+/// <c>X.L.T(</c>, <c>L.T</c> przez alias, <c>using static</c> albo grupę metod, statycznego pola z krotką przed <c>=</c> bez <c>readonly</c>,
+/// inicjalizatorów statycznych wywołanych pośrednio (np. przez metodę pomocniczą).
 /// </summary>
 public static class TranslationCallScanner
 {
     public const string StaticFieldReason = "static field";
 
     private static readonly Regex CallStart = new(@"(?<![\w.])L\.([TF])\(", RegexOptions.Compiled);
-    private static readonly Regex StaticInitializer = new(@"\bstatic\b[^=;(]*=(?!>)", RegexOptions.Compiled);
-    private static readonly Regex StaticOrConst = new(@"\bstatic\s+readonly\b|\bconst\b", RegexOptions.Compiled);
+    private static readonly Regex StaticStart = new(@"\bconst\b|\bstatic\s+readonly\b|\bstatic\b[^=(]*=(?!>)", RegexOptions.Compiled);
     private static readonly Regex XamlStart = new(@"\{l:T(?!\w)", RegexOptions.Compiled);
     private static readonly Regex XamlValid = new(@"\G\{l:T '(?:[^'\\]|\\.)*'\}", RegexOptions.Compiled);
 
@@ -174,6 +223,9 @@ public static class TranslationCallScanner
         var xaml = fileName.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase);
         var result = new List<string>();
         var lines = text.Split('\n');
+        var inVerbatim = false;
+        var inStatic = false;
+        var depth = 0;
         for (var i = 0; i < lines.Length; i++)
         {
             var line = lines[i].TrimEnd('\r');
@@ -181,37 +233,192 @@ public static class TranslationCallScanner
             if (xaml)
             {
                 CheckXaml(line, where, result);
+                continue;
             }
-            else if (!line.TrimStart().StartsWith("//", StringComparison.Ordinal))
+
+            var code = Mask(line, ref inVerbatim);
+            var ranges = StaticRanges(code, ref inStatic, ref depth);
+            foreach (Match call in CallStart.Matches(code))
             {
-                CheckCs(line, where, result);
+                var name = "L." + call.Groups[1].Value;
+                if (!IsSingleLiteralArgument(line, call.Index + call.Length))
+                {
+                    result.Add(where + name + "( must start with one plain \"literal\" followed by ) or ,");
+                }
+
+                if (ranges.Any(r => call.Index >= r.Start && call.Index < r.End))
+                {
+                    result.Add(where + name + "( in a " + StaticFieldReason + " or const (use a => property or a method body)");
+                }
             }
         }
 
         return result;
     }
 
-    private static void CheckCs(string line, string where, List<string> result)
+    /// <summary>Zastępuje treść literałów spacjami (cudzysłowy zostają) i obcina komentarz <c>//</c>; długość linii się nie zmienia.</summary>
+    private static string Mask(string line, ref bool inVerbatim)
     {
-        foreach (Match call in CallStart.Matches(line))
+        var chars = line.ToCharArray();
+        var i = 0;
+        if (inVerbatim)
         {
-            var name = "L." + call.Groups[1].Value;
-            if (!IsSingleLiteralArgument(line, call.Index + call.Length))
+            i = SkipVerbatim(chars, 0, ref inVerbatim);
+        }
+
+        while (i < chars.Length)
+        {
+            var c = chars[i];
+            if (c == '/' && i + 1 < chars.Length && chars[i + 1] == '/')
             {
-                result.Add(where + name + "( must start with one plain \"literal\" followed by ) or ,");
+                for (var k = i; k < chars.Length; k++)
+                {
+                    chars[k] = ' ';
+                }
+
+                break;
             }
 
-            if (StaticOrConst.IsMatch(line) || IsStaticInitializer(line, call.Index))
+            if (c == '"')
             {
-                result.Add(where + name + "( in a " + StaticFieldReason + " or const (use a => property or a method body)");
+                var verbatim = (i > 0 && chars[i - 1] == '@') || (i > 1 && chars[i - 1] == '$' && chars[i - 2] == '@');
+                if (verbatim)
+                {
+                    inVerbatim = true;
+                    i = SkipVerbatim(chars, i + 1, ref inVerbatim);
+                    continue;
+                }
+
+                i++;
+                while (i < chars.Length && chars[i] != '"')
+                {
+                    var step = chars[i] == '\\' && i + 1 < chars.Length ? 2 : 1;
+                    for (var k = 0; k < step; k++)
+                    {
+                        chars[i + k] = ' ';
+                    }
+
+                    i += step;
+                }
+
+                i++;
+                continue;
             }
+
+            if (c == '\'')
+            {
+                var j = i + 1;
+                if (j < chars.Length && chars[j] == '\\')
+                {
+                    j += 2;
+                }
+                else
+                {
+                    j++;
+                }
+
+                if (j < chars.Length && chars[j] == '\'')
+                {
+                    for (var k = i + 1; k < j; k++)
+                    {
+                        chars[k] = ' ';
+                    }
+
+                    i = j + 1;
+                    continue;
+                }
+            }
+
+            i++;
         }
+
+        return new string(chars);
     }
 
-    private static bool IsStaticInitializer(string line, int callIndex)
+    private static int SkipVerbatim(char[] chars, int start, ref bool inVerbatim)
     {
-        var match = StaticInitializer.Match(line);
-        return match.Success && match.Index + match.Length <= callIndex;
+        var i = start;
+        while (i < chars.Length)
+        {
+            if (chars[i] == '"')
+            {
+                if (i + 1 < chars.Length && chars[i + 1] == '"')
+                {
+                    chars[i] = ' ';
+                    chars[i + 1] = ' ';
+                    i += 2;
+                    continue;
+                }
+
+                inVerbatim = false;
+                return i + 1;
+            }
+
+            chars[i] = ' ';
+            i++;
+        }
+
+        return i;
+    }
+
+    /// <summary>Zakresy znaków tej linii leżące w instrukcji pola statycznego/const; stan przechodzi między liniami.</summary>
+    private static List<(int Start, int End)> StaticRanges(string code, ref bool inStatic, ref int depth)
+    {
+        var ranges = new List<(int Start, int End)>();
+        var pos = 0;
+        while (pos <= code.Length)
+        {
+            int start;
+            if (inStatic)
+            {
+                start = pos;
+            }
+            else
+            {
+                var match = StaticStart.Match(code, pos);
+                if (!match.Success)
+                {
+                    break;
+                }
+
+                start = match.Index;
+                inStatic = true;
+                depth = 0;
+            }
+
+            var end = code.Length;
+            var closed = false;
+            for (var k = start; k < code.Length; k++)
+            {
+                var ch = code[k];
+                if (ch == '{' || ch == '(' || ch == '[')
+                {
+                    depth++;
+                }
+                else if (ch == '}' || ch == ')' || ch == ']')
+                {
+                    depth--;
+                }
+
+                if ((ch == ';' && depth == 0) || depth < 0)
+                {
+                    end = k;
+                    closed = true;
+                    break;
+                }
+            }
+
+            ranges.Add((start, end));
+            if (!closed)
+            {
+                break;
+            }
+
+            inStatic = false;
+            pos = end + 1;
+        }
+
+        return ranges;
     }
 
     private static bool IsSingleLiteralArgument(string line, int position)
