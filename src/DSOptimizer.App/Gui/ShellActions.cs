@@ -7,7 +7,7 @@ using DSOptimizer.Core.Gui;
 namespace DSOptimizer.App.Gui;
 
 /// <summary>
-/// Akcje powłoki z okna: „pokaż plik w Eksploratorze”, „otwórz stronę autora” i „otwórz dozwolony adres”. Sprawdzenie powłoki konta (WMI) trwa 1–3 s,
+/// Akcje powłoki z okna: „pokaż plik w Eksploratorze”, „otwórz stronę repozytorium” i „otwórz dozwolony adres”. Sprawdzenie powłoki konta (WMI) trwa 1–3 s,
 /// więc revealer i opener idą przez <see cref="Task.Run(System.Action)"/>, a schowek i dziennik wracają na wątek UI.
 /// Odmowa (każdy wyjątek z revealera/openera, zwykle OperationException) = ostrzeżenie w dzienniku i kopia do schowka;
 /// akcja powłoki nigdy nie przewraca okna. W trakcie jednej akcji kolejne wywołania są ignorowane (podwójny klik).
@@ -59,8 +59,8 @@ public sealed class ShellActions
         }
     }
 
-    /// <summary>Strona autora w przeglądarce; bez openera tylko kopiowanie adresu, odmowa = ostrzeżenie i kopia adresu.</summary>
-    public Task OpenAuthorPageAsync() => OpenUrlAsync(ProductInfo.AuthorUrl);
+    /// <summary>Strona repozytorium programu w przeglądarce; bez openera tylko kopiowanie adresu, odmowa = ostrzeżenie i kopia adresu.</summary>
+    public Task OpenRepositoryPageAsync() => OpenUrlAsync(ProductInfo.RepositoryUrl);
 
     /// <summary>
     /// Dowolny adres w przeglądarce; opener sam sprawdza go w <see cref="ExternalLinkPolicy"/>, więc adres spoza listy kończy się odmową

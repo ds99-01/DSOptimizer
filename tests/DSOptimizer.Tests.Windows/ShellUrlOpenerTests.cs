@@ -13,8 +13,8 @@ using Xunit;
 namespace DSOptimizer.Tests.Windows;
 
 /// <summary>
-/// Otwieranie strony autora bez uruchamiania czegokolwiek: start procesu podmieniony, sprawdzamy ProcessStartInfo
-/// (<c>%SystemRoot%\explorer.exe https://github.com/ds99-01</c>) i to, że odmowy nie startują nic.
+/// Otwieranie strony repozytorium bez uruchamiania czegokolwiek: start procesu podmieniony, sprawdzamy ProcessStartInfo
+/// (<c>%SystemRoot%\explorer.exe https://github.com/ds99-01/DSOptimizer</c>) i to, że odmowy nie startują nic.
 /// </summary>
 [Trait("Category", "Windows")]
 public class ShellUrlOpenerTests
@@ -69,11 +69,11 @@ public class ShellUrlOpenerTests
     [Fact]
     public void Open_AllowedUrl_WithOwnExplorer_StartsExplorer()
     {
-        Opener().Open(ProductInfo.AuthorUrl);
+        Opener().Open(ProductInfo.RepositoryUrl);
 
         var info = Assert.Single(_started);
         Assert.Equal(ShellProcessLauncher.ExplorerPath, info.FileName);
-        Assert.Equal("\"https://github.com/ds99-01\"", info.Arguments);
+        Assert.Equal("\"https://github.com/ds99-01/DSOptimizer\"", info.Arguments);
         Assert.False(info.UseShellExecute);
         Assert.False(info.ErrorDialog);
         Assert.Equal(Environment.SystemDirectory, info.WorkingDirectory);
@@ -149,7 +149,7 @@ public class ShellUrlOpenerTests
     {
         _explorers.Processes.Clear();
 
-        var ex = Assert.Throws<OperationException>(() => Opener().Open(ProductInfo.AuthorUrl));
+        var ex = Assert.Throws<OperationException>(() => Opener().Open(ProductInfo.RepositoryUrl));
 
         Assert.Equal(ShellSessionGuard.RefusalMessage, ex.Message);
         Assert.Empty(_started);
@@ -160,7 +160,7 @@ public class ShellUrlOpenerTests
     {
         _explorers.Failure = new InvalidOperationException("brak dostępu");
 
-        var ex = Assert.Throws<OperationException>(() => Opener().Open(ProductInfo.AuthorUrl));
+        var ex = Assert.Throws<OperationException>(() => Opener().Open(ProductInfo.RepositoryUrl));
 
         Assert.Contains("brak dostępu", ex.Message, StringComparison.Ordinal);
         Assert.Empty(_started);
@@ -169,7 +169,7 @@ public class ShellUrlOpenerTests
     [Fact]
     public void Open_Win32Error_BecomesOperationException()
     {
-        var ex = Assert.Throws<OperationException>(() => Opener(new Win32Exception("odmowa")).Open(ProductInfo.AuthorUrl));
+        var ex = Assert.Throws<OperationException>(() => Opener(new Win32Exception("odmowa")).Open(ProductInfo.RepositoryUrl));
 
         Assert.Equal("Nie można otworzyć strony: odmowa", ex.Message);
         Assert.IsType<Win32Exception>(ex.InnerException);

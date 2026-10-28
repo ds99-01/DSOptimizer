@@ -7,9 +7,9 @@ public static class ProductInfo
 
     public const string AuthorName = "Dawid Świeboda";
 
-    public const string AuthorUrl = "https://github.com/ds99-01";
+    public const string RepositoryUrl = "https://github.com/ds99-01/DSOptimizer";
 
-    public const string AuthorUrlText = "github.com/ds99-01";
+    public const string RepositoryUrlText = "github.com/ds99-01/DSOptimizer";
 
     /// <summary>Licencja programu (pełny tekst w pliku LICENSE w katalogu głównym repo).</summary>
     public const string LicenseName = "Mozilla Public License 2.0";

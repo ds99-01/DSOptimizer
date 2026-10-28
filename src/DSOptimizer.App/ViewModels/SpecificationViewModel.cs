@@ -47,7 +47,7 @@ public sealed class SpecificationViewModel : ObservableObject
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
         SaveReportCommand = new AsyncRelayCommand(SaveReportAsync, () => IsComplete);
         CopyCommand = new RelayCommand(Copy, () => IsComplete);
-        OpenAuthorPageCommand = new AsyncRelayCommand(OpenAuthorPageAsync);
+        OpenRepositoryPageCommand = new AsyncRelayCommand(OpenRepositoryPageAsync);
     }
 
     /// <summary>Grupy ekranu, podmieniane w całości po każdej przyjętej aktualizacji.</summary>
@@ -80,19 +80,19 @@ public sealed class SpecificationViewModel : ObservableObject
 
     public IRelayCommand CopyCommand { get; }
 
-    /// <summary>Link autora w wierszu przycisków (ta sama ścieżka co w „O programie”).</summary>
-    public IAsyncRelayCommand OpenAuthorPageCommand { get; }
+    /// <summary>Link do repozytorium w wierszu przycisków (ta sama ścieżka co w „O programie”).</summary>
+    public IAsyncRelayCommand OpenRepositoryPageCommand { get; }
 
-    // ShellActions.OpenAuthorPageAsync nie rzuca (odmowa = ostrzeżenie i kopia adresu); try/catch, by nic nie wyciekło na wątek UI.
-    private async Task OpenAuthorPageAsync()
+    // ShellActions.OpenRepositoryPageAsync nie rzuca (odmowa = ostrzeżenie i kopia adresu); try/catch, by nic nie wyciekło na wątek UI.
+    private async Task OpenRepositoryPageAsync()
     {
         try
         {
-            await _shell.OpenAuthorPageAsync().ConfigureAwait(true);
+            await _shell.OpenRepositoryPageAsync().ConfigureAwait(true);
         }
         catch (Exception ex)
         {
-            _log.Fail("Gui", "Nie udało się otworzyć strony autora.", ex);
+            _log.Fail("Gui", "Nie udało się otworzyć strony repozytorium.", ex);
         }
     }
 

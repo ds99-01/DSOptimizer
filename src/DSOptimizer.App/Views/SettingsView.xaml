@@ -181,8 +181,8 @@
         <Border Height="1" Margin="0,10,0,10" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
         <StackPanel Orientation="Horizontal">
           <views:BrandIcon Kind="GitHub" Size="16" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
-          <Button Style="{StaticResource TextLinkButton}" Margin="6,0,0,0" Content="{x:Static core:ProductInfo.AuthorUrlText}"
-                  AutomationProperties.Name="Otwórz github.com/ds99-01" Command="{Binding OpenAuthorPageCommand}" />
+          <Button Style="{StaticResource TextLinkButton}" Margin="6,0,0,0" Content="{x:Static core:ProductInfo.RepositoryUrlText}"
+                  AutomationProperties.Name="Otwórz github.com/ds99-01/DSOptimizer" Command="{Binding OpenRepositoryPageCommand}" />
         </StackPanel>
         <Button Style="{StaticResource TextLinkButton}" Margin="0,6,0,0" HorizontalAlignment="Left" Content="Licencje komponentów"
                 Command="{Binding ShowLicensesCommand}" />

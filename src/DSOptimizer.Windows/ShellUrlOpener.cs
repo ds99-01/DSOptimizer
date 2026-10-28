@@ -8,7 +8,7 @@ using DSOptimizer.Core.Gui;
 namespace DSOptimizer.Windows;
 
 /// <summary>
-/// Otwiera adres dozwolony przez <see cref="ExternalLinkPolicy"/> – stronę autora albo adres strony „Przygotowanie” z
+/// Otwiera adres dozwolony przez <see cref="ExternalLinkPolicy"/> – stronę repozytorium programu albo adres strony „Przygotowanie” z
 /// <see cref="DSOptimizer.Core.Prep.PrepLinks"/> (strona producenta, wyszukiwanie, <c>ms-settings:</c>) – jako <c>explorer.exe "&lt;adres&gt;"</c> (adres zawsze w cudzysłowie)
 /// z programu podniesionego, ale bez podnoszenia przeglądarki ani Ustawień: CreateProcess stałej ścieżki
 /// <see cref="ShellProcessLauncher.ExplorerPath"/> (nie ShellExecute), za strażnikiem powłoki (<see cref="ShellSessionCheck.RequireOwnExplorer"/>)

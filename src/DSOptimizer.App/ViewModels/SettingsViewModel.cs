@@ -46,7 +46,7 @@ public sealed class SettingsViewModel : ObservableObject
         _session.CreateRestorePoint = _settings.CreateRestorePoint;
 
         // Kilka klików w link w trakcie sprawdzania powłoki ignoruje ShellActions; przycisk nie przygasa na 1–3 s.
-        OpenAuthorPageCommand = new AsyncRelayCommand(OpenAuthorPageAsync, AsyncRelayCommandOptions.AllowConcurrentExecutions);
+        OpenRepositoryPageCommand = new AsyncRelayCommand(OpenRepositoryPageAsync, AsyncRelayCommandOptions.AllowConcurrentExecutions);
         ShowLicensesCommand = new RelayCommand(ShowLicenses);
     }
 
@@ -97,7 +97,7 @@ public sealed class SettingsViewModel : ObservableObject
     /// <summary>Nazwa pozycji w menu (etykieta, podpowiedź w zwiniętym menu, nazwa dla czytnika ekranu).</summary>
     public string Name { get; } = "Ustawienia";
 
-    public IAsyncRelayCommand OpenAuthorPageCommand { get; }
+    public IAsyncRelayCommand OpenRepositoryPageCommand { get; }
 
     public IRelayCommand ShowLicensesCommand { get; }
 
@@ -130,16 +130,16 @@ public sealed class SettingsViewModel : ObservableObject
         }
     }
 
-    // ShellActions.OpenAuthorPageAsync nie rzuca (odmowa = ostrzeżenie i kopia adresu); try/catch, by nic nie wyciekło na wątek UI.
-    private async Task OpenAuthorPageAsync()
+    // ShellActions.OpenRepositoryPageAsync nie rzuca (odmowa = ostrzeżenie i kopia adresu); try/catch, by nic nie wyciekło na wątek UI.
+    private async Task OpenRepositoryPageAsync()
     {
         try
         {
-            await _shell.OpenAuthorPageAsync().ConfigureAwait(true);
+            await _shell.OpenRepositoryPageAsync().ConfigureAwait(true);
         }
         catch (Exception ex)
         {
-            _log.Fail("Gui", "Nie udało się otworzyć strony autora.", ex);
+            _log.Fail("Gui", "Nie udało się otworzyć strony repozytorium.", ex);
         }
     }
 

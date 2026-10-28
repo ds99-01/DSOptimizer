@@ -340,13 +340,13 @@ public class GuiTextTests
 
     [Fact]
     public void UrlCopied_Text()
-        => Assert.Equal("Skopiowano adres: https://github.com/ds99-01", GuiText.UrlCopied("https://github.com/ds99-01"));
+        => Assert.Equal("Skopiowano adres: https://github.com/ds99-01/DSOptimizer", GuiText.UrlCopied("https://github.com/ds99-01/DSOptimizer"));
 
     [Fact]
     public void OpenUrlFailed_Texts()
     {
         Assert.Equal(
-            "Nie udało się otworzyć strony: Brak powłoki konta. Skopiowano adres: https://github.com/ds99-01",
+            "Nie udało się otworzyć strony: Brak powłoki konta. Skopiowano adres: https://github.com/ds99-01/DSOptimizer",
             GuiText.OpenUrlFailed("Brak powłoki konta.", true));
         Assert.Equal(
             "Nie udało się otworzyć strony: Brak powłoki konta. Nie udało się też skopiować adresu.",

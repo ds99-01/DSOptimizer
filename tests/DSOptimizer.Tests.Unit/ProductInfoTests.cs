@@ -13,8 +13,8 @@ public class ProductInfoTests
     public void Author_Constants()
     {
         Assert.Equal("Dawid Świeboda", ProductInfo.AuthorName);
-        Assert.Equal("https://github.com/ds99-01", ProductInfo.AuthorUrl);
-        Assert.Equal("github.com/ds99-01", ProductInfo.AuthorUrlText);
+        Assert.Equal("https://github.com/ds99-01/DSOptimizer", ProductInfo.RepositoryUrl);
+        Assert.Equal("github.com/ds99-01/DSOptimizer", ProductInfo.RepositoryUrlText);
     }
 
     [Fact]

@@ -346,11 +346,11 @@ public static class GuiText
     public static string EmptySearchText(string query, int hiddenCount)
         => hiddenCount == 0 ? NoSearchResults(query) : "Pasujące pozycje ukrył filtr ryzyka.";
 
-    /// <summary>Linia Info, gdy program tylko kopiuje adres strony autora (wariant bez otwierania przeglądarki).</summary>
+    /// <summary>Linia Info, gdy program tylko kopiuje adres strony repozytorium (wariant bez otwierania przeglądarki).</summary>
     public static string UrlCopied(string url)
         => "Skopiowano adres: " + (url ?? throw new ArgumentNullException(nameof(url)));
 
-    /// <summary>Linia ostrzeżenia po odmowie otwarcia strony autora: powód i wynik kopiowania adresu do schowka.</summary>
+    /// <summary>Linia ostrzeżenia po odmowie otwarcia strony repozytorium: powód i wynik kopiowania adresu do schowka.</summary>
     public static string OpenUrlFailed(string reason, bool copied)
     {
         if (reason is null)
@@ -359,7 +359,7 @@ public static class GuiText
         }
 
         return copied
-            ? $"Nie udało się otworzyć strony: {reason} Skopiowano adres: {ProductInfo.AuthorUrl}"
+            ? $"Nie udało się otworzyć strony: {reason} Skopiowano adres: {ProductInfo.RepositoryUrl}"
             : $"Nie udało się otworzyć strony: {reason} Nie udało się też skopiować adresu.";
     }
 

@@ -112,8 +112,8 @@
         <views:BrandIcon Kind="GitHub" Size="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
         <TextBlock Grid.Column="1" Text="Dawid Świeboda" FontSize="12.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                    Margin="8,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-        <Button Grid.Column="2" Style="{StaticResource TextLinkButton}" Margin="10,0,0,0" Content="{x:Static core:ProductInfo.AuthorUrlText}"
-                AutomationProperties.Name="Otwórz github.com/ds99-01" Command="{Binding OpenAuthorPageCommand}" />
+        <Button Grid.Column="2" Style="{StaticResource TextLinkButton}" Margin="10,0,0,0" Content="{x:Static core:ProductInfo.RepositoryUrlText}"
+                AutomationProperties.Name="Otwórz github.com/ds99-01/DSOptimizer" Command="{Binding OpenRepositoryPageCommand}" />
       </Grid>
     </DockPanel>
 
