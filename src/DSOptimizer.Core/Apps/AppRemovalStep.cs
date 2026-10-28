@@ -6,6 +6,7 @@ using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Errors;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Apps;
 
@@ -89,16 +90,16 @@ internal sealed class AppRemovalStep
         {
             if (ex is not JournalStoreException)
             {
-                _log.Fail(Component, $"Nieoczekiwany błąd journala przy {app.Id}.", ex);
+                _log.Fail(Component, L.F("Nieoczekiwany błąd journala przy {0}.", app.Id), ex);
             }
 
-            return Finish(app.Id, TweakOutcome.Failed, $"Nie udało się zapisać journala – usunięcie nie zostało wykonane: {ex.Message}", warnings);
+            return Finish(app.Id, TweakOutcome.Failed, L.F("Nie udało się zapisać journala – usunięcie nie zostało wykonane: {0}", ex.Message), warnings);
         }
 
         // Zakres AllUsers usuwa też z obrazu (pomiar VM), a weryfikacja sprawdza obraz, więc deprovisioning idzie zawsze w tym trybie.
         var attempt = app.Kind == AppKind.Store
             ? RemoveStore(app.Appx!, scope, scope == StoreRemovalScope.AllUsers || IsMicrosoft(row), ct)
-            : RunUninstaller(row.Plan ?? throw new InvalidOperationException($"Program {app.Id} nie ma planu deinstalacji."), ct);
+            : RunUninstaller(row.Plan ?? throw new InvalidOperationException(L.F("Program {0} nie ma planu deinstalacji.", app.Id)), ct);
         var verification = WaitUntilGone(app, presence, stop, ct);
         TweakOutcome outcome;
         string? message = null;
@@ -153,7 +154,7 @@ internal sealed class AppRemovalStep
             }
 
             var reason = string.Join(" ", script.Errors.Where(line => !string.IsNullOrWhiteSpace(line)).Select(line => line.Trim()));
-            return new Attempt(null, false, reason.Length > 0 ? reason : $"Skrypt usuwania zakończył się kodem {script.ExitCode}.");
+            return new Attempt(null, false, reason.Length > 0 ? reason : L.F("Skrypt usuwania zakończył się kodem {0}.", script.ExitCode));
         }
         catch (OperationException ex) when (ex.Kind is OperationErrorKind.Timeout or OperationErrorKind.Cancelled)
         {
@@ -161,7 +162,7 @@ internal sealed class AppRemovalStep
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, $"Usuwanie pakietu {appx.PackageName} rzuciło wyjątek.", ex);
+            _log.Fail(Component, L.F("Usuwanie pakietu {0} rzuciło wyjątek.", appx.PackageName), ex);
             return new Attempt(null, false, ex.Message);
         }
     }
@@ -175,7 +176,7 @@ internal sealed class AppRemovalStep
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, $"Nie udało się uruchomić deinstalatora {plan.FileName}.", ex);
+            _log.Fail(Component, L.F("Nie udało się uruchomić deinstalatora {0}.", plan.FileName), ex);
             return new Attempt(null, false, ex.Message);
         }
     }
@@ -284,7 +285,7 @@ internal sealed class AppRemovalStep
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, $"Odczyt obecności {app.Id} nie powiódł się.", ex);
+            _log.Fail(Component, L.F("Odczyt obecności {0} nie powiódł się.", app.Id), ex);
             return AppPresence.Unknown;
         }
     }
@@ -314,8 +315,9 @@ internal sealed class AppRemovalStep
         }
         catch (Exception ex)
         {
-            _log.Warn(Component, $"Nie udało się zapisać journala: {ex.Message}");
-            warnings.Add($"Nie udało się zapisać journala: {ex.Message}");
+            var text = L.F("Nie udało się zapisać journala: {0}", ex.Message);
+            _log.Warn(Component, text);
+            warnings.Add(text);
         }
     }
 

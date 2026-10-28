@@ -26,7 +26,7 @@ public static class InstallText
     // --- stan winget (WingetAvailability) ---
 
     /// <summary>Niepewny zalogowany użytkownik = odmowa (decyzja planu), ten sam tekst co na stronie „Aplikacje”.</summary>
-    public const string UserUncertain = AppsText.UserUncertain;
+    public static string UserUncertain => AppsText.UserUncertain;
 
     public const string NotRegistered =
         "winget (Instalator aplikacji) nie jest zarejestrowany dla tego konta. Użyj „Naprawy → Napraw winget”.";

@@ -1,0 +1,489 @@
+{
+  "language": "en",
+  "entries": [
+    {
+      "pl": "Szukaj po nazwie albo wydawcy",
+      "en": "Search by name or publisher"
+    },
+    {
+      "pl": "Odśwież listę",
+      "en": "Refresh list"
+    },
+    {
+      "pl": "Lista nie została jeszcze odczytana",
+      "en": "The list hasn't been read yet"
+    },
+    {
+      "pl": "Odczyt listy w toku",
+      "en": "Reading the list"
+    },
+    {
+      "pl": "Chroniona – DSOptimizer jej nie usuwa",
+      "en": "Protected – DSOptimizer doesn't remove it"
+    },
+    {
+      "pl": "Zaznaczona do usunięcia",
+      "en": "Selected for removal"
+    },
+    {
+      "pl": "Nie zaznaczona – kliknij dwukrotnie wiersz, żeby dodać",
+      "en": "Not selected – double-click the row to add it"
+    },
+    {
+      "pl": "Szczegóły techniczne",
+      "en": "Technical details"
+    },
+    {
+      "pl": "Brak aplikacji w tej grupie.",
+      "en": "No apps in this group."
+    },
+    {
+      "pl": "Żadna aplikacja w tej grupie nie pasuje do wyszukiwania.",
+      "en": "No app in this group matches the search."
+    },
+    {
+      "pl": "Wszystkie konta",
+      "en": "All accounts"
+    },
+    {
+      "pl": "nieznana",
+      "en": "unknown"
+    },
+    {
+      "pl": "nieznany",
+      "en": "unknown"
+    },
+    {
+      "pl": "Niemożliwe",
+      "en": "Not possible"
+    },
+    {
+      "pl": "Usuń zaznaczone",
+      "en": "Remove selected"
+    },
+    {
+      "pl": "Tak (wymagany przy programach)",
+      "en": "Yes (required for programs)"
+    },
+    {
+      "pl": "Tak (według Ustawień)",
+      "en": "Yes (as set in Settings)"
+    },
+    {
+      "pl": "Nie – ochrona systemu wyłączona",
+      "en": "No – System Protection is turned off"
+    },
+    {
+      "pl": "Tak, jeśli się uda – nie udało się sprawdzić ochrony systemu",
+      "en": "Yes, if possible – couldn't check System Protection"
+    },
+    {
+      "pl": "Tylko jeśli zgłosi go deinstalator",
+      "en": "Only if the uninstaller asks for it"
+    },
+    {
+      "pl": "Ochrona systemu jest wyłączona, więc punkt przywracania nie powstanie.",
+      "en": "System Protection is turned off, so a restore point won't be created."
+    },
+    {
+      "pl": "Ochrona systemu jest wyłączona, więc punkt przywracania nie powstanie. Przed pierwszym usunięciem program zapyta, czy kontynuować bez niego.",
+      "en": "System Protection is turned off, so a restore point won't be created. Before the first removal, the program will ask whether to continue without it."
+    },
+    {
+      "pl": "Nie udało się sprawdzić, czy ochrona systemu jest włączona. Jeśli punkt przywracania nie powstanie, przed pierwszym usunięciem program zapyta, czy kontynuować bez niego.",
+      "en": "Couldn't check whether System Protection is turned on. If a restore point isn't created, the program will ask before the first removal whether to continue without it."
+    },
+    {
+      "pl": "Nic jeszcze nie zostało usunięte. Bez punktu przywracania usuniętego programu nie przywrócisz także przywracaniem systemu Windows.",
+      "en": "Nothing has been removed yet. Without a restore point, you can't bring back a removed program with System Restore either."
+    },
+    {
+      "pl": "„Nie” kończy serię bez usuwania.",
+      "en": "\"No\" ends the batch without removing anything."
+    },
+    {
+      "pl": "Tak, kontynuuj",
+      "en": "Yes, continue"
+    },
+    {
+      "pl": "Nie",
+      "en": "No"
+    },
+    {
+      "pl": "Wymagany restart, żeby deinstalator dokończył usuwanie.",
+      "en": "Restart required so the uninstaller can finish the removal."
+    },
+    {
+      "pl": "Chronionej ani zablokowanej aplikacji nie da się usunąć – nic nie zmieniono.",
+      "en": "A protected or blocked app can't be removed – nothing was changed."
+    },
+    {
+      "pl": "Kliknij dwukrotnie wiersz albo pole wyboru, żeby dodać do usunięcia.",
+      "en": "Double-click a row or checkbox to select it for removal."
+    },
+    {
+      "pl": "Zaznaczono {0} aplikację do usunięcia",
+      "en": "{0} app selected for removal"
+    },
+    {
+      "pl": "Zaznaczono {0} aplikacje do usunięcia",
+      "en": "{0} apps selected for removal"
+    },
+    {
+      "pl": "Zaznaczono {0} aplikacji do usunięcia",
+      "en": "{0} apps selected for removal"
+    },
+    {
+      "pl": "Przed usunięciem programów program utworzy punkt przywracania. Usunięcia nie da się cofnąć.",
+      "en": "The program will create a restore point before removing programs. Removal can't be undone."
+    },
+    {
+      "pl": "Przed usunięciem program spróbuje utworzyć punkt przywracania. Usunięcia nie da się cofnąć.",
+      "en": "The program will try to create a restore point before removing. Removal can't be undone."
+    },
+    {
+      "pl": "Bez punktu przywracania. Usunięcia nie da się cofnąć.",
+      "en": "No restore point. Removal can't be undone."
+    },
+    {
+      "pl": "Odczyt listy: {0}, {1}",
+      "en": "List read: {0}, {1}"
+    },
+    {
+      "pl": "Sugerowane do usunięcia",
+      "en": "Suggested for removal"
+    },
+    {
+      "pl": "Pozostałe",
+      "en": "Other"
+    },
+    {
+      "pl": "Chronione",
+      "en": "Protected"
+    },
+    {
+      "pl": "producent komputera",
+      "en": "computer manufacturer"
+    },
+    {
+      "pl": "wersja próbna",
+      "en": "trial version"
+    },
+    {
+      "pl": "Sklep",
+      "en": "Store"
+    },
+    {
+      "pl": "Program",
+      "en": "Program"
+    },
+    {
+      "pl": "Aplikacja ze Sklepu",
+      "en": "Store app"
+    },
+    {
+      "pl": "Deinstalator producenta; jego okno pojawi się na ekranie, program poczeka na koniec.",
+      "en": "Manufacturer's uninstaller; its window will appear on the screen, and the program will wait for it to finish."
+    },
+    {
+      "pl": "Cichy deinstalator producenta, bez okna; program poczeka na koniec.",
+      "en": "Manufacturer's silent uninstaller, no window; the program will wait for it to finish."
+    },
+    {
+      "pl": "Instalator Windows usunie program bez okna; program poczeka na koniec.",
+      "en": "Windows Installer will remove it without a window; the program will wait for it to finish."
+    },
+    {
+      "pl": "Deinstalator producenta; jego okno pojawi się na ekranie",
+      "en": "Manufacturer's uninstaller; its window will appear on the screen"
+    },
+    {
+      "pl": "Cichy deinstalator producenta, bez okna",
+      "en": "Manufacturer's silent uninstaller, no window"
+    },
+    {
+      "pl": "Instalator Windows, bez okna",
+      "en": "Windows Installer, no window"
+    },
+    {
+      "pl": "Dla wszystkich kont na tym komputerze i z obrazu systemu.",
+      "en": "For all accounts on this computer and from the system image."
+    },
+    {
+      "pl": "Dla zalogowanego konta i z obrazu systemu, żeby nie wróciła na nowym koncie.",
+      "en": "For the signed-in account and from the system image, so it doesn't come back on a new account."
+    },
+    {
+      "pl": "Dla zalogowanego konta.",
+      "en": "For the signed-in account."
+    },
+    {
+      "pl": "Dla konta {0} i z obrazu systemu, żeby nie wróciła na nowym koncie.",
+      "en": "For account {0} and from the system image, so it doesn't come back on a new account."
+    },
+    {
+      "pl": "Dla konta {0}.",
+      "en": "For account {0}."
+    },
+    {
+      "pl": "DSOptimizer działa na koncie {0}, innym niż zalogowane ({1}): aplikacje ze Sklepu zostaną usunięte dla wszystkich kont na tym komputerze i z obrazu systemu.",
+      "en": "DSOptimizer is running on account {0}, not the signed-in account ({1}): Store apps will be removed for all accounts on this computer and from the system image."
+    },
+    {
+      "pl": "Nie udało się",
+      "en": "Failed"
+    },
+    {
+      "pl": "{0} aplikacja dokończy usuwanie po ponownym uruchomieniu komputera.",
+      "en": "{0} app will finish removal after the computer restarts."
+    },
+    {
+      "pl": "{0} aplikacje dokończą usuwanie po ponownym uruchomieniu komputera.",
+      "en": "{0} apps will finish removal after the computer restarts."
+    },
+    {
+      "pl": "{0} aplikacji dokończy usuwanie po ponownym uruchomieniu komputera.",
+      "en": "{0} apps will finish removal after the computer restarts."
+    },
+    {
+      "pl": "Usuwanie: {0} z {1} usuniętych.",
+      "en": "Removal: {0} of {1} removed."
+    },
+    {
+      "pl": "Usuń ({0})",
+      "en": "Remove ({0})"
+    },
+    {
+      "pl": "Nie udało się ustalić zalogowanego użytkownika.",
+      "en": "Couldn't determine the signed-in user."
+    },
+    {
+      "pl": "Nie da się bezpiecznie uruchomić deinstalatora.",
+      "en": "The uninstaller can't be run safely."
+    },
+    {
+      "pl": "Aplikacje ze Sklepu zainstalujesz z powrotem ze Sklepu; programów nie da się przywrócić z poziomu DSOptimizera.",
+      "en": "You can reinstall Store apps from Microsoft Store; programs can't be restored from DSOptimizer."
+    },
+    {
+      "pl": "Nie potwierdzono – deinstalator nadal działa.",
+      "en": "Not confirmed – the uninstaller is still running."
+    },
+    {
+      "pl": "Nie było jej już na komputerze.",
+      "en": "It was no longer on the computer."
+    },
+    {
+      "pl": "Kontynuować bez punktu przywracania?",
+      "en": "Continue without a restore point?"
+    },
+    {
+      "pl": "Usunięta dla wszystkich kont na tym komputerze.",
+      "en": "Removed for all accounts on this computer."
+    },
+    {
+      "pl": "Nie udało się – aplikacja nadal jest na komputerze.",
+      "en": "Failed – the app is still on the computer."
+    },
+    {
+      "pl": "Deinstalator dokończy usuwanie po ponownym uruchomieniu komputera.",
+      "en": "The uninstaller will finish the removal after the computer restarts."
+    },
+    {
+      "pl": "Deinstalator mógł nie dokończyć – sprawdź listę po odświeżeniu.",
+      "en": "The uninstaller may not have finished – check the list after refreshing it."
+    },
+    {
+      "pl": "Deinstalator mógł dokończyć w tle – sprawdź listę po odświeżeniu.",
+      "en": "The uninstaller may be finishing in the background – check the list after refreshing it."
+    },
+    {
+      "pl": "Nie udało się sprawdzić, czy aplikacja zniknęła.",
+      "en": "Couldn't check whether the app is gone."
+    },
+    {
+      "pl": "Usunięta z konta, ale została w obrazie systemu (wróci na nowym koncie).",
+      "en": "Removed from the account, but it's still in the system image (it will come back on a new account)."
+    },
+    {
+      "pl": "Nie potwierdzono – sprawdzanie przerwane, sprawdź listę po odświeżeniu.",
+      "en": "Not confirmed – verification was interrupted, check the list after refreshing it."
+    },
+    {
+      "pl": "Seria przerwana przed pierwszym usunięciem – bez punktu przywracania.",
+      "en": "Batch interrupted before the first removal – no restore point."
+    },
+    {
+      "pl": "Nie potwierdzono – usuwanie aplikacji ze Sklepu przerwane.",
+      "en": "Not confirmed – removal of the Store app was interrupted."
+    },
+    {
+      "pl": "Nie potwierdzono – usuwanie aplikacji ze Sklepu przerwane: {0}.",
+      "en": "Not confirmed – removal of the Store app was interrupted: {0}."
+    },
+    {
+      "pl": "Jeśli zostały resztki, użyj narzędzia producenta: {0}",
+      "en": "If anything is left behind, use the manufacturer's tool: {0}"
+    },
+    {
+      "pl": "Deinstalator zakończył się kodem {0}.",
+      "en": "The uninstaller ended with code {0}."
+    },
+    {
+      "pl": "Błąd usuwania: {0}",
+      "en": "Removal error: {0}"
+    },
+    {
+      "pl": "Uruchom DSOptimizer na koncie, które to zainstalowało, żeby to usunąć.",
+      "en": "Run DSOptimizer on the account that installed it to remove it."
+    },
+    {
+      "pl": "Uruchom DSOptimizer na koncie {0}, żeby to usunąć.",
+      "en": "Run DSOptimizer on account {0} to remove it."
+    },
+    {
+      "pl": "Nie udało się odczytać aplikacji ze Sklepu. {0}",
+      "en": "Couldn't read Store apps. {0}"
+    },
+    {
+      "pl": "Nie udało się odczytać programów z rejestru. {0}",
+      "en": "Couldn't read programs from the registry. {0}"
+    },
+    {
+      "pl": "Zły wynik odczytu obecności AppX: {0}",
+      "en": "Invalid AppX presence read result: {0}"
+    },
+    {
+      "pl": "Brak pola {0} w wyniku odczytu obecności AppX.",
+      "en": "Field {0} is missing from the AppX presence read result."
+    },
+    {
+      "pl": "Pominięto nieczytelne wpisy programów w rejestrze: {0}.",
+      "en": "Skipped unreadable program entries in the registry: {0}."
+    },
+    {
+      "pl": "DSOptimizer – przed usunięciem aplikacji",
+      "en": "DSOptimizer – before removing apps"
+    },
+    {
+      "pl": "Nieoczekiwany błąd usuwania {0}.",
+      "en": "Unexpected error while removing {0}."
+    },
+    {
+      "pl": "Pytanie o kontynuację bez punktu przywracania rzuciło wyjątek – przyjęto „Nie”.",
+      "en": "The question about continuing without a restore point threw an exception – \"No\" was assumed."
+    },
+    {
+      "pl": "Odbiornik postępu usuwania rzucił wyjątek ({0} {1}).",
+      "en": "The removal progress receiver threw an exception ({0} {1})."
+    },
+    {
+      "pl": "Nie udało się zapisać journala – usunięcie nie zostało wykonane: {0}",
+      "en": "Couldn't save the journal – the removal wasn't done: {0}"
+    },
+    {
+      "pl": "Program {0} nie ma planu deinstalacji.",
+      "en": "Program {0} has no uninstall plan."
+    },
+    {
+      "pl": "Skrypt usuwania zakończył się kodem {0}.",
+      "en": "The removal script ended with code {0}."
+    },
+    {
+      "pl": "Usuwanie pakietu {0} rzuciło wyjątek.",
+      "en": "Removing package {0} threw an exception."
+    },
+    {
+      "pl": "Nie udało się uruchomić deinstalatora {0}.",
+      "en": "Couldn't start the uninstaller {0}."
+    },
+    {
+      "pl": "Odczyt obecności {0} nie powiódł się.",
+      "en": "Couldn't check whether {0} is present."
+    },
+    {
+      "pl": "apps-bloat: {0}, pole {1}: {2}",
+      "en": "apps-bloat: {0}, field {1}: {2}"
+    },
+    {
+      "pl": "(plik)",
+      "en": "(file)"
+    },
+    {
+      "pl": "błędny JSON – {0}",
+      "en": "invalid JSON – {0}"
+    },
+    {
+      "pl": "brak tablicy „{0}”",
+      "en": "missing array \"{0}\""
+    },
+    {
+      "pl": "element musi być obiektem",
+      "en": "the element must be an object"
+    },
+    {
+      "pl": "(wpis {0})",
+      "en": "(entry {0})"
+    },
+    {
+      "pl": "id jest wymagane",
+      "en": "id is required"
+    },
+    {
+      "pl": "dozwolone: {0}",
+      "en": "allowed: {0}"
+    },
+    {
+      "pl": "wymagana wartość true/false",
+      "en": "a true/false value is required"
+    },
+    {
+      "pl": "najwyżej {0} znaków",
+      "en": "at most {0} characters"
+    },
+    {
+      "pl": "adres musi być bezwzględnym https",
+      "en": "the address must be an absolute https URL"
+    },
+    {
+      "pl": "id występuje więcej niż raz",
+      "en": "id appears more than once"
+    },
+    {
+      "pl": "pole jest wymagane i niepuste",
+      "en": "the field is required and can't be empty"
+    },
+    {
+      "pl": "wymagany obiekt z regułą dopasowania",
+      "en": "an object with a match rule is required"
+    },
+    {
+      "pl": "podaj packageName (AppX) albo displayName/publisher (Win32)",
+      "en": "specify packageName (AppX) or displayName/publisher (Win32)"
+    },
+    {
+      "pl": "packageName (AppX) nie łączy się z displayName/publisher (Win32)",
+      "en": "packageName (AppX) can't be combined with displayName/publisher (Win32)"
+    },
+    {
+      "pl": "wartość musi być tekstem",
+      "en": "the value must be text"
+    },
+    {
+      "pl": "Wynik odczytu AppX nie jest poprawnym JSON-em: {0}",
+      "en": "The AppX read result isn't valid JSON: {0}"
+    },
+    {
+      "pl": "Wynik odczytu AppX zawiera element, który nie jest obiektem.",
+      "en": "The AppX read result contains an element that isn't an object."
+    },
+    {
+      "pl": "Wynik odczytu AppX nie jest tablicą ani obiektem.",
+      "en": "The AppX read result is neither an array nor an object."
+    },
+    {
+      "pl": "W wyniku odczytu AppX brakuje pola {0}.",
+      "en": "The AppX read result is missing field {0}."
+    }
+  ]
+}

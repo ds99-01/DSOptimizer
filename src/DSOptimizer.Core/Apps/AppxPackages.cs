@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using DSOptimizer.Core.Localization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -155,7 +156,7 @@ public static class AppxPackages
         }
         catch (JsonException ex)
         {
-            throw new FormatException("Wynik odczytu AppX nie jest poprawnym JSON-em: " + ex.Message, ex);
+            throw new FormatException(L.F("Wynik odczytu AppX nie jest poprawnym JSON-em: {0}", ex.Message), ex);
         }
 
         var items = new List<JObject>();
@@ -169,19 +170,19 @@ public static class AppxPackages
         {
             foreach (var token in array)
             {
-                items.Add(token as JObject ?? throw new FormatException("Wynik odczytu AppX zawiera element, który nie jest obiektem."));
+                items.Add(token as JObject ?? throw new FormatException(L.T("Wynik odczytu AppX zawiera element, który nie jest obiektem.")));
             }
 
             return items;
         }
 
-        throw new FormatException("Wynik odczytu AppX nie jest tablicą ani obiektem.");
+        throw new FormatException(L.T("Wynik odczytu AppX nie jest tablicą ani obiektem."));
     }
 
     private static string RequiredText(JObject item, string name)
         => OptionalText(item, name) is { Length: > 0 } value
             ? value
-            : throw new FormatException("W wyniku odczytu AppX brakuje pola " + name + ".");
+            : throw new FormatException(L.F("W wyniku odczytu AppX brakuje pola {0}.", name));
 
     private static string? OptionalText(JObject item, string name)
         => item.TryGetValue(name, StringComparison.Ordinal, out var token)

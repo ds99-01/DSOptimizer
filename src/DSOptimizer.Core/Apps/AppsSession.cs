@@ -5,6 +5,7 @@ using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Apps;
@@ -20,7 +21,6 @@ public sealed record AppsPage(IReadOnlyList<AppRow> Rows, IReadOnlyList<string> 
 public sealed class AppsSession
 {
     private const string ReportId = "usuwanie";
-    private const string Busy = "Trwa inna operacja – nic nie zmieniono.";
 
     private readonly GuiSession _session;
     private readonly IInstalledAppsReader _reader;
@@ -115,10 +115,10 @@ public sealed class AppsSession
         return new SeriesConfirmation(
             GuiOperation.RemoveApps,
             AppsPageText.ConfirmTitle,
-            GuiText.Count(rows.Count, "aplikacja", "aplikacje", "aplikacji"),
+            L.P("{0} aplikacja", "{0} aplikacje", "{0} aplikacji", rows.Count),
             facts,
             items,
-            $"Usuń ({rows.Count})",
+            L.F("Usuń ({0})", rows.Count),
             withRestorePoint)
         {
             Warnings = warnings,
@@ -149,7 +149,7 @@ public sealed class AppsSession
 
         return _session.TryRunExclusive(() => RemoveLocked(rows, options, ct), out var report)
             ? report
-            : Refusal(Busy);
+            : Refusal(L.T("Trwa inna operacja – nic nie zmieniono."));
     }
 
     private GuiOperationReport RemoveLocked(IReadOnlyList<AppRow> rows, AppRemovalOptions options, CancellationToken ct)
@@ -163,7 +163,7 @@ public sealed class AppsSession
 
         if (batch.Aborted)
         {
-            lines.Add(Line(GuiLogLevel.Error, batch.AbortReason ?? "Seria przerwana."));
+            lines.Add(Line(GuiLogLevel.Error, batch.AbortReason ?? L.T("Seria przerwana.")));
         }
 
         var names = rows.GroupBy(row => row.App.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First().App.Name, StringComparer.Ordinal);
@@ -253,7 +253,7 @@ public sealed class AppsSession
         var app = row.App;
         var note = app.Kind == AppKind.Store
             ? AppsPageText.StoreRemoval(userName, IsMicrosoft(row), allUsers)
-            : AppsPageText.ProgramRemoval((row.Plan ?? throw new InvalidOperationException($"Program {app.Id} nie ma planu deinstalacji.")).Mode);
+            : AppsPageText.ProgramRemoval((row.Plan ?? throw new InvalidOperationException(L.F("Program {0} nie ma planu deinstalacji.", app.Id))).Mode);
         var warnings = string.IsNullOrWhiteSpace(row.Warning) ? Array.Empty<string>() : new[] { row.Warning! };
         return new SeriesItem(
             app.Id,

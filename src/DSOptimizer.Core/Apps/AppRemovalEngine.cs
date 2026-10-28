@@ -5,6 +5,7 @@ using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Apps;
 
@@ -19,7 +20,8 @@ public sealed class AppRemovalEngine
     /// <summary>Akcja zdarzeń journala usunięcia (<c>remove-app</c>: <c>Started</c>, potem nazwa wyniku).</summary>
     public const string JournalAction = "remove-app";
 
-    public const string RestorePointDescription = "DSOptimizer – przed usunięciem aplikacji";
+    /// <summary>Opis punktu przywracania serii usuwania (w bieżącym języku; widać go w Przywracaniu systemu).</summary>
+    public static string RestorePointDescription => L.T("DSOptimizer – przed usunięciem aplikacji");
 
     private const string Component = "Apps";
 
@@ -92,7 +94,7 @@ public sealed class AppRemovalEngine
             Report(options.Steps, new BatchStepEvent(0, count, BatchStepKind.RestorePoint, null, BatchStepPhase.Finished, _clock.UtcNow, RestorePoint: restorePoint));
             if (restorePoint.Status != RestorePointStatus.Created)
             {
-                var text = $"Punkt przywracania nie powstał ({restorePoint.Status}): {restorePoint.Message}";
+                var text = L.F("Punkt przywracania nie powstał ({0}): {1}", restorePoint.Status, restorePoint.Message);
                 _log.Warn(Component, text);
                 if (required && !AskToContinue(options, restorePoint))
                 {
@@ -101,7 +103,7 @@ public sealed class AppRemovalEngine
                         RestorePoint = restorePoint,
                         Aborted = true,
                         AbortReason = text + " " + AppsText.AbortedWithoutRestorePoint,
-                        Results = rows.Select(row => Skipped(row, "Seria przerwana przed rozpoczęciem.")).ToList(),
+                        Results = rows.Select(row => Skipped(row, L.T("Seria przerwana przed rozpoczęciem."))).ToList(),
                     };
                 }
 
@@ -119,7 +121,7 @@ public sealed class AppRemovalEngine
             var row = rows[i];
             if (ct.IsCancellationRequested)
             {
-                results.Add(Skipped(row, "Anulowano przed rozpoczęciem."));
+                results.Add(Skipped(row, L.T("Anulowano przed rozpoczęciem.")));
                 continue;
             }
 
@@ -139,8 +141,8 @@ public sealed class AppRemovalEngine
             }
             catch (Exception ex)
             {
-                _log.Fail(Component, $"Nieoczekiwany błąd usuwania {row.App.Id}.", ex);
-                result = new TweakResult { TweakId = row.App.Id, Outcome = TweakOutcome.Failed, Message = $"Nieoczekiwany błąd: {ex.Message}" };
+                _log.Fail(Component, L.F("Nieoczekiwany błąd usuwania {0}.", row.App.Id), ex);
+                result = new TweakResult { TweakId = row.App.Id, Outcome = TweakOutcome.Failed, Message = L.F("Nieoczekiwany błąd: {0}", ex.Message) };
             }
 
             results.Add(result);
@@ -173,7 +175,7 @@ public sealed class AppRemovalEngine
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, "Pytanie o kontynuację bez punktu przywracania rzuciło wyjątek – przyjęto „Nie”.", ex);
+            _log.Fail(Component, L.T("Pytanie o kontynuację bez punktu przywracania rzuciło wyjątek – przyjęto „Nie”."), ex);
             return false;
         }
     }
@@ -186,8 +188,8 @@ public sealed class AppRemovalEngine
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, "Serwis punktu przywracania rzucił wyjątek.", ex);
-            return new RestorePointResult(RestorePointStatus.Failed, $"Wyjątek serwisu punktu przywracania: {ex.Message}");
+            _log.Fail(Component, L.T("Serwis punktu przywracania rzucił wyjątek."), ex);
+            return new RestorePointResult(RestorePointStatus.Failed, L.F("Wyjątek serwisu punktu przywracania: {0}", ex.Message));
         }
     }
 
@@ -205,7 +207,7 @@ public sealed class AppRemovalEngine
         }
         catch (Exception ex)
         {
-            _log.Fail(Component, $"Odbiornik postępu usuwania rzucił wyjątek ({step.Kind} {step.Phase}).", ex);
+            _log.Fail(Component, L.F("Odbiornik postępu usuwania rzucił wyjątek ({0} {1}).", step.Kind, step.Phase), ex);
         }
     }
 

@@ -23,7 +23,7 @@ public static class AppxRemovalScript
     public const string Body = """
         $request = ConvertFrom-Json -InputObject ([string]$Snapshot)
         $name = [string]$request.Name
-        if ([string]::IsNullOrWhiteSpace($name)) { throw 'Brak nazwy pakietu w żądaniu.' }
+        """ + "\r\n" + AppxScript.RequireNameLine + "\r\n" + """
 
         if ($request.AllUsers) {
             foreach ($package in @(@(Get-AppxPackage -AllUsers -Name $name) | Where-Object { $_.Name -eq $name })) {

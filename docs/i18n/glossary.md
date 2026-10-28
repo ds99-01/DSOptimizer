@@ -170,6 +170,8 @@ How to read the tables:
 | Było już zastosowane / Była już zainstalowana / Nie było już na komputerze | Was already applied / Was already installed / Was no longer on the computer | Batch step status |
 | Pominięte / Pominięte – zatrzymano / zatrzymano | Skipped / Skipped – stopped / stopped | Batch step status; "Zatrzymano" (title) = Stopped |
 | Utworzony / Nie powstał | Created / Not created | Restore point step status |
+| Nie udało się | Failed | App removal result status (`Failed`; the removal page says this instead of "Error"); also as a prefix: `Nie udało się – ` → `Failed – ` |
+| Niemożliwe | Not possible | "Undo" fact and detail line for app removal (removal can't be undone) |
 | Zastosowanie: {0} / Cofnięcie: {0} | Apply: {0} / Undo: {0} | Change history event with a result name |
 
 ## Concepts
@@ -223,6 +225,9 @@ How to read the tables:
 | cały komputer | whole computer | Change history "Account" column |
 | obraz systemu | system image | Store apps provisioned for new accounts. **do audytu (Etap 5)** |
 | deinstalator / instalator | uninstaller / installer | "manufacturer's uninstaller" |
+| cichy deinstalator / deinstalator producenta | silent uninstaller / manufacturer's uninstaller | Program removal mode (no window / the program's own window) |
+| wersja próbna | trial version | App group detail: "Suggested for removal (trial version)" |
+| Odczyt listy: {0}, {1} | List read: {0}, {1} | Apps page subtitle: "List read: 14:05, 21 apps" |
 | wydawca / producent / producent komputera | publisher / manufacturer / computer manufacturer | |
 | sterownik / sterowniki chipsetu / karta graficzna | driver / chipset drivers / graphics card | "Devices without a driver" (README) |
 | Numer seryjny / Producent i model | Serial number / Manufacturer and model | Specification and Prep |

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using DSOptimizer.Core.Localization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -10,14 +10,14 @@ namespace DSOptimizer.Core.Apps;
 public sealed class AppsCatalogException : Exception
 {
     public AppsCatalogException(string entryId, string field, string message)
-        : base(string.Format(CultureInfo.InvariantCulture, "apps-bloat: {0}, pole {1}: {2}", entryId, field, message))
+        : base(L.F("apps-bloat: {0}, pole {1}: {2}", entryId, field, message))
     {
         EntryId = entryId;
         Field = field;
     }
 
     public AppsCatalogException(string entryId, string field, string message, Exception innerException)
-        : base(string.Format(CultureInfo.InvariantCulture, "apps-bloat: {0}, pole {1}: {2}", entryId, field, message), innerException)
+        : base(L.F("apps-bloat: {0}, pole {1}: {2}", entryId, field, message), innerException)
     {
         EntryId = entryId;
         Field = field;
@@ -111,9 +111,10 @@ public sealed record ProtectedEntry(string Id, AppMatch Match, string Reason);
 public sealed class AppsBloatCatalog
 {
     private const int MaxSummary = 160;
-    private const string FileLabel = "(plik)";
 
     private static readonly string[] Groups = { "microsoft", "producent", "trial" };
+
+    private static string FileLabel => L.T("(plik)");
 
     private AppsBloatCatalog(IReadOnlyList<BloatEntry> entries, IReadOnlyList<ProtectedEntry> protectedEntries)
     {
@@ -140,7 +141,7 @@ public sealed class AppsBloatCatalog
         }
         catch (JsonReaderException ex)
         {
-            throw new AppsCatalogException(FileLabel, "json", "błędny JSON – " + ex.Message, ex);
+            throw new AppsCatalogException(FileLabel, "json", L.F("błędny JSON – {0}", ex.Message), ex);
         }
 
         var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -167,17 +168,20 @@ public sealed class AppsBloatCatalog
 
     private static JArray Items(JObject root, string name)
         => root[name] as JArray
-            ?? throw new AppsCatalogException(FileLabel, name, "brak tablicy „" + name + "”");
+            ?? throw new AppsCatalogException(FileLabel, name, L.F("brak tablicy „{0}”", name));
 
     private static JObject AsObject(JToken item, int index)
         => item as JObject
-            ?? throw new AppsCatalogException("(wpis " + index.ToString(CultureInfo.InvariantCulture) + ")", "entries", "element musi być obiektem");
+            ?? throw new AppsCatalogException(Entry(index), "entries", L.T("element musi być obiektem"));
+
+    /// <summary>Etykieta wpisu bez id, np. „(wpis 3)”.</summary>
+    private static string Entry(int index) => L.F("(wpis {0})", index);
 
     private static string Id(JObject obj, int index)
     {
-        var id = Text(obj, "id", "(wpis " + index.ToString(CultureInfo.InvariantCulture) + ")");
+        var id = Text(obj, "id", Entry(index));
         return string.IsNullOrWhiteSpace(id)
-            ? throw new AppsCatalogException("(wpis " + index.ToString(CultureInfo.InvariantCulture) + ")", "id", "id jest wymagane")
+            ? throw new AppsCatalogException(Entry(index), "id", L.T("id jest wymagane"))
             : id!;
     }
 
@@ -188,18 +192,18 @@ public sealed class AppsBloatCatalog
         var group = Required(obj, id, "group");
         if (Array.IndexOf(Groups, group) < 0)
         {
-            throw new AppsCatalogException(id, "group", "dozwolone: " + string.Join(", ", Groups));
+            throw new AppsCatalogException(id, "group", L.F("dozwolone: {0}", string.Join(", ", Groups)));
         }
 
         if (obj["suggested"]?.Type != JTokenType.Boolean)
         {
-            throw new AppsCatalogException(id, "suggested", "wymagana wartość true/false");
+            throw new AppsCatalogException(id, "suggested", L.T("wymagana wartość true/false"));
         }
 
         var summary = Required(obj, id, "summary");
         if (summary.Length > MaxSummary)
         {
-            throw new AppsCatalogException(id, "summary", "najwyżej " + MaxSummary.ToString(CultureInfo.InvariantCulture) + " znaków");
+            throw new AppsCatalogException(id, "summary", L.F("najwyżej {0} znaków", MaxSummary));
         }
 
         var source = Required(obj, id, "source");
@@ -207,7 +211,7 @@ public sealed class AppsBloatCatalog
         if (url is not null
             && (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps))
         {
-            throw new AppsCatalogException(id, "cleanupUrl", "adres musi być bezwzględnym https");
+            throw new AppsCatalogException(id, "cleanupUrl", L.T("adres musi być bezwzględnym https"));
         }
 
         return new BloatEntry(id, match, group, obj["suggested"]!.Value<bool>(), summary, Text(obj, "warning", id), source, url);
@@ -224,7 +228,7 @@ public sealed class AppsBloatCatalog
     {
         if (!ids.Add(id))
         {
-            throw new AppsCatalogException(id, "id", "id występuje więcej niż raz");
+            throw new AppsCatalogException(id, "id", L.T("id występuje więcej niż raz"));
         }
     }
 
@@ -235,7 +239,7 @@ public sealed class AppsBloatCatalog
     private static string Required(JObject obj, string id, string field)
     {
         var value = Text(obj, field, id);
-        return value ?? throw new AppsCatalogException(id, field, "pole jest wymagane i niepuste");
+        return value ?? throw new AppsCatalogException(id, field, L.T("pole jest wymagane i niepuste"));
     }
 
     private static string? Text(JObject obj, string field, string id) => AppMatchJson.Text(obj, field, id, Fail);

@@ -1,4 +1,5 @@
 using System;
+using DSOptimizer.Core.Localization;
 using Newtonsoft.Json.Linq;
 
 namespace DSOptimizer.Core.Apps;
@@ -14,7 +15,7 @@ internal static class AppMatchJson
     {
         if (obj["match"] is not JObject match)
         {
-            throw fail(id, "match", "wymagany obiekt z regułą dopasowania");
+            throw fail(id, "match", L.T("wymagany obiekt z regułą dopasowania"));
         }
 
         var package = Text(match, "packageName", id, fail);
@@ -22,12 +23,12 @@ internal static class AppMatchJson
         var publisher = Text(match, "publisher", id, fail);
         if (package is null && display is null && publisher is null)
         {
-            throw fail(id, "match", "podaj packageName (AppX) albo displayName/publisher (Win32)");
+            throw fail(id, "match", L.T("podaj packageName (AppX) albo displayName/publisher (Win32)"));
         }
 
         if (package is not null && (display is not null || publisher is not null))
         {
-            throw fail(id, "match", "packageName (AppX) nie łączy się z displayName/publisher (Win32)");
+            throw fail(id, "match", L.T("packageName (AppX) nie łączy się z displayName/publisher (Win32)"));
         }
 
         return new AppMatch(package, display, publisher);
@@ -44,7 +45,7 @@ internal static class AppMatchJson
 
         if (value.Type != JTokenType.String)
         {
-            throw fail(id, field, "wartość musi być tekstem");
+            throw fail(id, field, L.T("wartość musi być tekstem"));
         }
 
         var text = value.Value<string>();

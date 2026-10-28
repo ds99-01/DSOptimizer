@@ -36,3 +36,6 @@ src/DSOptimizer.Core/ProductInfo.cs	"Dawid Świeboda"	nazwa własna (imię i naz
 src/DSOptimizer.Core/Model/RegistryValueType.cs	"Nazwy typów wymusza format JSON katalogu."	uzasadnienie SuppressMessage dla analizatora kodu (dla programisty, nie trafia do programu)
 src/DSOptimizer.Core/Scripts/ScriptWrapper.cs	"# --- treść tweaka ---"	komentarz w generowanym skrypcie PowerShell (nie trafia do okna ani logu)
 src/DSOptimizer.Core/Scripts/ScriptWrapper.cs	"# --- koniec treści ---"	komentarz w generowanym skrypcie PowerShell (nie trafia do okna ani logu)
+
+# Core – aplikacje: kod skryptów PowerShell (AppX), nie tekst programu.
+src/DSOptimizer.Core/Apps/AppxScript.cs	"if ([string]::IsNullOrWhiteSpace($name)) { throw 'Brak nazwy pakietu w żądaniu.' }"	treść skryptu PowerShell (kod, nie tekst programu; C# nie wysyła pustej nazwy pakietu)

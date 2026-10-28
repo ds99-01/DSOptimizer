@@ -64,6 +64,13 @@ public static class AppxScript
         """;
 
     /// <summary>
+    /// Wspólna linia skryptów obecności i usuwania: pusta nazwa pakietu w żądaniu = błąd skryptu. To kod PowerShell (nie tekst
+    /// programu), poza surowym literałem tylko dlatego, że strażnik polskich tekstów przyjmuje wyjątek z jednej linii; C# nie wysyła
+    /// pustej nazwy (<see cref="PresenceRequest"/>, <see cref="AppxRemovalScript.Request"/>).
+    /// </summary>
+    internal const string RequireNameLine = "if ([string]::IsNullOrWhiteSpace($name)) { throw 'Brak nazwy pakietu w żądaniu.' }";
+
+    /// <summary>
     /// Obecność jednego pakietu po dokładnej nazwie (<c>Name</c>). Żądanie w <c>$Snapshot</c> (JSON z <see cref="PresenceRequest"/>):
     /// <c>AllUsers</c> = <c>Get-AppxPackage -AllUsers</c> zamiast <c>-User $UserSid</c> (Ruling R8), <c>Image</c> = także
     /// <c>Get-AppxProvisionedPackage -Online</c> (<c>DisplayName -eq Name</c>). Obraz jest czytany tylko na żądanie (wolny odczyt DISM).
@@ -72,7 +79,7 @@ public static class AppxScript
     public const string PresenceBody = """
         $request = ConvertFrom-Json -InputObject ([string]$Snapshot)
         $name = [string]$request.Name
-        if ([string]::IsNullOrWhiteSpace($name)) { throw 'Brak nazwy pakietu w żądaniu.' }
+        """ + "\r\n" + RequireNameLine + "\r\n" + """
 
         if ($request.AllUsers) {
             $installed = @(@(Get-AppxPackage -AllUsers -Name $name) | Where-Object { $_.Name -eq $name })
@@ -121,7 +128,7 @@ public static class AppxScript
         }
         catch (JsonException ex)
         {
-            throw new FormatException("Zły wynik odczytu obecności AppX: " + ex.Message, ex);
+            throw new FormatException(AppsText.PresenceResultInvalid(ex.Message), ex);
         }
 
         var installed = Flag(result, "Installed");
@@ -134,5 +141,5 @@ public static class AppxScript
     private static bool Flag(JObject result, string name)
         => result[name] is { Type: JTokenType.Boolean } token
             ? token.Value<bool>()
-            : throw new FormatException("Brak pola " + name + " w wyniku odczytu obecności AppX.");
+            : throw new FormatException(AppsText.PresenceFieldMissing(name));
 }

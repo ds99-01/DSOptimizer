@@ -2,9 +2,6 @@
 # Wpis z „/” na końcu = folder (wszystko pod nim), bez „/” = dokładnie ten plik. „#” = komentarz.
 # Każdy obszar po przetłumaczeniu usuwa swoje linie; na końcu plik zostaje bez wpisów.
 
-# Task 7: Core – aplikacje
-src/DSOptimizer.Core/Apps/
-
 # Task 8: Core – instalacja
 src/DSOptimizer.Core/Install/
 
