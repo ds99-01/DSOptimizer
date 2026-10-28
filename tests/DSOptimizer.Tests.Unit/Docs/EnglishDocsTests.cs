@@ -26,7 +26,7 @@ public class EnglishDocsTests
     private static readonly Regex StampLine = new(@"^<!-- source: (docs/(tweaks|apps|prep)/[^ ]+\.md) sha256: [0-9a-f]{64} -->$", RegexOptions.CultureInvariant);
     private static readonly Regex Url = new(@"https?://[^\s)>\]]+", RegexOptions.CultureInvariant);
     private static readonly Regex CodeSpan = new(@"`([^`\r\n]+)`", RegexOptions.CultureInvariant);
-    private static readonly Regex PolishLetter = new("[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]", RegexOptions.CultureInvariant);
+    private static readonly Regex Placeholder = new("<[^<>]*>", RegexOptions.CultureInvariant);
 
     private static readonly string EnglishDocsDirectory = RepoRoot.Combine("docs", "en");
     private static readonly string EnglishTweaksDirectory = RepoRoot.Combine("docs", "en", "tweaks");
@@ -174,18 +174,48 @@ public class EnglishDocsTests
                 problems.Add($"{relative}: adresy bez pary w EN: [{string.Join(", ", missingUrls)}], nadmiarowe w EN: [{string.Join(", ", extraUrls)}]");
             }
 
-            // Span z polską literą (dziś tylko `VolumeCaches\<program obsługi>`) to symbol zastępczy do przetłumaczenia – poza multizbiorem, ale liczba spanów musi się zgadzać.
-            var polishSpans = TechnicalSpans(polish);
-            var englishSpans = TechnicalSpans(english);
-            var missingSpans = Difference(polishSpans.Where(s => !PolishLetter.IsMatch(s)), englishSpans.Where(s => !PolishLetter.IsMatch(s)));
-            if (missingSpans.Count > 0 || polishSpans.Count != englishSpans.Count)
+            var spanMismatches = TechnicalSpanMismatches(polish, english);
+            if (spanMismatches.Count > 0)
             {
-                problems.Add($"{relative}: spany techniczne PL {polishSpans.Count}, EN {englishSpans.Count}; bez pary w EN: [{string.Join(", ", missingSpans)}]");
+                problems.Add($"{relative}: spany techniczne – {string.Join("; ", spanMismatches)}");
             }
         }
 
         Assert.True(problems.Count == 0, string.Join(Environment.NewLine, problems));
     }
+
+    [Theory]
+    [InlineData(@"Klucz `HKU\<SID zalogowanego>`.", @"Key `HKU\<SID of the signed-in user>`.")]
+    [InlineData(@"`C:\Users\<profil>\AppData` i `0x<indeks>`", @"`C:\Users\<profile>\AppData` and `0x<index>`")]
+    [InlineData(@"`VolumeCaches\<program obsługi>`", @"`VolumeCaches\<handler>`")]
+    public void TechnicalSpanMismatches_PlaceholdersInAngleBrackets_AreText(string polish, string english)
+    {
+        Assert.Empty(TechnicalSpanMismatches(polish, english));
+    }
+
+    [Theory]
+    [InlineData(@"`HKU\Software`", @"`HKU\Softwar`")]
+    [InlineData(@"`HKU\<SID>\Software`", @"`HKU\<SID>\Softwar`")]
+    [InlineData(@"`HKU\Software` i `HKU\Software`", @"`HKU\Software`")]
+    public void TechnicalSpanMismatches_ChangedValue_IsReported(string polish, string english)
+    {
+        Assert.NotEmpty(TechnicalSpanMismatches(polish, english));
+    }
+
+    /// <summary>
+    /// Spany techniczne PL bez pary w EN i odwrotnie (multizbiór, ordinal). Tekst w nawiasach ostrych (<c>&lt;SID zalogowanego&gt;</c>)
+    /// to symbol zastępczy do przetłumaczenia, nie wartość – przed porównaniem każda grupa <c>&lt;…&gt;</c> staje się <c>&lt;&gt;</c>.
+    /// </summary>
+    internal static List<string> TechnicalSpanMismatches(string polish, string english)
+    {
+        var polishSpans = TechnicalSpans(polish).Select(NormalizePlaceholders).ToList();
+        var englishSpans = TechnicalSpans(english).Select(NormalizePlaceholders).ToList();
+        return Difference(polishSpans, englishSpans).Select(s => "bez pary w EN: " + s)
+            .Concat(Difference(englishSpans, polishSpans).Select(s => "nadmiarowy w EN: " + s))
+            .ToList();
+    }
+
+    private static string NormalizePlaceholders(string span) => Placeholder.Replace(span, "<>");
 
     private static IEnumerable<string> EnglishFiles()
         => Directory.Exists(EnglishDocsDirectory)
