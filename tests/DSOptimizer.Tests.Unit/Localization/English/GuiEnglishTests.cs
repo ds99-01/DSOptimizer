@@ -360,7 +360,7 @@ public class GuiEnglishTests
             Assert.Equal("Applied – restart required", GuiText.OutcomeName(TweakOutcome.PendingReboot));
             Assert.Equal("Installed (reported by winget)", GuiText.OutcomeName(TweakOutcome.InstalledUnverified));
             Assert.Equal("Risk: caution", GuiText.RiskToolTip(RiskLevel.Caution));
-            Assert.Equal("Hide experimental",GuiText.RiskFilterName(RiskFilter.NoExperimental));
+            Assert.Equal("Hide experimental", GuiText.RiskFilterName(RiskFilter.NoExperimental));
             Assert.Equal("Install", GuiText.OperationName(GuiOperation.InstallApps));
         }
     }

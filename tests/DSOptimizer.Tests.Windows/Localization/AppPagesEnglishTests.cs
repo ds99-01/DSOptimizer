@@ -51,11 +51,11 @@ public class AppPagesEnglishTests
             var session = new FakeInstallSession(InstallState(new WingetStatus(WingetState.Ready, "v1.11.510", "winget works")));
             var vm = NewInstall(session);
             await vm.EnterAsync();
-            Assert.Equal("Search apps, e.g. VLC", vm.SearchPlaceholder);
+            Assert.Equal("Search apps, such as VLC", vm.SearchPlaceholder);
 
             session.State = InstallState(NotWorking());
             await vm.RefreshAsync();
-            Assert.Equal("Search apps on the list, e.g. VLC", vm.SearchPlaceholder);
+            Assert.Equal("Search apps on the list, such as VLC", vm.SearchPlaceholder);
 
             AssertXamlTexts("InstallView.xaml", new Dictionary<string, string>(StringComparer.Ordinal)
             {

@@ -575,8 +575,8 @@ public class InstallEnglishTests
         {
             Assert.Equal("Install", InstallText.PageTitle);
             Assert.Equal("Refresh", InstallText.RefreshButton);
-            Assert.Equal("Search apps, e.g. VLC", InstallText.SearchPlaceholder);
-            Assert.Equal("Search apps on the list, e.g. VLC", InstallText.SearchPlaceholderListOnly);
+            Assert.Equal("Search apps, such as VLC", InstallText.SearchPlaceholder);
+            Assert.Equal("Search apps on the list, such as VLC", InstallText.SearchPlaceholderListOnly);
             Assert.Equal("Also search winget", InstallText.SearchButton);
             Assert.Equal("From the list (3)", InstallText.CatalogSection(3));
             Assert.Equal("In winget (12)", InstallText.WingetSection(12));
