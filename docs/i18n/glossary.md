@@ -382,7 +382,10 @@ separator of the Polish text (">"), and use the English page names exactly.
 | Prywatność i zabezpieczenia > Diagnostyka i opinie | Privacy & security > Diagnostics & feedback | [Diagnostics, feedback, and privacy in Windows](https://support.microsoft.com/en-us/windows/diagnostics-feedback-and-privacy-in-windows-28808a2b-a31b-dd73-dcd3-4559a5199319) |
 | Częstotliwość opinii | Feedback frequency | Same source |
 | dane diagnostyczne wymagane / opcjonalne | required / optional diagnostic data | Same source |
-| niektórymi ustawieniami zarządza organizacja | some settings are managed by your organization | Message in Settings when a policy is set (Windows: "Some of these settings are managed by your organization") |
+| niektórymi ustawieniami zarządza organizacja | some settings are managed by your organization | Message in Settings when a policy is set (Windows: "Some of these settings are managed by your organization"). Variant on Privacy & security > Diagnostics & feedback: "Some settings are hidden or managed by your organization." ([Diagnostics, feedback, and privacy in Windows](https://support.microsoft.com/en-us/windows/diagnostics-feedback-and-privacy-in-windows-28808a2b-a31b-dd73-dcd3-4559a5199319)). **do audytu (Etap 5)** – which text 26H2 shows on which page |
+| Opcjonalne dane diagnostyczne (przełącznik) | Send optional diagnostic data | The documents avoid the label ("the optional diagnostic data toggle"). The Microsoft page above names only the "Diagnostic data" setting; no evidence of this label found. **do audytu (Etap 5)** |
+| Pokaż środowisko powitalne / Zaproponuj sposoby… | Show the Windows welcome experience / Suggest ways… | Old notification settings, absent in 26H2 (`privacy.welcome-experience`). English labels unverified. **do audytu (Etap 5)** |
+| migawki (Recall) | snapshots | Recall term. **do audytu (Etap 5)** – no Microsoft page checked |
 | Środowiska użytkownika połączonego i telemetria | Connected User Experiences and Telemetry | Display name of the DiagTrack service in Services |
 | typ startu Wyłączony | startup type Disabled | Services; "startup type" already in Concepts |
 | System > Zaawansowane | System > Advanced | Settings page (formerly For developers); [Advanced Windows Settings](https://learn.microsoft.com/en-us/windows/advanced-settings/) |
@@ -424,7 +427,7 @@ the Polish text sometimes uses a descriptive name, the English text then uses th
 | aplikacja producenta / asystent producenta | the manufacturer's app / the manufacturer's assistant | Manufacturer tools (Lenovo, ASUS, Acer, HP, Dell) |
 | wersja próbna antywirusa … preinstalowana przez producenta komputera | trial version of the … antivirus, preinstalled by the computer manufacturer | |
 | Własny deinstalator potrafi zostawić resztki. | Its own uninstaller can leave leftovers behind. | |
-| Instaluje się tylko dla bieżącego konta Windows. | Installs only for the current Windows account. | Install list warning |
+| Instaluje się tylko dla bieżącego konta Windows. | Installs only for the signed-in Windows account. | Install list warning (`catalog-apps.json`); Style rule 11 |
 | pakiet aplikacji / menu kontekstowe | app package / context menu | Install list warnings ("Also adds the … app package") |
 | Autostart (wszystkich kont) | Startup (for all accounts) | RustDesk warning: the Startup folder |
 
@@ -453,6 +456,13 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | program „optymalizujący” | "optimizing" program | |
 | komunikat, że ustawieniami zarządza organizacja | Windows says that your organization manages the settings | Windows shows "Some of these settings are managed by your organization". **do audytu (Etap 5)** |
 | Sklep (Microsoft Store) | the Store | Short form after "Microsoft Store" was named in the same text |
+| nośnik instalacyjny / nazwa odwrotna (DNS) | installation media / reverse name | Program texts (`catalog-repair.json`, `repair.json`): "their reverse names (*.in-addr.arpa…)" |
+| katalog Winsock / stos IP | Winsock catalog / IP stack | Network reset; `netsh winsock show catalog` |
+| naruszenia integralności | integrity violations | SFC result ("did not find any integrity violations") |
+| kopia w tle / magazyn kopii w tle | shadow copy / shadow storage | VSS terms (`vssadmin list shadows`, `list shadowstorage`) |
+| aktualizacja funkcji | feature update | Windows servicing term |
+| uchwyt / dowiązanie symboliczne / junction | handle / symbolic link / junction | Win32 terms; see also "punkt ponownej analizy" (Concepts) |
+| karencja (`/StartComponentCleanup`) | grace period | The 30-day period of the component store cleanup task |
 
 ### Catalog – disk, network, security, tools
 
@@ -484,12 +494,24 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | Menedżer zadań > Plik > Uruchom nowe zadanie | Task Manager > Run new task | "Run new task" as in Task Manager. **do audytu (Etap 5)** – the redesigned Windows 11 Task Manager shows "Run new task" in the command bar, not in a File menu (the Polish text says "Plik"). **do audytu (Etap 5):** polski tekst też do poprawy |
 | wylogowanie | signing out | Style rule 11 |
 | wydanie testowe / szkic (GitHub) | test release / draft | WinUtil description |
+| tryb zarządzany przez system / przez użytkownika | system-managed / user-managed (mode) | `NtfsDisableLastAccessUpdate` modes, as in the program text (`catalog-disk.json`) |
 
 ## Documentation
 
 English versions of the item documents and lists live in `docs/en/` (`docs/en/tweaks/<id>.md`, `docs/en/apps/`,
 `docs/en/prep/`); the Polish files in `docs/tweaks/`, `docs/apps/` and `docs/prep/` stay the source. The section headings
 come from the template `docs/en/tweaks/README.md`, in the same order as in Polish.
+
+- **Placeholders in angle brackets** are written in backticks (`<date>`), because GitHub hides a bare `<date>` as an HTML
+  tag. Inside the English text they are translated: `<data>` → `<date>`, `<czas>` → `<time>`, `<profil>` → `<profile>`,
+  `<znacznik>` → `<marker>`, `<klucz>` → `<key>`, `<Klasa>` → `<Class>`, `<kultura>` → `<culture>`,
+  `<rrrrMMdd-HHmmss>` → `<yyyyMMdd-HHmmss>`, `<SID zalogowanego>` → `<SID of the signed-in user>`.
+- **Polish texts read on the test machines** (Windows labels and messages, program output recorded on Polish Windows)
+  stay verbatim in Polish with the English text in brackets – `"Odmowa dostępu" (Access is denied)` – only in the
+  measurement passages ("VM test", "Defaults on a fresh 26H2", "Observed effect") and in quoted error messages.
+  Everywhere else the English Windows name is used without the Polish text.
+- **Section names of the Polish-only records** in `docs/zrodla/` are quoted in Polish with a gloss, so the reader can
+  find them: `"Wyniki VM" (VM results)`, `"Sonda uzupełniająca" (follow-up probe)`.
 
 | Polski | English | Notes/source |
 |---|---|---|
@@ -508,8 +530,64 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | Nie sprawdzono: | Not checked: | Start of a line listing what wasn't checked |
 | Sprawdzono: | Checked: | Start of a line listing what was checked |
 | Odczyt VM 26H2 Home i Pro | Reading from 26H2 Home and Pro VMs | Source type in "Sources" |
-| dostęp <data> | accessed <data> | Access date of a source; the date stays ISO ("accessed 2026-10-18") |
+| `dostęp <data>` | `accessed <date>` | Access date of a source; the date stays ISO ("accessed 2026-10-18") |
 | odwołanie do `docs/zrodla/…` | `docs/zrodla/…` (in Polish) | Added after every reference to a file in `docs/zrodla/`; those records exist only in Polish |
+| Etap N / część E / partia X | Stage N / part E / batch X | Project stages in the documents: "Stage 4a", "batch 1", "Task 9 of the batch", "Batch C4 research". The mark **do audytu (Etap 5)** in this glossary stays Polish |
+| decyzja R14 / decyzja projektowa / `decyzja <imię> z <data>` | ruling R14 / design decision / `<name>'s decision of <date>` | Ruling ids (R…) are not changed |
+| klasa B (research) | class B | Evidence class of a research source |
+| Portować / `Portować jako <x>` / Portować z ograniczeniem | Port / `Port as <x>` / Port with a restriction | Verdict; as in the template ("port / don't port / placebo") |
+| nie wchodzi / Nie portowane | Not ported | Verdict; capitalized at the start of the verdict ("Not ported:") |
+| Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis: | The item isn't in the catalog and changes nothing. Entry considered: | Verdict of an item that didn't make it into the catalog |
+| Nie dotyczy: / Nie dotyczy (pozycja nie jest w katalogu). | Not applicable: / Not applicable (the item isn't in the catalog). | Start of "Detection and undo" for actions and for items outside the catalog |
+| Odrzucone warianty / Działająca alternatywa (opisana, bez własnej pozycji katalogu) | Rejected variants / Working alternative (described, without its own catalog item) | Recurring headings and lines |
+| remis rozstrzygnięty na korzyść nazwy kanonicznej MS | the tie was resolved in favor of the MS canonical name | System panels documents |
+| Hint co do listy i polecenia, nie dowód skutku | A hint for the list and the command, not evidence of the effect | WinUtil source line |
+| Bez ostrzeżeń w katalogu. | No warnings in the catalog. | "Risks and warnings" |
+| Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj) | Beyond the notes in the program (in the technical details or only here) | Recurring sentence in "Risks and warnings" |
+| skutek uboczny / odmowa (przed zmianą) | side effect / refusal | |
+| Przebieg łącznie: | Whole run: | Intro of the run summary in "VM test" |
+| `Przebieg VM z <data>` / `Przebieg na VM <data>` | `VM run of <date>` / `VM run on <date>` | Two Polish forms, two English forms |
+| przebieg (VM, testu) / przebieg CLI / przebieg `main` | run / CLI run / `main` run | "first run" |
+| zaliczone / pominięte / `Pester zaliczył N` | passed / skipped / `Pester passed N` | Run counts ("722 passed / 0 … / 25 skipped"); for "błędów" see the note below the table |
+| przypadek / sonda / sonda uzupełniająca / główna sonda | case / probe / follow-up probe / main probe | "Case `net-smb-harden`", "probe 7" |
+| eksploracja | exploration | "C4 exploration", "The exploration of 2026-10-21 passed" |
+| prawdziwy restart / ulotny znacznik | real restart / volatile marker | Restart proof in "VM test" (later `LastBootUpTime`, the marker disappears) |
+| bezpieczniki (w testach harnessu) | tripwires | Commands that throw in a test when they are called without a mock |
+| smoke / mock / fake | smoke test / mock / fake | Test doubles: "engine tests on fakes" |
+| strażnik / plik-strażnik / wartownik | guard / guard file / sentinel | `ServicingGuard`, the shell guard; "wartownik" = a sentinel value (`KeyPresentAfterUndo`) |
+| funkcja pomocnicza | helper function | |
+| stan po apply potwierdzony niezależnym odczytem | state after apply confirmed by an independent reading | |
+| undo z wartości domyślnych | undo to defaults | Same family as "Undone to defaults" |
+| stan efektywny / rozjazd / odczyt stanu fabrycznego | effective state / mismatch / factory-state reading | |
+| proces żyje / odpytuje w pętli | the process is running / polls in a loop | `Check` wording of panel items |
+| zapis przez API rejestru | write through the registry API | "written through the registry API in C#" |
+| HKCU procesu Administratora | the `HKCU` of the Administrator process | Per-user items tested as Administrator |
+| podniesiona sesja / zadanie interaktywne podniesione | elevated session / elevated interactive task | |
+| zadanie Harmonogramu | Task Scheduler task | |
+| Nie testowane na VM | Not tested on the VM | Next to "Checked:" / "Not checked:" |
+| niezmierzone / do potwierdzenia na sprzęcie | not measured / to be confirmed on hardware | Caveats; bold kept where Polish has it |
+| pomiar / za pomiarem | measurement / as cited in the measurement | "za pomiarem" = the address comes from the measurement record |
+| oględziny | visual check | |
+| `Raporty lokalne: <ścieżka> (katalog w .gitignore)` | `Local reports: <path> (folder in .gitignore)` | "katalog" = folder (Concepts) |
+| raporty poza gitem / surowe wyniki poza gitem | reports outside git / raw results outside git | For "Raporty lokalne poza gitem" see the note below the table |
+| Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro / Odczyt hosta deweloperskiego | Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs / Reading from the development host | Source types in "Sources" |
+| MS-archiwum / archiwalny blog / hint | MS archive / archived blog / hint | Source types; "hint" = a non-Microsoft source |
+| pobrana dwukrotnie | fetched twice | "Sources" |
+| j.w. / jw. | as above | |
+| Niepotwierdzone / Odrzucone (z powodem) | Unconfirmed / Rejected (with reason) | `docs/prep` sections |
+| Cel / Źródło / Sprawdzono / Producent | Purpose / Source / Checked / Manufacturer | `docs/prep` column headers |
+| chipset / grafika / wsparcie / wsparcie-numer | chipset / graphics / support / support-number | `docs/prep` purpose values |
+| Lista – pozycje z dowodem (N) | List – entries with evidence (N) | `docs/prep` heading |
+| zamiast tego `install.rustdesk` z GitHuba | use `install.rustdesk` from GitHub instead | `docs/prep` rejection reason |
+| Decyzje na granicy / Źródła rozpoznania | Borderline decisions / Identification sources | `docs/apps` headings |
+| wchodzi (werdykt w tabeli listy) / zakres: komputer / konto | in / scope: computer / account | `docs/apps` tables |
+| zależności uruchomieniowe / ponowienie / faza `network` | runtime dependencies / retry / `network` phase | `docs/apps`; as "Środowiska uruchomieniowe" = Runtimes |
+| kłódka | padlock | |
+
+Not settled yet (the English documents use both forms; to be unified in one change of `docs/en/` and then added here):
+"Ostrzeżenie / Ostrzeżenia w katalogu" ("Warning(s) in the catalog" / "Catalog warning(s)"), "stan końcowy = stan przed"
+("final state" / "End state"), "0 błędów" ("0 failed" / "0 failures"), "Raporty lokalne poza gitem" ("Reports are local,
+outside git" / "Local reports outside git").
 
 ## Windows names
 
@@ -557,3 +635,16 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | Urządzenia i drukarki | Devices and Printers | See "Catalog – system panels" |
 | Zabezpieczenia i konserwacja | Security and Maintenance | See "Catalog – system panels" |
 | Home / Pro / Enterprise / Education | Home / Pro / Enterprise / Education | Windows editions, not translated; "Enterprise i Education" → "Enterprise and Education" |
+| Uzyskaj pomoc | Get Help | Inbox app (`Microsoft.GetHelp`); [Get Help for Microsoft personal account users](https://support.microsoft.com/en-us/support/get-help/get-help-for-microsoft-personal-account-users) ("you can use the Get Help app") |
+| Łącze z telefonem | Phone Link | Inbox app; [Setting up photos in the Phone Link](https://support.microsoft.com/en-us/windows/apps/phonelink/setting-up-photos-in-the-phone-link) |
+| Urządzenia przenośne | Mobile devices | Settings › Bluetooth & devices › Mobile devices; [Manage Mobile devices in Windows](https://support.microsoft.com/en-us/windows/apps/phonelink/manage-mobile-devices-in-windows) |
+| Eksplorator Windows (proces w Menedżerze zadań) | Windows Explorer | The `explorer.exe` entry in Task Manager – not the app name File Explorer; [Troubleshooting blank screens in Windows](https://support.microsoft.com/en-us/windows/hardware/display-graphics/troubleshooting-blank-screens-in-windows) ("Find Windows Explorer, right-click it, and select Restart.") |
+| Włącz ochronę systemu | Turn on system protection | Option in the System Protection › Configure dialog; [System Protection](https://support.microsoft.com/en-us/windows/experience/backup-recovery/system-protection) ("Select Turn on system protection.") |
+| Historia aktualizacji / Sprawdź aktualizacje | Update history / Check for updates | Settings › Windows Update; [Windows Update: FAQ](https://support.microsoft.com/en-us/windows/windows-update-faq-8a903416-6f45-0718-f5c7-375e92dddeb2) |
+| Aktualizacje definicji | Definition updates | Group in Update history. **do audytu (Etap 5)** – only community answers found |
+| karta „Zaawansowane” (Właściwości systemu) | "Advanced" tab | `SystemPropertiesAdvanced.exe` ("Advanced system properties", [Executing Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/executing-control-panel-items)); tab label only in Microsoft Q&A. **do audytu (Etap 5)** |
+| Usługi kryptograficzne | Cryptographic Services | Service display name (`CryptSvc`); [Security guidelines for system services](https://learn.microsoft.com/en-us/windows-server/security/windows-services/security-guidelines-for-disabling-system-services-in-windows-server) |
+| Centrum sieci i udostępniania / Centrum akcji | Network and Sharing Center / Action Center | [Canonical Names of Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names) (`Microsoft.NetworkAndSharingCenter`; `Microsoft.ActionCenter` is Windows 7–8.1) |
+| Odmowa dostępu. / Nie można odnaleźć określonego pliku. | Access is denied. / The system cannot find the file specified. | Windows error messages (`ERROR_ACCESS_DENIED`, `ERROR_FILE_NOT_FOUND`); [System Error Codes (0-499)](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-) |
+| nie można odnaleźć pliku (Uruchamianie, Win+R) | cannot find the file | Short gloss in `panels.visual-effects`; the exact English text of the Run dialog wasn't checked. **do audytu (Etap 5)** |
+| Wykonanie serwera nie powiodło się | Server execution failed | COM error 0x80080005 (`CO_E_SERVER_EXEC_FAILURE`); [Error code 80080005 when you start many COM+ applications](https://learn.microsoft.com/en-us/troubleshoot/windows-server/application-management/error-8008005-when-start-complus-applications) ("server execution failed") |
