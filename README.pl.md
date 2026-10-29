@@ -141,6 +141,10 @@ Plik `--out` to UTF-8 bez BOM. Windows PowerShell 5.1 czyta taki plik poprawnie 
 
 `--catalog <plik.json>` **zastępuje** katalog wbudowany i wykonuje skrypty z tego pliku jako administrator. Używaj wyłącznie zaufanych plików. Użycie katalogu zewnętrznego jest odnotowane w `warnings` raportu, razem z hashem katalogu (z prefiksem `sha256:`). Hash to SHA-256 z nazwy pliku i zdekodowanego tekstu JSON, a nie z bajtów pliku, więc nie zgadza się z wynikiem `Get-FileHash`.
 
+## Dokumentacja
+
+Dokumentacja pozycji jest po polsku w `docs/tweaks`, `docs/apps` i `docs/prep` (oryginał) oraz po angielsku w `docs/en`. Zapisy źródeł (`docs/zrodla`) są tylko po polsku.
+
 ## Licencja
 
 DSOptimizer jest udostępniony na licencji Mozilla Public License 2.0 – pełny tekst w pliku [LICENSE](LICENSE).

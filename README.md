@@ -150,7 +150,7 @@ The `--out` file is UTF-8 without BOM. Windows PowerShell 5.1 reads such a file 
 
 ## Documentation
 
-Item documentation (`docs/tweaks`, `docs/apps`, `docs/prep`) and source records (`docs/zrodla`) are in Polish.
+Item documentation is available in English in `docs/en` (`docs/en/tweaks`, `docs/en/apps`, `docs/en/prep`) and in Polish in `docs/tweaks`, `docs/apps` and `docs/prep` (the Polish version is the original). Source records (`docs/zrodla`) are in Polish only.
 
 ## License
 
