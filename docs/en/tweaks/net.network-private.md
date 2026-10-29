@@ -23,7 +23,7 @@ The action has no detection, journal or undo. The only evidence of the effect is
 - Reading from 26H2 Home and Pro VMs, 2026-10-18 (the "Wyniki VM" (VM results) section in `docs/zrodla/2026-10-18-partia-c3-zrodla.md` (in Polish)).
 
 ## Defaults on a fresh 26H2
-Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, 2026-10-18; both the same): `Get-NetConnectionProfile` returns **0 objects, without an error**; `Get-NetAdapter` shows one Ethernet adapter (Microsoft Hyper-V Network Adapter) in the `Disconnected` state; the CIM class `MSFT_NetConnectionProfile` in `root\StandardCimv2` is available and empty. The `NetworkCategory` value (enum name or number) and `IPv4Connectivity` **weren't observed** (no objects to read).
+Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, 2026-10-18; both the same): `Get-NetConnectionProfile` returns **0 objects, without errors**; `Get-NetAdapter` shows one Ethernet adapter (Microsoft Hyper-V Network Adapter) in the `Disconnected` state; the CIM class `MSFT_NetConnectionProfile` in `root\StandardCimv2` is available and empty. The `NetworkCategory` value (enum name or number) and `IPv4Connectivity` **weren't observed** (no objects to read).
 
 ## Detection and undo
 No detection (`kind=action`). **No undo** (no journal): the action prints the previous category and interface index of each changed profile, and you restore the category by hand with the official cmdlet: `Set-NetConnectionProfile -InterfaceIndex <index> -NetworkCategory Public`. If the change of one of several profiles fails or the verification doesn't confirm it, the error message also lists the profiles already changed (with the previous category), so you have what you need to undo them.

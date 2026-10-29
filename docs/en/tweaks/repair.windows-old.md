@@ -3,11 +3,11 @@
 # repair.windows-old – Remove the previous Windows installation
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=caution` ("Repairs" category, Stage 4b batch 2, a long repair with a progress window). Mechanism
+Port as `kind=action`, `risk=caution` ("Repairs" category, Stage 4b, round 2, a long repair with a progress window). Mechanism
 measured on 26H2 Home and Pro VMs (`docs/zrodla/2026-10-22-etap4b-2-pomiary.md` (in Polish), items 5, 5f and 6): the
 "Previous Installations" handler of Disk Cleanup (`cleanmgr /sagerun`) recognizes a prepared `C:\Windows.old` folder and deletes it.
 Only mechanism A – no taking ownership and no ACL changes in C# (Dawid's decision R8, Ruling R18). The prepared folder is ordinary
-files owned by `BUILTIN\Administratorzy`; a real `Windows.old` after a feature update has files with a `TrustedInstaller` ACL and
+files owned by `BUILTIN\Administratorzy` (BUILTIN\Administrators on English Windows); a real `Windows.old` after a feature update has files with a `TrustedInstaller` ACL and
 thousands of items – this scenario is **to be confirmed on hardware**.
 
 ## What it changes
@@ -31,7 +31,7 @@ C# handler `windows-old` (`WindowsOldHandler`), without a catalog script:
    before starting"), and the CLI has no stop. You can back out only in the confirmation window.
 5. Step 1 of 2 "Disk Cleanup": `StateFlags7351` = DWORD `2` (selected) **only** under `VolumeCaches\Previous Installations`,
    then `%SystemRoot%\System32\cleanmgr.exe /sagerun:7351` through `IServicingToolRunner` (`CreateProcessW` with the full path, outside the Job
-   Object, never killed, limit = `timeoutSeconds` = 2700 s). The program waits for the process to end (Task 2 decision: the folder disappears within a few
+   Object, never killed, limit = `timeoutSeconds` = 2,700 s). The program waits for the process to end (Task 2 decision: the folder disappears within a few
    seconds, but in the Task 2 measurement cleanmgr with `DismHost` kept working for about 11 more min; whether removing the flag before the process ends
    changes the result – not measured). In the handler runs (Task 8) cleanmgr ended on its own after 7 s – "Observed effect" section. In `finally`, its own `StateFlags7351` value is removed – also after a start error, an exception and the time limit. A failed
    selection = `Failed`, cleanmgr doesn't start. A failed removal = `Failed` with an entry in "Not restored" (otherwise the next
@@ -77,7 +77,7 @@ cleanmgr finishes, and the free space before/after. A deleted previous installat
 - The `StateFlags7351` setting exists only for the duration of the run and concerns a single handler; someone else's value with this number =
   refusal without changes.
 - The cleanmgr window in the user session: **not measured** (measurement K2 without a screenshot).
-- From session 0 (PowerShell Direct, K1) cleanmgr deletes the folder but doesn't finish within 1200 s – a program started from the user session
+- From session 0 (PowerShell Direct, K1) cleanmgr deletes the folder but doesn't finish within 1,200 s – a program started from the user session
   (GUI after UAC or a Task Scheduler task) doesn't have this problem (measurement K2). Running the handler from session 0 – not measured; according to
   measurement K1, the expected result is `NotConfirmed` after 45 min, with the folder already deleted.
 
@@ -86,7 +86,7 @@ Cases in `tests/vm/cases.psd1` (Task 8), `Flow='Execute'`, built-in catalog, no 
 - `repair-windows-old-absent` (without `RunAs`): a fresh VM without `Windows.old` → `NotSupported`, code 1, message "nie ma czego usuwać" (nothing to remove);
   `Check`: the folder doesn't exist, no `StateFlags7351` value under `VolumeCaches`, cleanmgr isn't running.
 - `repair-windows-old` (`RunAs='dso'`, CLI from a Task Scheduler task of the `dso` account – from PS Direct cleanmgr doesn't finish, measurement 5,
-  Ruling R18), `CliTimeoutSeconds = 3000` (above the handler limit of 2700 s, so that a `NotConfirmed` result also reaches the report).
+  Ruling R18), `CliTimeoutSeconds = 3000` (above the handler limit of 2,700 s, so that a `NotConfirmed` result also reaches the report).
   `Setup`: an ordinary `C:\Windows.old` folder as in measurement 5 (test files in `Windows\System32`, `Windows\SysWOW64`,
   `Users\Public\Documents`, `Program Files\DsoTest`, `ProgramData\DsoTest`, owner Administratorzy (Administrators), no ACL change).
   `Check`: `C:\Windows.old` doesn't exist, no `StateFlags7351` under any `VolumeCaches\*`, cleanmgr isn't running.
@@ -98,7 +98,7 @@ Results of the run: "Observed effect" section.
 Method: measurement of the mechanism (Task 2): a prepared 200 MB folder, `StateFlags7351` only under `Previous Installations`,
 `cleanmgr /sagerun:7351`, samples every 5 s (folder exists, free space, processes), after the run a reading of all `VolumeCaches`.
 - **Home** (`DSO-26H2-Home`, 26300.9457), 2026-10-22: K1 (PS Direct, session 0) – the folder disappears in ≤ 5 s, the space comes back (+208.8 MB),
-  cleanmgr with `DismHost` lives until the 1200 s limit (killed); K2 (`dso` task, session 1) – the folder disappears in ≤ 5 s, cleanmgr ends on its own
+  cleanmgr with `DismHost` lives until the 1,200 s limit (killed); K2 (`dso` task, session 1) – the folder disappears in ≤ 5 s, cleanmgr ends on its own
   after 641 s with the result 0x0; after each run the flag is absent under all 31 keys.
 - **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: K1 the same as Home; K2 – the folder disappears in ≤ 5 s, ends after 665 s, result 0x0.
 - What `DismHost` does for about 11 min after the folder is deleted – not measured (the free space changes by less than 1 MB during that time).

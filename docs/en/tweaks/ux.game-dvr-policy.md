@@ -25,7 +25,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - Undo: deletes the value (`original` = `<RemoveEntry>`), doesn't set 1; it also deletes the empty `GameDVR` key created by apply.
 
 ## Risks and warnings
-- `risk=caution`: a machine policy, applies to all users, requires admin.
+- `risk=caution`: a machine policy, applies to all users, requires administrator rights.
 - Warnings in the catalog: "Microsoft documents this policy for Windows 10 Pro and higher; it may not work on Windows 11 or on the Home edition." and "Settings may show a message that some settings are managed by your organization."
 - **Not tested** whether the policy is enforced on 26H2 Home/Pro (the VM only read the default state); the VM test checks the write, detection and a clean undo, not a change in system behavior.
 - It turns off recording and broadcasting; it doesn't remove Game Bar.

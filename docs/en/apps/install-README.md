@@ -87,7 +87,7 @@ exception is thrown for a duplicate `id` or `wingetId` and an unknown category.
 Evidence: VM measurement 2026-10-24 (`docs/zrodla/2026-10-24-etap4c-pomiary.md` (in Polish), raw results outside git). `show` = 0 on Home and Pro for every item (installer type in brackets
 from `show`). "Pro"/"Home" = code and time of the attempt without `--locale` (the program's command, Ruling R14); `0x8A150061` = already installed
 in the `network` phase or as a dependency. "Scope" = branch of the measured Uninstall entry (`winget show` v1.11 doesn't print the installer
-scope): HKU = current account only, HKLM/HKLM32 = whole computer. "Entry" = visible Uninstall entry (`DisplayName` /
+scope): HKU = signed-in account only, HKLM/HKLM32 = whole computer. "Entry" = visible Uninstall entry (`DisplayName` /
 `Publisher`) after installation. `source` = manifest folder in `microsoft/winget-pkgs` (existence checked through the GitHub API
 on 2026-10-24 for every item). Foxit PDF Reader was added later the same day (Dawid's request): winget measurement (Pro only) and CLI run, raw results outside git.
 RustDesk (`install.rustdesk`) has no winget package: the `wingetId` column holds the `github` repository, `show` doesn't apply, and the evidence
@@ -188,7 +188,7 @@ Task Scheduler task (`tests/vm/explore/Invoke-E4CExploration.ps1 -Phase cli-inst
 `tests/vm/explore/Invoke-E4CExploration.ps1 -Phase cli-install -CliIds … -CliRepeat` on clean VMs (`czysta-26H2`, winget v1.11.510
 without an update), `DSOptimizer.exe --install-apps … --out …` as `dso` from a Task Scheduler task (Interactive + Highest), network
 `Default Switch` only for the duration of the phase. Item time = from the `Started` event to the result in the journal (UTC; API query, download of
-26 345 472 B, SHA256, signature, `msiexec`, verification). The size of MSI 1.5.0 doesn't appear in the artifacts of this run (the CLI doesn't
+26,345,472 B, SHA256, signature, `msiexec`, verification). The size of MSI 1.5.0 doesn't appear in the artifacts of this run (the CLI doesn't
 save it, and a download with a size different from `size` from the API fails): the source is the spike (file `download.json` from the raw results, outside git), field `Size` of the entry `rustdesk-1.5.0-x86_64.msi` (= `size` from the API for
 the same release 1.5.0). "Whole process" = `Seconds` from `raw/cli-install.result.json` (Task Scheduler task time, including
 process start), not `startedAt` → `finishedAt` of the CLI report. `msiexec` times from the MSI log lines – local VM time (UTC+2), hence
@@ -227,7 +227,7 @@ Raw results outside git (`releases.json`, `download.json`, `install.json`, `diff
 
 - **Version:** `GET https://api.github.com/repos/rustdesk/rustdesk/releases/latest` = tag `1.5.0` (2026-09-30), `prerelease=false`,
   previous `1.4.9`; `nightly` is a separate prerelease release that `latest` skips.
-- **File:** `rustdesk-1.5.0-x86_64.msi`, 26 345 472 B. The name contains the version, so we take the address from the API.
+- **File:** `rustdesk-1.5.0-x86_64.msi`, 26,345,472 B. The name contains the version, so we take the address from the API.
 - **Hash:** the `digest` field from the API (`sha256:624fe792…77580495`) = `Get-FileHash` of the downloaded file; the same for 1.4.9 and for the EXE variants.
 - **Download:** `browser_download_url` on `github.com` → redirect to `release-assets.githubusercontent.com`, 0.8 s.
 - **Signature (MSI and EXE, 1.5.0 and 1.4.9):** `Valid`; Subject `CN=PURSLANE, O=PURSLANE, S=North West, C=SG, …, SERIALNUMBER=53481265A`;
@@ -247,7 +247,7 @@ Raw results outside git (`releases.json`, `download.json`, `install.json`, `diff
 
 ### Warnings (`warning`) from the measurement
 
-- **Only for the current account** (entry in HKU): Brave, Opera, Discord, Telegram, Signal, SumatraPDF, PowerToys. Text:
+- **Only for the signed-in account** (entry in HKU): Brave, Opera, Discord, Telegram, Signal, SumatraPDF, PowerToys. Text:
   "Installs only for the signed-in Windows account."
 - **Additional components:** Firefox → `Mozilla Maintenance Service` service, LibreOffice → Microsoft Visual C++ v14
   Redistributable (x64) (winget dependency), Epic Games Launcher → Microsoft GameInput, Adobe Acrobat Reader → AppX package
@@ -291,4 +291,4 @@ Deliberately outside the list (spec point 4): graphics card drivers, Microsoft E
 - One "Search apps, such as VLC" field filters the list live (`InstallSearch`: title, `summary`, `wingetId`, GitHub repo; the query and the text are joined without spaces, "-", "." and "_", so "7zip" finds "7-Zip"). Result: a "From the list (N)" section with category headers. winget starts only after Enter or "Also search winget" and adds an "In winget (N)" section (packages not on the list, with a note that they weren't checked on a VM). A winget result with the Id of a list item (also `RustDesk.RustDesk` → `install.rustdesk`) isn't a separate package – the note "is on the list – above".
 - Clicking a category clears the field. The selection survives a change of category, text and a new search; "Selected" shows list items and winget results together.
 - The list is flat: app rows interleaved with non-focusable lines (headers, notes, messages).
-- Change history shows the install entry with the kind icon, the second line "App install" and a short failure reason from `JournalEvent.Reason` ("Not installed – no network"). The codes `0x800704C7` (installer interrupted, possibly an antivirus) and `0x800700E1`/`0x800700E2` (an antivirus blocked the installer) have their own texts; for a list item with a visible program, they're covered by the R21 rule (`NotConfirmed`).
+- Change history shows the install entry with the kind icon, the second line "App install" and a short failure reason from `JournalEvent.Reason` ("Not installed – no internet connection"). The codes `0x800704C7` (installer interrupted, possibly an antivirus) and `0x800700E1`/`0x800700E2` (an antivirus blocked the installer) have their own texts; for a list item with a visible program, they're covered by the R21 rule (`NotConfirmed`).

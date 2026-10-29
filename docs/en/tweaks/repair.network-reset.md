@@ -3,7 +3,7 @@
 # repair.network-reset – Reset network settings
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=caution`, `requiresReboot=true` (Stage 4b batch 1): `netsh winsock reset` and `netsh int ip reset` work on 26H2 Home and Pro, but the effect shows only after a restart, and on a fresh system `netsh int ip reset` always ends with code 1 and one access denial on a protected key. That's why the result isn't judged by "code ≠ 0 = error", but by the measured pattern (below).
+Port as `kind=action`, `risk=caution`, `requiresReboot=true` (Stage 4b, round 1): `netsh winsock reset` and `netsh int ip reset` work on 26H2 Home and Pro, but the effect shows only after a restart, and on a fresh system `netsh int ip reset` always ends with code 1 and one access denial on a protected key. That's why the result isn't judged by "code ≠ 0 = error", but by the measured pattern (below).
 
 ## What it changes
 Script (`script.apply`), commands by name (the tests mock `netsh`, `Get-NetIPConfiguration`, `Clear-DnsClientCache`):

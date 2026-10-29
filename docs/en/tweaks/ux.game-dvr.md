@@ -6,7 +6,7 @@
 Not ported: there is no MS source for the effect of `GameDVR_Enabled = 0` (the VM confirmed only that the key exists, the DWORD type and the default value 1), and the spec requires a mechanism documented by MS; instead, the `ux_gamedvr` alias from v3.2 points to `ux.game-dvr-policy`.
 
 ## What it changes
-The item isn't in the catalog and changes nothing. The entry under consideration: `HKCU\System\GameConfigStore`, value `GameDVR_Enabled`, DWord, `1` -> `0` (`scope=user`).
+The item isn't in the catalog and changes nothing. Entry considered: `HKCU\System\GameConfigStore`, value `GameDVR_Enabled`, DWord, `1` -> `0` (`scope=user`).
 
 Reasons for rejection:
 - The meaning "0 = background recording off" comes only from an answer on Microsoft Q&A (hint; it's unknown whether the author is an MS employee). The effect wasn't measured on the VM.
@@ -30,7 +30,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 Not applicable (the item isn't in the catalog).
 
 ## Risks and warnings
-Not applicable. The item was rejected in batch C1. It can come back when an MS source appears or the effect is measured on a VM with an official tool (for example the toggle in Settings -> reading `GameDVR_Enabled`).
+Not applicable. The item was rejected in round C1. It can come back when an MS source appears or the effect is measured on a VM with an official tool (for example the toggle in Settings -> reading `GameDVR_Enabled`).
 
 ## VM test
 Not applicable (not ported): the item isn't in the catalog, so there was no VM case.

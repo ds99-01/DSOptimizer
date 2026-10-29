@@ -3,7 +3,7 @@
 # repair.winget – Repair winget (App Installer)
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=safe` ("Repairs" category, Stage 4b batch 1): on a fresh installation `winget` is sometimes unavailable because the `winget.exe` alias is missing from the account profile. Registering the existing "App Installer" package for the account restores the alias without downloading anything and works on 26H2 Home and Pro. No undo.
+Port as `kind=action`, `risk=safe` ("Repairs" category, Stage 4b, round 1): on a fresh installation `winget` is sometimes unavailable because the `winget.exe` alias is missing from the account profile. Registering the existing "App Installer" package for the account restores the alias without downloading anything and works on 26H2 Home and Pro. No undo.
 
 ## What it changes
 Script (`script.apply`), only for the account that started DSOptimizer:

@@ -3,7 +3,7 @@
 # repair.dns-flush – Clear the DNS cache
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=safe` (new "Repairs" category, Stage 4b batch 1): clearing the name resolution cache (`Clear-DnsClientCache`) works on 26H2 Home and Pro, and the effect can be confirmed by verification (`Get-DnsClientCache`). No undo: the cache rebuilds itself.
+Port as `kind=action`, `risk=safe` (new "Repairs" category, Stage 4b, round 1): clearing the name resolution cache (`Clear-DnsClientCache`) works on 26H2 Home and Pro, and the effect can be confirmed by verification (`Get-DnsClientCache`). No undo: the cache rebuilds itself.
 
 ## What it changes
 Clears the DNS client cache (the `Dnscache` service). Doesn't change DNS settings, the `hosts` file, the registry or the adapter configuration. Script (`script.apply`), by command name (the tests mock them):

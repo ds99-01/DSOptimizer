@@ -13,7 +13,7 @@ Port: a test on a 26H2 VM (Home and Pro) showed a change in the state of the "Di
 ## Sources
 - Microsoft documentation: the `Experience/DoNotShowFeedbackNotifications` policy (Windows 10 1607+; "users will no longer see feedback notifications through the Windows Feedback app"), Group Policy "Do not show feedback notifications", registry from "Manage connections…": `HKLM\Software\Policies\Microsoft\Windows\DataCollection\DoNotShowFeedbackNotifications` = 1.
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457, Windows not activated, local account): write through the registry API (.NET `RegistryKey`) and observation in Settings (UI Automation, screenshots).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "2d. Feedback frequency" and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, batch 1).
+- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "2d. Feedback frequency" and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 
 ## Defaults on a fresh 26H2
 Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `DataCollection` key exists, `DoNotShowFeedbackNotifications` **no value** (the "Częstotliwość opinii" (Feedback frequency) list visible).
@@ -27,7 +27,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `DataCollec
 - Warning in the catalog: "Settings will show a message that some settings are managed by your organization." Evidence: page state in Settings; the notifications themselves weren't observed.
 
 ## VM test
-Case `privacy-feedback-notifications` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyPresentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`, Task 9 of the batch): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `DataCollection` key survived undo (`KeyPresentAfterUndo`), `DoNotShowFeedbackNotifications` doesn't exist after undo. The exploration of 2026-10-21 passed on Home and Pro.
+Case `privacy-feedback-notifications` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyPresentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`, Task 9 of the round): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `DataCollection` key survived undo (`KeyPresentAfterUndo`), `DoNotShowFeedbackNotifications` doesn't exist after undo. The exploration of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: UI Automation of Settings (Diagnostics & feedback) and screenshots after a write through the registry API. Result: the "zarządza organizacja" (managed by your organization) banner, the "Częstotliwość opinii" (Feedback frequency) list disappears from the page; the notifications themselves weren't observed. After undo the list comes back and the banner disappears.

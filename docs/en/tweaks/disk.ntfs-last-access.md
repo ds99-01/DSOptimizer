@@ -32,12 +32,12 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - `risk=safe` (reversible value, doesn't delete data).
 - Warnings in the catalog: "Requires a computer restart." and "Programs that rely on the last access time (backups, cleanup scripts) will get outdated data."
 - Beyond the notes in the program (in the technical details or only here): MS: the parameter may affect Backup and Remote Storage; the restart discrepancy between MS and `fsutil` (decided according to MS: restart required).
-- According to the Winaero hint, in system-managed mode the timestamp is modified at system startup, and individual comments say that `0x80000003` went back to `0x80000002` after a restart; unconfirmed, mode 3 out of scope.
+- According to the Winaero hint, in system-managed mode the timestamp is modified at system startup, and a few comments say that `0x80000003` went back to `0x80000002` after a restart; unconfirmed, mode 3 out of scope.
 - Not tested on a VM: the effect on the `LastAccessTime` of files.
 - The performance gain wasn't measured (since 2026-10-26 the description in the program only mentions fewer small writes).
 
 ## VM test
-VM run of 2026-10-18 (13:51, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without failures (212 passed / 0 failed / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports: `tests/vm/out/20261018-135146/<VM>/<RunLabel>/report.json` (folder in `.gitignore`). The run was refreshed after the detection change in batch C2 (Task 2: bit mask instead of comparing the exact value `0x80000001`); the earlier C1 run (2026-10-18 08:04, 13/13 in the Reboot run) covered the previous detection.
+VM run of 2026-10-18 (13:51, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (212 passed / 0 failed / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports: `tests/vm/out/20261018-135146/<VM>/<RunLabel>/report.json` (folder in `.gitignore`). The run was refreshed after the detection change in round C2 (Task 2: bit mask instead of comparing the exact value `0x80000001`); the earlier C1 run (2026-10-18 08:04, 13/13 in the Reboot run) covered the previous detection.
 
 Case `disk-ntfs-last-access` (`Flow=Reboot`, run `reboot-disk-ntfs-last-access`, a separate run from a clean checkpoint; Pester 14/14 on Home and Pro), Home and Pro identical:
 - Checked: `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = true), `detect-after-apply` = `Applied`, **real restart** (confirmed), `detect-after-reboot` = `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`. The restart didn't revert the setting on the VM.

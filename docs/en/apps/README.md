@@ -47,7 +47,7 @@ An error in the file gives `AppsCatalogException` with the entry id and the fiel
 ## Identification sources
 
 - Protected list and starting point of the suggestions: Stage 4a design (debloat), point 6.2.
-- **Microsoft packages:** reading from a fresh 26H2 VM (Home and Pro, build 26300.9457, 2026-10-21), section "Wyniki VM 26H2 (partia 2)" (26H2 VM results (batch 2))
+- **Microsoft packages:** reading from a fresh 26H2 VM (Home and Pro, build 26300.9457, 2026-10-21), section "Wyniki VM 26H2 (partia 2)" (26H2 VM results, round 2)
   in `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish). All names from the VM are confirmed by reading `Get-AppxPackage`.
   Outside the VM only `Microsoft.MicrosoftOfficeHub` and `Microsoft.Getstarted` remained (names from MS Learn, forum archive
   "Which AppXPackage can be removed without causing system problems?"; not on a fresh 26H2).
@@ -92,7 +92,7 @@ An error in the file gives `AppsCatalogException` with the entry id and the fiel
 | Sticky Notes (`Microsoft.MicrosoftStickyNotes`) | **Protected** | A utility app (design decision) |
 | Xbox TCUI, Xbox Identity Provider, Game Speech Window | Other | Xbox dependencies, may be needed by games and Game Bar (design decision) |
 | Game Bar (`Microsoft.XboxGamingOverlay`) | Other, explicit entry | Dawid's decision 2026-10-21 |
-| Phone Link, Mobile devices, Windows Web Experience Pack | Other | No entry; Widgets are handled by batch 1 |
+| Phone Link, Mobile devices, Windows Web Experience Pack | Other | No entry; Widgets are handled by round 1 |
 | Windows Application Compatibility Enhancements, AVC/MPEG-2/VP9/RAW/WebMedia codecs, Store Experience Host (Microsoft Store purchases) | Protected | System components and codecs, like the other codecs from the spec |
 | Edge as a package (`Microsoft.MicrosoftEdge.Stable`) | Protected | On the VM the package exists as a separate item next to the Win32 Edge entry |
 | Remote Desktop Connection | Protected (in Polish and in English) | The `mstsc` Uninstall entry has its name only in `DisplayName_Localized`; the pattern depends on the system language |

@@ -29,7 +29,7 @@ Port as `kind=action`, `risk=caution` (new item; v3.2 had no decryption, `sec_bi
 - MS Learn, `Win32_EncryptableVolume.GetConversionStatus` (ms.date 2018-05-31): https://learn.microsoft.com/en-us/windows/win32/secprov/getconversionstatus-win32-encryptablevolume
   - `ConversionStatus` 0–5 as above; `EncryptionPercentage` 0–100: "an encryption percentage of 0 or 100 does not necessarily indicate that the disk is fully decrypted or fully encrypted. Always use ConversionStatus".
 - MS Learn, `Disable-BitLocker` (BitLocker module, a hint, we don't use it): "removes all key protectors and begins decrypting": https://learn.microsoft.com/en-us/powershell/module/bitlocker/disable-bitlocker
-- Batch C4 research: `docs/zrodla/2026-10-18-partia-c4-zrodla.md` (in Polish), section 2 and "Wyniki VM (2026-10-18, eksploracja C4)" (VM results, C4 exploration).
+- Round C4 research: `docs/zrodla/2026-10-18-partia-c4-zrodla.md` (in Polish), section 2 and "Wyniki VM (2026-10-18, eksploracja C4)" (VM results, C4 exploration).
 
 ## Defaults on a fresh 26H2
 Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, 2026-10-18; details in the research):

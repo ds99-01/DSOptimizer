@@ -6,7 +6,7 @@
 Not ported: the MS client page (KB4073119) ends at Windows 11 23H2, turning off the mitigations lowers protection on someone else's computer with no measured benefit, and detection sees only the registry, not the real state of the mitigations. Dawid's decision of 2026-10-18. The `cpu_spectre` alias from v3.2 has no item in the catalog.
 
 ## What it changes
-The item isn't in the catalog and changes nothing. The entry under consideration (v3.2 and MS): `HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`, values `FeatureSettingsOverride` = 3 and `FeatureSettingsOverrideMask` = 3 (both DWord), restart required.
+The item isn't in the catalog and changes nothing. Entry considered (v3.2 and MS): `HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`, values `FeatureSettingsOverride` = 3 and `FeatureSettingsOverrideMask` = 3 (both DWord), restart required.
 
 Reasons for rejection:
 - The MS client page "Windows client guidance…" (KB4073119) covers Windows 11 up to 23H2 under "Applies to"; the last change-log entry is 2024-04-16; 24H2, 25H2 and 26H2 aren't listed.

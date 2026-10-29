@@ -13,7 +13,7 @@ Port: a test on a 26H2 VM (Home and Pro) showed a real effect. No Microsoft docu
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457): mechanism read from the toggle in Settings and from changing the policy through the registry API (.NET `RegistryKey`).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "3. Widgets" and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, batch 1).
+- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "3. Widgets" and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 
 ## Defaults on a fresh 26H2
 Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `HKLM\SOFTWARE\Policies\Microsoft\Dsh` **key missing**, `AllowNewsAndInterests` **no value** (Home and Pro identical).
@@ -28,7 +28,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `HKLM\SOFTWARE\
 - Beyond the notes in the program (in the technical details or only here): restarting File Explorer is the `tools.restart-explorer` item; after the change the "Widgets" toggle in Settings is grayed out (the policy locks it and this can't be avoided).
 
 ## VM test
-Case `privacy-widgets` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyAbsentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Dsh`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`, Task 9 of the batch): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `Dsh` key created by apply doesn't exist after undo (`KeyAbsentAfterUndo`). The exploration of 2026-10-21 (write through the API and undo) passed on Home and Pro.
+Case `privacy-widgets` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyAbsentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Dsh`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`, Task 9 of the round): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `Dsh` key created by apply doesn't exist after undo (`KeyAbsentAfterUndo`). The exploration of 2026-10-21 (write through the API and undo) passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: UI Automation of Settings by `AutomationId`, screenshots, the Win+W keys in the `dso` session. Result: after writing `AllowNewsAndInterests`=0 the Win+W shortcut doesn't open the board; the "Widżety" (Widgets) toggle in Settings is grayed out and off; the taskbar button disappears after File Explorer restarts (without a restart the board is blocked, the button is still visible). After undo (value and key deleted) Win+W opens the board again, the toggle is active, the button comes back after File Explorer restarts.

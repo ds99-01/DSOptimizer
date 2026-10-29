@@ -3,7 +3,7 @@
 # repair.wu-reset-full – Reset Windows Update and remove blocks
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=experimental` ("Repairs" category, Stage 4b batch 1, C# handler `wu-reset-full`): everything from `repair.wu-reset` plus exporting and removing the Windows Update policies and restoring the startup types of the WU services to the values of a fresh 26H2. On Pro, the full set of test policies makes Settings say that your organization manages the Windows Update settings, with an inactive button, and after the key is removed the message disappears.
+Port as `kind=action`, `risk=experimental` ("Repairs" category, Stage 4b, round 1, C# handler `wu-reset-full`): everything from `repair.wu-reset` plus exporting and removing the Windows Update policies and restoring the startup types of the WU services to the values of a fresh 26H2. On Pro, the full set of test policies makes Settings say that your organization manages the Windows Update settings, with an inactive button, and after the key is removed the message disappears.
 
 ## What it changes
 C# handler (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`, `full` variant). Steps on top of `repair.wu-reset`:
@@ -14,7 +14,7 @@ C# handler (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`, `full` variant)
 5. Removing the policies, after the folders are moved and before the services start: `IRegistry.DeleteKeyTree` of the key with its subkeys (only when the backup was created), with verification (the key is gone). A deletion failure or the key still existing → `Failed` (after the services are restored) with the backup path and the hint `reg import "<file>"`.
 6. Starting the services as in `repair.wu-reset`.
 7. Startup types (only when everything above succeeded): writing `<backups>\wu-services-<yyyyMMdd-HHmmss>.txt` (UTF-8 with BOM, trusted ACL; the name and the previous startup type, and the `sc.exe config` hint), then `IServiceManager.SetStartType` only where the type differs from the table below, with verification. A failed write of the backup = a warning and the startup types unchanged; a refused write of a type or a mismatch on reading = a warning with the service name, without failing the whole repair.
-8. A fixed warning in the result: "On a computer managed by Intune/MDM, the removed policies may come back at the next sync." (there's no MDM detection in this batch).
+8. A fixed warning in the result: "On a computer managed by Intune/MDM, the removed policies may come back at the next sync." (there's no MDM detection in this round).
 
 When the run stops after step 5 but before step 7 – there was no folder to move, or the services couldn't be restarted – the result is `Failed`, and the heading ends with the sentences "Windows Update policies have already been removed (backup: <file>; to restore: reg import "<file>")." (only when there were policies and they were removed) and "Service startup types weren't changed."; the MDM warning is in the result then too.
 
@@ -37,7 +37,7 @@ Table of startup types (the same on Home and Pro, R10):
 Reading 2026-10-22: the key `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate` – none (Home and Pro). Startup types: as in the table above (Home and Pro), `msiserver` Manual, `WaaSMedicSvc` Manual, `DoSvc` Home Manual / Pro AutomaticDelayed. `PartOfDomain` = False on both VMs.
 
 ## Detection and undo
-Not applicable: `kind=action` without detection and undo (no journal). Going back manually: `reg import "<backups>\wu-policies-<marker>.reg"` (measurement: restores both keys 1:1) and the startup types from `wu-services-<marker>.txt` (`sc.exe config <name> start= …`). The paths of both files are in the result.
+Not applicable: `kind=action` without detection and undo (no journal). Going back manually: `reg import "<backups>\wu-policies-<timestamp>.reg"` (measurement: restores both keys 1:1) and the startup types from `wu-services-<timestamp>.txt` (`sc.exe config <name> start= …`). The paths of both files are in the result.
 
 ## Risks and warnings
 - `risk=experimental`: removes settings that block or delay updates, which the owner or another "optimizing" tool may have set on purpose; `.reg` backup in `%ProgramData%\DSOptimizer\backups`.

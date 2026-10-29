@@ -17,10 +17,10 @@ Port as `caution`: the mechanism and the value type are explicitly documented by
   - Section "Disable BitLocker automatic device encryption": "OEMs can choose to disable device encryption and instead implement their own encryption technology on a device. Disabling encryption outside of this scenario is prohibited as it violates the Windows 11 licensing requirements and the Windows 11 *secure by default* principle."
   - Mechanism: Unattend `PreventDeviceEncryption` = True or "update the HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\BitLocker registry key: Value: PreventDeviceEncryption equal to True (1)." Further: "We do not recommend setting this registry key on devices with Recall feature."
 - MS Learn, Unattend "PreventDeviceEncryption" (ms.date 2017-05-02): values `false` (default, encrypts automatically) / `true`; "These settings only apply to Windows 8" (page not updated; the OEM page from 2025 still points to this setting for Windows 11): https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-securestartup-filterdriver-preventdeviceencryption
-- Batch C4 research: `docs/zrodla/2026-10-18-partia-c4-zrodla.md` (in Polish), section 1. The ElevenForum thread (same value) is a hint, not evidence.
+- Round C4 research: `docs/zrodla/2026-10-18-partia-c4-zrodla.md` (in Polish), section 1. The ElevenForum thread (same value) is a hint, not evidence.
 
 ## Defaults on a fresh 26H2
-Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, batch C4 exploration, 2026-10-18; both the same):
+Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, round C4 exploration, 2026-10-18; both the same):
 - The key `HKLM\SYSTEM\CurrentControlSet\Control\BitLocker` **exists** on Home and Pro (subkeys including `AutoDE`, `PcrMon`, `RecoveryPasswordRotation`, `Telemetry`; Home also has `KeyBackupMonitor`), with no values directly in the key.
 - `PreventDeviceEncryption`: **`Exists=false`** on Home and Pro (the value doesn't exist; that's different from the value `0`). Hence `original` = `<RemoveEntry>` is confirmed by the reading, and the system key `Control\BitLocker` survives undo (undo deletes only our value), so `Expect.KeyPresentAfterUndo` in the VM case is correct.
 - The **DWord** type follows from the MS text ("PreventDeviceEncryption equal to True (1)", Sources section). The VM reading after writing through the registry API shows only the type of our own write, so it isn't independent evidence of the type.

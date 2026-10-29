@@ -2,7 +2,7 @@
 
 # Preparation – verified manufacturer addresses
 
-The "Preparation" page (Stage 4a, batch 3) shows text links to official manufacturer pages. This file is the only source of
+The "Preparation" page (Stage 4a, round 3) shows text links to official manufacturer pages. This file is the only source of
 the address list in `PrepLinks` (Core). The test `LinksMatchDocsPrepReadme` reads both tables below and checks that the code has exactly the same
 entries with the same check date.
 

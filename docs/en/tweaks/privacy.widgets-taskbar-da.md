@@ -10,7 +10,7 @@ The item isn't in the catalog and changes nothing. Entry considered: `HKCU\Softw
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457): write from `powershell.exe` and from a separate exe named `DSOptimizer.exe`.
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), section "Wyniki VM 26H2 (partia 1)" (26H2 VM results, batch 1), note on `TaskbarDa`.
+- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), section "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1), note on `TaskbarDa`.
 
 ## Defaults on a fresh 26H2
 Reading from the VMs, 2026-10-21: `Explorer\Advanced\TaskbarDa` no value (button visible), Home and Pro.

@@ -3,7 +3,7 @@
 # repair.restore-point – Create a restore point now
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=safe` ("Repairs" category, Stage 4b batch 1): an on-demand point through the existing `IRestorePointService` (the same one that creates points before changes) works on 26H2 Home and Pro when System Protection is turned on. No undo.
+Port as `kind=action`, `risk=safe` ("Repairs" category, Stage 4b, round 1): an on-demand point through the existing `IRestorePointService` (the same one that creates points before changes) works on 26H2 Home and Pro when System Protection is turned on. No undo.
 
 ## What it changes
 C# handler `restore-point` (`RestorePointHandler`), without a script: `IRestorePointService.Create("DSOptimizer – manual restore point")` (the name follows the program language; in Polish it is "DSOptimizer – punkt ręczny"). For the duration of the call, the service sets `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore\SystemRestorePointCreationFrequency` (the 24-hour limit) to zero, calls `SystemRestore.CreateRestorePoint`, waits (up to 10 s) until the point appears in the list, and restores the previous value of the limit. Results:
@@ -12,7 +12,7 @@ C# handler `restore-point` (`RestorePointHandler`), without a script: `IRestoreP
 - `Failed` → `Failed` with the service message and code (`(code N)`), when the service provided it.
 
 ## Sources
-- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: `docs/zrodla/2026-10-22-etap4b-1-pomiary.md` (in Polish), section 7 (a point created by `DSOptimizer.exe --apply vmtest.hklm-value --restore-point required` = `Created`; with protection turned off, `CreateRestorePoint` returns "Nie można uruchomić określonej usługi, ponieważ jest ona wyłączona…" (the specified service can't be started because it is disabled…)).
+- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: `docs/zrodla/2026-10-22-etap4b-1-pomiary.md` (in Polish), section 7 (a point created by `DSOptimizer.exe --apply vmtest.hklm-value --restore-point required` = `Created`; with protection turned off, `CreateRestorePoint` returns "Nie można uruchomić określonej usługi, ponieważ jest ona wyłączona…" (The service cannot be started, either because it is disabled or because it has no enabled devices associated with it.)).
 - No MS documentation checked in this task; evidence: the VM test described below.
 
 ## Defaults on a fresh 26H2

@@ -10,10 +10,10 @@ The item isn't in the catalog and changes nothing. Entry considered: `DisableCli
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "2. Recall i Click to Do" (Recall and Click to Do) and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, batch 1).
+- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "2. Recall i Click to Do" (Recall and Click to Do) and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 
 ## Defaults on a fresh 26H2
-Reading from the VMs, 2026-10-21: `WindowsAI` policy values none (Home and Pro). Click to Do has no entry point, process or page in Settings.
+Reading from the VMs, 2026-10-21: `WindowsAI` policy values: none (Home and Pro). Click to Do has no entry point, process or page in Settings.
 
 ## Detection and undo
 Not applicable (the item isn't in the catalog).

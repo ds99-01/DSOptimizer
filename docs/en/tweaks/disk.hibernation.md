@@ -52,7 +52,7 @@ Rules (in this order):
 VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (folder in `.gitignore`); in the `main` run Pester passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 - `disk-hibernation-unsupported` (`Flow=DetectOnly`, `main` run): **Passed** on Home and Pro. `detect-before` code 0, result `Success`, state **`NotSupported`**. This confirms detection rule 3 for a clean VM with a run; `SystemS4` = FALSE is an indirect conclusion here (the script returned `NotSupported`), not a separate reading. The `DetectOnly` case has no `Snapshot`, so the absence of registry changes wasn't checked separately here.
-- `disk-hibernation` (`Flow=Full`): **Skipped** on Home and Pro. Reason from `cases.psd1`: "VM Hyper-V bez obsługi S4 – apply/undo do weryfikacji na sprzęcie" (Hyper-V VM without S4 support – apply/undo to be verified on hardware). Skipped means all tests of this case (10 of 10 skipped in `main`), never passed.
+- `disk-hibernation` (`Flow=Full`): **Skipped** on Home and Pro. Reason from `cases.psd1`: "VM Hyper-V bez obsługi S4 – apply/undo do weryfikacji na sprzęcie" (Hyper-V VM without S4 support – apply/undo to be verified on hardware). All tests of this case were skipped (10 of 10 skipped in `main`); none of them passed.
 - **Not checked (to be verified on hardware with hibernation support):** apply `powercfg /h off` and the removal of `hiberfil.sys`, undo `/h on`, the behavior of `SystemS4` after turning it off, the effect on fast startup, restoring the file type and size. The item stays `risk=experimental`.
 
 ## Reddit

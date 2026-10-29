@@ -3,7 +3,7 @@
 # panels.devices-printers – Devices and Printers
 
 ## Verdict for 26H2
-Port as `kind=panel`, `risk=safe`: on the 26H2 Home and Pro VMs the command opens the classic Devices and Printers window in File Explorer, not Settings. It goes in with a reservation: it needs File Explorer of this account in the current session (guard R23); outside such a session it refuses instead of leaving an elevated File Explorer behind.
+Port as `kind=panel`, `risk=safe`: on the 26H2 Home and Pro VMs the command opens the classic Devices and Printers window in File Explorer, not Settings. It goes in with a caveat: it needs File Explorer of this account in the current session (guard R23); outside such a session it refuses instead of leaving an elevated File Explorer behind.
 
 ## What it changes
 Nothing: `kind=panel` opens a window and doesn't write to the registry, services or files. `launch` field: `file` = `shell:::{A8A91A66-3A7D-4424-8D24-04E180695C7A}`, `arguments` = empty.
@@ -35,13 +35,13 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 - The scenario "DSOptimizer elevated with a different administrator account than the signed-in user" wasn't measured on a VM for this panel (the `control.exe`/`explorer.exe` host itself uses associations and COM in the elevated process; DSOptimizer controls only the path of the file it starts).
 
 ## VM test
-VM run `20261019-110405` (2026-10-19, HEAD `fd320ed`, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 errors / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in the C5 cases.
+VM run `20261019-110405` (2026-10-19, HEAD `fd320ed`, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in the C5 cases.
 - `panels-devices-printers-no-shell` (`Flow=Execute`, `ExecuteExit=1`, expected `Failed`, `MessageContains` "Brak Eksploratora tego konta"): **Passed** on Home and Pro. Execution result: `OperationFailed` / `Failed`, message "Brak Eksploratora tego konta w bieżącej sesji – nie uruchamiam podniesionego Eksploratora." (in the English program: "File Explorer for this account isn't running in the current session – not starting an elevated File Explorer.") Guard R23 refuses because PS Direct as Administrator (session 0) has no shell of this account. `Check` waits 3 s and requires that there is no `explorer.exe` with `shell:::{A8A91A66` in the command line (nothing started); `Cleanup` closes only such a process. The case **isn't `Skip`**, but it also **doesn't check the window**: it checks only the refusal without a shell.
 - K2 exploration (`dso` session, `Limited` token): the "Urządzenia i drukarki — Eksplorator plików" (Devices and Printers — File Explorer) window (`CabinetWClass`), which belongs to the account's `explorer.exe /factory,{…} -Embedding` process. Home = Pro. Research and K2 exploration results: `docs/zrodla/2026-10-19-partia-c5-zrodla.md` (in Polish), sections "Wyniki VM" (VM results) and "Sonda uzupełniająca" (follow-up probe).
 - Dawid's manual click (Pro VM, `dso` session, Win+R, 2026-10-19): `shell:::{A8A91A66-…}` opens the classic "Urządzenia i drukarki" (Devices and Printers) window.
 - The `control.exe /name Microsoft.DevicesAndPrinters` variant was rejected based on the VM exploration (K1/K2, not Dawid's click): it redirects to Settings (`SystemSettings.exe`). The `control.exe /name Microsoft.System` variant concerns `panels.system-properties` (exploration: no window), not this item.
 - `shell:::{A8A91A66-…}` clicked from Win+R goes through the shell, while the item's `launch` goes through CreateProcess `explorer.exe shell:::{GUID}` (behind the guard), so it isn't the same path: the click confirms the panel, while the item's `launch` is confirmed only by the K2 exploration.
-- **Smoke test with the real `DSOptimizer.exe` in the `dso` session: to be confirmed by Dawid** (Ruling R30). Not done because Dawid was away; the item goes into `main` with this reservation (like D2 in batch C4). A mismatch between "the process is running" (Check) and a window visible to the user will show up only on first use from the app.
+- **Smoke test with the real `DSOptimizer.exe` in the `dso` session: to be confirmed by Dawid** (Ruling R30). Not done because Dawid was away; the item goes into `main` with this caveat (like D2 in round C4). A mismatch between "the process is running" (Check) and a window visible to the user will show up only on first use from the app.
 - The positive path (a window with the account's shell running) has no case in the runner (the runner is Administrator in session 0); only the smoke test in the `dso` session checks it.
 
 ## Reddit
