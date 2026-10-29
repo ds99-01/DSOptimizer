@@ -26,6 +26,7 @@ public class EnglishDocsTests
     private static readonly Regex StampLine = new(@"^<!-- source: (docs/(tweaks|apps|prep)/[^ ]+\.md) sha256: [0-9a-f]{64} -->$", RegexOptions.CultureInvariant);
     private static readonly Regex Url = new(@"https?://[^\s)>\]]+", RegexOptions.CultureInvariant);
     private static readonly Regex CodeSpan = new(@"`([^`\r\n]+)`", RegexOptions.CultureInvariant);
+    private static readonly Regex PolishLetters = new("[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]", RegexOptions.CultureInvariant);
     private static readonly Regex Placeholder = new("<[^<>]*>", RegexOptions.CultureInvariant);
 
     private static readonly string EnglishDocsDirectory = RepoRoot.Combine("docs", "en");
@@ -174,7 +175,7 @@ public class EnglishDocsTests
                 problems.Add($"{relative}: adresy bez pary w EN: [{string.Join(", ", missingUrls)}], nadmiarowe w EN: [{string.Join(", ", extraUrls)}]");
             }
 
-            var spanMismatches = TechnicalSpanMismatches(polish, english);
+            var spanMismatches = TechnicalSpanMismatches(polish, english, relative);
             if (spanMismatches.Count > 0)
             {
                 problems.Add($"{relative}: spany techniczne – {string.Join("; ", spanMismatches)}");
@@ -194,6 +195,16 @@ public class EnglishDocsTests
     }
 
     [Theory]
+    [InlineData("Wynik `Zmierzono żądanie 5 ms`, plik `a.json`.", "Result, file `a.json`.")]
+    public void TechnicalSpanMismatches_SpanWithPolishLetters_IsOutsideTheRule(string polish, string english)
+    {
+        Assert.Empty(TechnicalSpanMismatches(polish, english));
+    }
+
+    [Theory]
+    [InlineData("Plik `config.json`.", "File `config.jso`.")]
+    [InlineData("Wartość `Enabled`.", "Value `Disabled`.")]
+    [InlineData("Wartość `Enabled`.", "Value.")]
     [InlineData(@"`HKU\Software`", @"`HKU\Softwar`")]
     [InlineData(@"`HKU\<SID>\Software`", @"`HKU\<SID>\Softwar`")]
     [InlineData(@"`HKU\Software` i `HKU\Software`", @"`HKU\Software`")]
@@ -203,15 +214,59 @@ public class EnglishDocsTests
     }
 
     /// <summary>
-    /// Spany techniczne PL bez pary w EN i odwrotnie (multizbiór, ordinal). Tekst w nawiasach ostrych (<c>&lt;SID zalogowanego&gt;</c>)
-    /// to symbol zastępczy do przetłumaczenia, nie wartość – przed porównaniem każda grupa <c>&lt;…&gt;</c> staje się <c>&lt;&gt;</c>.
+    /// Wyjątki od reguły spanów: plik EN, span PL (null = bez pary w PL), span EN, powód i liczba wystąpień. Każdy wyjątek zdejmuje
+    /// po jednym wystąpieniu z obu stron, a wpis bez pokrycia w plikach sam jest błędem. Dozwolone powody: słowo polskie przetłumaczone
+    /// w spanie (także nazwa kolumny, wartość tabeli, format daty) lub dopisek EN bez odpowiednika w PL.
     /// </summary>
-    internal static List<string> TechnicalSpanMismatches(string polish, string english)
+    private sealed record SpanException(string File, string? Polish, string English, string Reason, int Count = 1);
+
+    private static readonly SpanException[] SpanExceptions =
     {
-        var polishSpans = TechnicalSpans(polish).Select(NormalizePlaceholders).ToList();
-        var englishSpans = TechnicalSpans(english).Select(NormalizePlaceholders).ToList();
+        new("docs/en/apps/install-README.md", "apps: <id>, pole <pole>: <treść>", "apps: <id>, field <field>: <text>", "polskie słowo „pole” przetłumaczone w komunikacie"),
+        new("docs/en/prep/README.md", "Cel", "Purpose", "nazwa kolumny tabeli przetłumaczona", 2),
+        new("docs/en/prep/README.md", "Źródło", "Source", "nazwa kolumny tabeli przetłumaczona (PL z ogonkami)"),
+        new("docs/en/prep/README.md", "Sprawdzono", "Checked", "nazwa kolumny tabeli przetłumaczona"),
+        new("docs/en/prep/README.md", "grafika", "graphics", "wartość kolumny „Cel” przetłumaczona (kod i test czytają tylko polski plik)"),
+        new("docs/en/prep/README.md", "wsparcie", "support", "wartość kolumny „Cel” przetłumaczona (kod i test czytają tylko polski plik)"),
+        new("docs/en/prep/README.md", "wsparcie-numer", "support-number", "wartość kolumny „Cel” przetłumaczona (kod i test czytają tylko polski plik)", 3),
+        new("docs/en/tweaks/README.md", "docs/tweaks/<id>.md", "docs/en/tweaks/<id>.md", "ścieżka angielskiego odpowiednika pliku"),
+        new("docs/en/tweaks/README.md", null, "tools/i18n/Get-MissingTranslations.ps1", "dopisek EN o raporcie braków tłumaczeń, bez odpowiednika w PL"),
+        new("docs/en/tweaks/repair.restore-point.md", "(kod N)", "(code N)", "polskie słowo „kod” przetłumaczone"),
+        new("docs/en/tweaks/repair.restore-point.md", "IRestorePointService.Create(\"DSOptimizer – punkt ręczny\")", "IRestorePointService.Create(\"DSOptimizer – manual restore point\")", "nazwa punktu zależy od języka programu (PL z ogonkami)"),
+        new("docs/en/tweaks/repair.wu-reset.md", "<folder>.dso-rrrrMMdd-HHmmss[-N]", "<folder>.dso-yyyyMMdd-HHmmss[-N]", "polskie litery formatu daty (rrrr = yyyy) przetłumaczone"),
+        new("docs/en/tweaks/sec.take-ownership-menu.md", "Przejmij na własność", "Take ownership", "angielska nazwa menu odpowiada polskiej (PL z ogonkami)"),
+        new("docs/en/tweaks/sec.take-ownership-menu.md", "Przejmij na własność (administrator)", "Take ownership (administrator)", "angielska nazwa menu odpowiada polskiej (PL z ogonkami)"),
+    };
+
+    /// <summary>
+    /// Spany kodu bez polskich liter (po normalizacji) w PL bez pary w EN i odwrotnie (multizbiór, ordinal); spany z polskimi literami
+    /// (cytaty zmierzonego wyjścia) są poza regułą. Tekst w nawiasach ostrych (<c>&lt;SID zalogowanego&gt;</c>) to symbol zastępczy do
+    /// przetłumaczenia, nie wartość – przed porównaniem i filtrem każda grupa <c>&lt;…&gt;</c> staje się <c>&lt;&gt;</c>.
+    /// </summary>
+    internal static List<string> TechnicalSpanMismatches(string polish, string english, string? englishFile = null)
+    {
+        var polishSpans = TechnicalSpans(polish);
+        var englishSpans = TechnicalSpans(english);
+        var stale = new List<string>();
+        foreach (var exception in SpanExceptions.Where(e => e.File == englishFile))
+        {
+            for (var i = 0; i < exception.Count; i++)
+            {
+                var polishSpan = exception.Polish is null ? null : NormalizePlaceholders(exception.Polish);
+                var englishSpan = NormalizePlaceholders(exception.English);
+                var polishCovered = polishSpan is null
+                    || polishSpans.Remove(polishSpan)
+                    || AllSpans(polish).Contains(polishSpan);
+                if (!polishCovered || !englishSpans.Remove(englishSpan))
+                {
+                    stale.Add($"wyjątek bez pokrycia w plikach: {exception.Polish} → {exception.English} ({exception.Reason})");
+                }
+            }
+        }
+
         return Difference(polishSpans, englishSpans).Select(s => "bez pary w EN: " + s)
             .Concat(Difference(englishSpans, polishSpans).Select(s => "nadmiarowy w EN: " + s))
+            .Concat(stale)
             .ToList();
     }
 
@@ -246,11 +301,11 @@ public class EnglishDocsTests
     private static List<string> Urls(string text)
         => Url.Matches(text).Cast<Match>().Select(m => m.Value.TrimEnd('.', ',', ';', ':')).ToList();
 
+    private static List<string> AllSpans(string text)
+        => CodeSpan.Matches(text).Cast<Match>().Select(m => NormalizePlaceholders(m.Groups[1].Value)).ToList();
+
     private static List<string> TechnicalSpans(string text)
-        => CodeSpan.Matches(text).Cast<Match>()
-            .Select(m => m.Groups[1].Value)
-            .Where(s => s.Contains("\\") || s.Contains("0x") || s.StartsWith("HK", StringComparison.Ordinal))
-            .ToList();
+        => AllSpans(text).Where(s => !PolishLetters.IsMatch(s)).ToList();
 
     /// <summary>Elementy <paramref name="left"/> bez pary w <paramref name="right"/> (multizbiór, porównanie ordinal).</summary>
     private static List<string> Difference(IEnumerable<string> left, IEnumerable<string> right)
