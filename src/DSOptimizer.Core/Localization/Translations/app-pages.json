@@ -95,7 +95,7 @@
     },
     {
       "pl": "Systemowy zmienia się razem z motywem Windows. Pasek marki i menu zostają grafitowe.",
-      "en": "System follows the Windows theme. The brand bar and the menu stay graphite."
+      "en": "\"System\" follows the Windows theme. The brand bar and the menu stay graphite."
     },
     {
       "pl": "Autor",
@@ -115,7 +115,7 @@
     },
     {
       "pl": "Nie udało się zapisać ustawień: {0} Zmiana obowiązuje do zamknięcia programu.",
-      "en": "Couldn't save the settings: {0} The change applies until the program is closed."
+      "en": "Couldn't save the settings: {0} The change lasts until the program closes."
     },
     {
       "pl": "Nie udało się otworzyć strony repozytorium.",

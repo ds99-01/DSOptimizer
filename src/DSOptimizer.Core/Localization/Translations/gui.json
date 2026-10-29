@@ -3,7 +3,7 @@
   "entries": [
     {
       "pl": "Brak wyniku akcji.",
-      "en": "No action result."
+      "en": "The action returned no result."
     },
     {
       "pl": "Nie przywrócono: {0}",
@@ -55,7 +55,7 @@
     },
     {
       "pl": "Brak wyniku serii.",
-      "en": "No batch result."
+      "en": "The batch returned no result."
     },
     {
       "pl": "Pominięte",
@@ -107,7 +107,7 @@
     },
     {
       "pl": "Zastosowane, po restarcie",
-      "en": "Applied, takes effect after restart"
+      "en": "Applied, restart required"
     },
     {
       "pl": "Było już zastosowane",
@@ -207,7 +207,7 @@
     },
     {
       "pl": "Nieoczekiwany błąd operacji {0} {1}.",
-      "en": "Unexpected error in operation {0} {1}."
+      "en": "Unexpected error in the {0} operation for {1}."
     },
     {
       "pl": "DSOptimizer – przed {0}",
@@ -279,7 +279,7 @@
     },
     {
       "pl": "Sugerowane. Przy pierwszym wejściu na stronę program sam zaznacza tę pozycję, jeśli nie jest jeszcze zastosowana. Możesz ją odznaczyć.",
-      "en": "Suggested. The first time you open the page, the program selects this item if it isn't applied yet. You can clear it."
+      "en": "Suggested. The first time you open the page, the program selects this item if it isn't applied yet. You can clear its checkbox."
     },
     {
       "pl": "Enterprise i Education",
@@ -459,7 +459,7 @@
     },
     {
       "pl": "Bez eksperymentalnych",
-      "en": "No experimental"
+      "en": "Hide experimental"
     },
     {
       "pl": "Tylko bezpieczne",
@@ -583,7 +583,7 @@
     },
     {
       "pl": "Kliknij dwukrotnie wiersz albo pole wyboru, żeby dodać do zmiany.",
-      "en": "Double-click a row or checkbox to add it to the change."
+      "en": "Double-click a row or checkbox to add the item to the batch."
     },
     {
       "pl": "Zaznaczono {0} pozycję",
@@ -831,7 +831,7 @@
     },
     {
       "pl": "Instalacji nie cofa się z programu – aplikację usuniesz na stronie „Aplikacje”.",
-      "en": "Installs can't be undone from the program – remove the app on the \"Apps\" page."
+      "en": "An installation can't be undone from the program – remove the app on the \"Apps\" page."
     },
     {
       "pl": "Przejdź do: Aplikacje",
@@ -839,7 +839,7 @@
     },
     {
       "pl": "Ta zmiana dotyczy konta {0}. Żeby ją cofnąć, uruchom program na tym koncie.",
-      "en": "This change applies to account {0}. To undo it, run the program on that account."
+      "en": "This change applies to account {0}. To undo it, sign in to that account and run the program there."
     },
     {
       "pl": "Nie udało się odczytać historii zmian: {0}",
@@ -883,7 +883,7 @@
     },
     {
       "pl": "Nie potwierdzono instalacji",
-      "en": "Install not confirmed"
+      "en": "Installation not confirmed"
     },
     {
       "pl": "Nie zainstalowano",
@@ -939,7 +939,7 @@
     },
     {
       "pl": "Instalacja rozpoczęta",
-      "en": "Install started"
+      "en": "Installation started"
     },
     {
       "pl": "Zainstalowano i sprawdzono",
@@ -1023,7 +1023,7 @@
     },
     {
       "pl": "Możliwe dla wszystkich, z historii zmian",
-      "en": "Possible for all, from the change history"
+      "en": "Possible for all items, from Change history"
     },
     {
       "pl": "Niemożliwe dla: {0}",
@@ -1055,7 +1055,7 @@
     },
     {
       "pl": "przywrócenie stanu sprzed zmiany z historii",
-      "en": "restore the state from before the change, from history"
+      "en": "restore the state from before the change, saved in the change history"
     },
     {
       "pl": "{0} na {1}",

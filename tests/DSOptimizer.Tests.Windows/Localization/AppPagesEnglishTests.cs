@@ -241,7 +241,7 @@ public class AppPagesEnglishTests
                 ["Jasny"] = "Light",
                 ["Ciemny"] = "Dark",
                 ["Systemowy zmienia się razem z motywem Windows. Pasek marki i menu zostają grafitowe."] =
-                    "System follows the Windows theme. The brand bar and the menu stay graphite.",
+                    "\"System\" follows the Windows theme. The brand bar and the menu stay graphite.",
             });
         }
     }
@@ -281,7 +281,7 @@ public class AppPagesEnglishTests
 
                 vm.CreateRestorePoint = false;
 
-                Assert.Contains("WARN Settings: Couldn't save the settings: Access denied. The change applies until the program is closed.", log.Lines);
+                Assert.Contains("WARN Settings: Couldn't save the settings: Access denied. The change lasts until the program closes.", log.Lines);
             }
         });
     }

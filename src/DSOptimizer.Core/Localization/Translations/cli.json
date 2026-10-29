@@ -47,7 +47,7 @@
   },
   {
    "pl": "Podaj dokładnie jedno z: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps.",
-   "en": "Give exactly one of: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps."
+   "en": "Specify exactly one of: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps."
   },
   {
    "pl": "Brak wymaganej opcji --out.",
@@ -79,15 +79,15 @@
   },
   {
    "pl": "Lista --install-apps ma pusty element (id rozdziela sam przecinek, bez spacji).",
-   "en": "The --install-apps list has an empty item (separate ids with a comma only, no spaces)."
+   "en": "The --install-apps list has an empty item (separate IDs with a comma only, no spaces)."
   },
   {
    "pl": "Nieprawidłowy identyfikator aplikacji '{0}': po winget: musi być pełny identyfikator pakietu, nie skrócony „…” ani pusty (zawęź wyszukiwanie --search-apps).",
-   "en": "Invalid app identifier '{0}': after winget: it must be the full package identifier, not shortened with \"…\" and not empty (narrow down the --search-apps query)."
+   "en": "Invalid app ID '{0}': after \"winget:\" there must be the full package ID, not one shortened with \"…\" and not an empty one (narrow down the --search-apps query)."
   },
   {
    "pl": "Nieprawidłowy identyfikator aplikacji '{0}' (dozwolone: install.<nazwa> z listy albo winget:<identyfikator>).",
-   "en": "Invalid app identifier '{0}' (allowed: install.<name> from the list or winget:<identifier>)."
+   "en": "Invalid app ID '{0}' (allowed: install.<name> from the list or winget:<id>)."
   },
   {
    "pl": "Aplikacja '{0}' podana w --install-apps więcej niż raz.",

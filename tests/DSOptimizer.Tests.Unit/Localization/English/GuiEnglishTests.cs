@@ -187,7 +187,7 @@ public class GuiEnglishTests
             Assert.Equal("All entries", HistoryText.FilterName(HistoryFilter.All));
             Assert.Equal("App install", HistoryText.KindLine(HistoryKind.AppInstall, null));
             Assert.Equal("item not in this catalog", HistoryText.KindLine(HistoryKind.Change, null));
-            Assert.Equal("This change applies to account jan. To undo it, run the program on that account.", HistoryText.UndoOtherAccount("jan"));
+            Assert.Equal("This change applies to account jan. To undo it, sign in to that account and run the program there.", HistoryText.UndoOtherAccount("jan"));
             Assert.Equal("Couldn't read the change history: broken", HistoryText.LoadFailed("broken"));
         }
     }
@@ -302,7 +302,7 @@ public class GuiEnglishTests
 
             var none = Build(GuiOperation.Apply, true, true, null, TestTweaks.TwoValues("b"));
             Assert.Equal(new SeriesFact("Restart", "Not needed"), none.Facts[1]);
-            Assert.Equal(new SeriesFact("Undo", "Possible for all, from the change history"), none.Facts[2]);
+            Assert.Equal(new SeriesFact("Undo", "Possible for all items, from Change history"), none.Facts[2]);
 
             var action = Build(GuiOperation.Execute, false, true, null, TestTweaks.Action());
             Assert.Equal(new[] { new SeriesFact("Undo", "Not possible – actions can't be undone") }, action.Facts);
@@ -360,7 +360,7 @@ public class GuiEnglishTests
             Assert.Equal("Applied – restart required", GuiText.OutcomeName(TweakOutcome.PendingReboot));
             Assert.Equal("Installed (reported by winget)", GuiText.OutcomeName(TweakOutcome.InstalledUnverified));
             Assert.Equal("Risk: caution", GuiText.RiskToolTip(RiskLevel.Caution));
-            Assert.Equal("No experimental", GuiText.RiskFilterName(RiskFilter.NoExperimental));
+            Assert.Equal("Hide experimental",GuiText.RiskFilterName(RiskFilter.NoExperimental));
             Assert.Equal("Install", GuiText.OperationName(GuiOperation.InstallApps));
         }
     }
@@ -417,7 +417,7 @@ public class GuiEnglishTests
     {
         using (L.Use(UiLanguage.English))
         {
-            Assert.Equal("Double-click a row or checkbox to add it to the change.", GuiText.SelectionBarTitle(0, 0, 0));
+            Assert.Equal("Double-click a row or checkbox to add the item to the batch.", GuiText.SelectionBarTitle(0, 0, 0));
             Assert.Equal("1 item selected", GuiText.SelectionBarTitle(1, 1, 0));
             Assert.Equal("2 items selected: 2 to undo", GuiText.SelectionBarTitle(2, 0, 2));
             Assert.Equal("3 items selected: 2 to apply, 1 to undo", GuiText.SelectionBarTitle(3, 2, 1));
@@ -499,7 +499,7 @@ public class GuiEnglishTests
                 GuiOperation.Execute, "Run", "Repair", Array.Empty<SeriesFact>(), new[] { Item("r", "Repair") }, "Run", false));
             failed.Complete(new GuiOperationReport { TweakId = "r", Operation = GuiOperation.Execute });
             Assert.Equal("Finished with an error", failed.Title);
-            Assert.Equal(new[] { "No action result." }, failed.ResultLines);
+            Assert.Equal(new[] { "The action returned no result." }, failed.ResultLines);
         }
     }
 
