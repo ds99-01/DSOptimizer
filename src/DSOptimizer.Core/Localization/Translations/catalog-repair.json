@@ -71,8 +71,8 @@
       "en": "No undo – DSOptimizer saves the current IP settings in the log; VPN and network programs may need to be set up again."
     },
     {
-      "pl": "Jedna pozycja chroniona przez system odmówiła dostępu – na świeżym Windows 11 26H2 tak jest zawsze, reszta zresetowana.",
-      "en": "One item protected by the system denied access – on a fresh Windows 11 26H2 this always happens, the rest was reset."
+      "pl": "Jedna pozycja chroniona przez system odmówiła dostępu – to zwykłe zachowanie Windows 11, reszta zresetowana.",
+      "en": "One item protected by the system denied access – this is normal on Windows 11, the rest was reset."
     },
     {
       "pl": "netsh int ip reset: kod {0} – wynik spoza zmierzonego wzorca; wyjście: {1}",

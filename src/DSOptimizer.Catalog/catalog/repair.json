@@ -105,7 +105,7 @@
         "            $denied = ($null -ne $next) -and ($next -match 'Odmowa dost|Access is denied')",
         "            $badItems = @($lines | Where-Object { $_ -match '^\\s*Resetting' -and $_ -notmatch 'OK!\\s*$' -and $_ -notmatch 'failed\\.\\s*$' })",
         "            if ($denied -and $badItems.Count -eq 0) {",
-        "                return (Get-DsoText 'Jedna pozycja chroniona przez system odmówiła dostępu – na świeżym Windows 11 26H2 tak jest zawsze, reszta zresetowana.')",
+        "                return (Get-DsoText 'Jedna pozycja chroniona przez system odmówiła dostępu – to zwykłe zachowanie Windows 11, reszta zresetowana.')",
         "            }",
         "        }",
         "    }",

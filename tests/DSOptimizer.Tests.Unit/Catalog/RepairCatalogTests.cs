@@ -357,7 +357,7 @@ public class RepairCatalogTests
 
     private const string FinalLine = "Polecenia zakończone powodzeniem. Skutek po restarcie komputera. Konfiguracja IP sprzed resetu jest wyżej i w pliku logu.";
 
-    private const string Annotation = "Jedna pozycja chroniona przez system odmówiła dostępu – na świeżym Windows 11 26H2 tak jest zawsze, reszta zresetowana.";
+    private const string Annotation = "Jedna pozycja chroniona przez system odmówiła dostępu – to zwykłe zachowanie Windows 11, reszta zresetowana.";
 
     [Fact]
     public void NetworkReset_RealMeasuredOutput_IsSuccessWithAnnotation_InOrder_AndExitsZero()
@@ -1291,7 +1291,7 @@ public class RepairCatalogTests
         Assert.Contains("IP configuration before the reset:", run.Output);
         Assert.Contains(run.Output, l => l.Contains("Ethernet: IPv4: 192.168.1.20/24 (mask 255.255.255.0), gateway: 192.168.1.1, DNS: 1.1.1.1, 8.8.8.8, DHCP: no", StringComparison.Ordinal));
         Assert.Contains(run.Output, l => l.Contains("Wi-Fi: IPv4: 10.0.0.7/16 (mask 255.255.0.0), gateway: none, DNS: none, DHCP: yes", StringComparison.Ordinal));
-        Assert.Contains("One item protected by the system denied access – on a fresh Windows 11 26H2 this always happens, the rest was reset.", run.Output);
+        Assert.Contains("One item protected by the system denied access – this is normal on Windows 11, the rest was reset.", run.Output);
         Assert.Equal("The commands succeeded. Takes effect after the computer restarts. The IP configuration from before the reset is above and in the log file.", run.LastLine);
     }
 

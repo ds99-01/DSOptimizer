@@ -147,6 +147,16 @@ public class CatalogScriptTextRulesTests
         Assert.True(problems.Count == 0, string.Join(Environment.NewLine, problems));
     }
 
+    [Fact]
+    public void GetDsoTextLiterals_DoNotMentionWindowsVersionName()
+    {
+        var hits = LoadCatalogScripts()
+            .SelectMany(s => CatalogScriptTextScanner.TextCallLiterals(s.Text).Select(l => (s.Id, Literal: l)))
+            .Where(x => x.Literal.IndexOf("26H2", StringComparison.Ordinal) >= 0)
+            .Select(x => x.Id + ": " + x.Literal)
+            .ToList();
+        Assert.True(hits.Count == 0, string.Join(Environment.NewLine, hits));
+    }
     private static IReadOnlyList<string> Scan(string script) =>
         CatalogScriptTextScanner.Violations("x", "x", script, Array.Empty<AllowedLiteral>(), pending: false);
 
@@ -299,6 +309,9 @@ public sealed class CatalogScriptTextScanner
         return result;
     }
 
+    /// <summary>Treść literałów <c>Get-DsoText '…'</c> w skrypcie (do reguł o samym tekście komunikatu).</summary>
+    public static IReadOnlyList<string> TextCallLiterals(string script) =>
+        Lex(script)._found.Where(l => l.IsTextCall).Select(l => l.Text).ToList();
     private static IEnumerable<ScriptLiteral> PolishHits(CatalogScriptTextScanner scanner) =>
         scanner._found.Where(l => !l.IsTextCall && PolishLiteralScanner.IsPolish(l.Text));
 

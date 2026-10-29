@@ -157,7 +157,7 @@ public class ToolsCatalogTests
         Assert.NotEqual(0, run.ExitCode);
         Assert.Contains("brak Eksploratora użytkownika", run.Error, StringComparison.Ordinal);
         Assert.Contains("nic nie zatrzymano", run.Error, StringComparison.Ordinal);
-        Assert.Contains("Menedżer zadań > Plik > Uruchom nowe zadanie > explorer.exe", run.Error, StringComparison.Ordinal);
+        Assert.Contains("Menedżer zadań > Uruchom nowe zadanie > explorer.exe", run.Error, StringComparison.Ordinal);
         Assert.False(Stopped(run));
     }
 
@@ -217,7 +217,7 @@ public class ToolsCatalogTests
 
         Assert.NotEqual(0, run.ExitCode);
         Assert.Contains("Ostatni błąd odczytu: Not found", run.Error, StringComparison.Ordinal);
-        Assert.Contains("Menedżer zadań > Plik > Uruchom nowe zadanie > explorer.exe", run.Error, StringComparison.Ordinal);
+        Assert.Contains("Menedżer zadań > Uruchom nowe zadanie > explorer.exe", run.Error, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -299,7 +299,7 @@ public class ToolsCatalogTests
 
         Assert.NotEqual(0, run.ExitCode);
         Assert.Contains("STOP 100", run.Output);
-        Assert.Contains("Menedżer zadań > Plik > Uruchom nowe zadanie > explorer.exe", run.Error, StringComparison.Ordinal);
+        Assert.Contains("Menedżer zadań > Uruchom nowe zadanie > explorer.exe", run.Error, StringComparison.Ordinal);
         Assert.Contains("10 s", run.Error, StringComparison.Ordinal);
         Assert.DoesNotContain("Bezpiecznik harnessu", run.Error, StringComparison.Ordinal); // żadnego Start-Process / explorer
         Assert.DoesNotContain("Explorer zrestartowany", string.Join("\n", run.Output), StringComparison.Ordinal);
@@ -316,7 +316,7 @@ public class ToolsCatalogTests
         var run = Run(Mocks("1", Proc(100, UserSid, 1, ShellCommand), after));
 
         Assert.NotEqual(0, run.ExitCode);
-        Assert.Contains("Menedżer zadań > Plik > Uruchom nowe zadanie > explorer.exe", run.Error, StringComparison.Ordinal);
+        Assert.Contains("Menedżer zadań > Uruchom nowe zadanie > explorer.exe", run.Error, StringComparison.Ordinal);
         Assert.DoesNotContain("Explorer zrestartowany", string.Join("\n", run.Output), StringComparison.Ordinal);
     }
 

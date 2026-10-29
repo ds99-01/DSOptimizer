@@ -491,7 +491,7 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | Administratorzy (grupa) | Administrators | Built-in group, SID S-1-5-32-544 |
 | UAC (zgoda w UAC) | UAC prompt ("after you approve the UAC prompt") | The documents use the noun "UAC approval" ("requires UAC approval"), which matches the program text "After you approve the UAC prompt" (`catalog-sec.json`) |
 | powłoka (Eksploratora) / pulpit | shell / desktop | "the File Explorer shell (explorer.exe)" |
-| Menedżer zadań > Plik > Uruchom nowe zadanie | Task Manager > Run new task | "Run new task" as in Task Manager. **do audytu (Etap 5)** – the redesigned Windows 11 Task Manager shows "Run new task" in the command bar, not in a File menu (the Polish text says "Plik"). **do audytu (Etap 5):** polski tekst też do poprawy |
+| Menedżer zadań > Uruchom nowe zadanie | Task Manager > Run new task | "Run new task" as in Task Manager (the redesigned Windows 11 Task Manager shows it in the command bar, not in a File menu) |
 | wylogowanie | signing out | Style rule 11 |
 | wydanie testowe / szkic (GitHub) | test release / draft | WinUtil description |
 | tryb zarządzany przez system / przez użytkownika | system-managed / user-managed (mode) | `NtfsDisableLastAccessUpdate` modes, as in the program text (`catalog-disk.json`) |
