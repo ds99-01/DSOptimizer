@@ -13,6 +13,7 @@
     #     Każda ścieżka (względna wobec -Root albo bezwzględna) musi wskazywać istniejący plik docs/en/<x>/<plik>.md, gdzie
     #     <x> to tweaks, apps albo prep (bez podkatalogów), a polskie źródło docs/<x>/<plik>.md musi istnieć. Najpierw
     #     sprawdza wszystkie ścieżki; przy pierwszym błędzie wypisuje go i kończy z kodem 2, nie zmieniając żadnego pliku.
+    #     Wielkość liter ścieżki (np. PERF.sysmain.md) jest brana z systemu plików, więc odcisk ma prawdziwą nazwę źródła.
     #     Hash źródła: SHA-256 bajtów UTF-8 polskiego pliku po usunięciu BOM i zamianie CRLF na LF. Linia odcisku:
     #     <!-- source: docs/<x>/<plik>.md sha256: <64 małe hex> -->. Jeśli angielski plik zaczyna się od "<!-- source:",
     #     ta linia jest zastępowana; inaczej na początku dopisywana jest linia odcisku i pusta linia. Końce linii pliku
@@ -47,6 +48,28 @@ function Get-DocsSourceHash {
     return (($Hash | ForEach-Object { $_.ToString('x2') }) -join '')
 }
 
+function Get-ActualCaseRelativePath {
+    # Ścieżka względna wobec $RootPath z wielkością liter z systemu plików (Windows nie rozróżnia wielkości liter,
+    # a odcisk i raport porównują ścieżki dokładnie). Segment, którego nie ma na dysku, zostaje bez zmian.
+    param([string]$RootPath, [string]$Relative)
+    $Current = $RootPath
+    $Segments = New-Object -TypeName 'System.Collections.Generic.List[string]'
+    $Exists = $true
+    foreach ($Segment in $Relative.Split('/')) {
+        $Name = $Segment
+        if ($Exists -and [System.IO.Directory]::Exists($Current)) {
+            $Entry = [System.IO.DirectoryInfo]::new($Current).GetFileSystemInfos() |
+                Where-Object { [string]::Equals($_.Name, $Segment, [System.StringComparison]::OrdinalIgnoreCase) } |
+                Select-Object -First 1
+            if ($null -ne $Entry) { $Name = $Entry.Name } else { $Exists = $false }
+        }
+        else { $Exists = $false }
+        $Segments.Add($Name)
+        $Current = Join-Path -Path $Current -ChildPath $Name
+    }
+    return ($Segments -join '/')
+}
+
 try {
     if ([string]::IsNullOrEmpty($Root)) {
         $ScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
@@ -60,7 +83,8 @@ try {
         else { $Full = [System.IO.Path]::GetFullPath((Join-Path -Path $RootPath -ChildPath $Item)) }
         $Relative = $Item.Replace('\', '/')
         if ($Full.StartsWith($RootPath + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
-            $Relative = $Full.Substring($RootPath.Length + 1).Replace('\', '/')
+            $Relative = Get-ActualCaseRelativePath -RootPath $RootPath -Relative $Full.Substring($RootPath.Length + 1).Replace('\', '/')
+            $Full = Join-Path -Path $RootPath -ChildPath $Relative.Replace('/', '\')
         }
         $Match = [regex]::Match($Relative, '^docs/en/((?:tweaks|apps|prep)/[^/]+\.md)$')
         if (-not $Match.Success) {
@@ -71,7 +95,7 @@ try {
             Write-Output ('Błąd: nie ma pliku {0}.' -f $Relative)
             exit 2
         }
-        $Source = 'docs/' + $Match.Groups[1].Value
+        $Source = Get-ActualCaseRelativePath -RootPath $RootPath -Relative ('docs/' + $Match.Groups[1].Value)
         $SourceFull = Join-Path -Path $RootPath -ChildPath $Source.Replace('/', '\')
         if (-not (Test-Path -LiteralPath $SourceFull -PathType Leaf)) {
             Write-Output ('Błąd: {0} – nie ma polskiego źródła {1}.' -f $Relative, $Source)

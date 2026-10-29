@@ -124,6 +124,49 @@ Describe 'Set-DocsTranslationStamp.ps1' {
         (Invoke-Stamp -Root $Root -Path 'docs\en\tweaks\nie-ma.md').Code | Should -Be 2
     }
 
+    It 'ścieżka z inną wielkością liter daje odcisk z prawdziwą nazwą pliku' {
+        $Polish = "# perf.sysmain – Tytuł`n"
+        $Root = New-DocsRepo -Files @{
+            'docs\tweaks\perf.sysmain.md'    = $Polish
+            'docs\en\tweaks\perf.sysmain.md' = "# perf.sysmain – Title`n"
+        }
+        $Expected = "<!-- source: $($script:Docs)tweaks/perf.sysmain.md sha256: $(Get-ExpectedHash -Text $Polish) -->"
+
+        $Result = Invoke-Stamp -Root $Root -Path 'docs\en\tweaks\PERF.Sysmain.md'
+        $Result.Code | Should -Be 0
+        ($script:Utf8NoBom.GetString((Read-Bytes -Root $Root -Name 'docs\en\tweaks\perf.sysmain.md')) -split "`n")[0] | Should -BeExactly $Expected
+        $Result.Text | Should -Match ([regex]::Escape("$($script:Docs)en/tweaks/perf.sysmain.md"))
+
+        $Result = Invoke-Stamp -Root $Root -Path 'Docs\EN\Tweaks\perf.SYSMAIN.md'
+        $Result.Code | Should -Be 0
+        ($script:Utf8NoBom.GetString((Read-Bytes -Root $Root -Name 'docs\en\tweaks\perf.sysmain.md')) -split "`n")[0] | Should -BeExactly $Expected
+    }
+
+    It 'błędna druga ścieżka daje kod 2 i nie zmienia pierwszego pliku' {
+        $Root = New-DocsRepo -Files @{
+            'docs\tweaks\a.md'    = "# a – Tytuł`n"
+            'docs\en\tweaks\a.md' = "# a – Title`n"
+        }
+        $Before = [Convert]::ToBase64String((Read-Bytes -Root $Root -Name 'docs\en\tweaks\a.md'))
+        $Result = Invoke-Stamp -Root $Root -Path 'docs\en\tweaks\a.md', 'docs\en\tweaks\nie-ma.md'
+        $Result.Code | Should -Be 2
+        $Result.Text | Should -Match 'nie-ma\.md'
+        [Convert]::ToBase64String((Read-Bytes -Root $Root -Name 'docs\en\tweaks\a.md')) | Should -BeExactly $Before
+    }
+
+    It 'przyjmuje ścieżkę bezwzględną' {
+        $Polish = "# b – Tytuł`n"
+        $Root = New-DocsRepo -Files @{
+            'docs\apps\README.md'    = $Polish
+            'docs\en\apps\README.md' = "# b – Title`n"
+        }
+        $Absolute = Join-Path -Path $Root -ChildPath 'docs\en\apps\README.md'
+        $Result = Invoke-Stamp -Root $Root -Path $Absolute
+        $Result.Code | Should -Be 0
+        $Text = $script:Utf8NoBom.GetString((Read-Bytes -Root $Root -Name 'docs\en\apps\README.md'))
+        $Text | Should -BeExactly "<!-- source: $($script:Docs)apps/README.md sha256: $(Get-ExpectedHash -Text $Polish) -->`n`n# b – Title`n"
+    }
+
     It 'brak polskiego źródła daje kod 2 i nie zmienia pliku' {
         $Root = New-DocsRepo -Files @{ 'docs\en\tweaks\sierota.md' = "# sierota – Orphan`n" }
         $Before = [Convert]::ToBase64String((Read-Bytes -Root $Root -Name 'docs\en\tweaks\sierota.md'))
