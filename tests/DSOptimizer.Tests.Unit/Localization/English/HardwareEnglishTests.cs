@@ -595,7 +595,7 @@ public class HardwareEnglishTests
                 Build(Lenovo() with { Product = Reading<PrepProduct>.Done(new PrepProduct(null, null, null)) }),
                 PrepStepKind.Chipset);
             Assert.Equal(new[] { "Processor = Unknown" }, Lines(unknown));
-            Assert.Equal("Chipset drivers will come from Windows Update.", unknown.Note);
+            Assert.Equal("Windows Update will install the chipset drivers.", unknown.Note);
         }
     }
 

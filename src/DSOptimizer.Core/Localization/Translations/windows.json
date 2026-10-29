@@ -11,7 +11,7 @@
     },
     {
       "pl": "Skrypt odczytu AppX zakończył się kodem {0}.",
-      "en": "The AppX read script exited with code {0}."
+      "en": "The AppX read script ended with code {0}."
     },
     {
       "pl": "Skrypt odczytu AppX nie zwrócił wyniku.",
@@ -23,7 +23,7 @@
     },
     {
       "pl": "Nie ma pliku do sprawdzenia podpisu.",
-      "en": "The file to check the signature of doesn't exist."
+      "en": "The file whose signature should be checked doesn't exist."
     },
     {
       "pl": "brak danych podpisującego",
@@ -51,7 +51,7 @@
     },
     {
       "pl": "Nieoczekiwany błąd wykonania ({0} {1}).",
-      "en": "Unexpected error while running ({0} {1})."
+      "en": "Unexpected error while running {0} {1}."
     },
     {
       "pl": "Brak SID bieżącego procesu.",
@@ -103,7 +103,7 @@
     },
     {
       "pl": "Journal był uszkodzony ({0}). Przeniesiono go do {1} i utworzono nowy.",
-      "en": "The journal was damaged ({0}). It was moved to {1} and a new one was created."
+      "en": "The journal was corrupted ({0}). It was moved to {1} and a new one was created."
     },
     {
       "pl": "Nie można odczytać journala {0}: {1}",
@@ -171,7 +171,7 @@
     },
     {
       "pl": "Plik ustawień {0} jest uszkodzony ({1}). Używam ustawień domyślnych; plik zostanie nadpisany przy następnej zmianie.",
-      "en": "The settings file {0} is damaged ({1}). Using default settings; the file will be overwritten on the next change."
+      "en": "The settings file {0} is corrupted ({1}). Using default settings; the file will be overwritten on the next change."
     },
     {
       "pl": "Nie można odczytać pliku ustawień {0}: {1}. Używam ustawień domyślnych.",
@@ -207,7 +207,7 @@
     },
     {
       "pl": "folder jest linkiem (junction albo dowiązanie symboliczne) – program nie wchodzi do jego celu",
-      "en": "the folder is a link (junction or symbolic link) – the program doesn't go into its target"
+      "en": "the folder is a link (junction or symbolic link) – the program doesn't follow it to its target"
     },
     {
       "pl": "Brak dostępu do {0}.",
@@ -275,7 +275,7 @@
     },
     {
       "pl": "Ponowne uruchomienie nie powiodło się: {0}",
-      "en": "Program restart failed: {0}"
+      "en": "Couldn't restart the program: {0}"
     },
     {
       "pl": "Nie można utworzyć potoku: {0}",
@@ -355,7 +355,7 @@
     },
     {
       "pl": "Nie udało się uruchomić ponownie komputera: shutdown.exe zakończył się kodem {0}.",
-      "en": "Couldn't restart the computer: shutdown.exe exited with code {0}."
+      "en": "Couldn't restart the computer: shutdown.exe ended with code {0}."
     },
     {
       "pl": "Nie udało się uruchomić shutdown.exe.",

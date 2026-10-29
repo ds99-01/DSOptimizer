@@ -217,11 +217,11 @@ public class CoreEnglishTests
             Assert.Equal("The settings file is empty.", Assert.Throws<SettingsFormatException>(() => AppSettingsSerializer.Deserialize(" ")).Message);
 
             var damaged = Assert.Throws<SettingsFormatException>(() => AppSettingsSerializer.Deserialize("{"));
-            Assert.Equal("Damaged settings file: " + damaged.InnerException!.Message, damaged.Message);
+            Assert.Equal("The settings file is corrupted: " + damaged.InnerException!.Message, damaged.Message);
 
             var newer = Assert.Throws<SettingsFormatException>(() => AppSettingsSerializer.Deserialize("{\"schemaVersion\": 99}"));
             Assert.Equal(
-                $"The settings file has a newer format version (schemaVersion 99 – a newer program version); this version supports {AppSettings.SchemaVersion}.",
+                $"The settings file has a newer format version (schemaVersion 99 – from a newer version of the program); this version supports {AppSettings.SchemaVersion}.",
                 newer.Message);
         }
     }

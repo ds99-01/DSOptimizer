@@ -215,7 +215,7 @@
     },
     {
       "pl": "Nieprawidłowy identyfikator aplikacji '{0}': po winget: musi być pełny identyfikator pakietu, nie skrócony „…” ani pusty.",
-      "en": "Invalid app identifier '{0}': after winget: it must be the full package identifier, not shortened with \"…\" and not empty."
+      "en": "Invalid app ID '{0}': after \"winget:\" there must be the full package ID, not one shortened with \"…\" and not an empty one."
     },
     {
       "pl": "Nie ma pozycji '{0}' na liście aplikacji do instalacji ({1}).",
@@ -271,7 +271,7 @@
     },
     {
       "pl": "Nieoczekiwany błąd odczytu journala przy sprawdzaniu konfliktów {0}.",
-      "en": "Unexpected error reading the journal while checking conflicts for {0}."
+      "en": "Unexpected error while reading the journal to check conflicts for {0}."
     },
     {
       "pl": "Nie udało się odczytać journala – zmiana nie została wykonana: {0}",
@@ -439,7 +439,7 @@
     },
     {
       "pl": "Nieoczekiwany błąd odczytu journala przy {0}.",
-      "en": "Unexpected error reading the journal for {0}."
+      "en": "Unexpected error while reading the journal for {0}."
     },
     {
       "pl": "Nie udało się odczytać journala: {0}",
@@ -475,7 +475,7 @@
     },
     {
       "pl": "Undo (domyślne) {0} nie powiodło się.",
-      "en": "Couldn't undo {0} (defaults)."
+      "en": "Couldn't undo {0} to defaults."
     },
     {
       "pl": "{0}: pominięte (stan nieznany)",
@@ -495,7 +495,7 @@
     },
     {
       "pl": "Uszkodzony journal: {0}",
-      "en": "Damaged journal: {0}"
+      "en": "The journal is corrupted: {0}"
     },
     {
       "pl": "Pusty dokument journala.",
@@ -695,7 +695,7 @@
     },
     {
       "pl": "Uszkodzony plik ustawień: {0}",
-      "en": "Damaged settings file: {0}"
+      "en": "The settings file is corrupted: {0}"
     },
     {
       "pl": "Plik ustawień musi być obiektem JSON.",
@@ -715,7 +715,7 @@
     },
     {
       "pl": "Plik ustawień ma nowszą wersję formatu (schemaVersion {0} – nowsza wersja programu); ta wersja obsługuje {1}.",
-      "en": "The settings file has a newer format version (schemaVersion {0} – a newer program version); this version supports {1}."
+      "en": "The settings file has a newer format version (schemaVersion {0} – from a newer version of the program); this version supports {1}."
     },
     {
       "pl": "Nieobsługiwana wersja pliku ustawień: {0}.",

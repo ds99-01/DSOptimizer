@@ -106,7 +106,7 @@ public class WindowsEnglishTests
         }
 
         var corrupt = Assert.Single(Directory.GetFiles(temp.Sub(@"app\journal"), "journal.corrupt-*.json"));
-        Assert.StartsWith("The journal was damaged (", result.Warning, StringComparison.Ordinal);
+        Assert.StartsWith("The journal was corrupted (", result.Warning, StringComparison.Ordinal);
         Assert.EndsWith($"). It was moved to {corrupt} and a new one was created.", result.Warning, StringComparison.Ordinal);
     }
 
@@ -162,7 +162,7 @@ public class WindowsEnglishTests
             result = store.Load();
         }
 
-        Assert.StartsWith($"The settings file {store.FilePath} is damaged (", result.Warning, StringComparison.Ordinal);
+        Assert.StartsWith($"The settings file {store.FilePath} is corrupted (", result.Warning, StringComparison.Ordinal);
         Assert.EndsWith("). Using default settings; the file will be overwritten on the next change.", result.Warning, StringComparison.Ordinal);
     }
 
@@ -333,7 +333,7 @@ public class WindowsEnglishTests
         }
 
         Assert.Equal(
-            new[] { @"Info Startup: Restarting the program: C:\x\DSOptimizer.exe", "Warn Startup: Program restart failed: Access is denied" },
+            new[] { @"Info Startup: Restarting the program: C:\x\DSOptimizer.exe", "Warn Startup: Couldn't restart the program: Access is denied" },
             events);
     }
 
@@ -349,12 +349,12 @@ public class WindowsEnglishTests
             ex = Assert.Throws<OperationException>(() => restarter.Restart());
         }
 
-        Assert.Equal("Couldn't restart the computer: shutdown.exe exited with code 5.", ex.Message);
+        Assert.Equal("Couldn't restart the computer: shutdown.exe ended with code 5.", ex.Message);
         Assert.Equal(
             new[]
             {
                 "Info Restart: shutdown.exe /r /t 0 requested by the user.",
-                "Info Restart: Couldn't restart the computer: shutdown.exe exited with code 5.",
+                "Info Restart: Couldn't restart the computer: shutdown.exe ended with code 5.",
             },
             events);
     }
@@ -370,7 +370,7 @@ public class WindowsEnglishTests
             ex = Assert.Throws<InvalidOperationException>(() => reader.Read("S-1-5-21-0-0-0-1000"));
         }
 
-        Assert.Equal("The AppX read script exited with code 3.", ex.Message);
+        Assert.Equal("The AppX read script ended with code 3.", ex.Message);
     }
 
     /// <summary>Błąd formatu <c>--apps-catalog</c>: komunikat po angielsku, fabryka usług (winget) nigdy nie jest wołana.</summary>
