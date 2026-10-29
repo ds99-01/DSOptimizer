@@ -9,7 +9,7 @@ How to read the tables:
 
 - Terms are shown as they appear in the program. Values like `{0}` or `N` are placeholders.
 - `code spans` mark texts whose leading or trailing spaces matter – keep them exactly.
-- Entries marked **do audytu (Etap 5)** are uncertain and must be checked in the translation audit before release.
+- Entries ending with "unverified – …" have no Microsoft evidence; the note gives the best trace (checked in the Stage 5 audit, 2026-10-29).
 - Windows names link to English Microsoft documentation (Microsoft Learn or Microsoft Support) as evidence.
 
 ## Style rules
@@ -35,7 +35,8 @@ How to read the tables:
    texts).
 7. **Spelling: US English** (Minimize, color, optimize), matching Windows names and Microsoft documentation. Dates and
    numbers use the British format (28/10/2026, decimal point) – that is handled by the program's culture setting,
-   not by the translation.
+   not by the translation. Exception: the Specification (screen and report) shows dates as ISO `yyyy-MM-dd` in both
+   languages, like the report file name.
 8. **Numbers and plurals:** "0 items", "1 item", "2 items" – the number always comes first, the noun is plural for
    everything except 1.
 9. **Windows names exactly as in English Windows 11.** Check the evidence column below; do not invent new names for
@@ -44,6 +45,7 @@ How to read the tables:
 11. **"Sign in" / "signed-in account"**, not "log in" / "logged-in", for Windows accounts.
 12. **Checkboxes:** "checkbox" (one word); "select" and "clear" for checking and unchecking.
     Source: [Microsoft Style Guide – check, checkbox, check mark](https://learn.microsoft.com/en-us/style-guide/a-z-word-list-term-collections/c/check-checkbox-check-mark).
+13. **No serial comma** ("registry, service or script"), as in the current tables; keep it that way in new texts.
 
 ## Key decisions
 
@@ -58,7 +60,7 @@ How to read the tables:
 - **"Szczegóły techniczne" = Technical details.**
 - **"Wymagany restart." = Restart required.** "Restart" (not "reboot") as in Windows.
 - **"Uruchom ponownie teraz" = Restart now** – one shared text for restarting the program (language change) and the
-  computer (restart banner). It is already used for the program restart in the language settings.
+  computer (batch result window); the restart banner button is "Uruchom ponownie" = Restart (`MainWindow.xaml:455`). It is already used for the program restart in the language settings.
 - **States vs results.** The state of an item ("Zastosowane") and the result of an operation ("Zastosowano") both
   become "Applied" – English has no such distinction and both read correctly in context.
 - **"Dziennik" = Log.** The on-screen log panel; the file on disk is the "log file".
@@ -117,14 +119,14 @@ How to read the tables:
 | Anuluj | Cancel | |
 | Zamknij | Close | |
 | Minimalizuj | Minimize | US spelling (Style rule 7) |
-| Maksymalizuj / Przywróć | Maximize / Restore | Window caption buttons (tooltip and screen reader name). **do audytu (Etap 5)** – Windows 11 itself says "Restore Down" |
+| Maksymalizuj / Przywróć | Maximize / Restore down | Window caption buttons (tooltip and screen reader name). [Window Management – Title bar controls](https://learn.microsoft.com/en-us/windows/win32/uxguide/win-window-mgt) ("Maximize/Restore down"); sentence case per Style rule 2. |
 | Kopiuj ścieżkę / Kopiuj cały dziennik / Otwórz lokalizację pliku | Copy path / Copy entire log / Open file location | Log panel context menu and link buttons |
 | Wyczyść (Esc) / Wyczyść wyszukiwanie | Clear (Esc) / Clear search | Search box clear button (tooltip / screen reader name) |
 | Kopiuj / Kopiuj wszystko / Kopiuj wynik | Copy / Copy all / Copy result | |
 | Zapisz raport | Save report | Specification page |
 | Odśwież / Odśwież stan / Odśwież listę | Refresh / Refresh status / Refresh list | |
 | Odznacz wszystko | Clear selection | "Clear" per Style rule 12 |
-| Pokaż wszystkie / Pokaż które | Show all / Show which | |
+| Pokaż wszystkie / Pokaż które | Show all / Show which ones | "Show which ones" = restart banner link to Change history |
 | Tak, kontynuuj | Yes, continue | |
 | Szukaj / Szukaj też w winget | Search / Also search winget | |
 | Przejdź do: {0} | Go to: {0} | E.g. "Go to: Apps", "Go to: Repair winget" |
@@ -159,7 +161,7 @@ How to read the tables:
 | Zainstalowano / Już zainstalowane | Installed / Already installed | Results (`Installed`, `AlreadyInstalled`) |
 | Zainstalowano (zgłoszone przez winget) | Installed (reported by winget) | Result (`InstalledUnverified`) |
 | Nie potwierdzono | Not confirmed | Result (`NotConfirmed`); also as a prefix: `Nie potwierdzono – ` → `Not confirmed – ` |
-| Nie wykonano | Not done | History state and prefix of install failures: `Nie wykonano – ` → `Not done – `. **do audytu (Etap 5)** – check that it reads well before every reason |
+| Nie wykonano | Not done | History state and prefix of install failures: `Nie wykonano – ` → `Not done – `. Checked in Stage 5 before every reason (38 entries); own program term, not a Windows name. |
 | Aktywna / Cofnięta / Przerwana | Active / Undone / Interrupted | Change history row states |
 | Usunięta / Zainstalowana | Removed / Installed | Change history row states (apps) |
 | Czeka na restart / Czeka na ponowne uruchomienie. | Waiting for restart / Waiting for a restart. | |
@@ -167,7 +169,7 @@ How to read the tables:
 | Zakończono / Zakończono z błędem | Finished / Finished with an error | |
 | bezpieczne / ostrożnie / eksperymentalne | safe / caution / experimental | Risk levels, lower case because they are inserted after "Risk: " |
 | Ryzyko / Ryzyko: {0} | Risk / Risk: {0} | Column header, tooltip |
-| Wszystkie / Bez eksperymentalnych / Tylko bezpieczne | All / No experimental / Safe only | Risk filter |
+| Wszystkie / Bez eksperymentalnych / Tylko bezpieczne | All / Hide experimental / Safe only | Risk filter |
 | [Błąd] / [Ostrzeżenie] / [Info] | [Error] / [Warning] / [Info] | Log line levels |
 | Zastosowane i sprawdzone / Cofnięte i sprawdzone / Usunięte i sprawdzone | Applied and verified / Undone and verified / Removed and verified | Batch step status; "sprawdzone/sprawdzono" = verified (read back after the change) |
 | Było już zastosowane / Była już zainstalowana / Nie było już na komputerze | Was already applied / Was already installed / Was no longer on the computer | Batch step status |
@@ -215,7 +217,7 @@ How to read the tables:
 | Ukryte przez filtr: {0} | Hidden by the filter: {0} | Note under the list |
 | Skopiowano adres / Skopiowano ścieżkę | Address copied / Path copied | Log lines after copying to the clipboard |
 | Nieoczekiwany błąd | Unexpected error | Log and result messages |
-| journal | journal | The file behind Change history that keeps the state from before each change; a technical word kept as in the Polish engine messages ("Couldn't read the journal: {0}"). **do audytu (Etap 5)** |
+| journal | journal | The file behind Change history that keeps the state from before each change; a technical word kept as in the Polish engine messages ("Couldn't read the journal: {0}"). Not "change journal" (that is the NTFS USN change journal). |
 | usługa / typ startu | service / startup type | Windows service in engine messages and the change preview ("Service SysMain", "startup type"), as in Services |
 | Anulowano | Canceled | US spelling, as in "Batch canceled" |
 | detekcja (stanu) | status check | "Detekcja … przerwana" → "Status check of … was interrupted"; same word as in "Unknown (check failed)" |
@@ -225,22 +227,22 @@ How to read the tables:
 | nic nie zmieniono | nothing was changed | Common ending after " – " |
 | Trwa inna operacja – spróbuj za chwilę. | Another operation is in progress – try again in a moment. | |
 | Brak wyników / Nic nie pasuje do „{0}”. | No results / Nothing matches "{0}". | |
-| konto / zalogowane konto / wszystkie konta | account / signed-in account / all accounts | Style rule 11 |
+| konto / zalogowane konto / wszystkie konta | account / signed-in account / all accounts | Style rule 11; "bieżące konto" → signed-in account ("for the signed-in account"; not "current account") |
 | cały komputer | whole computer | Change history "Account" column |
-| obraz systemu | system image | Store apps provisioned for new accounts. **do audytu (Etap 5)** |
+| obraz systemu | Windows image | Store apps provisioned for new accounts, as in [Remove-AppxProvisionedPackage](https://learn.microsoft.com/en-us/powershell/module/dism/remove-appxprovisionedpackage) ("removes app packages (.appx) from a Windows image"). Not "system image": in English Windows that is a backup (System Image Recovery). |
 | deinstalator / instalator | uninstaller / installer | "manufacturer's uninstaller" |
 | cichy deinstalator / deinstalator producenta | silent uninstaller / manufacturer's uninstaller | Program removal mode (no window / the program's own window) |
 | wersja próbna | trial version | App group detail: "Suggested for removal (trial version)" |
 | Odczyt listy: {0}, {1} | List read: {0}, {1} | Apps page subtitle: "List read: 14:05, 21 apps" |
-| wydawca / producent / producent komputera | publisher / manufacturer / computer manufacturer | |
+| wydawca / producent / producent komputera | publisher / manufacturer / computer manufacturer | "producent sprzętu" → hardware manufacturer (not "maker") |
 | sterownik / sterowniki chipsetu / karta graficzna | driver / chipset drivers / graphics card | "Devices without a driver" (README) |
 | Numer seryjny / Producent i model | Serial number / Manufacturer and model | Specification and Prep |
 | Maszyna wirtualna | Virtual machine | |
 | źródło winget | winget source | "the official winget source (Microsoft)" |
-| Zdalna pomoc | Remote support | Install group (RustDesk). **do audytu (Etap 5)** – not to be confused with Windows Quick Assist |
+| Zdalna pomoc | Remote support | Install group (RustDesk). Doesn't collide with Windows names: [Solve PC problems over a remote connection](https://support.microsoft.com/en-us/windows/solve-pc-problems-over-a-remote-connection-b077e31a-16f4-2529-1a47-21f6a9040bf3) uses Quick Assist and Windows Remote Assistance. |
 | Przeglądarki | Browsers | Install group |
 | Komunikatory / Multimedia / Dokumenty / Gry / Środowiska uruchomieniowe | Messaging / Multimedia / Documents / Games / Runtimes | Install groups (with Browsers, Tools, Remote support) |
-| instalacja (proces) | installation | "The previous installation is still running"; the page and log component stay "Install" |
+| instalacja (proces) | installation | "The previous installation is still running"; also the Change history state and event: "Installation not confirmed", "Installation started"; only the page, the log component and the entry kind "App install" use "Install" |
 | Pobieranie / Instalowanie / Sprawdzanie instalacji | Downloading / Installing / Verifying the installation | Install batch stages; "Pobieranie (z GitHuba)" = "Downloading (from GitHub)", "Sprawdzanie podpisu" = "Checking the signature" |
 | Identyfikator winget | winget ID | Confirmation window fact; "nieprawidłowy identyfikator winget" = "invalid winget ID" |
 | `Log winget: ` / `Log MSI: ` | `winget log: ` / `MSI log: ` | Log path marker after a result ("… Code 0x8A150010. winget log: C:\…"); the program recognizes both the English and the Polish marker |
@@ -258,7 +260,7 @@ How to read the tables:
 | polityki Windows Update / blokady aktualizacji | Windows Update policies / update blocks | Policy values under `Policies\Microsoft\Windows\WindowsUpdate` |
 | Pliki tymczasowe systemu / Pliki tymczasowe konta / Pobrane aktualizacje / Miniatury konta | System temporary files / Account temporary files / Downloaded updates / Account thumbnails | Disk cleanup step names (the program's own labels) |
 | program obsługi (Oczyszczania dysku) | handler | Disk Cleanup handler; the handler name "Previous Installations" is not translated |
-| folder pobrań / wydanie (GitHub) | downloads folder / release | WinUtil and RustDesk downloads; "test release (prerelease)", "release draft" |
+| folder pobrań / wydanie / wydanie testowe / szkic (GitHub) | downloads folder / release / pre-release / draft release | WinUtil and RustDesk downloads; GitHub UI: "This is a pre-release", "Save draft" ([Managing releases in a repository](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository)) |
 | Sprawdzenie | Check | Step name after Disk Cleanup in the Windows.old repair |
 | DSOptimizer – punkt ręczny | DSOptimizer – manual restore point | Description of the restore point created on demand; shown by System Restore |
 | Zresetuj Windows Update i usuń blokady | Reset Windows Update and remove blocks | Repair item title quoted in the Windows Update reset result. |
@@ -274,7 +276,7 @@ How to read the tables:
 | zdrowy / ostrzeżenie / uszkodzony / nieznany | healthy / warning / unhealthy / unknown | Disk health after "Status: ", as in Windows storage health (Healthy / Warning / Unhealthy) |
 | połączona / rozłączona | connected / disconnected | Network adapter |
 | zaszyfrowany / niezaszyfrowany / szyfrowanie w toku / szyfrowanie wstrzymane / ochrona włączona | encrypted / not encrypted / encryption in progress / encryption paused / protection on | BitLocker per drive (also "decryption …", "protection off") |
-| Aktywowany / Nieaktywowany / Okres próbny / Wymaga aktywacji | Active / Not active / Grace period / Activation required | Windows activation state, as in Settings › System › Activation ("Active"); "Okres próbny" = license grace period. **do audytu (Etap 5)** |
+| Aktywowany / Nieaktywowany / Okres próbny / Wymaga aktywacji | Active / Not active / Grace period / Activation required | Windows activation state, as in Settings › System › Activation ("Active"); "Okres próbny" = license grace period. unverified – "Active"/"Not active" only in Microsoft Q&A ([5982374](https://learn.microsoft.com/en-us/answers/questions/5982374)); [Activate Windows](https://support.microsoft.com/en-us/windows/activation/activate-windows) shows the older "Windows is activated / not activated"; "Grace period" and "Activation required" are program labels for LicenseStatus values. |
 | Komputer / Opcjonalne aktualizacje sterowników / Sterowniki chipsetu / Grafika / Wsparcie producenta / Urządzenia bez sterownika | Computer / Optional driver updates / Chipset drivers / Graphics / Manufacturer support / Devices without a driver | Preparation steps 1 and 3–7 (step 2 is Windows Update); English README |
 | Strona sterowników {0} / Strona wsparcia {0} / Karta {0} | {0} drivers page / {0} support page / {0} card | "Intel drivers page", "Lenovo support page", "NVIDIA card" |
 | Szukaj sterownika / Szukaj strony wsparcia / Szukaj w Google | Search for a driver / Search for a support page / Search Google | Preparation links |
@@ -288,7 +290,7 @@ How to read the tables:
 | Ponowne uruchomienie programu: {0} | Restarting the program: {0} | Startup log line before the program restarts itself |
 | Ostatnie sprawdzenie: {0} | Last check: {0} | Category subtitle after a status check: "Last check: 14:05" (24-hour time in both languages) |
 | Akcje (sekcja listy) | Actions | Section header in the item list (actions and panels), next to "Ustawienia" = Settings (see Pages and menu) |
-| Identyfikator | ID | Detail panel label (item ID) |
+| Identyfikator / identyfikator aplikacji / identyfikator pakietu | ID / app ID / package ID | Detail panel label and command-line messages ("Invalid app ID '{0}'", "separate IDs with a comma"); `<id>` stays lower case in the syntax line |
 | Dostępne / Niedostępne / Nie dotyczy | Available / Not available / Not applicable | Detail panel "Undo" values |
 | Administrator | Administrator | Brand bar badge: the program runs as administrator |
 | {0}, użytkownik {1} | {0}, user {1} | Brand bar: "PC-1, Windows 11 Pro 26100.1, user Dawid" |
@@ -304,6 +306,18 @@ How to read the tables:
 | Autor / Licencja / Wersja {0} | Author / License / Version {0} | "About" column in Settings |
 | Otwórz github.com/… | Open github.com/… | Screen reader name of the repository link |
 | grafitowy (pasek marki, menu) | graphite | Theme hint: "The brand bar and the menu stay graphite." |
+| uszkodzony (plik: journal, ustawienia, baza, pliki Windows) | corrupted | [Use the System File Checker tool to repair missing or corrupted system files](https://support.microsoft.com/en-us/windows/experience/backup-recovery/use-the-system-file-checker-tool-to-repair-missing-or-corrupted-system-files); SFC/DISM result messages keep "corrupt files" / "corruption" as the tools print them; disk health "uszkodzony" stays "unhealthy" |
+| zakończył się kodem {0} | ended with code {0} | One phrase for all exit codes (scripts, winget, msiexec, shutdown.exe, reg export, Disk Cleanup); not "exited" |
+| Pobrano i sprawdzono | Downloaded and verified | WinUtil and RustDesk downloads; "sprawdzone" = verified |
+| nie przeszedł sprawdzenia | failed the check | Downloaded file / RustDesk release |
+| zakończył(o) się bez błędu | finished without errors | DISM, Delivery Optimization, package registration; not "without an error" |
+| podpis innego wydawcy | signed by another publisher | RustDesk refusal reason, next to "no publisher signature" |
+| Usługa … jest wyłączona (Disabled) | Service … has startup type Disabled | Not "is disabled (Disabled)" |
+| dysk C: / na dysku C: | the C: drive / on the C: drive | One form in the whole program; "the C: volume" only in technical details (row "wolumin / dysk / partycja") |
+| np. | for example / such as | Not "e.g." |
+| z uprawnieniami administratora / jako administrator | with administrator rights / as administrator | Not "administrator permissions", not "admin" (Style rule 1) |
+| pozycja (wpis w menu Windows albo w wyniku netsh) | entry | "Take ownership" entry, "End task" entry, "one entry protected by the system"; "item" only for catalog items and app-list items |
+| stan częściowy (w opisach pozycji) | "Partially applied" | Refer to the Status label |
 
 ## Catalog
 
@@ -341,7 +355,7 @@ Recurring sentences: "Otwiera panel systemowy Windows: klasyczne okno „…”"
 
 | Polski | English | Notes/source |
 |---|---|---|
-| Efekty wizualne (Opcje wydajności) | Visual effects (Performance Options) | "Visual Effects" tab of the Performance Options window (SystemPropertiesPerformance.exe); [Tips to improve PC performance in Windows](https://support.microsoft.com/en-us/windows/experience/performance-optimization/tips-to-improve-pc-performance-in-windows) ("On the Visual Effects tab…"). Window title "Performance Options": no official page found, only [Microsoft Q&A](https://learn.microsoft.com/en-us/answers/questions/2184811/how-to-change-performance-settings-in-gpo). **do audytu (Etap 5)** |
+| Efekty wizualne (Opcje wydajności) | Visual effects (Performance Options) | "Visual Effects" tab of the Performance Options window (SystemPropertiesPerformance.exe); [Tips to improve PC performance in Windows](https://support.microsoft.com/en-us/windows/experience/performance-optimization/tips-to-improve-pc-performance-in-windows) ("On the Visual Effects tab…"). Window title "Performance Options": [Mitigate threats by using Windows 10 security features](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/overview-of-threat-mitigations-in-windows-10) ("In **Performance Options**, select the **Data Execution Prevention** tab"). |
 | Opcje zasilania | Power Options | [Canonical Names of Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names); [Automatic maintenance](https://learn.microsoft.com/en-us/windows/win32/taskschd/task-maintenence) ("Control Panel > Hardware and Sound > Power Options") |
 | Połączenia sieciowe | Network Connections | `control.exe netconnections` "Displays the Network Connections folder"; [Executing Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/executing-control-panel-items) |
 | Zarządzanie komputerem | Computer Management | See "Windows names" |
@@ -352,7 +366,7 @@ Recurring sentences: "Otwiera panel systemowy Windows: klasyczne okno „…”"
 | Region | Region | Same text in both languages; [Canonical Names of Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names) (`Microsoft.RegionAndLanguage` opens the Region item) |
 | Zabezpieczenia i konserwacja | Security and Maintenance | [Automatic maintenance](https://learn.microsoft.com/en-us/windows/win32/taskschd/task-maintenence) ("Control Panel > System and Security > Security and Maintenance") |
 | Dźwięk | Sound | Shared with the Specification key "Sound"; [Canonical Names of Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names) (`Microsoft.Sound`) |
-| Właściwości systemu / karta „Nazwa komputera” | System Properties / "Computer Name" tab | Tab opened by SystemPropertiesComputerName.exe ([Executing Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/executing-control-panel-items)); tab label only in [Microsoft Q&A](https://learn.microsoft.com/en-us/answers/questions/6008607/renaming-my-computer). **do audytu (Etap 5)** |
+| Właściwości systemu / karta „Nazwa komputera” | System Properties / "Computer Name" tab | Tab opened by SystemPropertiesComputerName.exe ([Executing Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/executing-control-panel-items)); tab label: [Join a computer to a domain](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/join-computer-to-domain) ("under the **Computer Name** tab, select **Change**"). |
 | Data i godzina | Date and Time | [Canonical Names of Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names) (`Microsoft.DateAndTime`) |
 | Zapora Windows Defender | Windows Defender Firewall | See "Windows names" (same audit note) |
 | Przywracanie systemu | System Restore | See "Windows names"; the panel opens the System Restore wizard (rstrui.exe) |
@@ -369,27 +383,27 @@ separator of the Polish text (">"), and use the English page names exactly.
 | Personalizacja > Pasek zadań / Personalizacja > Start / Personalizacja > Tło | Personalization > Taskbar / Personalization > Start / Personalization > Background | Settings pages; "Settings > Personalization > Background" in the Windows spotlight warning |
 | Widżety | Widgets | Taskbar toggle and Win+W board |
 | Prywatność > Wyszukaj | Privacy & security > Search | Settings page; the English text uses the full page name |
-| Zezwalaj aplikacjom wyszukiwania na wyświetlanie wyników | Let search apps show results | Toggle on Privacy & security > Search. **do audytu (Etap 5)** – no Microsoft page found with this label; literal match of the Polish Windows label |
+| Zezwalaj aplikacjom wyszukiwania na wyświetlanie wyników | Let search apps show results | Toggle on Privacy & security > Search. unverified – no Microsoft page with this label; literal match of the Polish 26H2 label; [Windows Search and privacy](https://support.microsoft.com/en-us/windows/privacy/windows-search-and-privacy) still says "Privacy & security > Search permissions" (checked 2026-10-29). |
 | Rekomendacje i oferty w ustawieniach | Recommendations and offers in Settings | Privacy & security > Recommendations & offers; [Privacy settings for Recommendations & offers in Windows 11](https://support.microsoft.com/windows/807608ee-3de2-4498-8e7c-eb10d655567f) |
 | Spersonalizowane oferty | Personalized offers | Replaces "Tailored experiences"; same source and [Diagnostics, feedback, and privacy in Windows](https://support.microsoft.com/en-us/windows/diagnostics-feedback-and-privacy-in-windows-28808a2b-a31b-dd73-dcd3-4559a5199319) |
 | identyfikator reklamowy | advertising ID | Same source as "Recommendations and offers in Settings" |
-| Pokaż powiadomienia w ustawieniach | Show notifications in Settings | Account messages in the Settings app. **do audytu (Etap 5)** – only third-party evidence ([Eleven Forum](https://www.elevenforum.com/t/enable-or-disable-show-notifications-in-settings-app-in-windows-11.25835)) |
-| Uzyskaj porady i sugestie podczas korzystania z systemu Windows | Get tips and suggestions when using Windows | Checkbox under System > Notifications > Additional settings; [Notifications and Do Not Disturb in Windows](https://support.microsoft.com/help/4014934). **do audytu (Etap 5)** – some builds say "…when I use Windows" |
+| Pokaż powiadomienia w ustawieniach | Show notifications in Settings | Account messages in the Settings app. unverified – only [Eleven Forum](https://www.elevenforum.com/t/enable-or-disable-show-notifications-in-settings-app-in-windows-11.25835); not on [Privacy settings for Recommendations & offers](https://support.microsoft.com/windows/807608ee-3de2-4498-8e7c-eb10d655567f). |
+| Uzyskaj porady i sugestie podczas korzystania z systemu Windows | Get tips and suggestions when using Windows | Checkbox under System > Notifications > Additional settings; [Notifications and Do Not Disturb in Windows](https://support.microsoft.com/help/4014934). |
 | zalecenia (menu Start) / sekcja „Proponowane” | recommendations / "Recommended" section | Start menu section name "Recommended" |
 | Windows Spotlight / W centrum uwagi Windows / Obraz | Windows spotlight / "Windows spotlight" / "Picture" | Background options in Personalization > Background; [Windows spotlight](https://learn.microsoft.com/en-us/windows/configuration/windows-spotlight/) |
-| Dowiedz się więcej o tym zdjęciu | Learn about this picture | Desktop icon added by Windows spotlight. **do audytu (Etap 5)** – third-party evidence only |
+| Dowiedz się więcej o tym zdjęciu | Learn about this picture | Desktop icon added by Windows spotlight. unverified – only Microsoft Q&A ([3923647](https://learn.microsoft.com/en-us/answers/questions/3923647/how-to-remove-learn-about-this-picture)). |
 | zdjęcia dnia | pictures of the day | Program's own description of Windows spotlight |
 | Prywatność i zabezpieczenia > Diagnostyka i opinie | Privacy & security > Diagnostics & feedback | [Diagnostics, feedback, and privacy in Windows](https://support.microsoft.com/en-us/windows/diagnostics-feedback-and-privacy-in-windows-28808a2b-a31b-dd73-dcd3-4559a5199319) |
 | Częstotliwość opinii | Feedback frequency | Same source |
 | dane diagnostyczne wymagane / opcjonalne | required / optional diagnostic data | Same source |
-| niektórymi ustawieniami zarządza organizacja | some settings are managed by your organization | Message in Settings when a policy is set (Windows: "Some of these settings are managed by your organization"). Variant on Privacy & security > Diagnostics & feedback: "Some settings are hidden or managed by your organization." ([Diagnostics, feedback, and privacy in Windows](https://support.microsoft.com/en-us/windows/diagnostics-feedback-and-privacy-in-windows-28808a2b-a31b-dd73-dcd3-4559a5199319)). **do audytu (Etap 5)** – which text 26H2 shows on which page |
-| Opcjonalne dane diagnostyczne (przełącznik) | Send optional diagnostic data | The documents avoid the label ("the optional diagnostic data toggle"). The Microsoft page above names only the "Diagnostic data" setting; no evidence of this label found. **do audytu (Etap 5)** |
-| Pokaż środowisko powitalne / Zaproponuj sposoby… | Show the Windows welcome experience / Suggest ways… | Old notification settings, absent in 26H2 (`privacy.welcome-experience`). English labels unverified. **do audytu (Etap 5)** |
-| migawki (Recall) | snapshots | Recall term. **do audytu (Etap 5)** – no Microsoft page checked |
+| niektórymi ustawieniami zarządza organizacja | some settings are managed by your organization | Message in Settings when a policy is set (Windows: "Some of these settings are managed by your organization"). Variant on Privacy & security > Diagnostics & feedback: "Some settings are hidden or managed by your organization." ([Diagnostics, feedback, and privacy in Windows](https://support.microsoft.com/en-us/windows/diagnostics-feedback-and-privacy-in-windows-28808a2b-a31b-dd73-dcd3-4559a5199319)). The program paraphrases the first message: [Delivery Optimization](https://support.microsoft.com/en-us/windows/deployment/updates-lifecycle/delivery-optimization-in-windows) ("Some of these settings are managed by your organization"). |
+| Opcjonalne dane diagnostyczne (przełącznik) | Send optional diagnostic data | Toggle on Privacy & security > Diagnostics & feedback: [Choosing your data settings](https://learn.microsoft.com/en-us/windows-insider/data-settings) ("Check the **Send optional diagnostic data** switch"). The documents may also describe it as "the optional diagnostic data toggle". |
+| Pokaż środowisko powitalne / Zaproponuj sposoby… | Show the Windows welcome experience / Suggest ways… | Old notification settings, absent in 26H2 (`privacy.welcome-experience`). First label = start of "Show the Windows welcome experience after updates and when signed in to show what's new and suggested" ([Notifications and Do Not Disturb](https://support.microsoft.com/en-us/windows/notifications-and-do-not-disturb-in-windows-feeca47f-0baf-5680-16f0-8801db1a8466)). Second: unverified – "Suggest ways to get the most out of Windows and finish setting up this device" only in Microsoft Q&A ([1464216](https://learn.microsoft.com/en-us/answers/questions/1464216)); absent in 26H2. |
+| migawki (Recall) | snapshots | Recall term: [Privacy and control over your Recall experience](https://support.microsoft.com/en-us/windows/privacy/privacy-and-control-over-your-recall-experience) (page "Recall & snapshots", toggle "Save snapshots"). |
 | Środowiska użytkownika połączonego i telemetria | Connected User Experiences and Telemetry | Display name of the DiagTrack service in Services |
 | typ startu Wyłączony | startup type Disabled | Services; "startup type" already in Concepts |
 | System > Zaawansowane | System > Advanced | Settings page (formerly For developers); [Advanced Windows Settings](https://learn.microsoft.com/en-us/windows/advanced-settings/) |
-| Zakończ zadanie | End task | Taskbar menu item and its toggle on System > Advanced (Microsoft Learn writes "End Task"; the program uses the menu item's sentence case). **do audytu (Etap 5)** |
+| Zakończ zadanie | End task / End Task | Taskbar menu entry "End task" ([KB5040527](https://support.microsoft.com/en-us/servicing/os/windows-11/2024/07/july-25-2024-kb5040527-os-builds-22621-3958-and-22631-3958-preview)); the toggle on Settings > System > Advanced is "End Task" ([Advanced Windows settings](https://learn.microsoft.com/en-us/windows/advanced-settings/)). |
 | nie skonfigurowano | Not Configured | Group Policy state |
 | izolacja rdzenia / integralność pamięci | Core isolation / memory integrity | Windows Security > Device security > Core isolation details; [Core isolation](https://support.microsoft.com/en-us/windows/core-isolation-e30ed737-17d8-42f3-a2a9-87521df09b78). "memory integrity" lower case mid-sentence, as in the item texts |
 | plik stronicowania | paging file | Windows memory term |
@@ -410,15 +424,15 @@ the Polish text sometimes uses a descriptive name, the English text then uses th
 | Narzędzie Wycinanie / Rejestrator dźwięku | Snipping Tool / Sound Recorder | [Sound Recorder app for Windows: FAQ](https://support.microsoft.com/en-us/windows/sound-recorder-app-for-windows-faq-5c208478-2141-bd07-fe1d-d6d1356c1d56) |
 | Terminal Windows / Instalator aplikacji (winget) | Windows Terminal / App Installer (winget) | App Installer: see "Windows names" |
 | Centrum opinii / Porady / Szybka pomoc / Pogoda | Feedback Hub / Tips / Quick Assist / Weather | Inbox apps (packages `WindowsFeedbackHub`, `Getstarted`, `QuickAssist`, `BingWeather`) |
-| Pasek gry / pasek gier (Game Bar) | Game Bar | Store app name: [Game Bar](https://apps.microsoft.com/detail/9NZKPSTSNW4P); package `Microsoft.XboxGamingOverlay`. Older builds showed "Xbox Game Bar". **do audytu (Etap 5)** |
-| Aplikacja Microsoft 365 (Office Hub) | Microsoft 365 Copilot app (Office Hub) | Package `Microsoft.MicrosoftOfficeHub`; Store listing: [Microsoft 365 Copilot](https://apps.microsoft.com/detail/9WZDNCRD29V9). **do audytu (Etap 5)** – the Polish source still uses the old name "Aplikacja Microsoft 365" |
+| Pasek gry / pasek gier (Game Bar) | Game Bar | Store app name: [Game Bar](https://apps.microsoft.com/detail/9NZKPSTSNW4P); package `Microsoft.XboxGamingOverlay`. Older builds showed "Xbox Game Bar". Store title of `Microsoft.XboxGamingOverlay` is "Game Bar" (checked 2026-10-29). |
+| Aplikacja Microsoft 365 (Office Hub) | Microsoft 365 Copilot app (Office Hub) | Package `Microsoft.MicrosoftOfficeHub`; Store listing: [Microsoft 365 Copilot](https://apps.microsoft.com/detail/9WZDNCRD29V9). The Polish source still uses the old name "Aplikacja Microsoft 365". |
 | Nowy Outlook dla Windows | the new Outlook for Windows | |
-| Zakupy w Microsoft Store | Microsoft Store purchases | Descriptive, as in Polish; Windows shows the package `Microsoft.StorePurchaseApp` as "Store Experience Host". **do audytu (Etap 5)** |
+| Zakupy w Microsoft Store | Store Experience Host (Microsoft Store purchases) | Package `Microsoft.StorePurchaseApp`; Store title "Store Experience Host" ([9NBLGGH4LS1F](https://apps.microsoft.com/detail/9NBLGGH4LS1F)); the description from the Polish source is kept in parentheses. |
 | Ulepszenia zgodności aplikacji | Windows Application Compatibility Enhancements | [Microsoft Store listing](https://apps.microsoft.com/detail/9PCSD6N03BKV) |
 | Podłączanie pulpitu zdalnego | Remote Desktop Connection | The Win32 entry name in English Windows (matched by the list as well) |
 | Rozszerzenie obrazów HEIF / WebP / RAW | HEIF Image Extension / WebP Image Extension / Raw Image Extension | Store names: [HEIF](https://apps.microsoft.com/detail/9PMMSR1CGPWG), [WebP](https://apps.microsoft.com/detail/9PG2DK419DRG), [Raw](https://apps.microsoft.com/detail/9NCTDW2W1BH8) |
 | Rozszerzenie wideo HEVC / AV1 / MPEG-2 / VP9 | HEVC Video Extensions / AV1 Video Extension / MPEG-2 Video Extension / VP9 Video Extensions | Store names: [HEVC](https://apps.microsoft.com/detail/9NMZLZ57R3T7), [AV1](https://apps.microsoft.com/detail/9MVZQVXJBQ9V), [MPEG-2](https://apps.microsoft.com/detail/9N95Q1ZZPMH4), [VP9](https://apps.microsoft.com/detail/9N4D0MSMP0PT) – singular/plural as Microsoft writes them |
-| Rozszerzenie kodera AVC | AVC Encoder Video Extension | Package `Microsoft.AVCEncoderVideoExtension`. **do audytu (Etap 5)** – Store page not reachable when checked |
+| Rozszerzenie kodera AVC | AVC Encoder Video Extension | Package `Microsoft.AVCEncoderVideoExtension`; Store page: [AVC Encoder Video Extension](https://apps.microsoft.com/detail/9PB0TRCNRHFX). |
 | Rozszerzenia multimediów sieci Web | Web Media Extensions | [Store listing](https://apps.microsoft.com/detail/9N5TDP8VCMHS) |
 | Biblioteki Visual C++ | Visual C++ libraries | Microsoft Visual C++ Redistributable |
 | Środowisko .NET 8 | .NET 8 runtime | |
@@ -451,10 +465,10 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | zasady grupy | Group Policy | Style rule 1 |
 | typ uruchamiania | startup type | Same as "typ startu" (Concepts) |
 | Kosz / folder Pobrane | Recycle Bin / Downloads folder | [Free up drive space in Windows](https://support.microsoft.com/en-us/windows/experience/storage-filemanagement/free-up-drive-space-in-windows) |
-| okno „Ochrona systemu” (Konfiguruj → Usuń) | "System Protection" window (Configure → Delete) | "Configure..." on the System Protection tab: [System Protection](https://support.microsoft.com/en-us/windows/experience/backup-recovery/system-protection); the "Delete" button of that dialog is not named on that page. **do audytu (Etap 5)** |
+| okno „Ochrona systemu” (Konfiguruj → Usuń) | "System Protection" window (Configure → Delete) | "Configure..." on the System Protection tab: [System Protection](https://support.microsoft.com/en-us/windows/experience/backup-recovery/system-protection); "Delete": unverified – only Microsoft Q&A ([2687012](https://learn.microsoft.com/en-us/answers/questions/2687012/unable-to-delete-system-restore-points-using-disk)). |
 | „Zatrzymaj” (w uwagach długich napraw) | "Stop" | Short form of the "Stop after this step" button, as the Polish warning shortens it |
 | program „optymalizujący” | "optimizing" program | |
-| komunikat, że ustawieniami zarządza organizacja | Windows says that your organization manages the settings | Windows shows "Some of these settings are managed by your organization". **do audytu (Etap 5)** |
+| komunikat, że ustawieniami zarządza organizacja | Windows says that your organization manages the settings | Windows shows "Some of these settings are managed by your organization" ([Delivery Optimization](https://support.microsoft.com/en-us/windows/deployment/updates-lifecycle/delivery-optimization-in-windows)); the program paraphrases it. |
 | Sklep (Microsoft Store) | the Store | Short form after "Microsoft Store" was named in the same text |
 | nośnik instalacyjny / nazwa odwrotna (DNS) | installation media / reverse name | Program texts (`catalog-repair.json`, `repair.json`): "their reverse names (*.in-addr.arpa…)" |
 | katalog Winsock / stos IP | Winsock catalog / IP stack | Network reset; `netsh winsock show catalog` |
@@ -474,7 +488,7 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | rezerwa miejsca (na aktualizacje) | reserved storage | [How reserved storage works in Windows](https://support.microsoft.com/en-gb/windows/how-reserved-storage-works-in-windows-5bc98443-0711-8038-4621-6a18ddc904f2) |
 | czas ostatniego dostępu | last access time | [fsutil behavior](https://learn.microsoft.com/windows-server/administration/windows-commands/fsutil-behavior) (`disablelastaccess`) |
 | krótkie nazwy plików 8.3 | 8.3 short file names | Same source (`disable8dot3`); "DOS-style short name" in plain sentences |
-| wolumin / dysk / partycja | volume / drive / partition | "the C: drive", "the C: volume" (technical details) |
+| wolumin / dysk / partycja | volume / drive / partition | "the C: drive", "the C: volume" (technical details only; elsewhere "the C: drive", see "dysk C:") |
 | udział sieciowy / dysk sieciowy / NAS | network share / network drive / NAS | "old NAS devices" for the plural |
 | logowanie gościa / podpisywanie SMB | guest logon / SMB signing | [Enable insecure guest logons in SMB2 and SMB3](https://learn.microsoft.com/en-us/windows-server/storage/file-server/enable-insecure-guest-logons-smb2-and-smb3) |
 | po stronie klienta | on the client | "Don't require SMB signing on the client" |
@@ -493,7 +507,7 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | powłoka (Eksploratora) / pulpit | shell / desktop | "the File Explorer shell (explorer.exe)" |
 | Menedżer zadań > Uruchom nowe zadanie | Task Manager > Run new task | "Run new task" as in Task Manager (the redesigned Windows 11 Task Manager shows it in the command bar, not in a File menu) |
 | wylogowanie | signing out | Style rule 11 |
-| wydanie testowe / szkic (GitHub) | test release / draft | WinUtil description |
+| wydanie testowe / szkic (GitHub) | pre-release / draft release | WinUtil description ("without pre-releases and draft releases") |
 | tryb zarządzany przez system / przez użytkownika | system-managed / user-managed (mode) | `NtfsDisableLastAccessUpdate` modes, as in the program text (`catalog-disk.json`) |
 
 ## Documentation
@@ -504,7 +518,7 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 
 - **Placeholders in angle brackets** are written in backticks (`<date>`), because GitHub hides a bare `<date>` as an HTML
   tag. Inside the English text they are translated: `<data>` → `<date>`, `<czas>` → `<time>`, `<profil>` → `<profile>`,
-  `<znacznik>` → `<marker>`, `<klucz>` → `<key>`, `<Klasa>` → `<Class>`, `<kultura>` → `<culture>`,
+  `<znacznik>` (time suffix in a copy name, `.dso-<znacznik>`, `wu-policies-<znacznik>.reg`) → `<timestamp>`, `<klucz>` → `<key>`, `<Klasa>` → `<Class>`, `<kultura>` → `<culture>`,
   `<rrrrMMdd-HHmmss>` → `<yyyyMMdd-HHmmss>`, `<SID zalogowanego>` → `<SID of the signed-in user>`.
 - **Polish texts read on the test machines** (Windows labels and messages, program output recorded on Polish Windows)
   stay verbatim in Polish with the English text in brackets – `"Odmowa dostępu" (Access is denied)` – only in the
@@ -532,7 +546,7 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | Odczyt VM 26H2 Home i Pro | Reading from 26H2 Home and Pro VMs | Source type in "Sources" |
 | `dostęp <data>` | `accessed <date>` | Access date of a source; the date stays ISO ("accessed 2026-10-18") |
 | odwołanie do `docs/zrodla/…` | `docs/zrodla/…` (in Polish) | Added after every reference to a file in `docs/zrodla/`; those records exist only in Polish |
-| Etap N / część E / partia X | Stage N / part E / batch X | Project stages in the documents: "Stage 4a", "batch 1", "Task 9 of the batch", "Batch C4 research". The mark **do audytu (Etap 5)** in this glossary stays Polish |
+| Etap N / część E / partia X | Stage N / part E / round X | Project stages in the documents: "Stage 4a", "round 1", "Task 9 of the round", "Round C4 research". "Batch" is only the program's series (Key decisions). |
 | decyzja R14 / decyzja projektowa / `decyzja <imię> z <data>` | ruling R14 / design decision / `<name>'s decision of <date>` | Ruling ids (R…) are not changed |
 | klasa B (research) | class B | Evidence class of a research source |
 | Portować / `Portować jako <x>` / Portować z ograniczeniem | Port / `Port as <x>` / Port with a restriction | Verdict; as in the template ("port / don't port / placebo") |
@@ -586,6 +600,10 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | wchodzi (werdykt w tabeli listy) / zakres: komputer / konto | in / scope: computer / account | `docs/apps` tables |
 | zależności uruchomieniowe / ponowienie / faza `network` | runtime dependencies / retry / `network` phase | `docs/apps`; as "Środowiska uruchomieniowe" = Runtimes |
 | kłódka | padlock | |
+| bez błędów (podsumowanie przebiegu) | without errors | "both without errors"; the counts stay "N passed / 0 failed / N skipped" (row "zaliczone / 0 błędów / pominięte") |
+| z tym zastrzeżeniem / z zastrzeżeniem (wchodzi do `main`) | with this caveat / with a caveat | Not "reservation" |
+| Nie można uruchomić określonej usługi, ponieważ jest ona wyłączona… | The service cannot be started, either because it is disabled or because it has no enabled devices associated with it. | ERROR_SERVICE_DISABLED (1058), [System Error Codes (1000-1299)](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--1000-1299-) |
+| liczby w prozie `docs/en` | `4,988`, `1,200 s` | Comma thousands separator from 1,000; program texts, code spans and quoted measured output stay without it; decimals use a point |
 
 ## Windows names
 
@@ -602,10 +620,10 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | punkt przywracania | restore point | Lower case mid-sentence; same source |
 | Microsoft Store | Microsoft Store | [Fix problems with apps from Microsoft Store](https://support.microsoft.com/en-us/accounts-billing/fix-problems-with-apps-from-microsoft-store) |
 | Instalator aplikacji | App Installer | Package that delivers winget; [Use WinGet to install and manage applications](https://learn.microsoft.com/en-us/windows/package-manager/winget/) |
-| winget | winget | Same source. Microsoft now writes "WinGet"; the program keeps "winget" as the command name, same as in Polish. **do audytu (Etap 5)** |
+| winget | winget | Same source. Microsoft now writes "WinGet"; the program keeps "winget" as the command name, same as in Polish; lower case also at the start of a sentence ("winget doesn't work…"); [Use WinGet](https://learn.microsoft.com/en-us/windows/package-manager/winget/) ("run WinGet by typing 'winget'"). |
 | Zabezpieczenia Windows | Windows Security | [Stay protected with the Windows Security app](https://support.microsoft.com/en-us/windows/security/windows-security/stay-protected-with-the-windows-security-app) |
 | Microsoft Defender | Microsoft Defender | Same source |
-| Zapora Windows Defender | Windows Defender Firewall | [Firewall and network protection in the Windows Security app](https://support.microsoft.com/en-us/windows/security/windows-security/firewall-and-network-protection-in-the-windows-security-app). **do audytu (Etap 5)** – newer builds may show "Windows Firewall" |
+| Zapora Windows Defender | Windows Defender Firewall | [Firewall and network protection in the Windows Security app](https://support.microsoft.com/en-us/windows/security/windows-security/firewall-and-network-protection-in-the-windows-security-app). Name of the classic Control Panel applet ([Windows Firewall tools](https://learn.microsoft.com/en-us/windows/security/operating-system-security/network-security/windows-firewall/tools), updated 2026-10-08). The product is "Windows Firewall" in documentation and "Microsoft Defender Firewall" in Windows Security; the applet keeps its name. |
 | Harmonogram zadań | Task Scheduler | [Task Scheduler](https://learn.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-start-page) |
 | Panel sterowania | Control Panel | [System configuration tools in Windows](https://support.microsoft.com/en-us/windows/experience/system-configuration-tools-in-windows) |
 | Zarządzanie komputerem | Computer Management | Same source |
@@ -614,12 +632,12 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | Usługi | Services | [Fix problems in Windows Search](https://learn.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/fix-problems-in-windows-search) ("open Services") |
 | Oczyszczanie dysku | Disk Cleanup | [Free up drive space in Windows](https://support.microsoft.com/en-us/windows/experience/storage-filemanagement/free-up-drive-space-in-windows) |
 | Optymalizacja dostarczania | Delivery Optimization | Disk cleanup step and Windows feature; [Delivery Optimization for Windows updates](https://learn.microsoft.com/en-us/windows/deployment/do/waas-delivery-optimization) |
-| Poprzednie instalacje systemu Windows | Previous Windows installation(s) | Disk Cleanup option; the program also matches the handler name "Previous Installations" in Windows – that text is not translated. **do audytu (Etap 5)** |
+| Poprzednie instalacje systemu Windows | Previous Windows installation(s) | Disk Cleanup option; the program also matches the handler name "Previous Installations" in Windows – that text is not translated. Source: [KB5012334](https://support.microsoft.com/en-us/topic/kb5012334-delete-the-windows-old-folder-using-storage-sense-in-the-settings-app-e12f9d84-ad7f-4780-9406-465670157f8e) ("Select the Previous Windows installation(s) checkbox."). |
 | BitLocker | BitLocker | [BitLocker overview](https://support.microsoft.com/en-us/windows/security/encryption/bitlocker-overview) |
 | klucz odzyskiwania | recovery key | [Find your BitLocker recovery key](https://support.microsoft.com/en-us/windows/security/encryption/find-your-bitlocker-recovery-key) |
 | Szyfrowanie urządzenia | Device encryption | [Device Encryption in Windows](https://support.microsoft.com/en-us/windows/security/encryption/device-encryption-in-windows) |
 | Eksplorator | File Explorer | [File Explorer in Windows](https://support.microsoft.com/en-us/windows/experience/fileexplorer/file-explorer-in-windows) |
-| pasek zadań | taskbar | Lower case. **do audytu (Etap 5)** |
+| pasek zadań | taskbar | Lower case. [Microsoft Style Guide – taskbar](https://learn.microsoft.com/en-us/style-guide/a-z-word-list-term-collections/t/taskbar) ("One word."). |
 | Programy i funkcje | Programs and Features | [Uninstall or remove apps and programs in Windows](https://support.microsoft.com/en-us/windows/uninstall-or-remove-apps-and-programs-in-windows-4b55f974-2cc6-2d2b-d092-5905080eaf98) |
 | Zainstalowane aplikacje | Installed apps | Settings › Apps › Installed apps; same source |
 | Instalator Windows | Windows Installer | MSI service; [Windows Installer](https://learn.microsoft.com/en-us/windows/win32/msi/windows-installer-portal) |
@@ -639,10 +657,10 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | Eksplorator Windows (proces w Menedżerze zadań) | Windows Explorer | The `explorer.exe` entry in Task Manager – not the app name File Explorer; [Troubleshooting blank screens in Windows](https://support.microsoft.com/en-us/windows/hardware/display-graphics/troubleshooting-blank-screens-in-windows) ("Find Windows Explorer, right-click it, and select Restart.") |
 | Włącz ochronę systemu | Turn on system protection | Option in the System Protection › Configure dialog; [System Protection](https://support.microsoft.com/en-us/windows/experience/backup-recovery/system-protection) ("Select Turn on system protection.") |
 | Historia aktualizacji / Sprawdź aktualizacje | Update history / Check for updates | Settings › Windows Update; [Windows Update: FAQ](https://support.microsoft.com/en-us/windows/windows-update-faq-8a903416-6f45-0718-f5c7-375e92dddeb2) |
-| Aktualizacje definicji | Definition updates | Group in Update history. **do audytu (Etap 5)** – only community answers found |
-| karta „Zaawansowane” (Właściwości systemu) | "Advanced" tab | `SystemPropertiesAdvanced.exe` ("Advanced system properties", [Executing Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/executing-control-panel-items)); tab label only in Microsoft Q&A. **do audytu (Etap 5)** |
+| Aktualizacje definicji | Definition updates | Group in Update history. unverified – no Microsoft page with the Update history headings; term defined in [Standard terminology for software updates](https://learn.microsoft.com/en-us/troubleshoot/windows-client/installing-updates-features-roles/standard-terminology-software-updates); heading only in third-party guides. |
+| karta „Zaawansowane” (Właściwości systemu) | "Advanced" tab | `SystemPropertiesAdvanced.exe` ("Advanced system properties", [Executing Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/executing-control-panel-items)); tab label: [Memory allocation errors can be caused by slow page file growth](https://learn.microsoft.com/en-us/troubleshoot/windows-client/performance/slow-page-file-growth-memory-allocation-errors) ("on the **Advanced** tab", Windows 11). |
 | Usługi kryptograficzne | Cryptographic Services | Service display name (`CryptSvc`); [Security guidelines for system services](https://learn.microsoft.com/en-us/windows-server/security/windows-services/security-guidelines-for-disabling-system-services-in-windows-server) |
 | Centrum sieci i udostępniania / Centrum akcji | Network and Sharing Center / Action Center | [Canonical Names of Control Panel Items](https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names) (`Microsoft.NetworkAndSharingCenter`; `Microsoft.ActionCenter` is Windows 7–8.1) |
 | Odmowa dostępu. / Nie można odnaleźć określonego pliku. | Access is denied. / The system cannot find the file specified. | Windows error messages (`ERROR_ACCESS_DENIED`, `ERROR_FILE_NOT_FOUND`); [System Error Codes (0-499)](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-) |
-| nie można odnaleźć pliku (Uruchamianie, Win+R) | cannot find the file | Short gloss in `panels.visual-effects`; the exact English text of the Run dialog wasn't checked. **do audytu (Etap 5)** |
+| nie można odnaleźć pliku (Uruchamianie, Win+R) | cannot find the file | Short gloss in `panels.visual-effects`. unverified – the Run dialog text "Windows cannot find '…'. Make sure you typed the name correctly, and then try again." only in Microsoft Q&A ([1471857](https://learn.microsoft.com/en-us/answers/questions/1471857)). |
 | Wykonanie serwera nie powiodło się | Server execution failed | COM error 0x80080005 (`CO_E_SERVER_EXEC_FAILURE`); [Error code 80080005 when you start many COM+ applications](https://learn.microsoft.com/en-us/troubleshoot/windows-server/application-management/error-8008005-when-start-complus-applications) ("server execution failed") |
