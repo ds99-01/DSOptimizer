@@ -211,6 +211,7 @@ public class TranslationCallRulesTests
 
         Assert.Contains("src/DSOptimizer.Core/Catalog/CatalogTranslation.cs", TranslationCallScanner.DataCallFiles);
         Assert.Contains("src/DSOptimizer.Core/Scripts/ScriptWrapper.cs", TranslationCallScanner.DataCallFiles);
+        Assert.Contains("src/DSOptimizer.Core/Operations/RegistryValueOperation.cs", TranslationCallScanner.DataCallFiles);
     }
 
     private static IReadOnlyList<string> Scan(string text) => TranslationCallScanner.Violations("x.cs", text);
@@ -273,6 +274,7 @@ public static class TranslationCallScanner
         "src/DSOptimizer.Core/Apps/AppsBloatCatalog.cs",
         "src/DSOptimizer.Core/Install/AppsInstallCatalog.cs",
         "src/DSOptimizer.Core/Scripts/ScriptWrapper.cs",
+        "src/DSOptimizer.Core/Operations/RegistryValueOperation.cs",
     };
 
     private static readonly Regex CallStart = new(@"(?<![\w.])L\.([TFP])\(", RegexOptions.Compiled);

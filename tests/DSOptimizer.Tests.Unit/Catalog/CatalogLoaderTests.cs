@@ -60,6 +60,21 @@ public class CatalogLoaderTests
     }
 
     [Fact]
+    public void Localized_ParsedFromJson()
+    {
+        var json = Minimal.Replace(
+            "\"kind\": \"action\"",
+            "\"kind\": \"tweak\"").Replace(
+            "\"script\": { \"apply\": \"x\" }",
+            "\"registry\": [ { \"path\": \"HKLM\\\\SOFTWARE\\\\X\", \"name\": \"MUIVerb\", \"type\": \"String\", \"value\": \"Tekst\", \"original\": \"<RemoveEntry>\", \"localized\": true }, { \"path\": \"HKLM\\\\SOFTWARE\\\\X\", \"name\": \"B\", \"type\": \"String\", \"value\": \"b\", \"original\": \"<RemoveEntry>\" } ]");
+        var registry = Assert.Single(LoadOne(json).Definitions).Registry;
+        Assert.True(registry[0].Localized);
+        Assert.Equal(RegValue.FromString("Tekst"), registry[0].Value);
+        Assert.False(registry[1].Localized);
+        Assert.Throws<CatalogLoadException>(() => LoadOne(json.Replace("\"localized\": true", "\"localized\": \"tak\"")));
+    }
+
+    [Fact]
     public void Load_FullTweak_MapsAllFields()
     {
         var tweak = Assert.Single(LoadOne(FullTweak).Definitions);

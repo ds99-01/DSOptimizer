@@ -314,6 +314,26 @@ Describe 'Get-MissingTranslations.ps1' {
         $Result.Text | Should -Match 'Braki: 2, nieużywane: 0'
     }
 
+    It 'dane: wartość localized bez tłumaczenia jest brakiem' {
+        $Catalog = '[{"id":"x.y","title":"T","summary":"S","description":"D","registry":[{"path":"HKLM\\SOFTWARE\\X","name":"MUIVerb","type":"String","value":"Nazwa menu","original":"<RemoveEntry>","localized":true},{"path":"HKLM\\SOFTWARE\\X","name":"Cmd","type":"String","value":"cmd.exe /c polecenie","original":"<RemoveEntry>"},{"path":"HKLM\\SOFTWARE\\X","name":"Flaga","type":"String","value":"Wyłączone","original":"<RemoveEntry>","localized":false}]}]'
+        $Translations = '{"language":"en","data":true,"entries":[{"pl":"T","en":"T"},{"pl":"S","en":"S"},{"pl":"D","en":"D"}]}'
+        $Root = New-TestTree -Files @{ 'src\DSOptimizer.Catalog\catalog\x.json' = $Catalog } -Translations $Translations
+        $Result = Invoke-Report -Root $Root
+        $Result.Code | Should -Be 0
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/x\.json#x\.y\.registry\.value  Nazwa menu$'
+        $Result.Text | Should -Not -Match 'polecenie'
+        $Result.Text | Should -Not -Match 'Wyłączone'
+        $Result.Text | Should -Match 'Braki: 1, nieużywane: 0'
+    }
+
+    It 'dane: przetłumaczona wartość localized nie jest brakiem ani nieużywanym wpisem' {
+        $Catalog = '[{"id":"x.y","title":"T","summary":"S","description":"D","registry":[{"path":"HKLM\\SOFTWARE\\X","name":"MUIVerb","type":"String","value":"Nazwa menu","original":"<RemoveEntry>","localized":true}]}]'
+        $Translations = '{"language":"en","data":true,"entries":[{"pl":"T","en":"T"},{"pl":"S","en":"S"},{"pl":"D","en":"D"},{"pl":"Nazwa menu","en":"Menu name"}]}'
+        $Root = New-TestTree -Files @{ 'src\DSOptimizer.Catalog\catalog\x.json' = $Catalog } -Translations $Translations
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match 'Braki: 0, nieużywane: 0'
+    }
+
     It 'apps.json i apps-bloat.json: skrypty nie są czytane' {
         $Apps = '{"entries":[{"id":"install.a","summary":"S","script":{"apply":["Get-DsoText ''Brak w raporcie''"]}}]}'
         $Translations = '{"language":"en","data":true,"entries":[{"pl":"S","en":"S"}]}'

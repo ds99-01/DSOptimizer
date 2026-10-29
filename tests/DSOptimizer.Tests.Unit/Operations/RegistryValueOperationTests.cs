@@ -1,8 +1,10 @@
 using System;
 using System.Threading;
 using DSOptimizer.Core.Errors;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Core.Operations;
+using DSOptimizer.Tests.Unit.Catalog;
 using DSOptimizer.Tests.Unit.Fakes;
 using Xunit;
 
@@ -273,5 +275,160 @@ public class RegistryValueOperationTests
         Assert.True(Operation(detectOnly: true).IsDetectOnly);
         Assert.True(Operation().ParticipatesInDetection);
         Assert.Equal(OperationKind.Registry, Operation().Kind);
+    }
+
+    // ---- wpis z "localized": true (tekst zapisywany w języku programu) ----
+
+    private const string PolishLabel = "Przejmij na własność";
+    private const string EnglishLabel = "Take ownership";
+
+    private static IDisposable LabelTable() => L.UseTable(CatalogTranslationTests.DataTable((PolishLabel, EnglishLabel)));
+
+    private RegistryValueOperation LocalizedOperation(bool localized = true)
+        => new(new RegistryEntry { Path = Path, Name = "MUIVerb", Value = RegValue.FromString(PolishLabel), Original = RegValue.Absent, Localized = localized }, _registry);
+
+    private OperationState DetectIn(UiLanguage language, bool localized = true)
+    {
+        using (LabelTable())
+        using (L.Use(language))
+        {
+            return LocalizedOperation(localized).Detect(CancellationToken.None);
+        }
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.English, EnglishLabel)]
+    [InlineData(UiLanguage.Polish, PolishLabel)]
+    public void Localized_Apply_WritesTextInCurrentLanguage(UiLanguage language, string expected)
+    {
+        using (LabelTable())
+        using (L.Use(language))
+        {
+            LocalizedOperation().Apply(CancellationToken.None);
+        }
+
+        Assert.Equal(RegValue.FromString(expected), _registry.Get(Path, "MUIVerb"));
+    }
+
+    [Fact]
+    public void Localized_Detect_MatchesPolishValueWhenProgramIsEnglish()
+    {
+        _registry.Set(Path, "MUIVerb", RegValue.FromString(PolishLabel));
+        Assert.Equal(OperationState.Match, DetectIn(UiLanguage.English));
+    }
+
+    [Fact]
+    public void Localized_Detect_MatchesEnglishValueWhenProgramIsPolish()
+    {
+        _registry.Set(Path, "MUIVerb", RegValue.FromString(EnglishLabel));
+        Assert.Equal(OperationState.Match, DetectIn(UiLanguage.Polish));
+    }
+
+    [Theory]
+    [InlineData("Take Ownership!")]
+    [InlineData("take ownership")]
+    [InlineData("")]
+    public void Localized_Detect_OtherString_IsMismatch(string text)
+    {
+        _registry.Set(Path, "MUIVerb", RegValue.FromString(text));
+        Assert.Equal(OperationState.Mismatch, DetectIn(UiLanguage.English));
+        Assert.Equal(OperationState.Mismatch, DetectIn(UiLanguage.Polish));
+    }
+
+    [Fact]
+    public void Localized_Detect_MissingValue_IsMismatch()
+        => Assert.Equal(OperationState.Mismatch, DetectIn(UiLanguage.English));
+
+    [Fact]
+    public void Localized_Detect_DwordWithSameNumber_IsMismatch()
+    {
+        // Wartość innego typu niż String nie jest naszym wpisem, nawet z tą samą treścią (ExpandString) albo liczbą (DWORD).
+        _registry.Set(Path, "MUIVerb", RegValue.FromExpandString(EnglishLabel));
+        Assert.Equal(OperationState.Mismatch, DetectIn(UiLanguage.English));
+        _registry.Set(Path, "MUIVerb", RegValue.FromDWord(1));
+        Assert.Equal(OperationState.Mismatch, DetectIn(UiLanguage.English));
+    }
+
+    [Fact]
+    public void Localized_Detect_AccessDenied_IsUnknown()
+    {
+        _registry.DenyRead(Path, "MUIVerb");
+        Assert.Equal(OperationState.Unknown, DetectIn(UiLanguage.English));
+    }
+
+    [Theory]
+    [InlineData(UiLanguage.English, EnglishLabel)]
+    [InlineData(UiLanguage.Polish, PolishLabel)]
+    public void Localized_Preview_TargetIsCurrentLanguage(UiLanguage language, string expected)
+    {
+        PlannedChange change;
+        using (LabelTable())
+        using (L.Use(language))
+        {
+            change = LocalizedOperation().Plan(CancellationToken.None);
+        }
+
+        Assert.Equal(RegValue.FromString(expected).ToDisplayString(), change.Target);
+        Assert.Equal(Path + @"\MUIVerb", change.Description);
+    }
+
+    [Fact]
+    public void Localized_Restore_UsesSnapshotNotLanguage()
+    {
+        SnapshotRecord snapshot;
+        using (LabelTable())
+        {
+            using (L.Use(UiLanguage.Polish))
+            {
+                var operation = LocalizedOperation();
+                snapshot = operation.Capture(CancellationToken.None);
+                operation.Apply(CancellationToken.None);
+            }
+
+            Assert.Equal(RegValue.Absent, snapshot.Value);
+            using (L.Use(UiLanguage.English))
+            {
+                Assert.Equal(OperationState.Match, LocalizedOperation().Detect(CancellationToken.None));
+                LocalizedOperation().Restore(snapshot, CancellationToken.None);
+            }
+        }
+
+        Assert.Equal(RegValue.Absent, _registry.Get(Path, "MUIVerb"));
+    }
+
+    [Fact]
+    public void Localized_Restore_SnapshotWithForeignText_WritesItBack()
+    {
+        _registry.Set(Path, "MUIVerb", RegValue.FromString("Cudzy napis"));
+        using (LabelTable())
+        using (L.Use(UiLanguage.English))
+        {
+            var operation = LocalizedOperation();
+            var snapshot = operation.Capture(CancellationToken.None);
+            operation.Apply(CancellationToken.None);
+            Assert.Equal(RegValue.FromString(EnglishLabel), _registry.Get(Path, "MUIVerb"));
+            operation.Restore(snapshot, CancellationToken.None);
+        }
+
+        Assert.Equal(RegValue.FromString("Cudzy napis"), _registry.Get(Path, "MUIVerb"));
+    }
+
+    [Fact]
+    public void NotLocalized_BehavesAsBefore()
+    {
+        // Bez "localized" tabela tłumaczeń nie ma wpływu: zapis i podgląd to dosłowna wartość z katalogu, detekcja tylko dokładna.
+        using (LabelTable())
+        using (L.Use(UiLanguage.English))
+        {
+            var operation = LocalizedOperation(localized: false);
+            Assert.Equal(RegValue.FromString(PolishLabel).ToDisplayString(), operation.Plan(CancellationToken.None).Target);
+            operation.Apply(CancellationToken.None);
+        }
+
+        Assert.Equal(RegValue.FromString(PolishLabel), _registry.Get(Path, "MUIVerb"));
+        Assert.Equal(OperationState.Match, DetectIn(UiLanguage.English, localized: false));
+        _registry.Set(Path, "MUIVerb", RegValue.FromString(EnglishLabel));
+        Assert.Equal(OperationState.Mismatch, DetectIn(UiLanguage.English, localized: false));
+        Assert.Equal(OperationState.Mismatch, DetectIn(UiLanguage.Polish, localized: false));
     }
 }

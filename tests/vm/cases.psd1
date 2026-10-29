@@ -628,6 +628,57 @@
             Hypothesis = 'Struktura rejestru (nie klikanie): Extended ukrywa pozycję w Verbs(), a Verbs() nie rozwija podmenu (VM 26H2, przebieg 2, 2026-10-18), więc działanie menu potwierdził ręczny test Dawida z UAC (2026-10-19) i leży poza tym przypadkiem. Setup tworzy cudzy klucz-wartownik *\shell\runas (domyślna wartość „DSO sentinel”); apply nie może go dotknąć ani dodać Directory\shell\runas (CheckAfterApply), a undo ma usunąć oba nasze klucze DSOptimizer.TakeOwnership razem z zagnieżdżonymi podkluczami (A1) i zostawić wartownika oraz klucze shell (KeyPresentAfterUndo, CheckAfterUndo). Snapshot obejmuje wszystkie 13 wartości i wartownika: stan końcowy = stan przed. Odczyt VM Home i Pro (2026-10-18): żaden z kluczy DSOptimizer.TakeOwnership ani shell\runas nie istnieje na świeżym 26H2.'
         }
         @{
+            Name = 'sec-take-ownership-menu-en'; TweakId = 'sec.take-ownership-menu'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'; Language = 'en'
+            Setup = @(
+                '$k = [Microsoft.Win32.Registry]::LocalMachine.CreateSubKey(''SOFTWARE\Classes\*\shell\runas''); $k.SetValue('''', ''DSO sentinel''); $k.Dispose()'
+            )
+            Snapshot = @{
+                Registry = @(
+                    @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership'; Name = 'MUIVerb' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership'; Name = 'Extended' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership'; Name = 'ExtendedSubCommandsKey' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas'; Name = 'MUIVerb' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas'; Name = 'HasLUAShield' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas\command'; Name = '' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership'; Name = 'MUIVerb' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership'; Name = 'Extended' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership'; Name = 'AppliesTo' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership'; Name = 'ExtendedSubCommandsKey' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas'; Name = 'MUIVerb' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas'; Name = 'HasLUAShield' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas\command'; Name = '' }
+                    @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\runas'; Name = '' }
+                )
+                Services = @()
+            }
+            CheckAfterApply = '$lm = [Microsoft.Win32.Registry]::LocalMachine; $ok = $true; foreach ($c in @(''*'', ''Directory'')) { $r = $lm.OpenSubKey(''SOFTWARE\Classes\'' + $c + ''\shell\DSOptimizer.TakeOwnership''); $s = $lm.OpenSubKey(''SOFTWARE\Classes\'' + $c + ''\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas''); $ok = $ok -and ($null -ne $r) -and ($null -ne $s) -and ($r.GetValue(''MUIVerb'') -ceq ''Take ownership'') -and ($r.GetValueKind(''MUIVerb'') -eq ''String'') -and ($s.GetValue(''MUIVerb'') -ceq ''Take ownership (administrator)'') -and ($s.GetValueKind(''MUIVerb'') -eq ''String''); if ($null -ne $r) { $r.Dispose() }; if ($null -ne $s) { $s.Dispose() } }; $ok'
+            CheckAfterUndo = '$lm = [Microsoft.Win32.Registry]::LocalMachine; $s = $lm.OpenSubKey(''SOFTWARE\Classes\*\shell\runas''); $ok = ($null -ne $s) -and ($s.GetValue('''') -eq ''DSO sentinel'') -and ($s.SubKeyCount -eq 0) -and ($s.ValueCount -eq 1); if ($null -ne $s) { $s.Dispose() }; $ok'
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                AfterApplySnapshot = @{
+                    Registry = @(
+                        @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership'; Name = 'MUIVerb'; Exists = $true; Kind = 'String'; Data = 'Take ownership' }
+                        @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership'; Name = 'Extended'; Exists = $true; Kind = 'String'; Data = '' }
+                        @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership'; Name = 'ExtendedSubCommandsKey'; Exists = $true; Kind = 'String'; Data = '*\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey' }
+                        @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas'; Name = 'MUIVerb'; Exists = $true; Kind = 'String'; Data = 'Take ownership (administrator)' }
+                        @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas'; Name = 'HasLUAShield'; Exists = $true; Kind = 'String'; Data = '' }
+                        @{ Path = 'HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas\command'; Name = ''; Exists = $true; Kind = 'String'; Data = 'cmd.exe /c takeown /f "%1" /a && icacls "%1" /grant *S-1-5-32-544:F /c /l /q' }
+                        @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership'; Name = 'MUIVerb'; Exists = $true; Kind = 'String'; Data = 'Take ownership' }
+                        @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership'; Name = 'Extended'; Exists = $true; Kind = 'String'; Data = '' }
+                        @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership'; Name = 'AppliesTo'; Exists = $true; Kind = 'String'; Data = 'NOT (System.ItemPathDisplay:="C:\Windows" OR System.ItemPathDisplay:~<"C:\Windows\" OR System.ItemPathDisplay:="C:\")' }
+                        @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership'; Name = 'ExtendedSubCommandsKey'; Exists = $true; Kind = 'String'; Data = 'Directory\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey' }
+                        @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas'; Name = 'MUIVerb'; Exists = $true; Kind = 'String'; Data = 'Take ownership (administrator)' }
+                        @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas'; Name = 'HasLUAShield'; Exists = $true; Kind = 'String'; Data = '' }
+                        @{ Path = 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey\Shell\runas\command'; Name = ''; Exists = $true; Kind = 'String'; Data = 'cmd.exe /c takeown /f "%1" /a /r /d Y && icacls "%1" /grant *S-1-5-32-544:F /t /c /l /q' }
+                    )
+                }
+                KeyAbsentAfterUndo = @('HKLM\SOFTWARE\Classes\*\shell\DSOptimizer.TakeOwnership', 'HKLM\SOFTWARE\Classes\Directory\shell\DSOptimizer.TakeOwnership')
+                KeyPresentAfterUndo = @('HKLM\SOFTWARE\Classes\*\shell\runas', 'HKLM\SOFTWARE\Classes\*\shell', 'HKLM\SOFTWARE\Classes\Directory\shell')
+            }
+            Hypothesis = 'Ten sam przebieg co sec-take-ownership-menu (Setup z wartownikiem, Snapshot 13 wartości, undo usuwa oba klucze), ale CLI po angielsku (Language = en, --lang en na każdym kroku): nazwa menu idzie w języku programu z chwili zastosowania. CheckAfterApply czyta niezależnie od aplikacji oba MUIVerb (* i Directory) = „Take ownership” i oba MUIVerb w ...\runas = „Take ownership (administrator)” (REG_SZ, wielkość liter dokładna); detekcja po apply = Applied po angielsku, a cofnięcie z journala usuwa wpisy jak po polsku.'
+        }
+        @{
             Name = 'sec-take-ownership-menu-effect'; TweakId = 'sec.take-ownership-menu'; Flow = 'DetectOnly'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
             Skip = 'wymaga kliknięcia w klasycznym menu Explorera (Shift) i zgody w UAC; PowerShell Direct działa jako Administrator z pełnym tokenem bez UAC, a Verbs() nie pokazuje pozycji z Extended ani podmenu'
             Expect = @{ Before = 'NotApplied' }

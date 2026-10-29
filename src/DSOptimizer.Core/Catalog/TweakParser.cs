@@ -20,7 +20,7 @@ internal static class TweakParser
 
     private static readonly HashSet<string> RegistryFields = new(StringComparer.Ordinal)
     {
-        "path", "name", "type", "value", "original", "detectOnly",
+        "path", "name", "type", "value", "original", "detectOnly", "localized",
     };
 
     private static readonly HashSet<string> ServiceFields = new(StringComparer.Ordinal)
@@ -92,6 +92,7 @@ internal static class TweakParser
             Value = ToRegValue(type, value, path, name, source),
             Original = original is null ? null : ToRegValue(type, original, path, name, source),
             DetectOnly = OptionalBool(obj, "detectOnly", source) ?? false,
+            Localized = OptionalBool(obj, "localized", source) ?? false,
         };
     }
 

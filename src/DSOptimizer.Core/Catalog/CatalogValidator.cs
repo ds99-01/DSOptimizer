@@ -124,6 +124,12 @@ public static class CatalogValidator
             Add("registry-path", L.F("Ścieżka '{0}' musi zaczynać się od HKLM\\, HKCU\\, HKCR\\ lub HKU\\.", entry.Path));
         }
 
+        // Tłumaczy się tylko zapisywany tekst: String z wartością (nie <RemoveEntry>) i bez detectOnly (taki wpis niczego nie zapisuje).
+        foreach (var entry in definition.Registry.Where(entry => entry.Localized && (entry.DetectOnly || !entry.Value.Exists || entry.Value.Type != RegistryValueType.String)))
+        {
+            Add("registry-localized", L.F("Wpis {0}\\{1}: 'localized' wymaga type String z tekstem do zapisu (bez detectOnly i <RemoveEntry>).", entry.Path, entry.Name));
+        }
+
         ValidateScope(definition, Add);
 
         if (ScriptTexts(definition.Script).Any(text => text.IndexOf("HKCU:", StringComparison.OrdinalIgnoreCase) >= 0))

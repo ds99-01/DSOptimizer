@@ -487,7 +487,7 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | protektory klucza | key protectors | BitLocker term, same source family |
 | menu kontekstowe / menu prawego przycisku | context menu / right-click menu | |
 | Pokaż więcej opcji | Show more options | Classic Windows 11 context menu entry |
-| Przejmij na własność | take ownership | The menu text itself is a registry value written in Polish by the item (`MUIVerb`), so the English description names it as "Przejmij na własność" (take ownership). **do audytu (Etap 5)** |
+| Przejmij na własność | Take ownership | Name of the context menu entry added by `sec.take-ownership-menu` (registry value `MUIVerb`), written in the program language at the time the item is applied; the submenu is "Take ownership (administrator)". Detection accepts both the Polish and the English name |
 | Administratorzy (grupa) | Administrators | Built-in group, SID S-1-5-32-544 |
 | UAC (zgoda w UAC) | UAC prompt ("after you approve the UAC prompt") | The documents use the noun "UAC approval" ("requires UAC approval"), which matches the program text "After you approve the UAC prompt" (`catalog-sec.json`) |
 | powłoka (Eksploratora) / pulpit | shell / desktop | "the File Explorer shell (explorer.exe)" |

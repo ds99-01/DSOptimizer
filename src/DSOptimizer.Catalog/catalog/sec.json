@@ -110,17 +110,17 @@
       "Cofnięcie usuwa tylko wpis z menu; zmienionych właścicieli i uprawnień plików nie przywraca."
     ],
     "registry": [
-      { "path": "HKLM\\SOFTWARE\\Classes\\*\\shell\\DSOptimizer.TakeOwnership", "name": "MUIVerb", "type": "String", "value": "Przejmij na własność", "original": "<RemoveEntry>" },
+      { "path": "HKLM\\SOFTWARE\\Classes\\*\\shell\\DSOptimizer.TakeOwnership", "name": "MUIVerb", "type": "String", "value": "Przejmij na własność", "original": "<RemoveEntry>", "localized": true },
       { "path": "HKLM\\SOFTWARE\\Classes\\*\\shell\\DSOptimizer.TakeOwnership", "name": "Extended", "type": "String", "value": "", "original": "<RemoveEntry>" },
       { "path": "HKLM\\SOFTWARE\\Classes\\*\\shell\\DSOptimizer.TakeOwnership", "name": "ExtendedSubCommandsKey", "type": "String", "value": "*\\shell\\DSOptimizer.TakeOwnership\\ExtendedSubCommandsKey", "original": "<RemoveEntry>" },
-      { "path": "HKLM\\SOFTWARE\\Classes\\*\\shell\\DSOptimizer.TakeOwnership\\ExtendedSubCommandsKey\\Shell\\runas", "name": "MUIVerb", "type": "String", "value": "Przejmij na własność (administrator)", "original": "<RemoveEntry>" },
+      { "path": "HKLM\\SOFTWARE\\Classes\\*\\shell\\DSOptimizer.TakeOwnership\\ExtendedSubCommandsKey\\Shell\\runas", "name": "MUIVerb", "type": "String", "value": "Przejmij na własność (administrator)", "original": "<RemoveEntry>", "localized": true },
       { "path": "HKLM\\SOFTWARE\\Classes\\*\\shell\\DSOptimizer.TakeOwnership\\ExtendedSubCommandsKey\\Shell\\runas", "name": "HasLUAShield", "type": "String", "value": "", "original": "<RemoveEntry>" },
       { "path": "HKLM\\SOFTWARE\\Classes\\*\\shell\\DSOptimizer.TakeOwnership\\ExtendedSubCommandsKey\\Shell\\runas\\command", "name": "", "type": "String", "value": "cmd.exe /c takeown /f \"%1\" /a && icacls \"%1\" /grant *S-1-5-32-544:F /c /l /q", "original": "<RemoveEntry>" },
-      { "path": "HKLM\\SOFTWARE\\Classes\\Directory\\shell\\DSOptimizer.TakeOwnership", "name": "MUIVerb", "type": "String", "value": "Przejmij na własność", "original": "<RemoveEntry>" },
+      { "path": "HKLM\\SOFTWARE\\Classes\\Directory\\shell\\DSOptimizer.TakeOwnership", "name": "MUIVerb", "type": "String", "value": "Przejmij na własność", "original": "<RemoveEntry>", "localized": true },
       { "path": "HKLM\\SOFTWARE\\Classes\\Directory\\shell\\DSOptimizer.TakeOwnership", "name": "Extended", "type": "String", "value": "", "original": "<RemoveEntry>" },
       { "path": "HKLM\\SOFTWARE\\Classes\\Directory\\shell\\DSOptimizer.TakeOwnership", "name": "AppliesTo", "type": "String", "value": "NOT (System.ItemPathDisplay:=\"C:\\Windows\" OR System.ItemPathDisplay:~<\"C:\\Windows\\\" OR System.ItemPathDisplay:=\"C:\\\")", "original": "<RemoveEntry>" },
       { "path": "HKLM\\SOFTWARE\\Classes\\Directory\\shell\\DSOptimizer.TakeOwnership", "name": "ExtendedSubCommandsKey", "type": "String", "value": "Directory\\shell\\DSOptimizer.TakeOwnership\\ExtendedSubCommandsKey", "original": "<RemoveEntry>" },
-      { "path": "HKLM\\SOFTWARE\\Classes\\Directory\\shell\\DSOptimizer.TakeOwnership\\ExtendedSubCommandsKey\\Shell\\runas", "name": "MUIVerb", "type": "String", "value": "Przejmij na własność (administrator)", "original": "<RemoveEntry>" },
+      { "path": "HKLM\\SOFTWARE\\Classes\\Directory\\shell\\DSOptimizer.TakeOwnership\\ExtendedSubCommandsKey\\Shell\\runas", "name": "MUIVerb", "type": "String", "value": "Przejmij na własność (administrator)", "original": "<RemoveEntry>", "localized": true },
       { "path": "HKLM\\SOFTWARE\\Classes\\Directory\\shell\\DSOptimizer.TakeOwnership\\ExtendedSubCommandsKey\\Shell\\runas", "name": "HasLUAShield", "type": "String", "value": "", "original": "<RemoveEntry>" },
       { "path": "HKLM\\SOFTWARE\\Classes\\Directory\\shell\\DSOptimizer.TakeOwnership\\ExtendedSubCommandsKey\\Shell\\runas\\command", "name": "", "type": "String", "value": "cmd.exe /c takeown /f \"%1\" /a /r /d Y && icacls \"%1\" /grant *S-1-5-32-544:F /t /c /l /q", "original": "<RemoveEntry>" }
     ]

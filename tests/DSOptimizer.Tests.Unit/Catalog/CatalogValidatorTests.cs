@@ -197,6 +197,38 @@ public class CatalogValidatorTests
             Registry = new[] { new RegistryEntry { Path = @"HKEY_LOCAL_MACHINE\X", Name = "A", Value = RegValue.FromDWord(1), Original = RegValue.Absent } },
         }));
 
+    private static TweakDefinition WithLocalized(RegValue value, bool detectOnly = false) => Valid() with
+    {
+        Registry = new[] { new RegistryEntry { Path = Hklm, Name = "MUIVerb", Value = value, Original = RegValue.Absent, DetectOnly = detectOnly, Localized = true } },
+    };
+
+    [Fact]
+    public void Localized_OnString_IsAccepted()
+        => Assert.Empty(Rules(WithLocalized(RegValue.FromString("Przejmij na własność"))));
+
+    [Fact]
+    public void Localized_OnDword_IsRejected()
+        => Assert.Contains("registry-localized", Rules(WithLocalized(RegValue.FromDWord(1))));
+
+    [Fact]
+    public void Localized_OnExpandString_IsRejected()
+        => Assert.Contains("registry-localized", Rules(WithLocalized(RegValue.FromExpandString("Tekst"))));
+
+    [Fact]
+    public void Localized_OnDetectOnly_IsRejected()
+        => Assert.Contains("registry-localized", Rules(WithLocalized(RegValue.FromString("Tekst"), detectOnly: true)));
+
+    [Fact]
+    public void Localized_OnRemoveEntry_IsRejected()
+        => Assert.Contains("registry-localized", Rules(WithLocalized(RegValue.Absent)));
+
+    [Fact]
+    public void Localized_RejectionNamesTheEntry()
+    {
+        var error = Assert.Single(CatalogValidator.Validate(new[] { WithLocalized(RegValue.FromDWord(1)) }), e => e.Rule == "registry-localized");
+        Assert.Contains(Hklm + @"\MUIVerb", error.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void UserScope_WithHklmPath_IsReported()
         => Assert.Contains("scope", Rules(Valid() with { Scope = TweakScope.User }));

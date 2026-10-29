@@ -6,6 +6,7 @@ using System.Text;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Tests.Unit.Engine;
 using DSOptimizer.Tests.Unit.Support;
@@ -94,6 +95,25 @@ public class SecTakeOwnershipTests
             Assert.Equal(value, entry.Value);
             Assert.Equal(RegValue.Absent, entry.Original);
             Assert.False(entry.DetectOnly);
+        }
+    }
+
+    [Fact]
+    public void Registry_OnlyMenuLabelsAreLocalized()
+    {
+        // Nazwy menu (MUIVerb) idą w języku programu z chwili zastosowania; ścieżki, komendy i AppliesTo zostają dosłowne.
+        var localized = Get().Registry.Where(e => e.Localized).Select(e => (e.Path, e.Name)).ToList();
+        var expected = new[] { (Root("*"), "MUIVerb"), (Sub("*"), "MUIVerb"), (Root("Directory"), "MUIVerb"), (Sub("Directory"), "MUIVerb") };
+        Assert.Equal(expected.OrderBy(e => e.Item1, StringComparer.Ordinal), localized.OrderBy(e => e.Path, StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void MenuLabels_HaveEnglishTranslations()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("Take ownership", L.Data("Przejmij na własność"));
+            Assert.Equal("Take ownership (administrator)", L.Data("Przejmij na własność (administrator)"));
         }
     }
 

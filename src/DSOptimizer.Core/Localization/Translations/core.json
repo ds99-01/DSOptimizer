@@ -110,6 +110,10 @@
       "en": "Path '{0}' must start with HKLM\\, HKCU\\, HKCR\\ or HKU\\."
     },
     {
+      "pl": "Wpis {0}\\{1}: 'localized' wymaga type String z tekstem do zapisu (bez detectOnly i <RemoveEntry>).",
+      "en": "Entry {0}\\{1}: 'localized' requires type String with text to write (no detectOnly and no <RemoveEntry>)."
+    },
+    {
       "pl": "Skrypt nie może używać HKCU: – użyj Registry::HKEY_USERS\\$UserSid.",
       "en": "The script can't use HKCU: – use Registry::HKEY_USERS\\$UserSid."
     },

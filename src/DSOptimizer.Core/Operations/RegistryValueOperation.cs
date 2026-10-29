@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Errors;
@@ -34,8 +35,24 @@ public sealed class RegistryValueOperation : IOperation
             return OperationState.Unknown;
         }
 
-        return read.Value.Equals(_entry.Value) ? OperationState.Match : OperationState.Mismatch;
+        return Accepts(read.Value) ? OperationState.Match : OperationState.Mismatch;
     }
+
+    /// <summary>
+    /// Wartość, którą zapisuje <see cref="Apply"/> i pokazuje podgląd: przy <see cref="RegistryEntry.Localized"/> tekst z katalogu
+    /// w bieżącym języku programu (w chwili wywołania), inaczej dosłowna wartość z katalogu.
+    /// </summary>
+    private RegValue TargetValue()
+        => LocalizedText() is { } polish ? RegValue.FromString(L.Data(polish)) : _entry.Value;
+
+    /// <summary>Przy <see cref="RegistryEntry.Localized"/> pasuje tekst typu String w każdym języku interfejsu, inaczej tylko dokładna wartość.</summary>
+    private bool Accepts(RegValue value)
+        => LocalizedText() is { } polish
+            ? L.AllLanguages(() => L.Data(polish)).Any(text => value.Equals(RegValue.FromString(text)))
+            : value.Equals(_entry.Value);
+
+    private string? LocalizedText()
+        => _entry.Localized && _entry.Value.Exists && _entry.Value.Type == RegistryValueType.String ? _entry.Value.Data as string : null;
 
     public SnapshotRecord Capture(CancellationToken cancellationToken)
     {
@@ -49,7 +66,7 @@ public sealed class RegistryValueOperation : IOperation
         };
     }
 
-    public void Apply(CancellationToken cancellationToken) => _registry.Write(_entry.Path, _entry.Name, _entry.Value);
+    public void Apply(CancellationToken cancellationToken) => _registry.Write(_entry.Path, _entry.Name, TargetValue());
 
     public void Restore(SnapshotRecord snapshot, CancellationToken cancellationToken)
     {
@@ -142,6 +159,6 @@ public sealed class RegistryValueOperation : IOperation
         var current = read.Status is ReadStatus.Found or ReadStatus.NotFound
             ? read.Value.ToDisplayString()
             : L.F("(nieznana: {0})", read.Status);
-        return new PlannedChange { Description = Describe(), Current = current, Target = _entry.Value.ToDisplayString() };
+        return new PlannedChange { Description = Describe(), Current = current, Target = TargetValue().ToDisplayString() };
     }
 }

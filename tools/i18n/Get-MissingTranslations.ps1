@@ -21,7 +21,8 @@
     #     produktów); apps-bloat.json – entries[].summary, entries[].warning, protected[].reason. Miejsce takiego tekstu:
     #     src/DSOptimizer.Catalog/catalog/<plik>#<id>.<pole>; teksty danych liczą się jako używane. Z pozycji tweaków (bez
     #     apps*.json) także komunikaty skryptów: pierwszy argument Get-DsoText '…' w polach script.apply/undo/detect/capture
-    #     ('' = apostrof), miejsce src/DSOptimizer.Catalog/catalog/<plik>#<id>.script.<pole>. Zły JSON katalogu = kod 2.
+    #     ('' = apostrof), miejsce src/DSOptimizer.Catalog/catalog/<plik>#<id>.script.<pole>, oraz value wpisów registry[]
+    #     z "localized": true (tekst zapisywany w języku programu), miejsce <plik>#<id>.registry.value. Zły JSON katalogu = kod 2.
     #     Dokumentacja: każdy polski docs\tweaks\*.md, docs\apps\*.md i docs\prep\*.md (bez podkatalogów) ma mieć angielski
     #     docs\en\<to samo>, którego pierwsza linia to odcisk bieżącego polskiego pliku
     #     (<!-- source: docs/<x>/<plik>.md sha256: <hash> -->, wpisuje go Set-DocsTranslationStamp.ps1); brak pliku = „brak”,
@@ -155,7 +156,8 @@ function Get-Items {
 
 function Get-CatalogTexts {
     param([string]$Path, [string]$Relative)
-    # Teksty dla człowieka z plików katalogu (tłumaczone przez L.Data): pozycje tweaków – title, summary, benefit, description, warnings;
+    # Teksty dla człowieka z plików katalogu (tłumaczone przez L.Data): pozycje tweaków – title, summary, benefit, description, warnings
+    # i value wpisów registry[] z "localized": true;
     # apps.json – summary, warning (title to nazwa produktu); apps-bloat.json – entries[].summary/warning, protected[].reason.
     try {
         $Json = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
@@ -188,8 +190,19 @@ function Get-CatalogTexts {
                 }
             }
         }
-        # Komunikaty skryptów pozycji tweaków: pierwszy argument Get-DsoText '…' (ten sam wzorzec co ScriptTexts.Find w Core).
         if ($Name -ceq 'apps.json' -or $Name -ceq 'apps-bloat.json') { continue }
+        # Wpisy rejestru z "localized": true – tekst wartości zapisywany w języku programu (L.Data w RegistryValueOperation).
+        foreach ($Registry in @(Get-Items -Object $Entry -Name 'registry')) {
+            if ($null -eq $Registry -or $Registry -is [string] -or $Registry -is [array]) { continue }
+            if ($null -eq $Registry.PSObject.Properties['localized'] -or $Registry.localized -isnot [bool] -or -not $Registry.localized) { continue }
+            $Value = Get-OptionalText -Object $Registry -Name 'value'
+            if ($null -eq $Value) { continue }
+            [pscustomobject]@{
+                Text  = $Value
+                Where = ('{0}#{1}.registry.value' -f $Relative, $Id)
+            }
+        }
+        # Komunikaty skryptów pozycji tweaków: pierwszy argument Get-DsoText '…' (ten sam wzorzec co ScriptTexts.Find w Core).
         $Script = $null
         if ($null -ne $Entry -and -not ($Entry -is [array]) -and $null -ne $Entry.PSObject.Properties['script']) { $Script = $Entry.script }
         if ($null -eq $Script -or $Script -is [string] -or $Script -is [array]) { continue }

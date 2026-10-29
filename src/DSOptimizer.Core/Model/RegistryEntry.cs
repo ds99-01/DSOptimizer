@@ -16,4 +16,10 @@ public sealed record RegistryEntry
 
     /// <summary>Wpis tylko weryfikuje stan — nie jest zapisywany ani przywracany.</summary>
     public bool DetectOnly { get; init; }
+
+    /// <summary>
+    /// Tekst wartości (<c>String</c>, polski w katalogu) jest zapisywany w języku programu z chwili zastosowania, a detekcja uznaje
+    /// go w każdym języku interfejsu. Cofnięcie i tak przywraca snapshot. Pole JSON <c>localized</c>.
+    /// </summary>
+    public bool Localized { get; init; }
 }

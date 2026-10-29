@@ -13,13 +13,17 @@ Opis działania:
     (Interactive, najwyższe uprawnienia), domyślnie wbudowany Administrator sesji PS Direct.
     Flow AppInstall (Etap 4c): pliki z tests\vm\fixtures do VM -> Setup -> jedno polecenie CLI (--install-apps <AppIds> albo
     --list-install, opcjonalnie --apps-catalog) -> Check -> Cleanup; VM bez sieci, więc instalacja kończy się uczciwym "Nie wykonano".
+    Klucz przypadku Language ('pl' albo 'en', poza AppInstall) = język CLI wszystkich kroków przypadku (--lang <Language>);
+    bez niego Invoke-DsoCli dokleja --lang pl.
     Hasło VM nigdy nie trafia do wyjścia.
 #>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$script:CaseKeys = @('Name', 'TweakId', 'AppId', 'RunAs', 'Flow', 'RestorePoint', 'Setup', 'Snapshot', 'Expect', 'Hypothesis', 'Catalog', 'Skip', 'Check', 'Cleanup', 'CheckAfterApply', 'CheckAfterUndo', 'CliTimeoutSeconds', 'Command', 'AppIds', 'AppsCatalog')
+$script:CaseKeys = @('Name', 'TweakId', 'AppId', 'RunAs', 'Flow', 'RestorePoint', 'Setup', 'Snapshot', 'Expect', 'Hypothesis', 'Catalog', 'Skip', 'Check', 'Cleanup', 'CheckAfterApply', 'CheckAfterUndo', 'CliTimeoutSeconds', 'Command', 'AppIds', 'AppsCatalog', 'Language')
 # CliTimeoutSeconds (Etap 4b partia 2): limit czekania na CLI kroku 'execute' dla długich akcji (DISM/SFC, cleanmgr); tylko Flow 'Execute'.
+# Language: język CLI przypadku ('pl' albo 'en'), każde wywołanie CLI dostaje --lang <Language>; bez klucza Invoke-DsoCli dokleja --lang pl.
+$script:CaseLanguages = @('pl', 'en')
 $script:CliTimeoutRange = @(60, 7200)
 $script:FlowsSupported = @('Full', 'ApplyOnly', 'DetectOnly', 'Execute', 'Reboot', 'AppRemove', 'AppInstall')
 # Flow AppInstall (Etap 4c): klucze przypadku i Expect; Installed tylko przy list-install, Outcomes i WingetCodes tylko przy
@@ -249,6 +253,9 @@ function Import-VmCases {
         }
         if ($Case.ContainsKey('RunAs') -and ($Case.RunAs -isnot [string] -or $Case.RunAs -notmatch '^[A-Za-z0-9_-]+\z')) {
             throw "Przypadek '$Label': 'RunAs' musi być nazwą konta lokalnego (litery, cyfry, _ i -), np. 'dso'."
+        }
+        if ($Case.ContainsKey('Language') -and ($Case.Language -isnot [string] -or $Case.Language -cnotin $script:CaseLanguages)) {
+            throw "Przypadek '$Label': klucz 'Language' = '$($Case.Language)' (dozwolone: pl, en)."
         }
         $CatalogKind = 'Test'
         if ($Case.ContainsKey('Catalog')) {
@@ -968,6 +975,7 @@ function Invoke-VmCase {
             if ($Command -eq 'apply') { $CliArgs.RestorePoint = $Case.RestorePoint }
         }
         $Arguments = ConvertTo-DsoCliArguments @CliArgs
+        if ($Case.ContainsKey('Language')) { $Arguments = @($Arguments) + @('--lang', [string]$Case.Language) }
         $CliParams = @{ Session = $Session; ExePath = $Layout.Exe; Arguments = $Arguments; OutPath = $OutPath; RunAsUser = $RunAsUser }
         if ($Command -eq 'execute' -and $Case.ContainsKey('CliTimeoutSeconds')) { $CliParams.TimeoutSeconds = [int]$Case.CliTimeoutSeconds }
         $Result = Invoke-DsoCli @CliParams

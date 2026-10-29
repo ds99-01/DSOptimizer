@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.take-ownership-menu.md sha256: 8cf2cce762b8f8e0705662a22ba23fa5a59ce19b60d45006835430b2419ea3b1 -->
+<!-- source: docs/tweaks/sec.take-ownership-menu.md sha256: a2d369ed5e32b6ca4761b058360d4ce80d321c34fb906178a2c756a1395e191b -->
 
 # sec.take-ownership-menu – Add a take ownership entry to the context menu
 
@@ -10,11 +10,11 @@ Under each of the two shell classes: `*` (files) and `Directory` (folders). All 
 
 | Key | Value | Data |
 |---|---|---|
-| `...\DSOptimizer.TakeOwnership` | `MUIVerb` | `Przejmij na własność` |
+| `...\DSOptimizer.TakeOwnership` | `MUIVerb` | `Take ownership` (in Polish: `Przejmij na własność`) |
 | `...\DSOptimizer.TakeOwnership` | `Extended` | empty REG_SZ (entry only with Shift) |
 | `...\DSOptimizer.TakeOwnership` (only `Directory`) | `AppliesTo` | `NOT (System.ItemPathDisplay:="C:\Windows" OR System.ItemPathDisplay:~<"C:\Windows\" OR System.ItemPathDisplay:="C:\")` |
 | `...\DSOptimizer.TakeOwnership` | `ExtendedSubCommandsKey` | `<Class>\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey` (path relative to HKCR, for example `*\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey`) |
-| `...\ExtendedSubCommandsKey\Shell\runas` | `MUIVerb` | `Przejmij na własność (administrator)` |
+| `...\ExtendedSubCommandsKey\Shell\runas` | `MUIVerb` | `Take ownership (administrator)` (in Polish: `Przejmij na własność (administrator)`) |
 | `...\ExtendedSubCommandsKey\Shell\runas` | `HasLUAShield` | empty REG_SZ (UAC shield, visual only) |
 | `...\ExtendedSubCommandsKey\Shell\runas\command` | (default) | file (`*`): `cmd.exe /c takeown /f "%1" /a && icacls "%1" /grant *S-1-5-32-544:F /c /l /q` |
 | | | folder (`Directory`): `cmd.exe /c takeown /f "%1" /a /r /d Y && icacls "%1" /grant *S-1-5-32-544:F /t /c /l /q` |
@@ -22,7 +22,7 @@ Under each of the two shell classes: `*` (files) and `Directory` (folders). All 
 - The Administrators group always by SID `S-1-5-32-544` (`*S-1-5-32-544`, the asterisk marks a SID in `icacls`), never by name (Polish Windows uses a translated group name).
 - `runas` appears **only** in the submenu of our own key; the top-level `shell\runas` is neither created nor touched.
 - `AppliesTo` is **only on `Directory`**. It isn't on `*`, because excluding files under `C:\Windows` wasn't tested on the VM (see the warnings).
-- The labels (`MUIVerb`) are in Polish, written through the registry API (Unicode), without `reg.exe` and without argv.
+- The menu name (`MUIVerb`) is in the program language at the time you apply the item: in Polish `Przejmij na własność` and `Przejmij na własność (administrator)`, in English `Take ownership` and `Take ownership (administrator)` (the `localized` field of these 4 registry entries; the text comes from the catalog translation table). Written through the registry API (Unicode), without `reg.exe` and without argv.
 - What the command does: `takeown /a` gives ownership to the Administrators group (not the current user), `icacls /grant *S-1-5-32-544:F` adds full control for that group; folders: `/r /d Y` and `/t` cover the whole tree, `/c` continues after errors, `/l` works on the link rather than its target, `/q` suppresses messages.
 
 ## Sources
@@ -53,6 +53,7 @@ Read from the Home and Pro VMs (2026-10-18): none of the keys `...\shell\DSOptim
 
 ## Detection and undo
 - Detection: all values from `registry[]` equal to the target ones -> `Applied`; none -> `NotApplied`; some -> `Partial`. This is honest, because the item promises only menu entries; whether the menu actually shows and whether the command works isn't detected (it depends on Explorer and UAC).
+- The menu name (`MUIVerb`) is written in the program language at the time you apply the item, and detection accepts both versions (Polish and English, type REG_SZ, exact text): a menu applied in Polish stays `Applied` after you switch the program to English, and the other way around. Different text or a different value type = mismatch. Undo removes the entries as before (it restores the snapshot, regardless of the language).
 - Undo from the journal restores the snapshot (no value = deletion). Rule A1 deletes **empty keys created by Apply** (from the deepest: `command`, `runas`, `Shell`, `ExtendedSubCommandsKey`, `DSOptimizer.TakeOwnership`), never below 2 segments under the hive. The keys `*\shell` and `Directory\shell` existed before and stay.
 - **Undo doesn't touch other keys:** an existing `*\shell\runas` (or another verb) before apply is the same after undo (engine test on fakes). If someone added a value to our key, the key stays, and undo reports the warning "Key … remained after undo (it isn't empty)".
 - Undo **doesn't undo** owner or permission changes made from the menu: it only removes the menu entry.
@@ -78,6 +79,7 @@ Full VM run `vm-run-20261019-002807` (2026-10-19, about 00:28–00:46, build 263
 - `sec-take-ownership-menu-effect`: **Skipped** on Home and Pro (reason from `cases.psd1`: requires a click in Explorer's classic menu (Shift) and UAC approval; PowerShell Direct runs as Administrator with a full token without UAC, and `Verbs()` doesn't show entries with `Extended` or submenus); reported as skipped, not passed. Operation from the menu (UAC) was confirmed by Dawid's manual test (above; variant value + subkey + `Extended`, 2026-10-18/19).
 - Run summary: Home 309 passed / 0 failed / 21 skipped, Pro 308 / 1 / 21 (the only failure: the old `Check` of `sec-bitlocker-decrypt-c`, fixed in `962ae0e`). Skips from earlier batches: `disk-hibernation`, `net-smb-lan-effect`, `net-network-private-change`.
 - **R14 confirmed by Dawid's click (VM Pro, session `dso`, after `--apply sec.take-ownership-menu` = `Applied`, 2026-10-19):** A1 file in `C:\r14` → submenu and UAC prompt: yes; A2 folder: yes; A3 `C:\Windows` and `C:\Windows\System32` (folders): no entry, as the `AppliesTo` exclusion intends; A4 file in `C:\Windows`: the entry is there (known limitation R12: the exclusion applies only to folders). Consistent with the description in this document. Still not confirmed: `takeown /d Y` was checked on Polish 26H2 (pl-PL), not on other languages; names with `%` in the menu and recursion on large trees weren't tested.
+- `sec-take-ownership-menu-en` (2026-10-29, run `tests/vm/out/20261029-083728`, build 26300.9457, Home and Pro; only this case and `sec-take-ownership-menu`): the same run as `sec-take-ownership-menu` (`Flow=Full`, `Catalog=BuiltIn`, the same `Setup` and `Snapshot`), but the CLI with `--lang en`. **Passed** on Home and Pro (both cases; 28 passed, 0 failed, 0 skipped on each VM): apply wrote `MUIVerb` = `Take ownership` (`*` and `Directory`) and `Take ownership (administrator)` (both `...\runas`), REG_SZ – independent `CheckAfterApply` reading and `AfterApplySnapshot`; detection after apply `Applied`, undo deleted both `DSOptimizer.TakeOwnership` keys, the `*\shell\runas` sentinel stayed, final state = before.
 
 ## Reddit
 To be added in part E.
