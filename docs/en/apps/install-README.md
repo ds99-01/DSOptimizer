@@ -251,7 +251,7 @@ Raw results outside git (`releases.json`, `download.json`, `install.json`, `diff
   "Installs only for the signed-in Windows account."
 - **Additional components:** Firefox → `Mozilla Maintenance Service` service, LibreOffice → Microsoft Visual C++ v14
   Redistributable (x64) (winget dependency), Epic Games Launcher → Microsoft GameInput, Adobe Acrobat Reader → AppX package
-  `AdobeAcrobatReaderCoreApp` (account and system image), PowerToys → 5 AppX packages, WinRAR → `WinRAR.ShellExtension`,
+  `AdobeAcrobatReaderCoreApp` (account and Windows image), PowerToys → 5 AppX packages, WinRAR → `WinRAR.ShellExtension`,
   Notepad++ (EXE installer) → `NotepadPlusPlus`, Foxit PDF Reader → `FoxitReaderUpdateService` service (automatic start).
 - **WinRAR:** "Paid after the trial period." (spec point 4).
 

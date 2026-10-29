@@ -24,7 +24,7 @@
     },
     {
       "pl": "Zablokuj nagrywanie i transmisję gier na całym komputerze",
-      "en": "Block game recording and broadcasting for all accounts"
+      "en": "Block game recording and broadcasting on the whole computer"
     },
     {
       "pl": "Polityka blokuje nagrywanie i transmisję gier w Windows dla wszystkich kont na tym komputerze.",
@@ -72,7 +72,7 @@
     },
     {
       "pl": "Dodaje pozycję „Zakończ zadanie” do menu przycisku programu na pasku zadań.",
-      "en": "Adds the \"End task\" item to the menu of a program's button on the taskbar."
+      "en": "Adds the \"End task\" entry to the menu of a program's button on the taskbar."
     },
     {
       "pl": "Zawieszony program zamkniesz prawym klikiem na pasku zadań, bez otwierania Menedżera zadań.",
@@ -80,11 +80,11 @@
     },
     {
       "pl": "Włącza przełącznik „Zakończ zadanie” (System > Zaawansowane): TaskbarEndTask = 1 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings, dla zalogowanego użytkownika. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie usuwa wartość i klucz utworzony przez zmianę; po restarcie Eksploratora pozycja znika z menu.",
-      "en": "Turns on the \"End task\" toggle (System > Advanced): TaskbarEndTask = 1 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings, for the signed-in user. DSOptimizer doesn't restart File Explorer by itself. Undo removes the value and the key created by the change; after File Explorer restarts, the item disappears from the menu."
+      "en": "Turns on the \"End Task\" toggle (System > Advanced): TaskbarEndTask = 1 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings, for the signed-in user. DSOptimizer doesn't restart File Explorer by itself. Undo removes the value and the key created by the change; after File Explorer restarts, the entry disappears from the menu."
     },
     {
       "pl": "Pozycja pojawi się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).",
-      "en": "The \"End task\" option appears after you sign in again (or after you restart File Explorer in \"Tools\")."
+      "en": "The \"End task\" entry appears after you sign in again (or after you restart File Explorer in \"Tools\")."
     },
     {
       "pl": "„Zakończ zadanie” kończy proces programu; niezapisane dane w tym programie mogą przepaść.",

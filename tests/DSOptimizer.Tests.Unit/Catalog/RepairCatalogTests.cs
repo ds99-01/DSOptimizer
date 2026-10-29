@@ -1291,7 +1291,7 @@ public class RepairCatalogTests
         Assert.Contains("IP configuration before the reset:", run.Output);
         Assert.Contains(run.Output, l => l.Contains("Ethernet: IPv4: 192.168.1.20/24 (mask 255.255.255.0), gateway: 192.168.1.1, DNS: 1.1.1.1, 8.8.8.8, DHCP: no", StringComparison.Ordinal));
         Assert.Contains(run.Output, l => l.Contains("Wi-Fi: IPv4: 10.0.0.7/16 (mask 255.255.0.0), gateway: none, DNS: none, DHCP: yes", StringComparison.Ordinal));
-        Assert.Contains("One item protected by the system denied access – this is normal on Windows 11, the rest was reset.", run.Output);
+        Assert.Contains("One entry protected by the system denied access – this is normal on Windows 11, the rest was reset.", run.Output);
         Assert.Equal("The commands succeeded. Takes effect after the computer restarts. The IP configuration from before the reset is above and in the log file.", run.LastLine);
     }
 
@@ -1305,7 +1305,7 @@ public class RepairCatalogTests
         }
 
         Assert.Equal(0, run.ExitCode);
-        Assert.Equal("Turned on System Protection for drive C: (Windows sets the space limit, 3% of the disk by default).", run.LastLine);
+        Assert.Equal("Turned on System Protection for the C: drive (Windows sets the space limit, 3% of the disk by default).", run.LastLine);
     }
 
     [Fact]

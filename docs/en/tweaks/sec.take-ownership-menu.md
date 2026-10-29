@@ -1,6 +1,6 @@
 <!-- source: docs/tweaks/sec.take-ownership-menu.md sha256: a2d369ed5e32b6ca4761b058360d4ce80d321c34fb906178a2c756a1395e191b -->
 
-# sec.take-ownership-menu – Add a take ownership entry to the context menu
+# sec.take-ownership-menu – Add "Take ownership" to the context menu
 
 ## Verdict for 26H2
 Port as `caution`: the mechanism (static verbs in `HKLM\SOFTWARE\Classes`, a submenu with `ExtendedSubCommandsKey`, `Extended`, `AppliesTo`) is described by MS, and **the specific structure that works on 26H2 was settled by the VMs and Dawid's manual test with UAC** (below). The item only adds menu entries; it doesn't take ownership of anything itself. The v3.2 aliases `sec_take_ownership` (add) and `sec_take_ownership_remove` (remove) both map to this one item (apply = add, undo = remove). Everything in `registry[]` (C# API), no script, no `reg.exe`, no top-level `runas` key.

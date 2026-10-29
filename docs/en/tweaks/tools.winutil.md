@@ -38,7 +38,7 @@ Not applicable: the item doesn't read or write settings. The system state after 
 Not applicable: `kind=action` without detection and undo. `Executed` means the file passed the check and the PowerShell process started; DSOptimizer doesn't check or undo the effect of WinUtil.
 
 ## Risks and warnings
-- Warnings in the catalog (the gist of the first: you run someone else's code from the internet as admin): "You run someone else's code from the internet as admin – DSOptimizer doesn't check what the script contains." and "DSOptimizer doesn't track or undo changes made in the WinUtil window."
+- Warnings in the catalog (the gist of the first: you run someone else's code from the internet as administrator): "You run someone else's code from the internet as administrator – DSOptimizer doesn't check what the script contains." and "DSOptimizer doesn't track or undo changes made in the WinUtil window."
 - DSOptimizer doesn't check the content – SHA256 only confirms that the file matches the GitHub release, not that the code is safe; every new release may work differently.
 - Requires a network connection; without it nothing opens (previously the window opened with an `irm` error).
 - No presets and no development branch. Changes made in the WinUtil window aren't undone by DSOptimizer.

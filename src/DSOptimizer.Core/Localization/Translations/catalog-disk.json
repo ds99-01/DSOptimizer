@@ -152,11 +152,11 @@
     },
     {
       "pl": "Windows nie utrzymuje już zgodności, z której korzystają tylko bardzo stare programy. Dysk C: zwykle ma to wyłączone od instalacji.",
-      "en": "Windows no longer maintains compatibility that only very old programs use. The C: drive usually has this turned off since installation."
+      "en": "Windows no longer maintains compatibility that only very old programs use. On the C: drive this is usually already turned off when Windows is installed."
     },
     {
       "pl": "NtfsDisable8dot3NameCreation = 1 (wyłączone dla wszystkich woluminów) zamiast domyślnego 2 (ustawienie osobno dla każdego woluminu) w HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem. Wolumin C: ma zwykle krótkie nazwy wyłączone już od instalacji (flaga woluminu), więc zmiana obejmuje głównie nowe i dodatkowe woluminy, także dyski podłączane później. Dotyczy tylko nowych nazw – istniejące nazwy 8.3 zostają. Cofnięcie przywraca poprzednią wartość.",
-      "en": "NtfsDisable8dot3NameCreation = 1 (off for all volumes) instead of the default 2 (set separately for each volume) in HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem. The C: volume usually has short names turned off since installation (a volume flag), so the change mainly covers new and additional volumes, including drives connected later. It only affects new names – existing 8.3 names stay. Undo restores the previous value."
+      "en": "NtfsDisable8dot3NameCreation = 1 (off for all volumes) instead of the default 2 (set separately for each volume) in HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem. On the C: volume, short names are usually already turned off when Windows is installed (a volume flag), so the change mainly covers new and additional volumes, including drives connected later. It only affects new names – existing 8.3 names stay. Undo restores the previous value."
     },
     {
       "pl": "Stare instalatory (16-bitowe, część MSI) i programy, które używają krótkich nazw, mogą przestać działać.",

@@ -25,7 +25,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `TaskbarEndTask
 
 ## Risks and warnings
 - `risk=safe`, `suggested=false`.
-- Warnings in the catalog: "The "End task" option appears after you sign in again (or after you restart File Explorer in "Tools")." and ""End task" ends the program's process; unsaved data in that program may be lost."
+- Warnings in the catalog: "The "End task" entry appears after you sign in again (or after you restart File Explorer in "Tools")." and ""End task" ends the program's process; unsaved data in that program may be lost."
 - Beyond the notes in the program (in the technical details or only here): DSOptimizer doesn't restart File Explorer by itself (restarting is the `tools.restart-explorer` item); the note about data loss describes ending a process, not a measurement.
 
 ## VM test

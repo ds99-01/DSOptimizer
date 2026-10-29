@@ -60,11 +60,11 @@
     },
     {
       "pl": "Najpierw zapisuje w logu konfigurację IP każdej karty (Get-NetIPConfiguration: alias, adres IPv4 z maską, brama, DNS, DHCP), potem wykonuje kolejno netsh winsock reset, netsh int ip reset i Clear-DnsClientCache; po błędzie kolejne polecenie nie startuje. Na Windows 11 netsh int ip reset zgłasza odmowę dostępu przy jednej pozycji chronionej przez system – DSOptimizer uznaje ten jeden znany przypadek za sukces z adnotacją, a każdy inny błąd przerywa naprawę i pokazuje wyjście netsh. Skutku nie da się sprawdzić przed restartem, więc wynik potwierdza tylko, że polecenia się udały. Bez cofania – konfigurację sprzed resetu przywraca się ręcznie z logu.",
-      "en": "First writes the IP configuration of each adapter to the log (Get-NetIPConfiguration: alias, IPv4 address with mask, gateway, DNS, DHCP), then runs netsh winsock reset, netsh int ip reset and Clear-DnsClientCache in turn; after an error, the next command doesn't start. On Windows 11, netsh int ip reset reports access denied for one item protected by the system – DSOptimizer treats this one known case as success with a note, and any other error stops the repair and shows the netsh output. The effect can't be checked before a restart, so the result only confirms that the commands succeeded. No undo – the configuration from before the reset is restored manually from the log."
+      "en": "First writes the IP configuration of each adapter to the log (Get-NetIPConfiguration: alias, IPv4 address with mask, gateway, DNS, DHCP), then runs netsh winsock reset, netsh int ip reset and Clear-DnsClientCache in turn; after an error, the next command doesn't start. On Windows 11, netsh int ip reset reports access denied for one entry protected by the system – DSOptimizer treats this one known case as success with a note, and any other error stops the repair and shows the netsh output. The effect can't be checked before a restart, so the result only confirms that the commands succeeded. No undo – the configuration from before the reset is restored manually from the log."
     },
     {
       "pl": "Wymaga restartu; ręcznie ustawiony adres IP, maska i brama znikną – karta pobierze adres z DHCP (DNS zostają).",
-      "en": "Needs a restart; a manually set IP address, mask and gateway will be lost – the adapter will get an address from DHCP (DNS servers stay)."
+      "en": "Requires a restart; a manually set IP address, mask and gateway will be lost – the adapter will get an address from DHCP (DNS servers stay)."
     },
     {
       "pl": "Bez cofania – obecne ustawienia IP DSOptimizer zapisze w logu; VPN i programy sieciowe mogą wymagać ponownej konfiguracji.",
@@ -72,7 +72,7 @@
     },
     {
       "pl": "Jedna pozycja chroniona przez system odmówiła dostępu – to zwykłe zachowanie Windows 11, reszta zresetowana.",
-      "en": "One item protected by the system denied access – this is normal on Windows 11, the rest was reset."
+      "en": "One entry protected by the system denied access – this is normal on Windows 11, the rest was reset."
     },
     {
       "pl": "netsh int ip reset: kod {0} – wynik spoza zmierzonego wzorca; wyjście: {1}",
@@ -148,7 +148,7 @@
     },
     {
       "pl": "Może odblokować aktualizacje, które stoją albo kończą się błędem przez uszkodzoną bazę lub pobrane pliki.",
-      "en": "Can unblock updates that are stuck or end with an error because of a damaged database or downloaded files."
+      "en": "Can unblock updates that are stuck or end with an error because of a corrupted database or downloaded files."
     },
     {
       "pl": "Zatrzymuje działające usługi wuauserv, bits i cryptsvc (limit 30 s każda) – cryptsvc razem z działającymi usługami zależnymi odczytanymi z systemu (na Windows 11 AppIDSvc i sterownik applockerfltr), bo inaczej catroot2 jest zablokowany. Potem przenosi %SystemRoot%\\SoftwareDistribution i %SystemRoot%\\System32\\catroot2 na <nazwa>.dso-<rrrrMMdd-HHmmss> (brak folderu = krok pominięty) i uruchamia zatrzymane usługi w odwrotnej kolejności. Wszystko albo nic: błąd zatrzymania przerywa przed folderami, błąd drugiego przeniesienia cofa pierwsze, a usługi wracają w każdej ścieżce błędu. UsoSvc i msiserver nie są zatrzymywane. Sukces dopiero po odczycie zwrotnym (usługi działające przed resetem działają, kopie folderów istnieją); wtedy DSOptimizer usuwa starsze kopie .dso-* i zostawia jedną najnowszą, a jej ścieżki podaje w wyniku. Polityk Windows Update (zasady grupy) nie zmienia – tylko je wypisuje w wyniku jako możliwą przyczynę (WUServer, WUStatusServer, DisableWindowsUpdateAccess, SetDisableUXWUAccess, AU\\NoAutoUpdate i AU\\UseWUServer z HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate); usuwa je pozycja „Zresetuj Windows Update i usuń blokady”. Bez cofania w DSOptimizerze – stare foldery zostają jako kopie obok oryginału.",
@@ -168,11 +168,11 @@
     },
     {
       "pl": "Pomaga, gdy aktualizacje zablokował np. program „optymalizujący” – także przy komunikacie, że ustawieniami zarządza organizacja.",
-      "en": "Helps when updates were blocked, e.g. by an \"optimizing\" program – also when Windows says that your organization manages the settings."
+      "en": "Helps when updates were blocked, for example by an \"optimizing\" program – also when Windows says that your organization manages the settings."
     },
     {
       "pl": "Odmawia, gdy komputer jest w domenie (Win32_ComputerSystem.PartOfDomain) albo nie da się tego ustalić – polityki Windows Update (zasady grupy) ustawia wtedy administrator domeny. Gdy klucz HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate istnieje, przed jakąkolwiek zmianą eksportuje go (z podkluczem AU) przez System32\\reg.exe export do %ProgramData%\\DSOptimizer\\backups\\wu-policies-<rrrrMMdd-HHmmss>.reg i sprawdza, że plik nie jest pusty; bez udanej kopii niczego nie zmienia. Gdy klucza nie ma, wynik mówi „Brak polityk Windows Update.” i kopia nie powstaje. Dalej działa jak zwykły reset (usługi wuauserv, bits, cryptsvc z zależnymi, np. AppIDSvc; foldery przeniesione na .dso-*; wszystko albo nic – przy błędzie tego etapu polityki zostają), a między przeniesieniem folderów i startem usług usuwa skopiowany klucz z podkluczami i sprawdza, że go nie ma. Po przywróceniu usług zapisuje poprzednie typy uruchamiania do wu-services-<rrrrMMdd-HHmmss>.txt obok kopii i ustawia domyślne wartości Windows 11, te same na Home i Pro: wuauserv Manual, bits AutomaticDelayed, cryptsvc Automatic, UsoSvc AutomaticDelayed (odmowa zapisu daje ostrzeżenie, nie porażkę całości). msiserver, WaaSMedicSvc i DoSvc nie są zmieniane, bo system odmawia zapisu. Na komputerze zarządzanym przez Intune/MDM usunięte polityki mogą wrócić przy następnej synchronizacji. Bez cofania w DSOptimizerze – polityki przywraca reg import pliku .reg, a typy uruchamiania opisuje plik .txt.",
-      "en": "Refuses when the computer is joined to a domain (Win32_ComputerSystem.PartOfDomain) or this can't be determined – Windows Update policies (Group Policy) are then set by the domain administrator. When the HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate key exists, before any change it exports it (with the AU subkey) with System32\\reg.exe export to %ProgramData%\\DSOptimizer\\backups\\wu-policies-<yyyyMMdd-HHmmss>.reg and checks that the file isn't empty; without a successful backup it changes nothing. When the key doesn't exist, the result says \"No Windows Update policies.\" and no backup is made. Then it works like the regular reset (services wuauserv, bits, cryptsvc with dependent services, e.g. AppIDSvc; folders moved to .dso-*; all or nothing – if this stage fails, the policies stay), and between moving the folders and starting the services it deletes the backed-up key with its subkeys and checks that it's gone. After restoring the services it saves the previous startup types to wu-services-<yyyyMMdd-HHmmss>.txt next to the backup and sets the Windows 11 defaults, the same on Home and Pro: wuauserv Manual, bits AutomaticDelayed, cryptsvc Automatic, UsoSvc AutomaticDelayed (a refused write gives a warning, not a failure of the whole repair). msiserver, WaaSMedicSvc and DoSvc aren't changed, because the system refuses the write. On a computer managed by Intune/MDM, the removed policies may come back at the next sync. No undo in DSOptimizer – reg import of the .reg file restores the policies, and the .txt file describes the startup types."
+      "en": "Refuses when the computer is joined to a domain (Win32_ComputerSystem.PartOfDomain) or this can't be determined – Windows Update policies (Group Policy) are then set by the domain administrator. When the HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate key exists, before any change it exports it (with the AU subkey) with System32\\reg.exe export to %ProgramData%\\DSOptimizer\\backups\\wu-policies-<yyyyMMdd-HHmmss>.reg and checks that the file isn't empty; without a successful backup it changes nothing. When the key doesn't exist, the result says \"No Windows Update policies.\" and no backup is made. Then it works like the regular reset (services wuauserv, bits, cryptsvc with dependent services, for example AppIDSvc; folders moved to .dso-*; all or nothing – if this stage fails, the policies stay), and between moving the folders and starting the services it deletes the backed-up key with its subkeys and checks that it's gone. After restoring the services it saves the previous startup types to wu-services-<yyyyMMdd-HHmmss>.txt next to the backup and sets the Windows 11 defaults, the same on Home and Pro: wuauserv Manual, bits AutomaticDelayed, cryptsvc Automatic, UsoSvc AutomaticDelayed (a refused write gives a warning, not a failure of the whole repair). msiserver, WaaSMedicSvc and DoSvc aren't changed, because the system refuses the write. On a computer managed by Intune/MDM, the removed policies may come back at the next sync. No undo in DSOptimizer – reg import of the .reg file restores the policies, and the .txt file describes the startup types."
     },
     {
       "pl": "Usuwa blokady aktualizacji, które mógł świadomie ustawić właściciel komputera; DSOptimizer zapisuje ich kopię.",
@@ -212,7 +212,7 @@
     },
     {
       "pl": "Może usunąć błędy wynikające z uszkodzonych plików Windows, np. po nieudanej aktualizacji. Na zdrowym systemie tylko to potwierdza; szybkości komputera nie zmienia.",
-      "en": "Can fix errors caused by damaged Windows files, e.g. after a failed update. On a healthy system it only confirms that; it doesn't change the computer's speed."
+      "en": "Can fix errors caused by corrupted Windows files, for example after a failed update. On a healthy system it only confirms that; it doesn't change the computer's speed."
     },
     {
       "pl": "Dwa kroki: 1) dism.exe /Online /Cleanup-Image /RestoreHealth, 2) sfc /scannow – oba z pełnej ścieżki System32; trwającego narzędzia DSOptimizer nie przerywa. Odmawia startu, gdy działa już dism, sfc albo cleanmgr; postęp bierze z procentów w wyjściu narzędzi. Werdykt DISM: kod 0 i blok podsumowania w segmencie %SystemRoot%\\Logs\\CBS\\CBS.log z tego przebiegu (zdrowy albo naprawiony), 3010 = restart, 0x800F081F, 0x800F0906 i 0x800F0907 = brak plików źródłowych (potrzebny internet albo nośnik instalacyjny), inny kod = błąd ze ścieżką %SystemRoot%\\Logs\\DISM\\dism.log; po porażce DISM SFC i tak startuje. Werdykt SFC ze znaczników [SR] w CBS.log (naprawę czekającą na restart zdradza nowy klucz HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\RebootPending). Sukces tylko wtedy, gdy oba kroki się udały. DSOptimizer czeka na każde narzędzie najwyżej 45 min – potem przestaje czekać, a DISM albo SFC pracuje dalej w tle i wynik zostaje w logach. Bez cofania – naprawa przywraca pliki z magazynu składników.",
@@ -236,7 +236,7 @@
     },
     {
       "pl": "Zwalnia miejsce na dysku C: zajęte przez stare pliki tymczasowe, pamięci podręczne i stare wersje składników Windows. Ile – zależy od komputera; szybkości to nie zmienia.",
-      "en": "Frees space on drive C: taken up by old temporary files, caches and old versions of Windows components. How much depends on the computer; it doesn't change the speed."
+      "en": "Frees space on the C: drive taken up by old temporary files, caches and old versions of Windows components. How much depends on the computer; it doesn't change the speed."
     },
     {
       "pl": "Działa bez cleanmgr. Odmawia startu, gdy działa już dism, sfc albo cleanmgr. Wolne miejsce dysku systemowego odczytuje przed i po; gdy go ubyło, nie podaje liczby. Kroki: 1) %SystemRoot%\\Temp – pliki starsze niż 24 h; pliki w użyciu zostają; 2) <profil>\\AppData\\Local\\Temp tak samo – profil zalogowanego konta (ProfileImagePath), a gdy konta nie da się ustalić, krok jest pomijany; 3) Delete-DeliveryOptimizationCache -Force; 4) %SystemRoot%\\SoftwareDistribution\\Download – wszystkie pliki przy zatrzymanych wuauserv i bits, które potem wracają do stanu sprzed (aktualizacja pobierana w tej chwili może pobrać się od nowa); 5) dism.exe /Online /Cleanup-Image /StartComponentCleanup bez /ResetBase (3010 = restart, inny kod niż 0 = błąd ze ścieżką %SystemRoot%\\Logs\\DISM\\dism.log) – poprzednie wersje zaktualizowanych składników znikają od razu, ale zainstalowane aktualizacje da się dalej odinstalować; 6) thumbcache_*.db w <profil>\\AppData\\Local\\Microsoft\\Windows\\Explorer (Eksplorator tworzy miniatury od nowa). Na DISM DSOptimizer czeka najwyżej 20 min, potem DISM pracuje dalej w tle (nie jest przerywany); czyszczenie Optymalizacji dostarczania ma osobny limit 20 min (po nim jest przerywane), więc w najgorszym razie czekanie trwa ok. 40 min. Błąd kroku psuje wynik, ale pozostałe kroki i tak się wykonują. Bez cofania – to pliki tymczasowe i pamięci podręczne, które Windows odtwarza.",
@@ -256,11 +256,11 @@
     },
     {
       "pl": "Usuwa folder Windows.old, który zostaje na dysku C: po dużej aktualizacji systemu – za pomocą Oczyszczania dysku.",
-      "en": "Removes the Windows.old folder that stays on drive C: after a major Windows update – using Disk Cleanup."
+      "en": "Removes the Windows.old folder that stays on the C: drive after a major Windows update – using Disk Cleanup."
     },
     {
       "pl": "Zwalnia miejsce na dysku C: zajęte przez poprzednią wersję Windows. Szybkości komputera nie zmienia.",
-      "en": "Frees space on drive C: taken up by the previous version of Windows. It doesn't change the computer's speed."
+      "en": "Frees space on the C: drive taken up by the previous version of Windows. It doesn't change the computer's speed."
     },
     {
       "pl": "Działa wyłącznie przez program obsługi „Previous Installations” Oczyszczania dysku – bez przejmowania własności, zmiany uprawnień i własnego usuwania plików. Odmawia startu, gdy działa już dism, sfc albo cleanmgr; bez <SystemDrive>\\Windows.old kończy się informacją, że nie ma czego usuwać. Przed zapisem sprawdza wartość StateFlags7351 pod każdym podkluczem HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches: istniejąca wartość (cudze /sageset albo przerwany przebieg), błąd odczytu albo brak klucza VolumeCaches\\Previous Installations kończy akcję błędem bez zmian. Potem ustawia StateFlags7351 = DWORD 2 tylko pod VolumeCaches\\Previous Installations, uruchamia cleanmgr.exe /sagerun:7351 z pełnej ścieżki System32 (proces nie jest przerywany) i czeka na jego koniec; na końcu zawsze usuwa StateFlags7351, także po błędzie i limicie. Sukces tylko wtedy, gdy folderu po przebiegu już nie ma; wynik podaje też zwolnione miejsce. DSOptimizer czeka najwyżej 45 min – potem Oczyszczanie dysku pracuje dalej w tle, a wynik zostaje niepotwierdzony. Oczyszczanie dysku może pokazać na pulpicie własne okno. Bez cofania – usuniętej poprzedniej instalacji nie da się przywrócić.",
@@ -280,15 +280,15 @@
     },
     {
       "pl": "Włącza ochronę systemu na dysku C:, bez której Windows nie tworzy punktów przywracania – na nowych komputerach bywa wyłączona.",
-      "en": "Turns on System Protection for drive C:, without which Windows doesn't create restore points – on new computers it's sometimes off."
+      "en": "Turns on System Protection for the C: drive, without which Windows doesn't create restore points – on new computers it's sometimes off."
     },
     {
       "pl": "Windows i DSOptimizer mogą tworzyć punkty przywracania, do których wrócisz, gdy coś pójdzie źle. Kosztem jest trochę miejsca na dysku C:.",
-      "en": "Windows and DSOptimizer can create restore points that you can go back to if something goes wrong. The cost is some space on drive C:."
+      "en": "Windows and DSOptimizer can create restore points that you can go back to if something goes wrong. The cost is some space on the C: drive."
     },
     {
       "pl": "Zastosowanie: Enable-ComputerRestore -Drive 'C:\\'; limit miejsca na punkty ustawia Windows sam (ok. 3% dysku C:), DSOptimizer go nie zmienia i nie woła vssadmin. Cofnięcie: Disable-ComputerRestore -Drive 'C:\\'; istniejące punkty zostają na dysku i wrócą po ponownym włączeniu ochrony, a usuwa się je w oknie „Ochrona systemu” (Konfiguruj → Usuń). Stan: wpis woluminu C: (GUID z Win32_Volume) w wartości REG_MULTI_SZ {09F7EDC5-294E-4180-AF6A-FB0E6A0E9513} klucza HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SPP\\Clients oznacza włączoną ochronę, brak wpisu – wyłączoną (niezależnie od istniejących punktów). Włączenie i wyłączenie liczą się dopiero po odczycie zwrotnym tego wpisu.",
-      "en": "Apply: Enable-ComputerRestore -Drive 'C:\\'; the space limit for restore points is set by Windows itself (about 3% of drive C:), DSOptimizer doesn't change it and doesn't call vssadmin. Undo: Disable-ComputerRestore -Drive 'C:\\'; existing points stay on the disk and come back when protection is turned on again, and they're deleted in the \"System Protection\" window (Configure → Delete). State: an entry for volume C: (GUID from Win32_Volume) in the REG_MULTI_SZ value {09F7EDC5-294E-4180-AF6A-FB0E6A0E9513} of the HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SPP\\Clients key means that protection is on, no entry – that it's off (regardless of existing points). Turning it on or off counts only after this entry is verified."
+      "en": "Apply: Enable-ComputerRestore -Drive 'C:\\'; the space limit for restore points is set by Windows itself (about 3% of the C: drive), DSOptimizer doesn't change it and doesn't call vssadmin. Undo: Disable-ComputerRestore -Drive 'C:\\'; existing points stay on the disk and come back when protection is turned on again, and they're deleted in the \"System Protection\" window (Configure → Delete). State: an entry for volume C: (GUID from Win32_Volume) in the REG_MULTI_SZ value {09F7EDC5-294E-4180-AF6A-FB0E6A0E9513} of the HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SPP\\Clients key means that protection is on, no entry – that it's off (regardless of existing points). Turning it on or off counts only after this entry is verified."
     },
     {
       "pl": "Cofnięcie wyłącza ochronę: nowe punkty nie powstaną, a z istniejących nie przywrócisz systemu (zostają na dysku).",
@@ -316,11 +316,11 @@
     },
     {
       "pl": "Ochrona systemu nie została włączona: po Enable-ComputerRestore brak wpisu dysku C: w SPP\\Clients.",
-      "en": "System Protection wasn't turned on: after Enable-ComputerRestore there's no entry for drive C: in SPP\\Clients."
+      "en": "System Protection wasn't turned on: after Enable-ComputerRestore there's no entry for the C: drive in SPP\\Clients."
     },
     {
       "pl": "Włączono ochronę systemu na dysku C: (limit miejsca ustawia Windows, domyślnie 3% dysku).",
-      "en": "Turned on System Protection for drive C: (Windows sets the space limit, 3% of the disk by default)."
+      "en": "Turned on System Protection for the C: drive (Windows sets the space limit, 3% of the disk by default)."
     },
     {
       "pl": "Wyłączenie ochrony systemu nie powiodło się: {0}",
@@ -332,11 +332,11 @@
     },
     {
       "pl": "Ochrona systemu nie została wyłączona: po Disable-ComputerRestore wpis dysku C: nadal jest w SPP\\Clients.",
-      "en": "System Protection wasn't turned off: after Disable-ComputerRestore the entry for drive C: is still in SPP\\Clients."
+      "en": "System Protection wasn't turned off: after Disable-ComputerRestore the entry for the C: drive is still in SPP\\Clients."
     },
     {
       "pl": "Wyłączono ochronę systemu na dysku C: (istniejące punkty przywracania zostają na dysku).",
-      "en": "Turned off System Protection for drive C: (existing restore points stay on the disk)."
+      "en": "Turned off System Protection for the C: drive (existing restore points stay on the disk)."
     },
     {
       "pl": "Napraw winget (Instalator aplikacji)",
@@ -344,7 +344,7 @@
     },
     {
       "pl": "Rejestruje „Instalator aplikacji” (winget) dla bieżącego konta, gdy polecenie winget nie działa – niczego nie pobiera ani nie instaluje.",
-      "en": "Registers \"App Installer\" (winget) for the current account when the winget command doesn't work – it doesn't download or install anything."
+      "en": "Registers \"App Installer\" (winget) for the signed-in account when the winget command doesn't work – it doesn't download or install anything."
     },
     {
       "pl": "Przydaje się, gdy Windows nie znajduje polecenia winget – bez niego nie zadziała instalowanie aplikacji z winget na stronie „Instalacja”.",
@@ -412,7 +412,7 @@
     },
     {
       "pl": "Ponownie rejestruje Microsoft Store dla bieżącego konta, gdy sklep się nie otwiera.",
-      "en": "Registers Microsoft Store again for the current account when the Store doesn't open."
+      "en": "Registers Microsoft Store again for the signed-in account when the Store doesn't open."
     },
     {
       "pl": "Może naprawić Microsoft Store, który nie otwiera się na tym koncie. Czy sklep działa, sprawdzisz sam – potrzebny jest internet.",
@@ -420,7 +420,7 @@
     },
     {
       "pl": "Ponownie rejestruje istniejący pakiet Microsoft.WindowsStore z jego manifestu (Add-AppxPackage -Register -DisableDevelopmentMode) dla konta, które uruchomiło DSOptimizer; pakiet wybiera po dokładnej nazwie. Gdy pakiet jest zainstalowany dla konta, rejestruje go ponownie; gdy jest na dysku, ale konto nie ma wpisu Installed (stan Staged, wpis tylko innego konta albo brak wpisów), rejestruje go z manifestu dla tego konta, bez pobierania. Gdy pakietu nie ma na dysku (np. LTSC), kończy się błędem. Odmawia, gdy SID procesu jest inny niż SID zalogowanego użytkownika – rejestracja trafiłaby do niewłaściwego konta. Sukces dopiero po odczycie zwrotnym: pakiet dla tego konta w stanie Installed i Status = Ok. Czy sklep się uruchamia i loguje, akcja nie sprawdza – to wymaga sieci. Bez cofania – ponowna rejestracja nie ma operacji odwrotnej.",
-      "en": "Registers the existing Microsoft.WindowsStore package again from its manifest (Add-AppxPackage -Register -DisableDevelopmentMode) for the account that started DSOptimizer; it picks the package by its exact name. When the package is installed for the account, it registers it again; when it's on the disk but the account has no Installed entry (Staged state, an entry of another account only, or no entries), it registers it from the manifest for this account, without downloading. When the package isn't on the disk (e.g. LTSC), it ends with an error. Refuses when the SID of the process differs from the SID of the signed-in user – the registration would go to the wrong account. It counts as success only after verification: the package for this account in the Installed state and Status = Ok. The action doesn't check whether the Store starts and signs in – that needs the network. No undo – registering again has no reverse operation."
+      "en": "Registers the existing Microsoft.WindowsStore package again from its manifest (Add-AppxPackage -Register -DisableDevelopmentMode) for the account that started DSOptimizer; it picks the package by its exact name. When the package is installed for the account, it registers it again; when it's on the disk but the account has no Installed entry (Staged state, an entry of another account only, or no entries), it registers it from the manifest for this account, without downloading. When the package isn't on the disk (for example LTSC), it ends with an error. Refuses when the SID of the process differs from the SID of the signed-in user – the registration would go to the wrong account. It counts as success only after verification: the package for this account in the Installed state and Status = Ok. The action doesn't check whether the Store starts and signs in – that needs the network. No undo – registering again has no reverse operation."
     },
     {
       "pl": "Bez cofania – nieudana próba może zostawić Microsoft Store niezarejestrowany na tym koncie.",
@@ -428,7 +428,7 @@
     },
     {
       "pl": "Nie instaluje i nie pobiera Microsoft Store – gdy pakietu nie ma na dysku (np. LTSC), kończy się błędem.",
-      "en": "Doesn't install or download Microsoft Store – when the package isn't on the disk (e.g. LTSC), it ends with an error."
+      "en": "Doesn't install or download Microsoft Store – when the package isn't on the disk (for example LTSC), it ends with an error."
     },
     {
       "pl": "Naprawa Microsoft Store działa tylko dla konta, na którym działa DSOptimizer: uruchom DSOptimizer na koncie {0}. Nic nie zmieniono.",
@@ -464,7 +464,7 @@
     },
     {
       "pl": "Rejestracja zakończona bez błędu, ale odczyt zwrotny pakietu nie powiódł się: {0}; skutku nie potwierdzono.",
-      "en": "Registration finished without an error, but verifying the package failed: {0}; the effect wasn't confirmed."
+      "en": "Registration finished without errors, but verifying the package failed: {0}; the effect wasn't confirmed."
     },
     {
       "pl": "Po rejestracji odczyt zwrotny zwrócił {0} pakietów {1} ze stanem Installed dla tego konta (oczekiwano 1); skutku nie potwierdzono.",

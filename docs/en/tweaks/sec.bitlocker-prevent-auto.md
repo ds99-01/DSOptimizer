@@ -34,7 +34,7 @@ Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, batch C4 exp
 
 ## Risks and warnings
 - `risk=caution`.
-- Warnings in the catalog: "An unencrypted drive doesn't protect data if the computer is stolen or lost; a company or school policy may require encryption." and "Microsoft says only the hardware maker may turn off encryption under the Windows 11 license; it also advises against it on PCs with Recall."
+- Warnings in the catalog: "An unencrypted drive doesn't protect data if the computer is stolen or lost; a company or school policy may require encryption." and "Microsoft says only the hardware manufacturer may turn off encryption under the Windows 11 license; it also advises against it with Recall."
 - Beyond the notes in the program (in the technical details or only here): full MS quotes in the "Sources" section (license outside the OEM scenario; not recommended with the Recall feature); the item doesn't decrypt the drive (that's what `sec.bitlocker-decrypt-c` is for); MS describes the value as a block on automatic encryption at the first start (OOBE), and the effect on a running system isn't described.
 - No promises of protection or performance.
 

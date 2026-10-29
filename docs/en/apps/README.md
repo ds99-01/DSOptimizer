@@ -93,7 +93,7 @@ An error in the file gives `AppsCatalogException` with the entry id and the fiel
 | Xbox TCUI, Xbox Identity Provider, Game Speech Window | Other | Xbox dependencies, may be needed by games and Game Bar (design decision) |
 | Game Bar (`Microsoft.XboxGamingOverlay`) | Other, explicit entry | Dawid's decision 2026-10-21 |
 | Phone Link, Mobile devices, Windows Web Experience Pack | Other | No entry; Widgets are handled by batch 1 |
-| Windows Application Compatibility Enhancements, AVC/MPEG-2/VP9/RAW/WebMedia codecs, Microsoft Store purchases | Protected | System components and codecs, like the other codecs from the spec |
+| Windows Application Compatibility Enhancements, AVC/MPEG-2/VP9/RAW/WebMedia codecs, Store Experience Host (Microsoft Store purchases) | Protected | System components and codecs, like the other codecs from the spec |
 | Edge as a package (`Microsoft.MicrosoftEdge.Stable`) | Protected | On the VM the package exists as a separate item next to the Win32 Edge entry |
 | Remote Desktop Connection | Protected (in Polish and in English) | The `mstsc` Uninstall entry has its name only in `DisplayName_Localized`; the pattern depends on the system language |
 | HP Support Assistant, Dell SupportAssist | **Other** (the draft had "suggested") | They may update drivers; no OEM hardware to check |

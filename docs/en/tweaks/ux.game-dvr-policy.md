@@ -1,6 +1,6 @@
 <!-- source: docs/tweaks/ux.game-dvr-policy.md sha256: 116d9691cdf3040db5913712406515910b24eff257789d6c42c3a1dc23c6c821 -->
 
-# ux.game-dvr-policy – Block game recording and broadcasting for all accounts
+# ux.game-dvr-policy – Block game recording and broadcasting on the whole computer
 
 ## Verdict for 26H2
 Port with a warning: the mechanism is documented by MS (Policy CSP / ADMX), but the documentation talks about enforcement on Windows 10 and doesn't list the Home edition, so its effectiveness on 26H2 is unconfirmed.

@@ -28,11 +28,11 @@
     },
     {
       "pl": "Uruchom Menedżer zadań > Uruchom nowe zadanie > explorer.exe (ręcznie; aplikacja niczego nie uruchamia).",
-      "en": "Open Task Manager > Run new task > explorer.exe (by hand; the program doesn't start anything)."
+      "en": "Open Task Manager > Run new task > explorer.exe (by hand; DSOptimizer doesn't start anything)."
     },
     {
       "pl": "brak SID zalogowanego użytkownika – nic nie zatrzymano",
-      "en": "no SID of the signed-in user – nothing was stopped"
+      "en": "the signed-in user's SID is missing – nothing was stopped"
     },
     {
       "pl": "brak wartości",
@@ -84,11 +84,11 @@
     },
     {
       "pl": "Pobiera z API GitHuba (releases/latest repozytorium ChrisTitusTech/winutil, bez wydań testowych i szkiców) plik winutil.ps1 do %ProgramData%\\DSOptimizer\\downloads, porównuje jego SHA256 z polem digest z API i otwiera go w osobnym oknie PowerShell 5.1 (powershell.exe -NoExit -NoProfile -ExecutionPolicy RemoteSigned -File) z uprawnieniami administratora, bez czekania na zamknięcie okna. SHA256 potwierdza tylko zgodność z wydaniem GitHuba, nie to, że kod jest bezpieczny; każde nowe wydanie WinUtil może działać inaczej niż poprzednie. Uruchamiane jest tylko najnowsze stabilne wydanie, bez presetów i bez gałęzi deweloperskiej. Bez połączenia z siecią nic się nie otwiera, a akcja kończy się komunikatem o braku połączenia. Skrypt zostaje w folderze pobrań i jest usuwany przy kolejnym pobraniu (WinUtil albo RustDesk), gdy ma ponad 24 h.",
-      "en": "Downloads the winutil.ps1 file through the GitHub API (releases/latest of the ChrisTitusTech/winutil repository, without test releases and drafts) to %ProgramData%\\DSOptimizer\\downloads, compares its SHA256 with the digest field from the API and opens it in a separate PowerShell 5.1 window (powershell.exe -NoExit -NoProfile -ExecutionPolicy RemoteSigned -File) with administrator permissions, without waiting for the window to close. SHA256 only confirms that the file matches the GitHub release, not that the code is safe; every new WinUtil release may work differently from the previous one. Only the latest stable release is run, without presets and without the development branch. Without a network connection nothing opens, and the action ends with a message about the missing connection. The script stays in the downloads folder and is deleted at the next download (WinUtil or RustDesk) once it's more than 24 h old."
+      "en": "Downloads the winutil.ps1 file through the GitHub API (releases/latest of the ChrisTitusTech/winutil repository, without pre-releases and draft releases) to %ProgramData%\\DSOptimizer\\downloads, compares its SHA256 with the digest field from the API and opens it in a separate PowerShell 5.1 window (powershell.exe -NoExit -NoProfile -ExecutionPolicy RemoteSigned -File) with administrator rights, without waiting for the window to close. SHA256 only confirms that the file matches the GitHub release, not that the code is safe; every new WinUtil release may work differently from the previous one. Only the latest stable release is run, without presets and without the development branch. Without a network connection nothing opens, and the action ends with a message about the missing connection. The script stays in the downloads folder and is deleted at the next download (WinUtil or RustDesk) once it's more than 24 h old."
     },
     {
       "pl": "Uruchamiasz cudzy kod z internetu jako admin – DSOptimizer nie sprawdza treści skryptu.",
-      "en": "You run someone else's code from the internet as admin – DSOptimizer doesn't check what the script contains."
+      "en": "You run someone else's code from the internet as administrator – DSOptimizer doesn't check what the script contains."
     },
     {
       "pl": "DSOptimizer nie śledzi i nie cofa zmian zrobionych w oknie WinUtil.",

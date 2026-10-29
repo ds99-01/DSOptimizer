@@ -32,11 +32,11 @@
     },
     {
       "pl": "Otwiera listę kart sieciowych, w której sam zmienisz ich ustawienia, np. adres IP albo serwery DNS.",
-      "en": "Opens the list of network adapters, where you can change their settings yourself, e.g. the IP address or DNS servers."
+      "en": "Opens the list of network adapters, where you can change their settings yourself, such as the IP address or DNS servers."
     },
     {
       "pl": "Otwiera panel systemowy Windows: klasyczne okno „Połączenia sieciowe” (polecenie: control.exe netconnections). Pozycja niczego nie zmienia – ustawienia kart (np. IPv6, adres IP, DNS) zmieniasz sam w oknie. DSOptimizer nie cofa zmian zrobionych w tym oknie.",
-      "en": "Opens a Windows system panel: the classic \"Network Connections\" window (command: control.exe netconnections). The item doesn't change anything – you change adapter settings (e.g. IPv6, IP address, DNS) yourself in the window. DSOptimizer doesn't undo changes made in this window."
+      "en": "Opens a Windows system panel: the classic \"Network Connections\" window (command: control.exe netconnections). The item doesn't change anything – you change adapter settings (for example IPv6, IP address, DNS) yourself in the window. DSOptimizer doesn't undo changes made in this window."
     },
     {
       "pl": "Zarządzanie komputerem",
