@@ -24,7 +24,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `HKLM\SOFTWARE\
 
 ## Risks and warnings
 - `risk=safe`, `suggested=true`.
-- Catalog warning: "The button disappears after you sign in again (or after you restart File Explorer in "Tools")."
+- Warning in the catalog: "The button disappears after you sign in again (or after you restart File Explorer in "Tools")."
 - Beyond the notes in the program (in the technical details or only here): restarting File Explorer is the `tools.restart-explorer` item; after the change the "Widgets" toggle in Settings is grayed out (the policy locks it and this can't be avoided).
 
 ## VM test

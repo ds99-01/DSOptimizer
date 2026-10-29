@@ -32,7 +32,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - The gain in games wasn't measured (since 2026-10-26 the description in the program doesn't mention it; previously: "The gain in games wasn't measured").
 
 ## VM test
-VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (folder in `.gitignore`); in the `main` run Pester passed 140, 0 failures, 10 skipped (Home and Pro identical).
+VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (folder in `.gitignore`); in the `main` run Pester passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 Two `Flow=Full` cases (`main` run), Home and Pro, in both: `detect-before` = `NotApplied`, `apply` code 0, `detect-after-apply` = `Applied`, `undo` code 0, `detect-after-undo` = `NotApplied`, `SnapshotDiff` empty.
 - `ux-game-dvr-policy` (no `AllowGameDVR` before apply, `SnapshotBefore` `Exists=false`): the case's expectation (Pester green) = after undo the key `...\Policies\Microsoft\Windows\GameDVR` doesn't exist, and `...\Policies\Microsoft\Windows` stays; after apply `AllowGameDVR` = DWORD 0.

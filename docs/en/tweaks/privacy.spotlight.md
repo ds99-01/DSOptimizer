@@ -3,7 +3,7 @@
 # privacy.spotlight – Turn off Windows spotlight (pictures of the day)
 
 ## Verdict for 26H2
-Port as a **non-suggested** item with a warning (Dawid's decision 2026-10-21, question 1 after batch 1). There is an effect: the desktop background stops being a picture of the day. Undo removes the policy, but doesn't bring back the "Windows spotlight" background (which is why the item was dropped in batch 1, R9). The catalog warning says that the pictures of the day have to be chosen again in Settings > Personalization > Background.
+Port as a **non-suggested** item with a warning (Dawid's decision 2026-10-21, question 1 after batch 1). There is an effect: the desktop background stops being a picture of the day. Undo removes the policy, but doesn't bring back the "Windows spotlight" background (which is why the item was dropped in batch 1, R9). The warning in the catalog says that the pictures of the day have to be chosen again in Settings > Personalization > Background.
 
 ## What it changes
 - `HKCU\Software\Policies\Microsoft\Windows\CloudContent` (in the engine `HKU\<SID of the signed-in user>`), value `DisableWindowsSpotlightFeatures`, **DWord**, set to `1`; `scope=user`.
@@ -24,7 +24,7 @@ Reading from the VMs, 2026-10-21: neither the user's `...\Policies\Microsoft\Win
 
 ## Risks and warnings
 - `risk=caution` (undo doesn't restore the whole effect), `suggested=false`.
-- Catalog warning: "Undo doesn't bring back the pictures of the day: choose them again in Settings > Personalization > Background."
+- Warning in the catalog: "Undo doesn't bring back the pictures of the day: choose them again in Settings > Personalization > Background."
 - Beyond the notes in the program (in the technical details or only here): the effect on the lock screen wasn't checked.
 - Choosing "Windows spotlight" again after undo wasn't checked: Windows not activated on the VM blocks personalization.
 

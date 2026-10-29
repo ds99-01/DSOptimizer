@@ -6,7 +6,7 @@
 Port as `kind=action`, `risk=safe` ("Repairs" category, Stage 4b batch 1): an on-demand point through the existing `IRestorePointService` (the same one that creates points before changes) works on 26H2 Home and Pro when System Protection is turned on. No undo.
 
 ## What it changes
-C# handler `restore-point` (`RestorePointHandler`), without a script: `IRestorePointService.Create("DSOptimizer – punkt ręczny")`. For the duration of the call, the service sets `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore\SystemRestorePointCreationFrequency` (the 24-hour limit) to zero, calls `SystemRestore.CreateRestorePoint`, waits (up to 10 s) until the point appears in the list, and restores the previous value of the limit. Results:
+C# handler `restore-point` (`RestorePointHandler`), without a script: `IRestorePointService.Create("DSOptimizer – manual restore point")` (the name follows the program language; in Polish it is "DSOptimizer – punkt ręczny"). For the duration of the call, the service sets `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore\SystemRestorePointCreationFrequency` (the 24-hour limit) to zero, calls `SystemRestore.CreateRestorePoint`, waits (up to 10 s) until the point appears in the list, and restores the previous value of the limit. Results:
 - `Created` → `Executed`: "Created restore point "DSOptimizer – manual restore point" (<local time from IClock>)."
 - `ProtectionDisabled` → `Failed`: "System Protection is turned off for drive C: – turn it on with the "System Protection" item in this category." The handler doesn't silently turn anything on.
 - `Failed` → `Failed` with the service message and code (`(code N)`), when the service provided it.

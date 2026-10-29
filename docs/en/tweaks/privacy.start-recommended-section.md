@@ -25,7 +25,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: value `HideReco
 
 ## Risks and warnings
 - `risk=safe`, `suggested=false` (R12).
-- Catalog warnings: "Recently opened files disappear from the Start menu together with the section." and "The change takes effect after you sign in again; restarting File Explorer alone may not be enough."
+- Warnings in the catalog: "Recently opened files disappear from the Start menu together with the section." and "The change takes effect after you sign in again; restarting File Explorer alone may not be enough."
 - Beyond the notes in the program (in the technical details or only here): the effect of restarting File Explorer alone (`tools.restart-explorer`) wasn't checked.
 
 ## VM test

@@ -489,7 +489,7 @@ Titles of the "Repairs" items (other texts quote them exactly) and the terms of 
 | Pokaż więcej opcji | Show more options | Classic Windows 11 context menu entry |
 | Przejmij na własność | take ownership | The menu text itself is a registry value written in Polish by the item (`MUIVerb`), so the English description names it as "Przejmij na własność" (take ownership). **do audytu (Etap 5)** |
 | Administratorzy (grupa) | Administrators | Built-in group, SID S-1-5-32-544 |
-| UAC (zgoda w UAC) | UAC prompt ("after you approve the UAC prompt") | |
+| UAC (zgoda w UAC) | UAC prompt ("after you approve the UAC prompt") | The documents use the noun "UAC approval" ("requires UAC approval"), which matches the program text "After you approve the UAC prompt" (`catalog-sec.json`) |
 | powłoka (Eksploratora) / pulpit | shell / desktop | "the File Explorer shell (explorer.exe)" |
 | Menedżer zadań > Plik > Uruchom nowe zadanie | Task Manager > Run new task | "Run new task" as in Task Manager. **do audytu (Etap 5)** – the redesigned Windows 11 Task Manager shows "Run new task" in the command bar, not in a File menu (the Polish text says "Plik"). **do audytu (Etap 5):** polski tekst też do poprawy |
 | wylogowanie | signing out | Style rule 11 |
@@ -543,12 +543,13 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | remis rozstrzygnięty na korzyść nazwy kanonicznej MS | the tie was resolved in favor of the MS canonical name | System panels documents |
 | Hint co do listy i polecenia, nie dowód skutku | A hint for the list and the command, not evidence of the effect | WinUtil source line |
 | Bez ostrzeżeń w katalogu. | No warnings in the catalog. | "Risks and warnings" |
+| Ostrzeżenie w katalogu: / Ostrzeżenia w katalogu: | Warning in the catalog: / Warnings in the catalog: | "Risks and warnings"; not "Catalog warning(s)" |
 | Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj) | Beyond the notes in the program (in the technical details or only here) | Recurring sentence in "Risks and warnings" |
 | skutek uboczny / odmowa (przed zmianą) | side effect / refusal | |
 | Przebieg łącznie: | Whole run: | Intro of the run summary in "VM test" |
 | `Przebieg VM z <data>` / `Przebieg na VM <data>` | `VM run of <date>` / `VM run on <date>` | Two Polish forms, two English forms |
 | przebieg (VM, testu) / przebieg CLI / przebieg `main` | run / CLI run / `main` run | "first run" |
-| zaliczone / pominięte / `Pester zaliczył N` | passed / skipped / `Pester passed N` | Run counts ("722 passed / 0 … / 25 skipped"); for "błędów" see the note below the table |
+| zaliczone / 0 błędów / pominięte / `Pester zaliczył N` | passed / 0 failed / skipped / `Pester passed N` | Run counts: "722 passed / 0 failed / 25 skipped", "Pester passed 140, 0 failed, 10 skipped"; not "0 failures" |
 | przypadek / sonda / sonda uzupełniająca / główna sonda | case / probe / follow-up probe / main probe | "Case `net-smb-harden`", "probe 7" |
 | eksploracja | exploration | "C4 exploration", "The exploration of 2026-10-21 passed" |
 | prawdziwy restart / ulotny znacznik | real restart / volatile marker | Restart proof in "VM test" (later `LastBootUpTime`, the marker disappears) |
@@ -557,6 +558,7 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | strażnik / plik-strażnik / wartownik | guard / guard file / sentinel | `ServicingGuard`, the shell guard; "wartownik" = a sentinel value (`KeyPresentAfterUndo`) |
 | funkcja pomocnicza | helper function | |
 | stan po apply potwierdzony niezależnym odczytem | state after apply confirmed by an independent reading | |
+| stan końcowy = stan przed | final state = state before | "VM test"; capitalized at the start of a sentence ("Final state = state before"); not "end state" |
 | undo z wartości domyślnych | undo to defaults | Same family as "Undone to defaults" |
 | stan efektywny / rozjazd / odczyt stanu fabrycznego | effective state / mismatch / factory-state reading | |
 | proces żyje / odpytuje w pętli | the process is running / polls in a loop | `Check` wording of panel items |
@@ -569,25 +571,21 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | pomiar / za pomiarem | measurement / as cited in the measurement | "za pomiarem" = the address comes from the measurement record |
 | oględziny | visual check | |
 | `Raporty lokalne: <ścieżka> (katalog w .gitignore)` | `Local reports: <path> (folder in .gitignore)` | "katalog" = folder (Concepts) |
-| raporty poza gitem / surowe wyniki poza gitem | reports outside git / raw results outside git | For "Raporty lokalne poza gitem" see the note below the table |
+| raporty poza gitem / surowe wyniki poza gitem | reports outside git / raw results outside git | |
+| Raporty lokalne poza gitem. | Reports are local, outside git. | "VM test"; not "Local reports outside git" (different from `Local reports: <path>` above) |
 | Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro / Odczyt hosta deweloperskiego | Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs / Reading from the development host | Source types in "Sources" |
 | MS-archiwum / archiwalny blog / hint | MS archive / archived blog / hint | Source types; "hint" = a non-Microsoft source |
 | pobrana dwukrotnie | fetched twice | "Sources" |
 | j.w. / jw. | as above | |
-| Niepotwierdzone / Odrzucone (z powodem) | Unconfirmed / Rejected (with reason) | `docs/prep` sections |
+| Niepotwierdzone / Odrzucone (z powodem) | Unconfirmed / Rejected (with reason) | Sections: "Niepotwierdzone" in `docs/prep`, "Odrzucone (z powodem)" in `docs/apps/install-README.md` |
 | Cel / Źródło / Sprawdzono / Producent | Purpose / Source / Checked / Manufacturer | `docs/prep` column headers |
 | chipset / grafika / wsparcie / wsparcie-numer | chipset / graphics / support / support-number | `docs/prep` purpose values |
-| Lista – pozycje z dowodem (N) | List – entries with evidence (N) | `docs/prep` heading |
-| zamiast tego `install.rustdesk` z GitHuba | use `install.rustdesk` from GitHub instead | `docs/prep` rejection reason |
+| Lista – pozycje z dowodem (N) | List – entries with evidence (N) | `docs/apps/install-README.md` heading |
+| zamiast tego `install.rustdesk` z GitHuba | use `install.rustdesk` from GitHub instead | `docs/apps/install-README.md` rejection reason |
 | Decyzje na granicy / Źródła rozpoznania | Borderline decisions / Identification sources | `docs/apps` headings |
 | wchodzi (werdykt w tabeli listy) / zakres: komputer / konto | in / scope: computer / account | `docs/apps` tables |
 | zależności uruchomieniowe / ponowienie / faza `network` | runtime dependencies / retry / `network` phase | `docs/apps`; as "Środowiska uruchomieniowe" = Runtimes |
 | kłódka | padlock | |
-
-Not settled yet (the English documents use both forms; to be unified in one change of `docs/en/` and then added here):
-"Ostrzeżenie / Ostrzeżenia w katalogu" ("Warning(s) in the catalog" / "Catalog warning(s)"), "stan końcowy = stan przed"
-("final state" / "End state"), "0 błędów" ("0 failed" / "0 failures"), "Raporty lokalne poza gitem" ("Reports are local,
-outside git" / "Local reports outside git").
 
 ## Windows names
 

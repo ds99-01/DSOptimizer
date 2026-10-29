@@ -32,7 +32,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - The v3.2 description ("drastically speeds up syscalls") and the "32 GB RAM" threshold have no MS source, so they don't go into the catalog.
 
 ## VM test
-VM run of 2026-10-18 (13:51, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without failures (212 passed / 0 failures / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports: `tests/vm/out/20261018-135146/<VM>/<RunLabel>/report.json` (folder in `.gitignore`).
+VM run of 2026-10-18 (13:51, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without failures (212 passed / 0 failed / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports: `tests/vm/out/20261018-135146/<VM>/<RunLabel>/report.json` (folder in `.gitignore`).
 
 Case `perf-paging-executive` (`Flow=Reboot`, run `reboot-perf-paging-executive`, a separate run from a clean checkpoint; Pester 14/14 on Home and Pro), Home and Pro identical:
 - Checked: `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = true), `detect-after-apply` = `Applied`, **real restart** (confirmed by a later `LastBootUpTime` and the disappearance of a volatile marker), `detect-after-reboot` = `Applied`, `undo` = `Undone` (`requiresReboot` = true, `finalState` = `NotApplied`), `detect-after-undo` = `NotApplied`. Final state = state before (DWORD 0).

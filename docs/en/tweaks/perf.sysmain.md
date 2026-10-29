@@ -34,7 +34,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - The v3.2 description promised an improvement on NVMe and lower CPU usage. None of these claims is confirmed by an MS source, so they don't go into the catalog.
 
 ## VM test
-VM run of 2026-10-18 (13:51, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without failures (212 passed / 0 failures / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports: `tests/vm/out/20261018-135146/<VM>/<RunLabel>/report.json` (folder in `.gitignore`).
+VM run of 2026-10-18 (13:51, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without failures (212 passed / 0 failed / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports: `tests/vm/out/20261018-135146/<VM>/<RunLabel>/report.json` (folder in `.gitignore`).
 
 Case `perf-sysmain` (`Flow=Full`, `main` run), Home and Pro identical:
 - Checked: `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = false), `detect-after-apply` = `Applied`, `undo` = `Undone` (`finalState` = `NotApplied`), `detect-after-undo` = `NotApplied`. `CheckAfterApply` Passed (service `Stopped`, `StartMode` `Disabled`), `CheckAfterUndo` Passed (`State` and `StartMode` as before apply: `Running`/`Auto`). Final state = state before (snapshot `Services\SysMain\Start`).

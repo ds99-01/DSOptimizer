@@ -39,7 +39,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - Not tested on a VM: the behavior with a pending update, the actual size of the reserve (in the registry `BaseHardReserveSize` = 5 GiB, `BaseSoftReserveSize` = 1.5 GiB are base values, not a measured size).
 
 ## VM test
-VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (folder in `.gitignore`); in the `main` run Pester passed 140, 0 failures, 10 skipped (Home and Pro identical).
+VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (folder in `.gitignore`); in the `main` run Pester passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 Case `disk-reserved-storage` (`Flow=Full`, `main` run), Home and Pro:
 - Checked: `detect-before` = `NotApplied` (cmdlet: `Enabled`), `apply` code 0, `detect-after-apply` = `Applied`, `undo` code 0, `detect-after-undo` = `NotApplied`. A **Check** independent of the cmdlet: `CheckAfterApplyResult` = `Passed` (`ReserveManager\PassedPolicy` = 0), `CheckAfterUndoResult` = `Passed` (`PassedPolicy` = 1). `SnapshotDiff` empty for `PassedPolicy` (before 1, after undo 1). `MiscPolicyInfo` is neither in the Snapshot nor in the Check (it stays after undo, as described above).

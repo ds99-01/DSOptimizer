@@ -3,7 +3,8 @@
 # Catalog item documentation
 
 Each catalog item has a file `docs/en/tweaks/<id>.md`, where `<id>` is exactly the `id` from the JSON in `src/DSOptimizer.Catalog/catalog/`
-(the `Definitions_HaveDocsFile` test makes sure no item is left without a document). The file layout is fixed: the nine sections
+(the `Definitions_HaveDocsFile` test makes sure no item is left without a Polish document; a missing or outdated English one
+shows up in `tools/i18n/Get-MissingTranslations.ps1`). The file layout is fixed: the nine sections
 below, in this order. This file is the template: copy the headings into a new `<id>.md` and replace the one-line instructions with content.
 
 ## Verdict for 26H2

@@ -24,7 +24,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `DiagTrack` sta
 
 ## Risks and warnings
 - `risk=caution` (R14), `suggested=true`.
-- Catalog warnings: "Microsoft doesn't document turning off this service, and Windows Update also uses it – if you have trouble with updates, undo the change." and "It doesn't guarantee that Windows stops sending diagnostic data."
+- Warnings in the catalog: "Microsoft doesn't document turning off this service, and Windows Update also uses it – if you have trouble with updates, undo the change." and "It doesn't guarantee that Windows stops sending diagnostic data."
 - Beyond the notes in the program (in the technical details or only here): on the VM (Home and Pro) a Windows Update search after a restart with the service disabled worked (WUA `Search`: ResultCode=2, 4 updates, no error). This is one observation, not a guarantee.
 - Known engine limitation (deferred): it stops the service only when it is `Running`; a service that is still starting at the moment of apply may run until the restart. The startup type is `Disabled` in both cases.
 - A computer restart isn't required (effect right away, persistent after a restart).

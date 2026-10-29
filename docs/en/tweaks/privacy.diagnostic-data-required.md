@@ -27,7 +27,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `HKLM\SOFTWARE\
 
 ## Risks and warnings
 - `risk=caution`, `suggested=true`.
-- Catalog warnings: "This is a limit, not a shutoff – Microsoft still receives required data." and "Settings will show a message that some settings are managed by your organization."
+- Warnings in the catalog: "This is a limit, not a shutoff – Microsoft still receives required data." and "Settings will show a message that some settings are managed by your organization."
 - Beyond the notes in the program (in the technical details or only here): the optional data toggle in Settings is grayed out until the change is undone.
 - No restart (no restart is required, `requiresReboot=false`); File Explorer doesn't need to be restarted.
 

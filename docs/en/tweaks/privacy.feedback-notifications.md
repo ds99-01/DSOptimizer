@@ -24,7 +24,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `DataCollec
 
 ## Risks and warnings
 - `risk=safe`, `suggested=true`.
-- Catalog warning: "Settings will show a message that some settings are managed by your organization." Evidence: page state in Settings; the notifications themselves weren't observed.
+- Warning in the catalog: "Settings will show a message that some settings are managed by your organization." Evidence: page state in Settings; the notifications themselves weren't observed.
 
 ## VM test
 Case `privacy-feedback-notifications` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyPresentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`, Task 9 of the batch): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `DataCollection` key survived undo (`KeyPresentAfterUndo`), `DoNotShowFeedbackNotifications` doesn't exist after undo. The exploration of 2026-10-21 passed on Home and Pro.

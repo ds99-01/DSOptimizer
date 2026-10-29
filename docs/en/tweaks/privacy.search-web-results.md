@@ -31,7 +31,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `SearchSett
 
 ## Risks and warnings
 - `risk=safe`, `suggested=true`.
-- Catalog warning: "The change takes effect after you sign in again; restarting File Explorer alone may not be enough."
+- Warning in the catalog: "The change takes effect after you sign in again; restarting File Explorer alone may not be enough."
 - Beyond the notes in the program (in the technical details or only here): the effect of restarting File Explorer alone (`tools.restart-explorer`) wasn't checked; the item turns off all providers of web results.
 
 ## VM test

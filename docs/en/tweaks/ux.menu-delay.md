@@ -34,7 +34,7 @@ Not settled (not tested): the system's behavior after the value is deleted.
 - Some Win32 applications may ignore the value (hint).
 
 ## VM test
-VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (folder in `.gitignore`); in the `main` run Pester passed 140, 0 failures, 10 skipped (Home and Pro identical).
+VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (folder in `.gitignore`); in the `main` run Pester passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 Case `ux-menu-delay` (`Flow=Full`, `main` run), Home and Pro:
 - Checked: `detect-before` = `NotApplied` (Setup set `MenuShowDelay` = `"250"`, unlike the `original` `"400"`), `apply` code 0, `detect-after-apply` = `Applied`, `undo` code 0, `detect-after-undo` = `NotApplied`. `SnapshotBefore` contains `HKU\<SID>\Control Panel\Desktop\MenuShowDelay` String `"250"`, and `SnapshotDiff` (before vs. after undo) is empty, so undo restored the value from the snapshot, not from the `"400"` fallback. Snapshot after apply = `"10"`. `NotWrittenToDiff` empty: apply didn't touch the `HKCU` of the Administrator account.

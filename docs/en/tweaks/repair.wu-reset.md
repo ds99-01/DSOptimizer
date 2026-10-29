@@ -13,7 +13,7 @@ C# handler (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`), without a Powe
 4. Starting the stopped services in reverse order: `cryptsvc`, its dependents (in start order), `bits`, `wuauserv`. Whether a service counts as restored is decided by reading its state (`Query`), not by the `Start` code: a driver that started on its own together with `AppIDSvc` counts as restored. A service that isn't running after the start = `NotRestored` and `Failed`.
 5. Policy diagnosis (read-only): the values `WUServer`, `WUStatusServer`, `DisableWindowsUpdateAccess`, `SetDisableUXWUAccess` in `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate` and `NoAutoUpdate`, `UseWUServer` in the `AU` subkey, if they exist, go into the result as "Policy: <name> = <value>" + "They may be the cause of the problem; the item "Reset Windows Update and remove blocks" removes them (with a backup)." Nothing is changed.
 6. Verification: the services that were running before the reset are running, the copies from this run exist. A mismatch = `Failed` with a list. Success = `Executed` with the list of steps, the paths of the copies and a warning about the update history.
-7. Only after success: deleting older copies `<folder>.dso-*` next to the original (`ListSiblingDirectories`, only names matching the pattern `<folder>.dso-yyyyMMdd-HHmmss[-N]`, without the copies from this run); the newest one stays. A deletion failure = a warning.
+7. Only after success: deleting older copies `<folder>.dso-*` next to the original (`ListSiblingDirectories`, only names matching the pattern `<folder>.dso-yyyyMMdd-HHmmss[-N]`, without the copies from this run); only the newest one stays. A deletion failure = a warning.
 
 Services protected by the system: `msiserver`, `WaaSMedicSvc`, `DoSvc` are never changed; the result mentions one of them only when it's disabled (`Disabled`).
 
@@ -30,7 +30,7 @@ Not applicable: `kind=action` has no detection or undo (no journal). Trace: the 
 ## Risks and warnings
 - `risk=caution`: for a few seconds it stops the Windows Update and BITS services and Cryptographic Services (with their dependents); for the duration of the reset (about 1 s) AppLocker doesn't enforce rules – irrelevant on a private computer without AppLocker.
 - Update history in Settings will be cleared (only Microsoft Defender definition entries may stay); updates will download again.
-- The folder copies stay next to the original (the newest one); paths in the result.
+- The folder copies stay next to the original (only the newest one); paths in the result.
 - Windows Update policies are only listed, not changed (`repair.wu-reset-full` removes them).
 
 ## VM test
