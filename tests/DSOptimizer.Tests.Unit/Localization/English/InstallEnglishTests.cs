@@ -118,12 +118,12 @@ public class InstallEnglishTests
 
             var result = f.Install(Vlc).Batch.Results.Single();
 
-            const string Text = "Not done – the package isn't in winget or doesn't suit this computer. Code 0x8A150010.";
+            const string Text = "Not done – the package isn't in winget or doesn't match this computer. Code 0x8A150010.";
             Assert.Equal(TweakOutcome.Failed, result.Outcome);
             Assert.Equal(Text + " winget log: " + VlcLog, result.Message);
             Assert.Equal("Not done", InstallText.OutcomeName(result.Outcome));
             Assert.Equal(
-                "The package isn't in winget or doesn't suit this computer. Code 0x8A150010. winget log: " + VlcLog,
+                "The package isn't in winget or doesn't match this computer. Code 0x8A150010. winget log: " + VlcLog,
                 InstallText.ResultDetail(result));
             var close = f.Journal.Current.Entries.Single().Events[1];
             Assert.Equal(Text, close.Reason);
@@ -230,14 +230,14 @@ public class InstallEnglishTests
             prerelease.Web.ClearTexts();
             prerelease.Web.EnqueueText(FakeWebDownloader.Ok(AppInstallEngineGitHubTests.Release(prerelease: true)));
             Assert.Equal(
-                "Not done – the RustDesk release on GitHub failed the check (test release (prerelease))",
+                "Not done – the RustDesk release on GitHub failed the check (pre-release)",
                 prerelease.Install(RustDesk).Batch.Results.Single().Message);
 
             var noMsi = new Fixture();
             noMsi.Web.ClearTexts();
             noMsi.Web.EnqueueText(FakeWebDownloader.Ok(AppInstallEngineGitHubTests.Release(withMsi: false)));
             Assert.Equal(
-                "Not done – RustDesk on GitHub has no MSI installer for this version",
+                "Not done – there's no MSI installer for this version on RustDesk's GitHub",
                 noMsi.Install(RustDesk).Batch.Results.Single().Message);
 
             var hash = new Fixture();
@@ -281,8 +281,8 @@ public class InstallEnglishTests
     [InlineData(SignatureStatus.Invalid, null, "0x80096010", "invalid signature (0x80096010)")]
     [InlineData(SignatureStatus.Invalid, null, null, "invalid signature")]
     [InlineData(SignatureStatus.NotSigned, null, null, "no publisher signature")]
-    [InlineData(SignatureStatus.Valid, "CN=Other, O=Other, C=US", null, "signature of another publisher: CN=Other, O=Other, C=US")]
-    [InlineData(SignatureStatus.Valid, null, null, "signature of another publisher: (no subject)")]
+    [InlineData(SignatureStatus.Valid, "CN=Other, O=Other, C=US", null, "signed by another publisher: CN=Other, O=Other, C=US")]
+    [InlineData(SignatureStatus.Valid, null, null, "signed by another publisher: (no subject)")]
     public void RustDesk_SignatureFailed_English(SignatureStatus status, string? subject, string? detail, string reason)
     {
         using (L.Use(UiLanguage.English))
@@ -581,9 +581,9 @@ public class InstallEnglishTests
             Assert.Equal("From the list (3)", InstallText.CatalogSection(3));
             Assert.Equal("In winget (12)", InstallText.WingetSection(12));
             Assert.Equal("Not on the list. Press Enter to search winget.", InstallText.NoCatalogMatch);
-            Assert.Equal("Not on the list. Winget doesn't work – searching winget isn't available.", InstallText.NoCatalogMatchWingetDown);
+            Assert.Equal("Not on the list. winget doesn't work – searching winget isn't available.", InstallText.NoCatalogMatchWingetDown);
             Assert.Equal("Not on the list.", InstallText.NoCatalogMatchPlain);
-            Assert.Equal("RustDesk is installed from the list: use install.rustdesk.", InstallText.CliGitHubAlias("RustDesk", "install.rustdesk"));
+            Assert.Equal("Install RustDesk from the list: use install.rustdesk.", InstallText.CliGitHubAlias("RustDesk", "install.rustdesk"));
             Assert.Equal("VLC is on the list – above", InstallText.OnListNote("VLC"));
             Assert.Equal("RustDesk is on the list – above (installed from GitHub)", InstallText.OnListNoteGitHub("RustDesk"));
             Assert.Equal("Go to: Repair winget", InstallText.RepairWingetButton);
@@ -650,7 +650,7 @@ public class InstallEnglishTests
             var two = f.Session.ConfirmationFor(new[] { RustDesk, Vlc });
             Assert.Equal("2 apps", two.Subtitle);
             Assert.Equal("Install (2)", two.PrimaryText);
-            Assert.Equal("winget (Microsoft); GitHub RustDesk (rustdesk/rustdesk), PURSLANE signature", two.Facts[0].Value);
+            Assert.Equal("winget (Microsoft); RustDesk's GitHub (rustdesk/rustdesk), signed by PURSLANE", two.Facts[0].Value);
             Assert.Equal(
                 "RustDesk will be downloaded and installed without an installer window only after its SHA256 hash and publisher signature are checked.",
                 two.Warnings[1]);
@@ -729,10 +729,10 @@ public class InstallEnglishTests
             Assert.Equal("apps: (entry 1), field entries: the element must be an object", LoadError("{ \"entries\": [1] }"));
             Assert.Equal("apps: (entry 1), field id: id is required", LoadError("{ \"entries\": [ {} ] }"));
             Assert.Equal(
-                "apps: vlc, field id: id must have the form install.<name> (lower-case letters, digits, \"-\")",
+                "apps: vlc, field id: id must have the form install.<name> (lowercase letters, digits, \"-\")",
                 LoadError("{ \"entries\": [ { \"id\": \"vlc\" } ] }"));
             Assert.Equal(
-                "apps: install.x, field github: give exactly one of the fields wingetId or github",
+                "apps: install.x, field github: specify exactly one of the fields wingetId or github",
                 LoadError("{ \"entries\": [ { \"id\": \"install.x\", \"wingetId\": \"A.B\", \"github\": \"a/b\" } ] }"));
             Assert.Equal(
                 "apps: install.x, field github: the github field is allowed only for items listed in the code (install.rustdesk → rustdesk/rustdesk)",

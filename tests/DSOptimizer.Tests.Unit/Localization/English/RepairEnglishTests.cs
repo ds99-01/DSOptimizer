@@ -293,7 +293,7 @@ public class RepairEnglishTests
                     "Freed: 1.5 GB.",
                     "System temporary files: done (files: 2, 3 MB; kept, newer than 24 h: 1; kept, in use: 1).",
                     "Account temporary files: done (files: 4, 20 MB).",
-                    "Delivery Optimization: done – the command finished without an error (files being downloaded right now stay).",
+                    "Delivery Optimization: done – the command finished without errors (files that are downloading right now are kept).",
                     "Downloaded updates: done (files: 8, 255 MB); services were restarted: bits, wuauserv.",
                     "Component store: done (DISM /StartComponentCleanup, code 0).",
                     "Account thumbnails: done (files: 15, less than 1 MB).",
@@ -313,7 +313,7 @@ public class RepairEnglishTests
 
             var result = rig.Run(new DiskCleanupHandler(rig.Build()), ActionHandlerNames.DiskCleanup);
 
-            Assert.Equal("Freed: the freed space can't be reported honestly (other programs were writing to the disk).", Lines(result)[0]);
+            Assert.Equal("Freed: the freed space can't be reported accurately (other programs were writing to the disk).", Lines(result)[0]);
             Assert.Equal("couldn't read the free space", DiskSpaceText.Freed(null, 9 * Gb));
         }
     }
@@ -476,7 +476,7 @@ public class RepairEnglishTests
 
             Assert.Equal(TweakOutcome.Failed, result.Outcome);
             Assert.Contains(
-                @"Couldn't remove value StateFlags7351 from VolumeCaches\Previous Installations (denied) – remove it manually, otherwise the next run will refuse.",
+                @"Couldn't remove value StateFlags7351 from VolumeCaches\Previous Installations (denied) – remove it manually, otherwise the next run will be refused.",
                 Lines(result));
         }
     }
@@ -502,7 +502,7 @@ public class RepairEnglishTests
             Assert.Equal(
                 new[]
                 {
-                    "DISM: finished without an error (code 0); CBS.log didn't show whether anything was repaired.",
+                    "DISM: finished without errors (code 0); CBS.log didn't show whether anything was repaired.",
                     @"SFC: ended with code 0, but the result can't be read clearly – check the [SR] entries in %SystemRoot%\Logs\CBS\CBS.log.",
                     @"Logs: %SystemRoot%\Logs\DISM\dism.log, %SystemRoot%\Logs\CBS\CBS.log.",
                 },
@@ -541,7 +541,7 @@ public class RepairEnglishTests
                 "Created restore point \"DSOptimizer – manual restore point\" (2026-10-22 12:30:05).",
                 created.Run(tweak, null, null, CancellationToken.None).Message);
             Assert.Equal(
-                "System Protection is turned off for drive C: – turn it on with the \"System Protection\" item in this category.",
+                "System Protection is turned off for the C: drive – turn it on with the \"System Protection\" item in this category.",
                 disabled.Run(tweak, null, null, CancellationToken.None).Message);
             Assert.Equal("Couldn't create a restore point. (code 5)", failed.Run(tweak, null, null, CancellationToken.None).Message);
         }
@@ -580,7 +580,7 @@ public class RepairEnglishTests
 
             var result = RunWinUtil(web);
 
-            Assert.Equal("Not done – test release (prerelease).", result.Message);
+            Assert.Equal("Not done – pre-release.", result.Message);
             Assert.Equal("Opened the WinUtil 26.10.07 window (file from the GitHub release, SHA256 matches).", WinUtilHandler.Executed("26.10.07"));
             Assert.Equal("Downloading WinUtil 26.10.07 from GitHub…", WinUtilHandler.Downloading("26.10.07"));
         }

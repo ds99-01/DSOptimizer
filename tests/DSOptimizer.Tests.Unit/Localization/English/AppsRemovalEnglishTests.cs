@@ -211,7 +211,7 @@ public class AppsRemovalEnglishTests
             Assert.Equal("Refresh list", AppsPageText.RefreshButton);
             Assert.Equal("Protected – DSOptimizer doesn't remove it", AppsPageText.ProtectedTooltip);
             Assert.Equal("Selected for removal", AppsPageText.SelectedLine);
-            Assert.Equal("Not selected – double-click the row to add it", AppsPageText.NotSelectedLine);
+            Assert.Equal("Not selected – double-click the row to select it", AppsPageText.NotSelectedLine);
             Assert.Equal("Technical details", AppsPageText.TechnicalHeader);
             Assert.Equal("No apps in this group.", AppsPageText.EmptyGroup);
             Assert.Equal("No app in this group matches the search.", AppsPageText.EmptySearch);
@@ -234,10 +234,10 @@ public class AppsRemovalEnglishTests
         using (L.Use(UiLanguage.English))
         {
             Assert.Equal(
-                "The program will create a restore point before removing programs. Removal can't be undone.",
+                "DSOptimizer will create a restore point before removing programs. Removal can't be undone.",
                 AppsPageText.SelectionBarDetails(hasProgram: true, restorePointSetting: false));
             Assert.Equal(
-                "The program will try to create a restore point before removing. Removal can't be undone.",
+                "The program will try to create a restore point before removing apps. Removal can't be undone.",
                 AppsPageText.SelectionBarDetails(hasProgram: false, restorePointSetting: true));
             Assert.Equal("No restore point. Removal can't be undone.", AppsPageText.SelectionBarDetails(hasProgram: false, restorePointSetting: false));
         }
@@ -249,14 +249,14 @@ public class AppsRemovalEnglishTests
         using (L.Use(UiLanguage.English))
         {
             Assert.Equal(
-                "For account Dawid and from the system image, so it doesn't come back on a new account.",
+                "For account Dawid and from the Windows image, so it doesn't come back on a new account.",
                 AppsPageText.StoreRemoval("Dawid", fromImage: true, allUsers: false));
             Assert.Equal("For account Dawid.", AppsPageText.StoreRemoval(" Dawid ", fromImage: false, allUsers: false));
             Assert.Equal(
-                "For the signed-in account and from the system image, so it doesn't come back on a new account.",
+                "For the signed-in account and from the Windows image, so it doesn't come back on a new account.",
                 AppsPageText.StoreRemoval(null, fromImage: true, allUsers: false));
             Assert.Equal("For the signed-in account.", AppsPageText.StoreRemoval(null, fromImage: false, allUsers: false));
-            Assert.Equal("For all accounts on this computer and from the system image.", AppsPageText.StoreRemoval("Dawid", fromImage: false, allUsers: true));
+            Assert.Equal("For all accounts on this computer and from the Windows image.", AppsPageText.StoreRemoval("Dawid", fromImage: false, allUsers: true));
         }
     }
 
@@ -317,7 +317,7 @@ public class AppsRemovalEnglishTests
                 },
                 confirmation.Warnings);
             Assert.Equal("Store app, Microsoft Corporation", confirmation.Items[0].Summary);
-            Assert.Equal("For account Dawid and from the system image, so it doesn't come back on a new account.", Assert.Single(confirmation.Items[0].Notes));
+            Assert.Equal("For account Dawid and from the Windows image, so it doesn't come back on a new account.", Assert.Single(confirmation.Items[0].Notes));
             Assert.Equal("Program, McAfee, LLC", confirmation.Items[1].Summary);
         }
     }
@@ -364,9 +364,9 @@ public class AppsRemovalEnglishTests
             var confirmation = rig.Apps.ConfirmationFor(rows, restorePointSetting: false);
 
             Assert.Equal(
-                "DSOptimizer is running on account Administrator, not the signed-in account (Dawid): Store apps will be removed for all accounts on this computer and from the system image.",
+                "DSOptimizer is running on account Administrator, not the signed-in account (Dawid): Store apps will be removed for all accounts on this computer and from the Windows image.",
                 confirmation.Warnings[0]);
-            Assert.Equal("For all accounts on this computer and from the system image.", Assert.Single(confirmation.Items[0].Notes));
+            Assert.Equal("For all accounts on this computer and from the Windows image.", Assert.Single(confirmation.Items[0].Notes));
         }
     }
 
@@ -436,7 +436,7 @@ public class AppsRemovalEnglishTests
             Assert.Equal(
                 new[]
                 {
-                    "Copilot: Failed – Removed from the account, but it's still in the system image (it will come back on a new account). Removal error: 0x80070005: access denied.",
+                    "Copilot: Failed – Removed from the account, but it's still in the Windows image (it will come back on a new account). Removal error: 0x80070005: access denied.",
                     "Removal: 0 of 1 removed.",
                 },
                 lines);

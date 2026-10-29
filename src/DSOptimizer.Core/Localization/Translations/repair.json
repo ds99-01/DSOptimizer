@@ -51,7 +51,7 @@
     },
     {
       "pl": "wykonano – polecenie zakończyło się bez błędu (pliki pobierane w tej chwili zostają).",
-      "en": "done – the command finished without an error (files being downloaded right now stay)."
+      "en": "done – the command finished without errors (files that are downloading right now are kept)."
     },
     {
       "pl": "pominięto – w tym systemie nie ma polecenia Delete-DeliveryOptimizationCache.",
@@ -167,7 +167,7 @@
     },
     {
       "pl": "brak odczytu",
-      "en": "no reading"
+      "en": "not read"
     },
     {
       "pl": "plików: {0}, {1}",
@@ -199,7 +199,7 @@
     },
     {
       "pl": "nie da się uczciwie podać zwolnionego miejsca (inne programy zapisywały na dysku)",
-      "en": "the freed space can't be reported honestly (other programs were writing to the disk)"
+      "en": "the freed space can't be reported accurately (other programs were writing to the disk)"
     },
     {
       "pl": "mniej niż 1 MB",
@@ -215,7 +215,7 @@
     },
     {
       "pl": "Ochrona systemu na dysku C: jest wyłączona – włącz ją pozycją „Ochrona systemu” w tej kategorii.",
-      "en": "System Protection is turned off for drive C: – turn it on with the \"System Protection\" item in this category."
+      "en": "System Protection is turned off for the C: drive – turn it on with the \"System Protection\" item in this category."
     },
     {
       "pl": "Nie udało się utworzyć punktu przywracania.",
@@ -303,7 +303,7 @@
     },
     {
       "pl": "DISM: zakończony bez błędu (kod 0); z CBS.log nie dało się odczytać, czy coś naprawiono.",
-      "en": "DISM: finished without an error (code 0); CBS.log didn't show whether anything was repaired."
+      "en": "DISM: finished without errors (code 0); CBS.log didn't show whether anything was repaired."
     },
     {
       "pl": "DISM: naprawa dokończy się po ponownym uruchomieniu komputera (kod {0}).",
@@ -475,7 +475,7 @@
     },
     {
       "pl": "Nie udało się usunąć wartości {0} z VolumeCaches\\Previous Installations ({1}) – usuń ją ręcznie, inaczej kolejne uruchomienie odmówi.",
-      "en": "Couldn't remove value {0} from VolumeCaches\\Previous Installations ({1}) – remove it manually, otherwise the next run will refuse."
+      "en": "Couldn't remove value {0} from VolumeCaches\\Previous Installations ({1}) – remove it manually, otherwise the next run will be refused."
     },
     {
       "pl": "Historia aktualizacji w Ustawieniach zostanie wyczyszczona (zostać mogą tylko wpisy definicji Microsoft Defender); aktualizacje pobiorą się od nowa.",
@@ -547,7 +547,7 @@
     },
     {
       "pl": "Usługa {0} jest wyłączona (Disabled). Program jej nie zmienia (system odmawia zapisu), a wyłączona usługa może blokować aktualizacje.",
-      "en": "Service {0} is disabled (Disabled). The program doesn't change it (the system refuses the write), and a disabled service can block updates."
+      "en": "Service {0} has startup type Disabled. The program doesn't change it (the system refuses the write), and a disabled service can block updates."
     },
     {
       "pl": "Usługa {0} nie działała – bez zmian.",
@@ -743,7 +743,7 @@
     },
     {
       "pl": "Nie wykonano – pobrany plik nie przeszedł sprawdzenia.",
-      "en": "Not done – the downloaded file didn't pass the check."
+      "en": "Not done – the downloaded file failed the check."
     },
     {
       "pl": "Nie wykonano – {0}.",
@@ -771,7 +771,7 @@
     },
     {
       "pl": "Pobrano i sprawdzono {0} ({1}): {2}, {3} B, SHA256 {4}",
-      "en": "Downloaded and checked {0} ({1}): {2}, {3} B, SHA256 {4}"
+      "en": "Downloaded and verified {0} ({1}): {2}, {3} B, SHA256 {4}"
     },
     {
       "pl": "Nie udało się otworzyć okna PowerShell: {0}",
@@ -807,11 +807,11 @@
     },
     {
       "pl": "wydanie testowe (prerelease)",
-      "en": "test release (prerelease)"
+      "en": "pre-release"
     },
     {
       "pl": "szkic wydania",
-      "en": "release draft"
+      "en": "draft release"
     },
     {
       "pl": "nieoczekiwany numer wersji",

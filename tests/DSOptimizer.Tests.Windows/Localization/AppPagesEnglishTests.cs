@@ -76,7 +76,7 @@ public class AppPagesEnglishTests
             await vm.EnterAsync();
 
             Assert.True(vm.HasWingetNotice);
-            Assert.Equal("Winget doesn't work on this computer", vm.WingetNoticeTitle);
+            Assert.Equal("winget doesn't work on this computer", vm.WingetNoticeTitle);
             Assert.Equal("winget doesn't work (winget --version: code 0x00000001). Use \"Repairs → Repair winget\".", vm.WingetNotice);
             Assert.Equal("RustDesk (from GitHub) can be installed without winget too.", vm.GitHubStillAvailable);
             Assert.Equal("Show RustDesk", vm.ShowRustDeskText);

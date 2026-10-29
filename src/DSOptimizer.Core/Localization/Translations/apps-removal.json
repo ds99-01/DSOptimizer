@@ -27,7 +27,7 @@
     },
     {
       "pl": "Nie zaznaczona – kliknij dwukrotnie wiersz, żeby dodać",
-      "en": "Not selected – double-click the row to add it"
+      "en": "Not selected – double-click the row to select it"
     },
     {
       "pl": "Szczegóły techniczne",
@@ -135,11 +135,11 @@
     },
     {
       "pl": "Przed usunięciem programów program utworzy punkt przywracania. Usunięcia nie da się cofnąć.",
-      "en": "The program will create a restore point before removing programs. Removal can't be undone."
+      "en": "DSOptimizer will create a restore point before removing programs. Removal can't be undone."
     },
     {
       "pl": "Przed usunięciem program spróbuje utworzyć punkt przywracania. Usunięcia nie da się cofnąć.",
-      "en": "The program will try to create a restore point before removing. Removal can't be undone."
+      "en": "The program will try to create a restore point before removing apps. Removal can't be undone."
     },
     {
       "pl": "Bez punktu przywracania. Usunięcia nie da się cofnąć.",
@@ -207,11 +207,11 @@
     },
     {
       "pl": "Dla wszystkich kont na tym komputerze i z obrazu systemu.",
-      "en": "For all accounts on this computer and from the system image."
+      "en": "For all accounts on this computer and from the Windows image."
     },
     {
       "pl": "Dla zalogowanego konta i z obrazu systemu, żeby nie wróciła na nowym koncie.",
-      "en": "For the signed-in account and from the system image, so it doesn't come back on a new account."
+      "en": "For the signed-in account and from the Windows image, so it doesn't come back on a new account."
     },
     {
       "pl": "Dla zalogowanego konta.",
@@ -219,7 +219,7 @@
     },
     {
       "pl": "Dla konta {0} i z obrazu systemu, żeby nie wróciła na nowym koncie.",
-      "en": "For account {0} and from the system image, so it doesn't come back on a new account."
+      "en": "For account {0} and from the Windows image, so it doesn't come back on a new account."
     },
     {
       "pl": "Dla konta {0}.",
@@ -227,7 +227,7 @@
     },
     {
       "pl": "DSOptimizer działa na koncie {0}, innym niż zalogowane ({1}): aplikacje ze Sklepu zostaną usunięte dla wszystkich kont na tym komputerze i z obrazu systemu.",
-      "en": "DSOptimizer is running on account {0}, not the signed-in account ({1}): Store apps will be removed for all accounts on this computer and from the system image."
+      "en": "DSOptimizer is running on account {0}, not the signed-in account ({1}): Store apps will be removed for all accounts on this computer and from the Windows image."
     },
     {
       "pl": "Nie udało się",
@@ -303,7 +303,7 @@
     },
     {
       "pl": "Usunięta z konta, ale została w obrazie systemu (wróci na nowym koncie).",
-      "en": "Removed from the account, but it's still in the system image (it will come back on a new account)."
+      "en": "Removed from the account, but it's still in the Windows image (it will come back on a new account)."
     },
     {
       "pl": "Nie potwierdzono – sprawdzanie przerwane, sprawdź listę po odświeżeniu.",

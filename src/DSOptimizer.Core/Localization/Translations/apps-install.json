@@ -175,7 +175,7 @@
     },
     {
       "pl": "Nie wykonano – na GitHubie RustDesk nie ma instalatora MSI dla tej wersji",
-      "en": "Not done – RustDesk on GitHub has no MSI installer for this version"
+      "en": "Not done – there's no MSI installer for this version on RustDesk's GitHub"
     },
     {
       "pl": "Nie wykonano – wydanie RustDesk na GitHubie nie przeszło sprawdzenia ({0})",
@@ -223,11 +223,11 @@
     },
     {
       "pl": "podpis innego wydawcy: (brak podmiotu)",
-      "en": "signature of another publisher: (no subject)"
+      "en": "signed by another publisher: (no subject)"
     },
     {
       "pl": "podpis innego wydawcy: {0}",
-      "en": "signature of another publisher: {0}"
+      "en": "signed by another publisher: {0}"
     },
     {
       "pl": "Nie wykonano – instalator MSI zakończył się kodem {0}.",
@@ -307,7 +307,7 @@
     },
     {
       "pl": "Brak na liście. Winget nie działa – wyszukiwanie w winget niedostępne.",
-      "en": "Not on the list. Winget doesn't work – searching winget isn't available."
+      "en": "Not on the list. winget doesn't work – searching winget isn't available."
     },
     {
       "pl": "Brak na liście.",
@@ -315,7 +315,7 @@
     },
     {
       "pl": "{0} instaluje się z listy: użyj {1}.",
-      "en": "{0} is installed from the list: use {1}."
+      "en": "Install {0} from the list: use {1}."
     },
     {
       "pl": "{0} jest na liście – wyżej",
@@ -347,7 +347,7 @@
     },
     {
       "pl": "Winget nie działa na tym komputerze",
-      "en": "Winget doesn't work on this computer"
+      "en": "winget doesn't work on this computer"
     },
     {
       "pl": "Przejdź do: Napraw winget",
@@ -487,7 +487,7 @@
     },
     {
       "pl": "GitHub RustDesk (rustdesk/rustdesk), podpis PURSLANE",
-      "en": "GitHub RustDesk (rustdesk/rustdesk), PURSLANE signature"
+      "en": "RustDesk's GitHub (rustdesk/rustdesk), signed by PURSLANE"
     },
     {
       "pl": "Repozytorium GitHub",
@@ -547,7 +547,7 @@
     },
     {
       "pl": "Pozycja {0} nie ma identyfikatora winget – nie może iść do winget.",
-      "en": "Item {0} has no winget ID – it can't go to winget."
+      "en": "Item {0} has no winget ID – it can't be sent to winget."
     },
     {
       "pl": "Nie udało się przygotować pliku logu winget dla {0}.",
@@ -635,7 +635,7 @@
     },
     {
       "pl": "Nie wykonano – pakietu nie ma w winget albo nie pasuje do tego komputera.",
-      "en": "Not done – the package isn't in winget or doesn't suit this computer."
+      "en": "Not done – the package isn't in winget or doesn't match this computer."
     },
     {
       "pl": "Nie wykonano – plik instalatora nie zgadza się z manifestem, nie zainstalowano.",
@@ -679,11 +679,11 @@
     },
     {
       "pl": "id musi mieć postać install.<nazwa> (małe litery, cyfry, „-”)",
-      "en": "id must have the form install.<name> (lower-case letters, digits, \"-\")"
+      "en": "id must have the form install.<name> (lowercase letters, digits, \"-\")"
     },
     {
       "pl": "podaj dokładnie jedno z pól wingetId albo github",
-      "en": "give exactly one of the fields wingetId or github"
+      "en": "specify exactly one of the fields wingetId or github"
     },
     {
       "pl": "pole jest wymagane i niepuste (albo github dla pozycji z listy w kodzie)",
