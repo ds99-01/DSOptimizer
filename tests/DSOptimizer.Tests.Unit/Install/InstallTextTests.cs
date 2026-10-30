@@ -155,7 +155,7 @@ public class InstallTextTests
         Assert.Equal("W winget (12)", InstallText.WingetSection(12));
         Assert.Equal("Pakiety spoza listy DSOptimizera – pobierane z oficjalnego źródła winget (Microsoft), bez wcześniejszego sprawdzenia przez autora programu.", InstallText.WingetSectionNote);
         Assert.Equal("Brak na liście. Naciśnij Enter, żeby poszukać w winget.", InstallText.NoCatalogMatch);
-        Assert.Equal("Brak na liście. Winget nie działa – wyszukiwanie w winget niedostępne.", InstallText.NoCatalogMatchWingetDown);
+        Assert.Equal("Brak na liście. winget nie działa – wyszukiwanie w winget niedostępne.", InstallText.NoCatalogMatchWingetDown);
         Assert.Equal("Brak na liście.", InstallText.NoCatalogMatchPlain);
         Assert.Equal("RustDesk instaluje się z listy: użyj install.rustdesk.", InstallText.CliGitHubAlias("RustDesk", "install.rustdesk"));
         Assert.Equal("VLC jest na liście – wyżej", InstallText.OnListNote("VLC"));

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.start-recommended-section.md sha256: c2d5f6d4560a03690f00c25606351b55fcd5ca9b303f987af36dbdadb0469f5c -->
+<!-- source: docs/tweaks/privacy.start-recommended-section.md sha256: fa49665f12fb57e16651839d9da6527d71a154219826afe13fe636cd1318febc -->
 
 # privacy.start-recommended-section – Hide the "Recommended" section in the Start menu
 
@@ -7,7 +7,7 @@ Port: the `HideRecommendedSection` policy hides the "Recommended" section in Sta
 
 ## What it changes
 - `HKCU\Software\Policies\Microsoft\Windows\Explorer` (in the engine `HKU\<SID of the signed-in user>`), value `HideRecommendedSection`, **DWord**, set to `1`; `scope=user`.
-- The section disappears from the Start menu after you sign in again and after a computer restart (the observation on the VM was after restarting File Explorer and killing SearchHost and StartMenuExperienceHost); after undo it comes back. Apply doesn't restart anything (R15); whether `tools.restart-explorer` alone is enough wasn't checked (the warning says it "may not be enough").
+- The section disappears from the Start menu after you sign in again and after a computer restart (the observation on the VM was after restarting File Explorer and killing SearchHost and StartMenuExperienceHost); after undo it comes back. Apply doesn't restart anything (R15); whether `tools.restart-explorer` alone is enough wasn't checked (the warning says "restarting File Explorer alone may not be enough").
 - The same value in `HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer` gives the same effect (described, without its own item); the item uses the user scope.
 - `HideRecommendedPersonalizedSites` is included in this item (see `privacy.recommended-personalized-sites.md`).
 

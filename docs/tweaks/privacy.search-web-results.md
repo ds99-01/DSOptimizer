@@ -6,7 +6,7 @@ Portować: test na VM 26H2 (Home i Pro) pokazał realny skutek. Brak dokumentacj
 ## Co zmienia
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\SearchSettings` (w silniku `HKU\<SID zalogowanego>`), wartość `IsGlobalWebSearchProviderToggleEnabled`, **DWord**, ustawiana na `0`; `scope=user`. To stan przełącznika „Zezwalaj aplikacjom wyszukiwania na wyświetlanie wyników” (Prywatność > Wyszukaj).
 - Wyłącza wszystkich dostawców wyników z sieci, nie blokuje przełącznika i nie rusza pola wyszukiwania Eksploratora.
-- Apply nie restartuje Eksploratora (R15). Skutek obserwowano po restarcie Eksploratora i zabiciu SearchHost (zrobiono też StartMenuExperienceHost przy pozycjach Start). Katalog podaje więc skutek „po ponownym zalogowaniu”; czy sam restart Eksploratora (`tools.restart-explorer`) wystarcza, nie sprawdzano, pozycja mówi o tym wprost („może nie wystarczyć, nie sprawdzano”).
+- Apply nie restartuje Eksploratora (R15). Skutek obserwowano po restarcie Eksploratora i zabiciu SearchHost (zrobiono też StartMenuExperienceHost przy pozycjach Start). Katalog podaje więc skutek „po ponownym zalogowaniu”; czy sam restart Eksploratora (`tools.restart-explorer`) wystarcza, nie sprawdzano, pozycja mówi o tym wprost („sam restart Eksploratora może nie wystarczyć”).
 
 ### Działające alternatywy (opisane, bez własnych pozycji katalogu)
 Wszystkie trzy dały ten sam efekt (wyniki Bing znikają) na Home i Pro, po restarcie Eksploratora:

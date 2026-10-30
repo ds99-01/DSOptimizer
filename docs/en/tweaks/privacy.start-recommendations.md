@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.start-recommendations.md sha256: 3a8e5aa01574844bc6b50b3c01b63e7ee40e2c04022fee84b6146ca831085b53 -->
+<!-- source: docs/tweaks/privacy.start-recommendations.md sha256: 51bb6585637b481f0483ef2e5045c832ca19fcbd5a33bd15c109bad7630ab6d0 -->
 
 # privacy.start-recommendations – Turn off recommendations in the Start menu
 
@@ -7,7 +7,7 @@ Port: the Start recommendations toggle is changed by writing one value; a test o
 
 ## What it changes
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced` (in the engine `HKU\<SID of the signed-in user>`), value `Start_IrisRecommendations`, **DWord**, set to `0`; `scope=user`.
-- Settings shows the new state right away; the catalog describes the Start menu view (based on the observation on the VM after restarting File Explorer and killing SearchHost and StartMenuExperienceHost) as visible after you sign in again. Apply doesn't restart anything (R15); whether `tools.restart-explorer` alone is enough wasn't checked (the warning says it "may not be enough").
+- Settings shows the new state right away; the catalog describes the Start menu view (based on the observation on the VM after restarting File Explorer and killing SearchHost and StartMenuExperienceHost) as visible after you sign in again. Apply doesn't restart anything (R15); whether `tools.restart-explorer` alone is enough wasn't checked (the warning says "restarting File Explorer alone may not be enough").
 - Note for UI tests: on Home, after the first restart with the network on, a new version of the Start menu turned on (in Settings the control's `AutomationId` is `SystemSettings_Start_IrisRecommendations_CheckBox` instead of `_ToggleSwitch`); the registry value doesn't change.
 
 ## Sources

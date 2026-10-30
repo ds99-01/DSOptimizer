@@ -70,7 +70,7 @@
       "match": { "packageName": "Microsoft.MicrosoftOfficeHub" },
       "group": "microsoft",
       "suggested": true,
-      "summary": "Aplikacja Microsoft 365 (Office Hub): skrót do usług Office, bez pakietu Office.",
+      "summary": "Microsoft 365 Copilot (Office Hub): skrót do usług Office, bez pakietu Office.",
       "source": "Nazwa pakietu: MS Learn, archiwum forum „Which AppXPackage can be removed without causing system problems?” https://learn.microsoft.com/en-us/archive/msdn-technet-forums/10740522-6c7e-4664-bc5e-f638467aae5d (lista Get-AppxPackage Windows 10, sprawdzono pobraniem strony 2026-10-21); brak na świeżym 26H2 (odczyt VM 2026-10-21); spec 6.2"
     },
     {
@@ -395,7 +395,7 @@
     { "id": "prot.sound-recorder", "match": { "packageName": "Microsoft.WindowsSoundRecorder" }, "reason": "Rejestrator dźwięku: podstawowe narzędzie systemu." },
     { "id": "prot.clock", "match": { "packageName": "Microsoft.WindowsAlarms" }, "reason": "Zegar: alarmy i minutniki." },
     { "id": "prot.store", "match": { "packageName": "Microsoft.WindowsStore" }, "reason": "Microsoft Store: bez niego nie zainstalujesz aplikacji ze Sklepu z powrotem." },
-    { "id": "prot.store-purchase", "match": { "packageName": "Microsoft.StorePurchaseApp" }, "reason": "Zakupy w Microsoft Store: część sklepu, bez której nie kupisz ani nie zainstalujesz aplikacji." },
+    { "id": "prot.store-purchase", "match": { "packageName": "Microsoft.StorePurchaseApp" }, "reason": "Host środowiska sklepu Store (zakupy w Microsoft Store): część sklepu, bez której nie kupisz ani nie zainstalujesz aplikacji." },
     { "id": "prot.app-installer", "match": { "packageName": "Microsoft.DesktopAppInstaller" }, "reason": "Instalator aplikacji (winget): instalowanie programów i pakietów." },
     { "id": "prot.terminal", "match": { "packageName": "Microsoft.WindowsTerminal" }, "reason": "Terminal Windows: podstawowe narzędzie systemu." },
     { "id": "prot.compat", "match": { "packageName": "Microsoft.ApplicationCompatibilityEnhancements" }, "reason": "Ulepszenia zgodności aplikacji: składnik systemu, dzięki któremu starsze programy działają poprawnie." },
@@ -415,7 +415,7 @@
     { "id": "prot.codec-hevc", "match": { "packageName": "Microsoft.HEVCVideoExtension*" }, "reason": "Rozszerzenie wideo HEVC: bez niego część filmów się nie odtworzy." },
     { "id": "prot.codec-webp", "match": { "packageName": "Microsoft.WebpImageExtension" }, "reason": "Rozszerzenie obrazów WebP: bez niego część obrazów z internetu się nie otworzy." },
     { "id": "prot.codec-av1", "match": { "packageName": "Microsoft.AV1VideoExtension" }, "reason": "Rozszerzenie wideo AV1: bez niego część filmów się nie odtworzy." },
-    { "id": "prot.codec-avc", "match": { "packageName": "Microsoft.AVCEncoderVideoExtension" }, "reason": "Rozszerzenie kodera AVC: bez niego część programów nie zapisze filmów." },
+    { "id": "prot.codec-avc", "match": { "packageName": "Microsoft.AVCEncoderVideoExtension" }, "reason": "Rozszerzenie wideo kodera AVC: bez niego część programów nie zapisze filmów." },
     { "id": "prot.codec-mpeg2", "match": { "packageName": "Microsoft.MPEG2VideoExtension" }, "reason": "Rozszerzenie wideo MPEG-2: bez niego część filmów się nie odtworzy." },
     { "id": "prot.codec-vp9", "match": { "packageName": "Microsoft.VP9VideoExtensions" }, "reason": "Rozszerzenie wideo VP9: bez niego część filmów z internetu się nie odtworzy." },
     { "id": "prot.codec-raw", "match": { "packageName": "Microsoft.RawImageExtension" }, "reason": "Rozszerzenie obrazów RAW: bez niego zdjęcia z aparatów się nie otworzą." },

@@ -1,4 +1,4 @@
-<!-- source: docs/apps/install-README.md sha256: 8652e6ffa8bff4162dc6f11ec7ca9231a12e032183acbd0071830bc88fa60499 -->
+<!-- source: docs/apps/install-README.md sha256: 1f3a700e307c5aa4d49ef4b83a61a370476b024bcca06264a512e1b6dc96c2a2 -->
 
 # App install – list `apps.json`
 

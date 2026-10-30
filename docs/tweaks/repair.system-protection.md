@@ -25,7 +25,7 @@ Home i Pro (odczyt 2026-10-22): `SPP\Clients` bez wpisu, `vssadmin list shadowst
 - `risk=safe`.
 - Ostrzeżenia w katalogu: „Cofnięcie wyłącza ochronę: nowe punkty nie powstaną, a z istniejących nie przywrócisz systemu (zostają na dysku).” oraz „Samo włączenie nie tworzy punktu – pierwszy powstanie przed zmianą albo po „Utwórz punkt przywracania teraz”.”
 - Pierwsze ostrzeżenie to skrót tekstu zmienionego względem specu (pomiar przeczy „usuwa wszystkie punkty”, Ruling R7). Pełny tekst R7: „Wyłączenie ochrony systemu blokuje tworzenie nowych punktów przywracania i przywracanie systemu z istniejących. Istniejące punkty zostają na dysku (zajmują miejsce) i wrócą po ponownym włączeniu ochrony; usunąć je można w oknie »Ochrona systemu« (Konfiguruj → Usuń).”
-- Limit miejsca ustawia Windows (3% dysku C. na zmierzonej maszynie); program go nie zmienia.
+- Limit miejsca ustawia Windows (3% dysku C: na zmierzonej maszynie); program go nie zmienia.
 - Samo włączenie nie tworzy punktu. Wyłączenie ochrony „z kasowaniem punktów” (`vssadmin delete shadows`) to osobna, nieodwracalna operacja, której tu nie ma i której nie mierzono.
 
 ## Test VM

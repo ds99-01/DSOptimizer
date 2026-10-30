@@ -306,7 +306,7 @@
       "en": "Not on the list. Press Enter to search winget."
     },
     {
-      "pl": "Brak na liście. Winget nie działa – wyszukiwanie w winget niedostępne.",
+      "pl": "Brak na liście. winget nie działa – wyszukiwanie w winget niedostępne.",
       "en": "Not on the list. winget doesn't work – searching winget isn't available."
     },
     {
@@ -346,7 +346,7 @@
       "en": "Searching winget"
     },
     {
-      "pl": "Winget nie działa na tym komputerze",
+      "pl": "winget nie działa na tym komputerze",
       "en": "winget doesn't work on this computer"
     },
     {

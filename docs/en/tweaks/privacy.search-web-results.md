@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.search-web-results.md sha256: f4b9cc3b353f4e41466adbd20c26c71c2c1a695014ef2d55542847707d906d68 -->
+<!-- source: docs/tweaks/privacy.search-web-results.md sha256: db86aba3589d4f9772cea0763e9b050aeddaa24f5a20e665bc218434d59198b5 -->
 
 # privacy.search-web-results – Turn off web results in Windows search
 
@@ -8,7 +8,7 @@ Port: a test on a 26H2 VM (Home and Pro) showed a real effect. No Microsoft docu
 ## What it changes
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\SearchSettings` (in the engine `HKU\<SID of the signed-in user>`), value `IsGlobalWebSearchProviderToggleEnabled`, **DWord**, set to `0`; `scope=user`. This is the state of the "Let search apps show results" toggle (Privacy & security > Search).
 - It turns off all providers of web results, doesn't lock the toggle and doesn't touch the File Explorer search box.
-- Apply doesn't restart File Explorer (R15). The effect was observed after restarting File Explorer and killing SearchHost (StartMenuExperienceHost was also killed for the Start items). The catalog therefore gives the effect as "after you sign in again"; whether restarting File Explorer alone (`tools.restart-explorer`) is enough wasn't checked, and the item says explicitly that it "may not be enough".
+- Apply doesn't restart File Explorer (R15). The effect was observed after restarting File Explorer and killing SearchHost (StartMenuExperienceHost was also killed for the Start items). The catalog therefore gives the effect as "after you sign in again"; whether restarting File Explorer alone (`tools.restart-explorer`) is enough wasn't checked, and the item says explicitly "restarting File Explorer alone may not be enough".
 
 ### Working alternatives (described, without their own catalog items)
 All three gave the same effect (Bing results disappear) on Home and Pro, after restarting File Explorer:

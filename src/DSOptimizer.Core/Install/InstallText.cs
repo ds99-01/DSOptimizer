@@ -278,7 +278,7 @@ public static class InstallText
 
     public static string NoCatalogMatch => L.T("Brak na liście. Naciśnij Enter, żeby poszukać w winget.");
 
-    public static string NoCatalogMatchWingetDown => L.T("Brak na liście. Winget nie działa – wyszukiwanie w winget niedostępne.");
+    public static string NoCatalogMatchWingetDown => L.T("Brak na liście. winget nie działa – wyszukiwanie w winget niedostępne.");
 
     /// <summary>Brak dopasowań przy odmowie konta (inne konto, niepewny użytkownik): winget działa, tylko nie na tym koncie (Ruling R4).</summary>
     public static string NoCatalogMatchPlain => L.T("Brak na liście.");
@@ -311,7 +311,7 @@ public static class InstallText
 
     public static string InstalledStatus => L.T("Zainstalowana");
 
-    public static string WingetProblemTitle => L.T("Winget nie działa na tym komputerze");
+    public static string WingetProblemTitle => L.T("winget nie działa na tym komputerze");
 
     /// <summary>Przycisk przy <see cref="WingetState.NotRegistered"/>/<see cref="WingetState.NotWorking"/> (spec 2): kategoria „Naprawy”, pozycja <c>repair.winget</c>.</summary>
     public static string RepairWingetButton => L.T("Przejdź do: Napraw winget");

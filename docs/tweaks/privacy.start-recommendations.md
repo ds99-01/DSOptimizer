@@ -5,7 +5,7 @@ Portować: przełącznik zaleceń w Start zmienia się zapisem jednej wartości;
 
 ## Co zmienia
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced` (w silniku `HKU\<SID zalogowanego>`), wartość `Start_IrisRecommendations`, **DWord**, ustawiana na `0`; `scope=user`.
-- Ustawienia pokazują nowy stan od razu; widok menu Start (według obserwacji na VM po restarcie Eksploratora i zabiciu SearchHost oraz StartMenuExperienceHost) katalog opisuje jako widoczny po ponownym zalogowaniu. Apply nie restartuje niczego (R15); czy sam `tools.restart-explorer` wystarcza, nie sprawdzano (ostrzeżenie: „może nie wystarczyć, nie sprawdzano”).
+- Ustawienia pokazują nowy stan od razu; widok menu Start (według obserwacji na VM po restarcie Eksploratora i zabiciu SearchHost oraz StartMenuExperienceHost) katalog opisuje jako widoczny po ponownym zalogowaniu. Apply nie restartuje niczego (R15); czy sam `tools.restart-explorer` wystarcza, nie sprawdzano (ostrzeżenie: „sam restart Eksploratora może nie wystarczyć”).
 - Uwaga do testów UI: na Home po pierwszym restarcie z siecią włączyła się nowa wersja menu Start (w Ustawieniach `AutomationId` pola to `SystemSettings_Start_IrisRecommendations_CheckBox` zamiast `_ToggleSwitch`); wartość rejestru się nie zmienia.
 
 ## Źródła

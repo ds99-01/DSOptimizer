@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.system-protection.md sha256: aa3bce094d67f4b5dfb83a2ade5fb08387dcc3e39d8bc7f510943f732be1ff7c -->
+<!-- source: docs/tweaks/repair.system-protection.md sha256: 4baa851e435bc5277e5f3bc5b72220f475f3d54bba1189f859692a8a8e4f8733 -->
 
 # repair.system-protection – System Protection
 

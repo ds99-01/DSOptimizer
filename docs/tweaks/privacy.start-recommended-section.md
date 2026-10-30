@@ -5,7 +5,7 @@ Portować: polityka `HideRecommendedSection` chowa sekcję „Proponowane” w S
 
 ## Co zmienia
 - `HKCU\Software\Policies\Microsoft\Windows\Explorer` (w silniku `HKU\<SID zalogowanego>`), wartość `HideRecommendedSection`, **DWord**, ustawiana na `1`; `scope=user`.
-- Sekcja znika z menu Start po ponownym zalogowaniu i po restarcie komputera (obserwacja na VM była po restarcie Eksploratora i zabiciu SearchHost oraz StartMenuExperienceHost); po cofnięciu wraca. Apply nie restartuje niczego (R15); czy sam `tools.restart-explorer` wystarcza, nie sprawdzano (ostrzeżenie: „może nie wystarczyć, nie sprawdzano”).
+- Sekcja znika z menu Start po ponownym zalogowaniu i po restarcie komputera (obserwacja na VM była po restarcie Eksploratora i zabiciu SearchHost oraz StartMenuExperienceHost); po cofnięciu wraca. Apply nie restartuje niczego (R15); czy sam `tools.restart-explorer` wystarcza, nie sprawdzano (ostrzeżenie: „sam restart Eksploratora może nie wystarczyć”).
 - Ta sama wartość w `HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer` daje ten sam skutek (opisane, bez własnej pozycji); pozycja używa zakresu użytkownika.
 - `HideRecommendedPersonalizedSites` zawiera się w tej pozycji (patrz `privacy.recommended-personalized-sites.md`).
 

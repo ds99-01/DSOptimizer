@@ -39,7 +39,7 @@
       "en": "It may be Teams for work or school; remove it only if no one uses it."
     },
     {
-      "pl": "Aplikacja Microsoft 365 (Office Hub): skrót do usług Office, bez pakietu Office.",
+      "pl": "Microsoft 365 Copilot (Office Hub): skrót do usług Office, bez pakietu Office.",
       "en": "Microsoft 365 Copilot app (Office Hub): a shortcut to Office services, without the Office suite itself."
     },
     {
@@ -251,7 +251,7 @@
       "en": "Microsoft Store: without it, you can't reinstall Store apps."
     },
     {
-      "pl": "Zakupy w Microsoft Store: część sklepu, bez której nie kupisz ani nie zainstalujesz aplikacji.",
+      "pl": "Host środowiska sklepu Store (zakupy w Microsoft Store): część sklepu, bez której nie kupisz ani nie zainstalujesz aplikacji.",
       "en": "Store Experience Host (Microsoft Store purchases): part of the Store; without it, you can't buy or install apps."
     },
     {
@@ -323,7 +323,7 @@
       "en": "AV1 Video Extension: without it, some videos won't play."
     },
     {
-      "pl": "Rozszerzenie kodera AVC: bez niego część programów nie zapisze filmów.",
+      "pl": "Rozszerzenie wideo kodera AVC: bez niego część programów nie zapisze filmów.",
       "en": "AVC Encoder Video Extension: without it, some programs can't save videos."
     },
     {

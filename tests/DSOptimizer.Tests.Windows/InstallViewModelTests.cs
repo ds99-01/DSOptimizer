@@ -153,7 +153,7 @@ public class InstallViewModelTests
         Assert.Equal(4, vm.VisibleRows.Count);
         Assert.True(vm.HasWingetNotice);
         Assert.Equal(NotWorkingText, vm.WingetNotice);
-        Assert.Equal("Winget nie działa na tym komputerze", vm.WingetNoticeTitle);
+        Assert.Equal("winget nie działa na tym komputerze", vm.WingetNoticeTitle);
         Assert.Equal("RustDesk (z GitHuba) można zainstalować także bez winget.", vm.GitHubStillAvailable);
         Assert.True(vm.HasGitHubStillAvailable);
         Assert.True(vm.ShowRepairWinget);
