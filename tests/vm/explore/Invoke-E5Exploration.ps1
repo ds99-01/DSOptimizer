@@ -144,7 +144,7 @@ function Get-E5Plan {
         GuiWindowSeconds      = 60
         StartupRuns           = 3
         # Czysty checkpoint nie ma settings.json, wiec pierwsze okno programu to wybor jezyka (pl/en). Sondy wybieraja ten jezyk (kafelek w oknie
-        # wyboru) przed szukaniem okna glownego; czas startu nie obejmuje obslugi tego okna (ChoiceClickMs odejmowane od WindowMs).
+        # wyboru) przed szukaniem okna glownego; czas startu nie obejmuje czasu, gdy okno wyboru bylo widoczne (ChooserVisibleMs odejmowane od WindowMs).
         GuiLanguage           = 'pl'
         StartupWindowTimeoutSeconds = 120
         StartupCloseTimeoutSeconds  = 20
@@ -680,9 +680,21 @@ function Select-E5MainWindow {
         [AllowEmptyCollection()][int[]]$ProcessIds = @(),
         [Parameter(Mandatory)][string]$TitlePrefix
     )
+    # Okno wyboru języka (AutomationId LanguageChoiceWindow, tytuł też „DSOptimizer”) nigdy nie jest oknem głównym: pomijane jest samo
+    # okno UIA i każda kopia Win32 o tym samym uchwycie (Win32 nie zna AutomationId).
+    $ChooserId = 'LanguageChoiceWindow'
+    $ChooserHandles = @()
+    foreach ($Window in @($Windows)) {
+        if ($null -eq $Window) { continue }
+        if ($null -ne $Window.PSObject.Properties['AutomationId'] -and [string]$Window.AutomationId -eq $ChooserId -and $null -ne $Window.PSObject.Properties['Handle'] -and [long]$Window.Handle -ne 0) {
+            $ChooserHandles += [long]$Window.Handle
+        }
+    }
     foreach ($Window in @($Windows)) {
         if ($null -eq $Window) { continue }
         if ($ProcessIds -notcontains [int]$Window.ProcessId) { continue }
+        if ($null -ne $Window.PSObject.Properties['AutomationId'] -and [string]$Window.AutomationId -eq $ChooserId) { continue }
+        if ($null -ne $Window.PSObject.Properties['Handle'] -and [long]$Window.Handle -ne 0 -and $ChooserHandles -contains [long]$Window.Handle) { continue }
         $Name = [string]$Window.Name
         if ([string]::IsNullOrWhiteSpace($Name) -or [string]$Window.ClassName -eq '#32770') { continue }
         if (-not $Name.StartsWith($TitlePrefix, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
@@ -752,9 +764,21 @@ namespace DsoE5 {
             try { $ProcessName = (Get-Process -Id $Window.ProcessId -ErrorAction Stop).ProcessName + '.exe' } catch { $ProcessName = $null }
             $Names[$Window.ProcessId] = $ProcessName
         }
-        [pscustomobject]@{ Source = 'win32'; ProcessId = $Window.ProcessId; ProcessName = $Names[$Window.ProcessId]; Name = $Window.Title; ClassName = $Window.ClassName
+        [pscustomobject]@{ Source = 'win32'; ProcessId = $Window.ProcessId; ProcessName = $Names[$Window.ProcessId]; Name = $Window.Title; ClassName = $Window.ClassName; Handle = $Window.Handle
             Bounds = [ordered]@{ X = $Window.X; Y = $Window.Y; Width = $Window.Width; Height = $Window.Height } }
     }
+}
+function Test-ProbeLanguageChoiceOpen {
+    # Czy okno wyboru jezyka (AutomationId LanguageChoiceWindow) jest otwarte w ktoryms z procesow. Tylko odczyt.
+    param([Parameter(Mandatory)][int[]]$ProcessIds)
+    $Root = [System.Windows.Automation.AutomationElement]::RootElement
+    foreach ($ProcId in $ProcessIds) {
+        $ByProcess = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ProcessIdProperty, [int]$ProcId)
+        foreach ($Window in $Root.FindAll([System.Windows.Automation.TreeScope]::Children, $ByProcess)) {
+            try { if ($Window.Current.AutomationId -eq 'LanguageChoiceWindow') { return $true } } catch { $null = $_ }
+        }
+    }
+    return $false
 }
 function Invoke-ProbeLanguageChoice {
     # Okno wyboru jezyka (AutomationId LanguageChoiceWindow, pierwszy start na profilu bez settings.json): klika kafelek jezyka
@@ -1347,6 +1371,7 @@ try {
                     try {
                         $Rect = $Element.Current.BoundingRectangle
                         $Candidates.Add([pscustomobject]@{ Source = 'uia'; ProcessId = $ProcId; Name = [string]$Element.Current.Name; ClassName = [string]$Element.Current.ClassName
+                                AutomationId = [string]$Element.Current.AutomationId; Handle = [long]$Element.Current.NativeWindowHandle
                                 Bounds = [ordered]@{ X = [int]$Rect.X; Y = [int]$Rect.Y; Width = [int]$Rect.Width; Height = [int]$Rect.Height } })
                     }
                     catch { $null = $_ }
@@ -1406,7 +1431,7 @@ try {
     $Root = [System.Windows.Automation.AutomationElement]::RootElement
     $Runs = New-Object System.Collections.Generic.List[object]
     for ($Index = 1; $Index -le [int]$Req.Runs; $Index++) {
-        $Run = [ordered]@{ Index = $Index; StartedAt = (Get-Date).ToString('o'); ProcessId = $null; ChooserShown = $false; ChooserMs = $null; ChoiceClickMs = $null; WindowMs = $null; Title = $null; ClassName = $null; Source = $null; ProcessWindows = @()
+        $Run = [ordered]@{ Index = $Index; StartedAt = (Get-Date).ToString('o'); ProcessId = $null; ChooserShown = $false; ChooserDetectedMs = $null; ChooserGoneMs = $null; ChooserVisibleMs = $null; WindowMs = $null; Title = $null; ClassName = $null; Source = $null; ProcessWindows = @()
             TimedOut = $false; Closed = $false; Killed = $false; ExitCode = $null; Error = $null }
         try {
             $Running = @(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -and [string]::Equals([System.IO.Path]::GetFullPath($_.Path), $Target, [System.StringComparison]::OrdinalIgnoreCase) })
@@ -1422,23 +1447,32 @@ try {
             while ($true) {
                 $Candidates = New-Object System.Collections.Generic.List[object]
                 foreach ($Element in $Root.FindAll([System.Windows.Automation.TreeScope]::Children, $ByProcess)) {
-                    try { $Candidates.Add([pscustomobject]@{ Source = 'uia'; ProcessId = [int]$Process.Id; Name = [string]$Element.Current.Name; ClassName = [string]$Element.Current.ClassName }) } catch { $null = $_ }
+                    try { $Candidates.Add([pscustomobject]@{ Source = 'uia'; ProcessId = [int]$Process.Id; Name = [string]$Element.Current.Name; ClassName = [string]$Element.Current.ClassName
+                                AutomationId = [string]$Element.Current.AutomationId; Handle = [long]$Element.Current.NativeWindowHandle }) } catch { $null = $_ }
                 }
                 try { foreach ($Window in @(Get-ProbeWin32Windows -ProcessIds @([int]$Process.Id))) { $Candidates.Add($Window) } } catch { $null = $_ }
-                if (-not $Run.ChooserShown) {
-                    # Okno wyboru jezyka (pierwszy start bez settings.json): wybor kafelka; jego obsluga nie liczy sie do czasu startu.
-                    $ChoiceStart = [int]$Watch.ElapsedMilliseconds
-                    if (Invoke-ProbeLanguageChoice -ProcessIds @([int]$Process.Id) -Language $Language) {
-                        $Run.ChooserShown = $true
-                        $Run.ChooserMs = $ChoiceStart
-                        $Run.ChoiceClickMs = [int]$Watch.ElapsedMilliseconds - $ChoiceStart
-                        Start-Sleep -Milliseconds 100
-                        continue
+                if (Test-ProbeLanguageChoiceOpen -ProcessIds @([int]$Process.Id)) {
+                    # Okno wyboru jezyka (pierwszy start bez settings.json): wybor kafelka i czekanie, az okno zniknie; caly czas,
+                    # gdy bylo widoczne (od wykrycia do znikniecia), jest odejmowany od czasu startu.
+                    if ($null -eq $Run.ChooserDetectedMs) { $Run.ChooserDetectedMs = [int]$Watch.ElapsedMilliseconds }
+                    $null = Invoke-ProbeLanguageChoice -ProcessIds @([int]$Process.Id) -Language $Language
+                    if ($Process.HasExited) { throw "proces zakonczyl sie przed oknem (kod $($Process.ExitCode))" }
+                    if ($Watch.Elapsed.TotalSeconds -ge [int]$Req.WindowTimeoutSeconds) {
+                        $Run.TimedOut = $true
+                        $Run.ProcessWindows = @($Candidates | ForEach-Object { [pscustomobject]@{ Source = $_.Source; Name = $_.Name; ClassName = $_.ClassName } })
+                        break
                     }
+                    Start-Sleep -Milliseconds 100
+                    continue
+                }
+                if ($null -ne $Run.ChooserDetectedMs -and $null -eq $Run.ChooserGoneMs) {
+                    $Run.ChooserShown = $true
+                    $Run.ChooserGoneMs = [int]$Watch.ElapsedMilliseconds
+                    $Run.ChooserVisibleMs = $Run.ChooserGoneMs - [int]$Run.ChooserDetectedMs
                 }
                 $Main = Select-E5MainWindow -Windows $Candidates.ToArray() -ProcessIds @([int]$Process.Id) -TitlePrefix ([string]$Req.TitlePrefix)
                 if ($null -ne $Main) {
-                    $Run.WindowMs = [int]$Watch.ElapsedMilliseconds - $(if ($null -ne $Run.ChoiceClickMs) { [int]$Run.ChoiceClickMs } else { 0 })
+                    $Run.WindowMs = [int]$Watch.ElapsedMilliseconds - $(if ($null -ne $Run.ChooserVisibleMs) { [int]$Run.ChooserVisibleMs } else { 0 })
                     $Run.Title = [string]$Main.Name
                     $Run.ClassName = [string]$Main.ClassName
                     $Run.Source = [string]$Main.Source

@@ -35,6 +35,9 @@ WYNIK-DO-UZUPEŁNIENIA (zrzut `motw.png` po 5 s: co się pokazało).
 |---|---|---|---|
 | Pro – zip/folder | WYNIK-DO-UZUPEŁNIENIA | WYNIK-DO-UZUPEŁNIENIA | WYNIK-DO-UZUPEŁNIENIA |
 
+Pierwszy przebieg 4.0.1 na czystym profilu ma okno wyboru języka, którego pomiar 4.0 nie miał; podane wartości mają czas widoczności
+tego okna odjęty, więc porównanie z 4.0 jest przybliżone.
+
 Porównanie z wersją 4.0 (Pro, folder): pierwszy 9,1 s, mediana 0,75 s.
 
 ## VirusTotal

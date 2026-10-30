@@ -1142,7 +1142,29 @@ Describe 'Task 6: sondy w VM (mocki: nic nie jest uruchamiane naprawdę)' {
         # Kolejność listy wygrywa (UIA przed Win32) – pierwsze pasujące okno.
         (Select-E5MainWindow -Windows @($Main, [pscustomobject]@{ Source = 'win32'; ProcessId = 77; Name = 'DSOptimizer 4.0.0'; ClassName = 'HwndWrapper[x]' }) -ProcessIds @(77) -TitlePrefix 'DSOptimizer').Source | Should -Be 'uia'
     }
-    It 'sondy okna i startu: wybierają język w oknie wyboru (LanguageChoiceWindow, kafelek przez InvokePattern) przed oknem głównym; czas startu bez obsługi okna wyboru' {
+    It 'Select-E5MainWindow: okno wyboru języka (AutomationId LanguageChoiceWindow, tytuł „DSOptimizer”) nie jest oknem głównym – ani samo, ani jako kopia Win32 o tym samym uchwycie' {
+        $Chooser = [pscustomobject]@{ Source = 'uia'; ProcessId = 77; Name = 'DSOptimizer'; ClassName = 'HwndWrapper[x]'; AutomationId = 'LanguageChoiceWindow'; Handle = 500 }
+        $ChooserWin32 = [pscustomobject]@{ Source = 'win32'; ProcessId = 77; Name = 'DSOptimizer'; ClassName = 'HwndWrapper[x]'; Handle = 500 }
+        $Main = [pscustomobject]@{ Source = 'uia'; ProcessId = 77; Name = 'DSOptimizer 4.0.1'; ClassName = 'HwndWrapper[x]'; AutomationId = ''; Handle = 600 }
+        Select-E5MainWindow -Windows @($Chooser) -ProcessIds @(77) -TitlePrefix 'DSOptimizer' | Should -BeNullOrEmpty
+        Select-E5MainWindow -Windows @($ChooserWin32, $Chooser) -ProcessIds @(77) -TitlePrefix 'DSOptimizer' | Should -BeNullOrEmpty
+        (Select-E5MainWindow -Windows @($ChooserWin32, $Chooser, $Main) -ProcessIds @(77) -TitlePrefix 'DSOptimizer').Handle | Should -Be 600
+        # bez AutomationId i uchwytu (starsze dane) okno nadal działa jak dotąd
+        (Select-E5MainWindow -Windows @([pscustomobject]@{ ProcessId = 77; Name = 'DSOptimizer'; ClassName = 'HwndWrapper[x]' }) -ProcessIds @(77) -TitlePrefix 'DSOptimizer').Name | Should -BeExactly 'DSOptimizer'
+    }
+    It 'sondy okna i startu: sprawdzają obecność okna wyboru po AutomationId i czekają na jego zniknięcie; czas startu bez czasu, gdy okno wyboru było widoczne' {
+        foreach ($Text in (Get-E5WaitWindowProbeScript), (Get-E5StartupProbeScript)) {
+            $Text | Should -Match 'function Test-ProbeLanguageChoiceOpen \{'
+            $Text | Should -Match 'AutomationIdProperty|AutomationId'
+            $Text | Should -Match 'NativeWindowHandle'
+        }
+        $Startup = Get-E5StartupProbeScript
+        $Startup | Should -Match 'ChooserDetectedMs'
+        $Startup | Should -Match 'ChooserGoneMs'
+        $Startup | Should -Match 'ChooserVisibleMs'
+        $Startup | Should -Match 'WindowMs = \[int\]\$Watch\.ElapsedMilliseconds - '
+    }
+    It 'sondy okna i startu: wybierają język w oknie wyboru (LanguageChoiceWindow, kafelek przez InvokePattern) przed oknem głównym' {
         foreach ($Text in (Get-E5WaitWindowProbeScript), (Get-E5StartupProbeScript)) {
             $Text | Should -Match 'function Invoke-ProbeLanguageChoice \{'
             $Text | Should -Match 'LanguageChoiceWindow'
@@ -1152,8 +1174,6 @@ Describe 'Task 6: sondy w VM (mocki: nic nie jest uruchamiane naprawdę)' {
             $Text | Should -Match '\$Req\.Language'
             $Text.IndexOf('Invoke-ProbeLanguageChoice -ProcessIds') | Should -BeLessThan $Text.IndexOf('Select-E5MainWindow -Windows')
         }
-        (Get-E5StartupProbeScript) | Should -Match 'WindowMs = \[int\]\$Watch\.ElapsedMilliseconds - '
-        (Get-E5StartupProbeScript) | Should -Match 'ChoiceClickMs'
     }
     It 'sondy okna, startu i okien: zawierają Select-E5MainWindow i Win32 EnumWindows, wybór po PID (ProcessIdProperty), bez dokładnego warunku tytułu' {
         foreach ($Text in (Get-E5WaitWindowProbeScript), (Get-E5StartupProbeScript)) {

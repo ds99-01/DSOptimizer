@@ -292,6 +292,37 @@ public class SecTakeOwnershipTests
         Assert.All(AllOurKeys(), key => Assert.True(f.Registry.HasKey(key), key));
     }
 
+    [Theory]
+    [InlineData(UiLanguage.Polish, UiLanguage.English, "Przejmij na własność", "Przejmij na własność (administrator)")]
+    [InlineData(UiLanguage.English, UiLanguage.Polish, "Take ownership", "Take ownership (administrator)")]
+    public void LanguageSwitchAfterApply_StillDetectsApplied_AndUndoRemovesTheEntries(UiLanguage applyLanguage, UiLanguage laterLanguage, string label, string subLabel)
+    {
+        var f = NewFixture();
+        var engine = f.CreateEngine();
+        var def = Get();
+
+        using (L.Use(applyLanguage))
+        {
+            Assert.Equal(TweakOutcome.Applied, engine.Apply(def).Outcome);
+        }
+
+        // Etykiety w rejestrze są w języku z chwili zastosowania.
+        Assert.Equal(RegValue.FromString(label), f.Registry.Get(Root("*"), "MUIVerb"));
+        Assert.Equal(RegValue.FromString(subLabel), f.Registry.Get(Sub("Directory"), "MUIVerb"));
+
+        using (L.Use(laterLanguage))
+        {
+            Assert.Equal(DetectionState.Applied, engine.Detect(def));
+
+            var result = engine.Undo(def);
+
+            Assert.Equal(TweakOutcome.Undone, result.Outcome);
+            Assert.Empty(result.Warnings);
+            Assert.All(AllOurKeys(), key => Assert.False(f.Registry.HasKey(key), key));
+            Assert.Equal(DetectionState.NotApplied, engine.Detect(def));
+        }
+    }
+
     [Fact]
     public void Undo_RemovesEveryNestedKeyWeCreated_AndLeavesTheShellKeysWithoutWarnings()
     {

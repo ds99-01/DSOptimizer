@@ -642,8 +642,8 @@
       "en": "Can't read the list of restore points."
     },
     {
-      "pl": "Nie można odczytać listy punktów przywracania, więc nie da się potwierdzić wyniku: {0}",
-      "en": "Can't read the list of restore points, so the result can't be confirmed: {0}"
+      "pl": "Nie można odczytać listy punktów przywracania, więc nie próbowano utworzyć punktu: {0}",
+      "en": "Can't read the list of restore points, so creating one wasn't attempted: {0}"
     },
     {
       "pl": "SystemRestore.CreateRestorePoint zwrócił kod {0} – ochrona systemu może być wyłączona.",

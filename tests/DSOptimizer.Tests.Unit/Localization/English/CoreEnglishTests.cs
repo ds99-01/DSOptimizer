@@ -199,7 +199,7 @@ public class CoreEnglishTests
 
             var before = new FakeRestorePointApi(registry) { ThrowOnRead = new InvalidOperationException("boom") };
             var beforeResult = new RestorePointService(registry, before, new ListLog(), clock, new FakeSleeper(clock).Sleep).Create("d");
-            Assert.Equal("Can't read the list of restore points, so the result can't be confirmed: boom", beforeResult.Message);
+            Assert.Equal("Can't read the list of restore points, so creating one wasn't attempted: boom", beforeResult.Message);
 
             var failing = new FakeRestorePointApi(registry) { ThrowOnCall = new InvalidOperationException("boom") };
             var failed = new RestorePointService(registry, failing, new ListLog(), clock, new FakeSleeper(clock).Sleep).Create("d");

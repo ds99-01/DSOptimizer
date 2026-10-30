@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Core.RestorePoints;
 using DSOptimizer.Tests.Unit.Fakes;
@@ -232,7 +233,22 @@ public class RestorePointServiceTests
 
         var result = _service.Create("test");
 
-        Assert.Equal("Nie można odczytać listy punktów przywracania, więc nie da się potwierdzić wyniku: WMI niedostepne", result.Message);
+        Assert.Equal("Nie można odczytać listy punktów przywracania, więc nie próbowano utworzyć punktu: WMI niedostepne", result.Message);
+        Assert.Equal(0, _api.CreateCalls);
+    }
+
+    [Fact]
+    public void Create_ListUnreadableBefore_EnglishMessageSaysCreationWasNotAttempted()
+    {
+        _api.ThrowOnRead = new InvalidOperationException("WMI down");
+
+        using (L.Use(UiLanguage.English))
+        {
+            var result = _service.Create("test");
+
+            Assert.Equal("Can't read the list of restore points, so creating one wasn't attempted: WMI down", result.Message);
+            Assert.Equal("The restore point wasn't created: " + result.Message, L.F("Punkt przywracania nie powstał: {0}", result.Message));
+        }
     }
 
     [Fact]

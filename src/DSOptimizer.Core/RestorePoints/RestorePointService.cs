@@ -61,7 +61,7 @@ public sealed class RestorePointService : IRestorePointService
             _log.Fail(Component, L.T("Nie można odczytać listy punktów przywracania."), ex);
             return new RestorePointResult(
                 RestorePointStatus.Failed,
-                L.F("Nie można odczytać listy punktów przywracania, więc nie da się potwierdzić wyniku: {0}", Describe(ex)));
+                L.F("Nie można odczytać listy punktów przywracania, więc nie próbowano utworzyć punktu: {0}", Describe(ex)));
         }
 
         try

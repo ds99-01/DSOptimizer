@@ -166,7 +166,7 @@ the source of the modified program files must be available under the same licens
 The DSOptimizer name and the DŚO mark are not covered by the MPL 2.0 license; modified versions must use a different name.
 
 The program uses libraries and fonts by other authors, under their own licenses – see
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+[THIRD_PARTY_NOTICES_EN.md](THIRD_PARTY_NOTICES_EN.md).
 
 ## Author
 
