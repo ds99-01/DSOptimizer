@@ -296,7 +296,7 @@ public class BatchRunTests
         run.Complete(Report(new BatchResult
         {
             RestorePoint = new RestorePointResult(RestorePointStatus.Failed, "Błąd WMI."),
-            Warnings = new[] { "Punkt przywracania nie powstał (Failed): Błąd WMI." },
+            Warnings = new[] { "Punkt przywracania nie powstał: Błąd WMI." },
             Results = new[] { Result("id1", TweakOutcome.Removed) },
         }));
 

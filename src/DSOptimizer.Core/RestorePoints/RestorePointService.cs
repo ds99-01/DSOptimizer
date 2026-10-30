@@ -26,7 +26,7 @@ public sealed class RestorePointService : IRestorePointService
     private const int ServiceDisabledHResult = unchecked((int)0x80070422);
     private const uint ServiceDisabledCode = 1058;
     private const string Component = "RestorePoint";
-    private static string ProtectionDisabledMessage => L.T("Ochrona systemu jest wyłączona (HRESULT 0x80070422, błąd 1058) – punkt przywracania nie powstał.");
+    private static string ProtectionDisabledMessage => L.T("Ochrona systemu jest wyłączona (HRESULT 0x80070422, błąd 1058).");
 
     private readonly IRegistry _registry;
     private readonly IRestorePointApi _api;

@@ -542,7 +542,7 @@ public class AppsRemovalEnglishTests
 
             Assert.Equal("DSOptimizer – before removing apps", Assert.Single(rig.Engine.RestorePoints.Descriptions));
             Assert.Equal(
-                "The restore point wasn't created (ProtectionDisabled): System Protection is off. Batch interrupted before the first removal – no restore point.",
+                "The restore point wasn't created: System Protection is off. Batch interrupted before the first removal – no restore point.",
                 batch.AbortReason);
             Assert.All(batch.Results, result => Assert.Equal("Batch interrupted before it started.", result.Message));
         }

@@ -7,6 +7,7 @@ using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Errors;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Core.RestorePoints;
 using DSOptimizer.Tests.Unit.Engine;
@@ -47,7 +48,7 @@ public class EngineWarningBufferTests
     [Fact]
     public void IsRepeatedByReport_TextContainedInReportLine_IsRepeated()
     {
-        var report = Report("Punkt przywracania nie powstał (Failed): brak listy.");
+        var report = Report("Punkt przywracania nie powstał: brak listy.");
         Assert.True(EngineWarningBuffer.IsRepeatedByReport("brak listy.", report, Array.Empty<string>()));
         Assert.False(EngineWarningBuffer.IsRepeatedByReport("Nie udało się przywrócić X: odmowa", report, Array.Empty<string>()));
     }
@@ -121,9 +122,33 @@ public class EngineWarningBufferTests
         var shown = buffer.Release(report, new[] { "test.script" });
 
         Assert.False(report.Result!.IsSuccess);
-        Assert.Contains(report.Lines, line => line.Text.StartsWith("Punkt przywracania nie powstał (ProtectionDisabled)", StringComparison.Ordinal));
+        Assert.Contains(report.Lines, line => line.Text.StartsWith("Punkt przywracania nie powstał: Ochrona systemu", StringComparison.Ordinal));
         Assert.Empty(shown);
         Assert.Equal(3, log.Warnings.Count);
+    }
+
+    /// <summary>U6: ostrzeżenie o braku punktu przy wyłączonej ochronie nie pokazuje nazwy wyliczenia i nie powtarza zdania.</summary>
+    [Theory]
+    [InlineData(false, "punkt przywracania")]
+    [InlineData(true, "restore point wasn't created")]
+    public void Apply_ProtectionDisabled_WarningHasNoEnumNameAndNoRepeatedSentence(bool english, string phrase)
+    {
+        using var scope = L.Use(english ? UiLanguage.English : UiLanguage.Polish);
+        var f = new EngineFixture();
+        var api = new FakeRestorePointApi(f.Registry) { ThrowOnCall = new COMException(string.Empty, unchecked((int)0x80070422)) };
+        var (session, _, _) = SessionWithRealRestorePoints(f, api, TestTweaks.TwoValues());
+
+        var report = session.Run("test.two-values", GuiOperation.Apply, confirmed: false);
+
+        var text = Assert.Single(report.Lines, line => line.Level == GuiLogLevel.Warning).Text;
+        Assert.DoesNotContain("ProtectionDisabled", text, StringComparison.Ordinal);
+        var count = 0;
+        for (var i = text.IndexOf(phrase, StringComparison.OrdinalIgnoreCase); i >= 0; i = text.IndexOf(phrase, i + 1, StringComparison.OrdinalIgnoreCase))
+        {
+            count++;
+        }
+
+        Assert.Equal(1, count);
     }
 
     private static (GuiSession Session, EngineWarningBuffer Buffer, BufferLog Log) SessionWithRealRestorePoints(

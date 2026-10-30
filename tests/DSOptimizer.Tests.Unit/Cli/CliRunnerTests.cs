@@ -177,7 +177,7 @@ public class CliRunnerTests
         Assert.Equal(CliExitCode.OperationFailed, report.Result);
         Assert.Equal(TweakOutcome.Skipped, report.Outcome);
         Assert.Equal(1058u, report.RestorePoint!.Code);
-        Assert.Contains("Punkt przywracania nie powstał (Failed): wyłączona", report.Message, StringComparison.Ordinal);
+        Assert.Contains("Punkt przywracania nie powstał: wyłączona", report.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -201,7 +201,7 @@ public class CliRunnerTests
         Assert.False(report.Aborted);
         Assert.Equal(RestorePointStatus.Failed, report.RestorePoint!.Status);
         Assert.Equal(2, report.Warnings.Count);
-        Assert.StartsWith("Punkt przywracania nie powstał (Failed)", report.Warnings[0], StringComparison.Ordinal);
+        Assert.StartsWith("Punkt przywracania nie powstał: wyłączona", report.Warnings[0], StringComparison.Ordinal);
         Assert.StartsWith("Nie udało się pewnie ustalić", report.Warnings[1], StringComparison.Ordinal);
     }
 

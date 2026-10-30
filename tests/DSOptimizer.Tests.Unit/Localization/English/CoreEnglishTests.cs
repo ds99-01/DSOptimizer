@@ -179,7 +179,7 @@ public class CoreEnglishTests
             var disabledApi = new FakeRestorePointApi(registry) { ThrowOnCall = new COMException("x", unchecked((int)0x80070422)) };
             var disabled = new RestorePointService(registry, disabledApi, new ListLog(), clock, new FakeSleeper(clock).Sleep).Create("d");
             Assert.Equal(RestorePointStatus.ProtectionDisabled, disabled.Status);
-            Assert.Equal("System Protection is turned off (HRESULT 0x80070422, error 1058) – the restore point wasn't created.", disabled.Message);
+            Assert.Equal("System Protection is turned off (HRESULT 0x80070422, error 1058).", disabled.Message);
 
             var neverApi = new FakeRestorePointApi(registry) { AppearsOnReadNumber = null };
             var never = new RestorePointService(registry, neverApi, new ListLog(), clock, new FakeSleeper(clock).Sleep).Create("d");

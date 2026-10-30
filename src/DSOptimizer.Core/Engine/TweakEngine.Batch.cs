@@ -44,7 +44,7 @@ public sealed partial class TweakEngine
             ReportStep(steps, new BatchStepEvent(0, count, BatchStepKind.RestorePoint, null, BatchStepPhase.Finished, _s.Clock.UtcNow, RestorePoint: restorePoint));
             if (restorePoint.Status != RestorePointStatus.Created)
             {
-                var text = L.F("Punkt przywracania nie powstał ({0}): {1}", restorePoint.Status, restorePoint.Message);
+                var text = L.F("Punkt przywracania nie powstał: {0}", restorePoint.Message);
                 _s.Log.Warn(Component, text);
                 if (options.RestorePointPolicy == RestorePointPolicy.Required)
                 {

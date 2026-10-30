@@ -94,7 +94,7 @@ public sealed class AppRemovalEngine
             Report(options.Steps, new BatchStepEvent(0, count, BatchStepKind.RestorePoint, null, BatchStepPhase.Finished, _clock.UtcNow, RestorePoint: restorePoint));
             if (restorePoint.Status != RestorePointStatus.Created)
             {
-                var text = L.F("Punkt przywracania nie powstał ({0}): {1}", restorePoint.Status, restorePoint.Message);
+                var text = L.F("Punkt przywracania nie powstał: {0}", restorePoint.Message);
                 _log.Warn(Component, text);
                 if (required && !AskToContinue(options, restorePoint))
                 {
