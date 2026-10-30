@@ -9,30 +9,34 @@ and checking drivers. Every settings change is recorded in the history and can b
 
 ## Language
 
-The program's interface is currently in Polish only. An English interface is coming.
-Page and button names below are given in Polish, with an English translation in brackets.
+The program is available in English and in Polish. The first time you start it, a window asks you to choose
+the language; it is preselected to Polish when Windows is in Polish, otherwise to English. You can change the
+language later in "Settings" → "Language"; the change takes effect after "Restart now" (this restarts only
+the program, not the computer). In command-line mode, use `--lang pl` or `--lang en` (see below).
+Page and button names in this document are given as they appear in the English interface.
+
+The program was tested on Polish Windows 11 26H2. On Windows in other languages, some items may not detect
+their state correctly. Text that comes from Windows itself (names of apps and devices, the output of winget,
+DISM and SFC) is shown in the language of Windows.
 
 ## What's inside
 
-- **System settings** – the pages „Prywatność i AI” (Privacy and AI), „Wydajność” (Performance),
-  „Dysk i system plików” (Disk and file system), „Sieć i LAN” (Network and LAN), „Bezpieczeństwo i szyfrowanie”
-  (Security and encryption) and „Explorer i wygoda” (Explorer and convenience). For each item the program shows
-  whether it is already set on this computer, what it changes and what you gain. Select what you want and click
-  „Zastosuj” (Apply).
-- **„Panele systemowe” (System panels)** – quick access to the Windows panels that usually take the longest to find.
-- **„Naprawy” (Repairs)** – among others: Windows Update reset, checking and repairing system files, disk cleanup,
+- **System settings** – the pages "Privacy and AI", "Performance", "Disk and file system", "Network and LAN",
+  "Security and encryption" and "Explorer and convenience". For each item the program shows whether it is
+  already set on this computer, what it changes and what you gain. Select what you want and click "Apply".
+- **"System panels"** – quick access to the Windows panels that usually take the longest to find.
+- **"Repairs"** – among others: Windows Update reset, checking and repairing system files, disk cleanup,
   removing the previous Windows installation, network settings reset, winget and Microsoft Store repair.
-- **„Narzędzia” (Tools)** – e.g. restarting the taskbar and File Explorer, and launching WinUtil (Chris Titus).
-- **„Specyfikacja” (Specification)** – a summary of the computer's hardware, which you can save as a report.
-- **„Przygotowanie” (Preparation)** – steps after installing Windows: updates, chipset and graphics drivers,
-  the laptop manufacturer's support page, devices without a driver. The program only checks the state and gives
+- **"Tools"** – e.g. restarting the taskbar and File Explorer, and launching WinUtil (Chris Titus).
+- **"Specification"** – a summary of the computer's hardware, which you can save as a report.
+- **"Preparation"** – steps after installing Windows: updates, chipset and graphics drivers, the laptop
+  manufacturer's support page, devices without a driver. The program only checks the state and gives
   official links.
-- **„Aplikacje” (Apps)** – the list of installed apps with suggestions of what can be removed. Apps important for
+- **"Apps"** – the list of installed apps with suggestions of what can be removed. Apps important for
   the system are protected and cannot be selected.
-- **„Instalacja” (Install)** – installing popular programs through winget (Microsoft) and RustDesk from its
+- **"Install"** – installing popular programs through winget (Microsoft) and RustDesk from its
   authors' GitHub.
-- **„Historia zmian” (Change history)** – everything the program has changed, with an „Cofnij” (Undo) button
-  wherever undo is possible.
+- **"Change history"** – everything the program has changed, with an "Undo" button wherever undo is possible.
 
 ## Requirements
 
@@ -66,13 +70,14 @@ The window also appears after unpacking the zip. If the files got onto the USB d
 by downloading them from the internet, the window usually does not appear.
 
 Microsoft Defender with up-to-date signatures does not block the program or any of its functions – details of the
-check are in the [antivirus report](docs/zrodla/2026-10-26-etap5-raport-antywirus.md) (in Polish).
+check are in the antivirus reports for [version 4.0](docs/zrodla/2026-10-26-etap5-raport-antywirus.md) and
+[version 4.0.1](docs/zrodla/2026-10-30-v4-0-1-raport-antywirus.md) (both in Polish).
 
 ## Privacy
 
 The program has no telemetry and does not update itself. It connects to the network on its own only when you ask
 it to: it downloads WinUtil and RustDesk from their authors' GitHub, and installing and searching for apps goes
-through winget from the Microsoft source. The „Przygotowanie” (Preparation) page opens manufacturers' pages and
+through winget from the Microsoft source. The "Preparation" page opens manufacturers' pages and
 Google in your browser, but sends nothing by itself.
 
 Change history, logs and reports stay on the computer, in the `%ProgramData%\DSOptimizer` folder. When you run the
@@ -80,15 +85,15 @@ program from a USB drive, a copy of the log and reports is also saved next to `D
 
 ## What can and cannot be undone
 
-- **System settings** – you can undo every change with the „Cofnij” (Undo) button next to the item or on the
-  „Historia zmian” (Change history) page. The program remembers the state before the change and returns to it.
+- **System settings** – you can undo every change with the "Undo" button next to the item or on the
+  "Change history" page. The program remembers the state before the change and returns to it.
   The few items that cannot be undone carry a clear warning about it. The program's settings also have an option
   to create a Windows restore point before changes.
 - **Removing apps** – the program does not restore a removed app. Before removing a desktop program (not a Store
   app), it creates a Windows restore point, and if that fails, it asks whether to continue without one.
 - **Repairs and actions** – they run once and have no Undo (e.g. cleaned-up files cannot be recovered).
   Read the item's description before running it.
-- **Install** – you can uninstall an installed program on the „Aplikacje” (Apps) page.
+- **Install** – you can uninstall an installed program on the "Apps" page.
 
 ## Building from source
 
@@ -122,7 +127,7 @@ DSOptimizer.exe --search-apps <text> --out <file.json>
 ```
 
 - `--detect`, `--apply` and `--undo` apply to `kind=tweak` items; `--execute` applies to `kind=action` and `kind=panel` (`--apply` on an action or panel gives code 2).
-- `--list-apps` returns the visible rows of the „Aplikacje” (Apps) page, and `--remove-app` removes one app by its id (`appx:<PackageFamilyName>` or `win32:<key>`); a protected or blocked row is refused. `--restore-point` defaults to `required`: without a restore point nothing is removed.
+- `--list-apps` returns the visible rows of the "Apps" page, and `--remove-app` removes one app by its id (`appx:<PackageFamilyName>` or `win32:<key>`); a protected or blocked row is refused. `--restore-point` defaults to `required`: without a restore point nothing is removed.
 - `--list-install` returns the install list with the winget state, `--install-apps` installs the given items (`install.<name>` from the list or `winget:<id>`) without asking, and `--search-apps` returns `winget search` results. `--apps-catalog` replaces the built-in install list.
 - Installing and searching through winget work only on the signed-in user's account; on another account they end with a refusal (code 1), and winget is not started.
 
@@ -150,7 +155,7 @@ The `--out` file is UTF-8 without BOM. Windows PowerShell 5.1 reads such a file 
 
 ## Documentation
 
-Item documentation is available in English in `docs/en` (`docs/en/tweaks`, `docs/en/apps`, `docs/en/prep`) and in Polish in `docs/tweaks`, `docs/apps` and `docs/prep` (the Polish version is the original). Source records (`docs/zrodla`) are in Polish only.
+Item documentation is available in English in `docs/en` (`docs/en/tweaks`, `docs/en/apps`, `docs/en/prep`) and in Polish in `docs/tweaks`, `docs/apps` and `docs/prep` (the Polish version is the original). Source records (`docs/zrodla`) are written in Polish.
 
 ## License
 

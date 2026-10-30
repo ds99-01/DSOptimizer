@@ -835,6 +835,7 @@ Describe 'Task 6: fazy, plan av i artefakt wydania (czysta logika, bez VM)' {
         $Plan.MotwWaitSeconds | Should -Be 5
         $Plan.DpiLogPixels | Should -Be 144
         $Plan.GuiWindowSeconds | Should -Be 60
+        $Plan.GuiLanguage | Should -BeExactly 'pl'
         $Plan.MainWindowTitlePrefix | Should -BeExactly 'DSOptimizer'
         $Plan.Contains('MainWindowTitle') | Should -BeFalse
         @($Plan.SmartScreenTitles) | Should -Be @('System Windows ochronił ten komputer', 'Windows protected your PC')
@@ -976,6 +977,7 @@ Describe 'Task 6: sondy w VM (mocki: nic nie jest uruchamiane naprawdę)' {
         $script:Request.TitlePrefix | Should -BeExactly 'DSOptimizer'
         $null -eq $script:Request.PSObject.Properties['Title'] | Should -BeTrue
         $script:Request.TimeoutSeconds | Should -Be 60
+        $script:Request.Language | Should -BeExactly 'pl'
         $R.Found | Should -BeTrue
         # Faktyczny tytuł z wersją (program ustawia go w trakcie startu) trafia do wyniku.
         $R.Title | Should -BeExactly 'DSOptimizer 4.0.0'
@@ -1139,6 +1141,19 @@ Describe 'Task 6: sondy w VM (mocki: nic nie jest uruchamiane naprawdę)' {
         Select-E5MainWindow -Windows @() -ProcessIds @(77) -TitlePrefix 'DSOptimizer' | Should -BeNullOrEmpty
         # Kolejność listy wygrywa (UIA przed Win32) – pierwsze pasujące okno.
         (Select-E5MainWindow -Windows @($Main, [pscustomobject]@{ Source = 'win32'; ProcessId = 77; Name = 'DSOptimizer 4.0.0'; ClassName = 'HwndWrapper[x]' }) -ProcessIds @(77) -TitlePrefix 'DSOptimizer').Source | Should -Be 'uia'
+    }
+    It 'sondy okna i startu: wybierają język w oknie wyboru (LanguageChoiceWindow, kafelek przez InvokePattern) przed oknem głównym; czas startu bez obsługi okna wyboru' {
+        foreach ($Text in (Get-E5WaitWindowProbeScript), (Get-E5StartupProbeScript)) {
+            $Text | Should -Match 'function Invoke-ProbeLanguageChoice \{'
+            $Text | Should -Match 'LanguageChoiceWindow'
+            $Text | Should -Match 'LanguageChoicePolish'
+            $Text | Should -Match 'LanguageChoiceEnglish'
+            $Text | Should -Match 'InvokePattern'
+            $Text | Should -Match '\$Req\.Language'
+            $Text.IndexOf('Invoke-ProbeLanguageChoice -ProcessIds') | Should -BeLessThan $Text.IndexOf('Select-E5MainWindow -Windows')
+        }
+        (Get-E5StartupProbeScript) | Should -Match 'WindowMs = \[int\]\$Watch\.ElapsedMilliseconds - '
+        (Get-E5StartupProbeScript) | Should -Match 'ChoiceClickMs'
     }
     It 'sondy okna, startu i okien: zawierają Select-E5MainWindow i Win32 EnumWindows, wybór po PID (ProcessIdProperty), bez dokładnego warunku tytułu' {
         foreach ($Text in (Get-E5WaitWindowProbeScript), (Get-E5StartupProbeScript)) {
@@ -1318,6 +1333,7 @@ Describe 'Task 6: sondy w VM (mocki: nic nie jest uruchamiane naprawdę)' {
         $script:Request.Exe | Should -BeExactly $script:UsbExe
         $script:Request.TitlePrefix | Should -BeExactly 'DSOptimizer'
         $script:Request.Runs | Should -Be 3
+        $script:Request.Language | Should -BeExactly 'pl'
         @($R.Runs).Count | Should -Be 3
         $R.ProbeAsDso | Should -BeTrue
         $R.Error | Should -BeNullOrEmpty

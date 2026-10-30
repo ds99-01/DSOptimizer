@@ -34,7 +34,15 @@ i sprawdzenie sterowników. Każda zmiana ustawień trafia do historii i można 
 
 ## Język
 
-Program jest dziś po polsku. Angielska wersja interfejsu jest w przygotowaniu.
+Program jest dostępny po polsku i po angielsku. Przy pierwszym uruchomieniu okno prosi o wybór języka;
+wstępnie zaznaczony jest polski, gdy Windows jest po polsku, a w przeciwnym razie angielski. Język zmienisz
+później w „Ustawieniach” → „Język”; zmiana zadziała po „Uruchom ponownie teraz” (restart dotyczy samego
+programu, nie komputera). W trybie wiersza poleceń służy do tego `--lang pl` albo `--lang en`.
+Nazwy stron i przycisków w tym dokumencie są takie jak w polskim interfejsie.
+
+Program sprawdzano na polskim Windows 11 26H2. Na Windows w innych językach część pozycji może nie wykryć stanu
+poprawnie. Teksty pochodzące z samego Windowsa (nazwy aplikacji i urządzeń, wyjście winget, DISM i SFC)
+są w języku Windowsa.
 
 ## Pobieranie
 
@@ -60,7 +68,8 @@ pokaże niebieskie okno „System Windows ochronił ten komputer”. Kliknij **�
 niż pobranie z internetu, okna zwykle nie ma.
 
 Microsoft Defender z aktualnymi sygnaturami nie blokuje programu ani żadnej jego funkcji – szczegóły sprawdzenia
-są w [raporcie antywirusowym](docs/zrodla/2026-10-26-etap5-raport-antywirus.md).
+są w raportach antywirusowych dla [wersji 4.0](docs/zrodla/2026-10-26-etap5-raport-antywirus.md)
+i [wersji 4.0.1](docs/zrodla/2026-10-30-v4-0-1-raport-antywirus.md).
 
 ## Prywatność
 

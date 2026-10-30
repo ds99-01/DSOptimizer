@@ -143,6 +143,9 @@ function Get-E5Plan {
         ShellWaitSeconds      = 90
         GuiWindowSeconds      = 60
         StartupRuns           = 3
+        # Czysty checkpoint nie ma settings.json, wiec pierwsze okno programu to wybor jezyka (pl/en). Sondy wybieraja ten jezyk (kafelek w oknie
+        # wyboru) przed szukaniem okna glownego; czas startu nie obejmuje obslugi tego okna (ChoiceClickMs odejmowane od WindowMs).
+        GuiLanguage           = 'pl'
         StartupWindowTimeoutSeconds = 120
         StartupCloseTimeoutSeconds  = 20
         StartupPauseSeconds   = 10
@@ -753,6 +756,28 @@ namespace DsoE5 {
             Bounds = [ordered]@{ X = $Window.X; Y = $Window.Y; Width = $Window.Width; Height = $Window.Height } }
     }
 }
+function Invoke-ProbeLanguageChoice {
+    # Okno wyboru jezyka (AutomationId LanguageChoiceWindow, pierwszy start na profilu bez settings.json): klika kafelek jezyka
+    # (InvokePattern). Wymaga zaladowanych UIAutomationClient/UIAutomationTypes. Zwraca true tylko po kliknieciu; brak okna = false.
+    param([Parameter(Mandatory)][int[]]$ProcessIds, [Parameter(Mandatory)][string]$Language)
+    $TileId = if ($Language -eq 'en') { 'LanguageChoiceEnglish' } else { 'LanguageChoicePolish' }
+    $Root = [System.Windows.Automation.AutomationElement]::RootElement
+    foreach ($ProcId in $ProcessIds) {
+        $ByProcess = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ProcessIdProperty, [int]$ProcId)
+        foreach ($Window in $Root.FindAll([System.Windows.Automation.TreeScope]::Children, $ByProcess)) {
+            try {
+                if ($Window.Current.AutomationId -ne 'LanguageChoiceWindow') { continue }
+                $ById = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::AutomationIdProperty, $TileId)
+                $Tile = $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $ById)
+                if ($null -eq $Tile) { continue }
+                $Tile.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+                return $true
+            }
+            catch { $null = $_ }
+        }
+    }
+    return $false
+}
 '@
     $Select = "function Select-E5MainWindow {`n$((Get-Command -Name 'Select-E5MainWindow' -CommandType Function).Definition)`n}"
     return ($Win32 + "`n" + $Select + "`n")
@@ -1283,7 +1308,7 @@ function Get-E5WaitWindowProbeScript {
     $Body = @'
 # Sonda okna programu (DSOptimizer, tests\vm\explore\Invoke-E5Exploration.ps1). Tylko w VM DSO-26H2-HOME/PRO, tylko odczyt.
 $ErrorActionPreference = 'Stop'
-$Out = [ordered]@{ Sid = $null; Elevated = $null; Found = $false; Seconds = $null; ProcessId = $null; ProcessIds = @(); Title = $null; ClassName = $null; Source = $null; Bounds = $null
+$Out = [ordered]@{ Sid = $null; Elevated = $null; LanguageChosen = $false; LanguageChosenAtSeconds = $null; Found = $false; Seconds = $null; ProcessId = $null; ProcessIds = @(); Title = $null; ClassName = $null; Source = $null; Bounds = $null
     ProcessWindows = @(); Dpi = $null; ScreenWidth = $null; ScreenHeight = $null; LogPixels = $null; Error = $null }
 try {
     if ($env:DSO_VM_TESTS_MOCK_ONLY) { throw 'DSO_VM_TESTS_MOCK_ONLY: sonda nie czyta okien w testach.' }
@@ -1308,6 +1333,7 @@ try {
     if ($null -ne $Desktop) { try { $Out.LogPixels = $Desktop.GetValue('LogPixels') } finally { $Desktop.Dispose() } }
     Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
     $Target = [System.IO.Path]::GetFullPath([string]$Req.Exe)
+    $Language = if ($Req.PSObject.Properties['Language'] -and $Req.Language) { [string]$Req.Language } else { 'pl' }
     $Root = [System.Windows.Automation.AutomationElement]::RootElement
     $Watch = [System.Diagnostics.Stopwatch]::StartNew()
     while (-not $Out.Found -and $Watch.Elapsed.TotalSeconds -lt [int]$Req.TimeoutSeconds) {
@@ -1328,6 +1354,12 @@ try {
             }
             try { foreach ($Window in @(Get-ProbeWin32Windows -ProcessIds $Ids)) { $Candidates.Add($Window) } } catch { $null = $_ }
             $Out.ProcessWindows = @($Candidates | ForEach-Object { [pscustomobject]@{ Source = $_.Source; ProcessId = $_.ProcessId; Name = $_.Name; ClassName = $_.ClassName } })
+            if (-not $Out.LanguageChosen -and (Invoke-ProbeLanguageChoice -ProcessIds $Ids -Language $Language)) {
+                $Out.LanguageChosen = $true
+                $Out.LanguageChosenAtSeconds = [math]::Round($Watch.Elapsed.TotalSeconds, 2)
+                Start-Sleep -Milliseconds 250
+                continue
+            }
             $Main = Select-E5MainWindow -Windows $Candidates.ToArray() -ProcessIds $Ids -TitlePrefix ([string]$Req.TitlePrefix)
             if ($null -ne $Main) {
                 $Out.Found = $true
@@ -1370,10 +1402,11 @@ try {
     $Out.Elevated = (New-Object System.Security.Principal.WindowsPrincipal($Identity)).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
     Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
     $Target = [System.IO.Path]::GetFullPath([string]$Req.Exe)
+    $Language = if ($Req.PSObject.Properties['Language'] -and $Req.Language) { [string]$Req.Language } else { 'pl' }
     $Root = [System.Windows.Automation.AutomationElement]::RootElement
     $Runs = New-Object System.Collections.Generic.List[object]
     for ($Index = 1; $Index -le [int]$Req.Runs; $Index++) {
-        $Run = [ordered]@{ Index = $Index; StartedAt = (Get-Date).ToString('o'); ProcessId = $null; WindowMs = $null; Title = $null; ClassName = $null; Source = $null; ProcessWindows = @()
+        $Run = [ordered]@{ Index = $Index; StartedAt = (Get-Date).ToString('o'); ProcessId = $null; ChooserShown = $false; ChooserMs = $null; ChoiceClickMs = $null; WindowMs = $null; Title = $null; ClassName = $null; Source = $null; ProcessWindows = @()
             TimedOut = $false; Closed = $false; Killed = $false; ExitCode = $null; Error = $null }
         try {
             $Running = @(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -and [string]::Equals([System.IO.Path]::GetFullPath($_.Path), $Target, [System.StringComparison]::OrdinalIgnoreCase) })
@@ -1392,9 +1425,20 @@ try {
                     try { $Candidates.Add([pscustomobject]@{ Source = 'uia'; ProcessId = [int]$Process.Id; Name = [string]$Element.Current.Name; ClassName = [string]$Element.Current.ClassName }) } catch { $null = $_ }
                 }
                 try { foreach ($Window in @(Get-ProbeWin32Windows -ProcessIds @([int]$Process.Id))) { $Candidates.Add($Window) } } catch { $null = $_ }
+                if (-not $Run.ChooserShown) {
+                    # Okno wyboru jezyka (pierwszy start bez settings.json): wybor kafelka; jego obsluga nie liczy sie do czasu startu.
+                    $ChoiceStart = [int]$Watch.ElapsedMilliseconds
+                    if (Invoke-ProbeLanguageChoice -ProcessIds @([int]$Process.Id) -Language $Language) {
+                        $Run.ChooserShown = $true
+                        $Run.ChooserMs = $ChoiceStart
+                        $Run.ChoiceClickMs = [int]$Watch.ElapsedMilliseconds - $ChoiceStart
+                        Start-Sleep -Milliseconds 100
+                        continue
+                    }
+                }
                 $Main = Select-E5MainWindow -Windows $Candidates.ToArray() -ProcessIds @([int]$Process.Id) -TitlePrefix ([string]$Req.TitlePrefix)
                 if ($null -ne $Main) {
-                    $Run.WindowMs = [int]$Watch.ElapsedMilliseconds
+                    $Run.WindowMs = [int]$Watch.ElapsedMilliseconds - $(if ($null -ne $Run.ChoiceClickMs) { [int]$Run.ChoiceClickMs } else { 0 })
                     $Run.Title = [string]$Main.Name
                     $Run.ClassName = [string]$Main.ClassName
                     $Run.Source = [string]$Main.Source
@@ -1492,7 +1536,7 @@ function Start-E5Gui {
         $Out.Execute = Get-E5TaskExecute -Path $Exe
         Register-E5Task -Plan $Plan -TaskName $Out.TaskName -Execute $Out.Execute -RunLevel 'Highest'
         $Out.Started = $true
-        $Request = [ordered]@{ Exe = $Exe; TitlePrefix = [string]$Plan.MainWindowTitlePrefix; TimeoutSeconds = $WaitSeconds }
+        $Request = [ordered]@{ Exe = $Exe; TitlePrefix = [string]$Plan.MainWindowTitlePrefix; TimeoutSeconds = $WaitSeconds; Language = [string]$Plan.GuiLanguage }
         $Probe = $null
         try { $Probe = Invoke-E5UserProbe -Plan $Plan -Name "window-$Name" -ScriptText (Get-E5WaitWindowProbeScript) -RequestJson (ConvertTo-Json -InputObject $Request) -TimeoutSeconds ($WaitSeconds + 60) }
         catch { $Out.ProbeError = Format-E5Error $_ }
@@ -1696,7 +1740,7 @@ function Invoke-E5StartupPhase {
     $Out = [ordered]@{ Since = $Since.ToString('o'); Usb = $null; ProbeSid = $null; ProbeAsDso = $null; ProbeError = $null; Elevated = $null; Runs = @(); Leftover = $null; Detections = $null; Error = $null }
     try {
         $Out.Usb = Resolve-E5UsbVolume -Plan $Plan
-        $Request = [ordered]@{ Exe = [string]$Out.Usb.ExePath; TitlePrefix = [string]$Plan.MainWindowTitlePrefix; Runs = [int]$Plan.StartupRuns; WindowTimeoutSeconds = [int]$Plan.StartupWindowTimeoutSeconds
+        $Request = [ordered]@{ Exe = [string]$Out.Usb.ExePath; TitlePrefix = [string]$Plan.MainWindowTitlePrefix; Language = [string]$Plan.GuiLanguage; Runs = [int]$Plan.StartupRuns; WindowTimeoutSeconds = [int]$Plan.StartupWindowTimeoutSeconds
             CloseTimeoutSeconds = [int]$Plan.StartupCloseTimeoutSeconds; PauseSeconds = [int]$Plan.StartupPauseSeconds }
         $Limit = [int]$Plan.StartupRuns * ([int]$Plan.StartupWindowTimeoutSeconds + [int]$Plan.StartupCloseTimeoutSeconds + [int]$Plan.StartupPauseSeconds + 15) + 60
         $Probe = $null
