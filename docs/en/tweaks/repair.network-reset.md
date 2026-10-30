@@ -16,7 +16,7 @@ An error after a successful `netsh winsock reset` (steps 3–4) ends the message
 
 Last line of stdout: "The commands succeeded. Takes effect after the computer restarts. The IP configuration from before the reset is above and in the log file." The script resets `$LASTEXITCODE` to zero after accepting code 1 with a note, because the script wrapper ends with `exit $LASTEXITCODE`.
 
-**Rule for judging `netsh int ip reset`** (VM measurement, ruling R9): code 0 = success. Code 1 **and** exactly one line ending with `failed.` **and** "Odmowa dost…" or "Access is denied" in the next non-empty line **and** all other `Resetting …` items ending with `OK!` = success with the note "One entry protected by the system denied access – this is normal on Windows 11, the rest was reset." Any other case (another code, more than one `failed`, another message, no denial) = `Failed` with the output. The comparison is done without Polish characters ("Odmowa dost"), because the message arrives in the wrong encoding ("dost─Öpu": UTF-8 bytes read as OEM 852); the test covers the PL, EN and garbled variants. The test example is the verbatim output from the Home VM (34 items, 33 `OK!`, one `failed.`).
+**Rule for judging `netsh int ip reset`** (VM measurement, ruling R9): code 0 = success. Code 1 **and** exactly one line ending with `failed.` **and** "Odmowa dost…" or "Access is denied" in the next non-empty line **and** all other `Resetting …` entries ending with `OK!` = success with the note "One entry protected by the system denied access – this is normal on Windows 11, the rest was reset." Any other case (another code, more than one `failed`, another message, no denial) = `Failed` with the output. The comparison is done without Polish characters ("Odmowa dost"), because the message arrives in the wrong encoding ("dost─Öpu": UTF-8 bytes read as OEM 852); the test covers the PL, EN and garbled variants. The test example is the verbatim output from the Home VM (34 entries, 33 `OK!`, one `failed.`).
 
 ## Sources
 - Test on 26H2 Home and Pro VMs (26300.9457), 2026-10-22, contexts K1 (PowerShell Direct, Administrator) and K2 (process of the `dso` account, Interactive + Highest): `docs/zrodla/2026-10-22-etap4b-1-pomiary.md` (in Polish), section 2 and probe S1.
@@ -25,7 +25,7 @@ Last line of stdout: "The commands succeeded. Takes effect after the computer re
 
 ## Defaults on a fresh 26H2
 - `netsh winsock reset`: code 0, "Sucessfully reset the Winsock Catalog. You must restart the computer in order to complete the reset."
-- `netsh int ip reset`: code 1, 34 items, 33 × "Resetting …, OK!" and one "Resetting , failed." with "Odmowa dostępu." (Access is denied.) in the next line, and at the end "Restart the computer to complete this action." From the 20th item on, the names are empty.
+- `netsh int ip reset`: code 1, 34 entries, 33 × "Resetting …, OK!" and one "Resetting , failed." with "Odmowa dostępu." (Access is denied.) in the next line, and at the end "Restart the computer to complete this action." From the 20th entry on, the names are empty.
 - Reading 2026-10-22, Home and Pro, K1 and K2 identical.
 
 ## Detection and undo

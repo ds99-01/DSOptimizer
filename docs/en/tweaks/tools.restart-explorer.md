@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/tools.restart-explorer.md sha256: 316eb539d0d51195cce962648c7d9fce658c184ad5318bef2a39b35d5225f5de -->
+<!-- source: docs/tweaks/tools.restart-explorer.md sha256: 6c04b54eed4365684caf338ea6ea40a1b0691131bafd4239d6f5b8482478b49c -->
 
 # tools.restart-explorer – Restart the taskbar and File Explorer
 
@@ -16,7 +16,7 @@ Flow: read `AutoRestartShell` → select the `$UserSid` shells without `/factory
 The script NEVER starts `explorer.exe` (neither `Start-Process` nor `&`): the elevated File Explorer in v3.2 came precisely from the program's process. The harness test guards this with tripwires (`Start-Process`, `explorer`, `taskkill` throw on an unmocked call).
 
 ## Sources
-- MS archive (Windows Server 2003 Technical Reference, "AutoRestartShell: Core Services", ms.date 2009-10-08, `is_archived`), accessed 2026-10-19: https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2003/cc776814(v=ws.10) – key `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, `REG_DWORD`, range 0 or 1, default 1: "Specifies whether the Windows user interface (typically, Explorer.exe) restarts automatically if it stops unexpectedly."; 0 – the user has to start the interface themselves (Task Manager > Run new task). This applies to Windows Server 2003; there is no MS Learn page for Windows 11/26H2 (Ruling R7), so the effect on 26H2 relies on the VM reading below.
+- MS archive (Windows Server 2003 Technical Reference, "AutoRestartShell: Core Services", ms.date 2009-10-08, `is_archived`), accessed 2026-10-19: https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2003/cc776814(v=ws.10) – key `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, `REG_DWORD`, range 0 or 1, default 1: "Specifies whether the Windows user interface (typically, Explorer.exe) restarts automatically if it stops unexpectedly."; 0 – the user has to start the interface themselves (Task Manager > File > Run new task). This applies to Windows Server 2003; there is no MS Learn page for Windows 11/26H2 (Ruling R7), so the effect on 26H2 relies on the VM reading below.
 - Reading from 26H2 VMs (build 26300.9457), Home and Pro, 2026-10-19 (C5 exploration, `tests/vm/explore/Invoke-C5Exploration.ps1`; research: `docs/zrodla/2026-10-19-partia-c5-zrodla.md` (in Polish), "Wyniki VM" (VM results), questions 5–7):
   - `AutoRestartShell` = DWORD 1 (Home and Pro); the "missing value" case didn't occur, and the behavior with a missing value wasn't measured (hence the conservative `Failed`).
   - `Stop-Process -Force` on the shell (`C:\Windows\Explorer.EXE`) of user `dso`: new shell after 136–1,416 ms (loop resolution 500 ms), parent `userinit.exe`, same session (1), owner `dso`, token `Limited` (not elevated).

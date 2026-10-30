@@ -3,7 +3,7 @@
 # tools.winutil – Open WinUtil (Chris Titus)
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=caution`, with the C# handler `winutil` (Stage 5, spec 3.3, decision K5; previously a thin launcher from round C5, decision D5): the item downloads the official `winutil.ps1` from the latest stable GitHub release, checks its SHA256 and opens it in a separate PowerShell window. It does nothing more. This is someone else's code from the internet, run as admin, and DSOptimizer doesn't assess its content.
+Port as `kind=action`, `risk=caution`, with the C# handler `winutil` (Stage 5, spec 3.3, decision K5; previously a thin launcher from round C5, decision D5): the item downloads the official `winutil.ps1` from the latest stable GitHub release, checks its SHA256 and opens it in a separate PowerShell window. It does nothing more. This is someone else's code from the internet, run as administrator, and DSOptimizer doesn't assess its content.
 
 This is the **second exception** to the rule "the program doesn't download anything by itself" (the first: RustDesk from GitHub). Scope: one file (`winutil.ps1`), one repo (`ChrisTitusTech/winutil`), one source (`releases/latest`); the rules are in the code (`src/DSOptimizer.Core/Tools/WinUtilSource.cs`), not in JSON.
 

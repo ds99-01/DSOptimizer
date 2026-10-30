@@ -8,7 +8,7 @@ Port: a test on a 26H2 VM (Home and Pro) showed a real effect. MS source for the
 ## What it changes
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings`, value `TaskbarEndTask`, **DWord**, set to `1`; `scope=user` (the signed-in user's hive).
 - On a fresh 26H2 neither the value nor the `TaskbarDeveloperSettings` key exists (only the toggle in Settings creates it). Apply creates the key, undo deletes the value and the empty key created by apply.
-- Apply doesn't restart File Explorer (ruling R15). The item appears in the menu after File Explorer restarts: use the `tools.restart-explorer` action or sign in again.
+- Apply doesn't restart File Explorer (ruling R15). The entry appears in the menu after File Explorer restarts: use the `tools.restart-explorer` action or sign in again.
 
 ## Sources
 - https://learn.microsoft.com/en-us/windows/advanced-settings/ – MS Learn "Advanced Windows Settings" (2026-01-22): the toggle "Enable end task in taskbar by right click" in System > Advanced (25H2 and later; previously For developers).

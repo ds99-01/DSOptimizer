@@ -24,7 +24,7 @@
     },
     {
       "pl": "Według Microsoftu wyłączanie szyfrowania przez kogoś innego niż producent sprzętu narusza licencję Windows 11; odradza je też przy Recall.",
-      "en": "Microsoft says only the hardware manufacturer may turn off encryption under the Windows 11 license; it also advises against it with Recall."
+      "en": "Microsoft says only the hardware manufacturer may turn off encryption under the Windows 11 license and advises against it if Recall is on."
     },
     {
       "pl": "Wyłącz szyfrowanie BitLocker na dysku C:",
