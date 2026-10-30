@@ -61,7 +61,7 @@ public sealed class RestorePointService : IRestorePointService
             _log.Fail(Component, L.T("Nie można odczytać listy punktów przywracania."), ex);
             return new RestorePointResult(
                 RestorePointStatus.Failed,
-                L.F("Nie można odczytać listy punktów przywracania, więc nie da się potwierdzić wyniku (punkt nie został utworzony): {0}", Describe(ex)));
+                L.F("Nie można odczytać listy punktów przywracania, więc nie da się potwierdzić wyniku: {0}", Describe(ex)));
         }
 
         try
@@ -88,7 +88,7 @@ public sealed class RestorePointService : IRestorePointService
         catch (Exception ex)
         {
             _log.Fail(Component, L.T("Tworzenie punktu przywracania nie powiodło się."), ex);
-            return new RestorePointResult(RestorePointStatus.Failed, L.F("Tworzenie punktu przywracania nie powiodło się: {0}", Describe(ex)));
+            return new RestorePointResult(RestorePointStatus.Failed, L.F("Usługa punktów przywracania zgłosiła błąd: {0}", Describe(ex)));
         }
         finally
         {
@@ -121,7 +121,7 @@ public sealed class RestorePointService : IRestorePointService
                 _log.Fail(Component, L.T("Nie można odczytać listy punktów przywracania po utworzeniu."), ex);
                 return new RestorePointResult(
                     RestorePointStatus.Failed,
-                    L.F("Nie można potwierdzić utworzenia punktu przywracania (błąd odczytu listy): {0}", Describe(ex)),
+                    L.F("Nie można potwierdzić wyniku (błąd odczytu listy punktów przywracania): {0}", Describe(ex)),
                     0);
             }
 

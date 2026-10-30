@@ -642,8 +642,8 @@
       "en": "Can't read the list of restore points."
     },
     {
-      "pl": "Nie można odczytać listy punktów przywracania, więc nie da się potwierdzić wyniku (punkt nie został utworzony): {0}",
-      "en": "Can't read the list of restore points, so the result can't be confirmed (the restore point wasn't created): {0}"
+      "pl": "Nie można odczytać listy punktów przywracania, więc nie da się potwierdzić wyniku: {0}",
+      "en": "Can't read the list of restore points, so the result can't be confirmed: {0}"
     },
     {
       "pl": "SystemRestore.CreateRestorePoint zwrócił kod {0} – ochrona systemu może być wyłączona.",
@@ -658,8 +658,8 @@
       "en": "Couldn't create the restore point."
     },
     {
-      "pl": "Tworzenie punktu przywracania nie powiodło się: {0}",
-      "en": "Couldn't create the restore point: {0}"
+      "pl": "Usługa punktów przywracania zgłosiła błąd: {0}",
+      "en": "The restore point service reported an error: {0}"
     },
     {
       "pl": "Nie udało się przywrócić {0}: {1}",
@@ -670,8 +670,8 @@
       "en": "Can't read the list of restore points after creating one."
     },
     {
-      "pl": "Nie można potwierdzić utworzenia punktu przywracania (błąd odczytu listy): {0}",
-      "en": "Can't confirm that the restore point was created (couldn't read the list): {0}"
+      "pl": "Nie można potwierdzić wyniku (błąd odczytu listy punktów przywracania): {0}",
+      "en": "Can't confirm the result (couldn't read the list of restore points): {0}"
     },
     {
       "pl": "Utworzono punkt przywracania: {0} (numer sekwencji {1})",

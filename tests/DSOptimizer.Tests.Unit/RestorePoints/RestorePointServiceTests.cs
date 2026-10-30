@@ -226,6 +226,37 @@ public class RestorePointServiceTests
     }
 
     [Fact]
+    public void Create_ListUnreadableBefore_MessageDoesNotRepeatThatPointWasNotCreated()
+    {
+        _api.ThrowOnRead = new InvalidOperationException("WMI niedostepne");
+
+        var result = _service.Create("test");
+
+        Assert.Equal("Nie można odczytać listy punktów przywracania, więc nie da się potwierdzić wyniku: WMI niedostepne", result.Message);
+    }
+
+    [Fact]
+    public void Create_OtherException_MessageNamesServiceErrorOnce()
+    {
+        _api.ThrowOnCall = new InvalidOperationException("WMI padlo");
+
+        var result = _service.Create("test");
+
+        Assert.Equal("Usługa punktów przywracania zgłosiła błąd: WMI padlo", result.Message);
+    }
+
+    [Fact]
+    public void Create_ListUnreadableWhilePolling_MessageDoesNotRepeatThatPointWasNotCreated()
+    {
+        _api.ThrowOnRead = new InvalidOperationException("RPC padl");
+        _api.ThrowOnReadNumber = 2;
+
+        var result = _service.Create("test");
+
+        Assert.Equal("Nie można potwierdzić wyniku (błąd odczytu listy punktów przywracania): RPC padl", result.Message);
+    }
+
+    [Fact]
     public void Create_OtherExceptionWithEmptyMessage_MessageHasTypeAndHResult()
     {
         _api.ThrowOnCall = new COMException(string.Empty, unchecked((int)0x80041001));

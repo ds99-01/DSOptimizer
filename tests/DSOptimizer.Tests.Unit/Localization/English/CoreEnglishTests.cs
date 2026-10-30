@@ -190,6 +190,28 @@ public class CoreEnglishTests
     }
 
     [Fact]
+    public void RestorePoint_ErrorMessages_English_ReadOnceWithoutRepeatedPhrase()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            var registry = new FakeRegistry();
+            var clock = new FakeClock();
+
+            var before = new FakeRestorePointApi(registry) { ThrowOnRead = new InvalidOperationException("boom") };
+            var beforeResult = new RestorePointService(registry, before, new ListLog(), clock, new FakeSleeper(clock).Sleep).Create("d");
+            Assert.Equal("Can't read the list of restore points, so the result can't be confirmed: boom", beforeResult.Message);
+
+            var failing = new FakeRestorePointApi(registry) { ThrowOnCall = new InvalidOperationException("boom") };
+            var failed = new RestorePointService(registry, failing, new ListLog(), clock, new FakeSleeper(clock).Sleep).Create("d");
+            Assert.Equal("The restore point service reported an error: boom", failed.Message);
+
+            var polling = new FakeRestorePointApi(registry) { ThrowOnRead = new InvalidOperationException("boom"), ThrowOnReadNumber = 2 };
+            var pollResult = new RestorePointService(registry, polling, new ListLog(), clock, new FakeSleeper(clock).Sleep).Create("d");
+            Assert.Equal("Can't confirm the result (couldn't read the list of restore points): boom", pollResult.Message);
+        }
+    }
+
+    [Fact]
     public void CatalogValidator_Error_English()
     {
         using (L.Use(UiLanguage.English))
