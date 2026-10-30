@@ -247,7 +247,7 @@ public sealed class SettingsViewModel : ObservableObject
     {
         try
         {
-            LicensesWindow.ShowFor(Application.Current?.MainWindow, ThirdPartyNotices.Text);
+            LicensesWindow.ShowFor(Application.Current?.MainWindow, ThirdPartyNotices.Localized);
         }
         catch (Exception ex)
         {

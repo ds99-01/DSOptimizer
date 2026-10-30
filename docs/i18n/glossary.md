@@ -228,7 +228,7 @@ How to read the tables:
 | Trwa inna operacja – spróbuj za chwilę. | Another operation is in progress – try again in a moment. | |
 | Brak wyników / Nic nie pasuje do „{0}”. | No results / Nothing matches "{0}". | |
 | konto / zalogowane konto / wszystkie konta | account / signed-in account / all accounts | Style rule 11; "bieżące konto" → signed-in account ("for the signed-in account"); "current account" only in the fallback "Applies to the current account." (account name unknown; the process may run as a different account than the signed-in one) |
-| cały komputer | whole computer | Change history "Account" column |
+| cały komputer | whole PC | Change history "Account" column. Exception to the "computer, not PC" rule: the column fits about 11 characters, and "whole computer" was cut to "whole comput…" next to "dso" even in a 1600 px window. |
 | obraz systemu | Windows image | Store apps provisioned for new accounts, as in [Remove-AppxProvisionedPackage](https://learn.microsoft.com/en-us/powershell/module/dism/remove-appxprovisionedpackage) ("removes app packages (.appx) from a Windows image"). Not "system image": in English Windows that is a backup (System Image Recovery). |
 | deinstalator / instalator | uninstaller / installer | "manufacturer's uninstaller" |
 | cichy deinstalator / deinstalator producenta | silent uninstaller / manufacturer's uninstaller | Program removal mode (no window / the program's own window) |

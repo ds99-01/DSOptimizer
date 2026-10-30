@@ -7,6 +7,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\THIRD_PARTY_NOTICES.md" LogicalName="DSOptimizer.Core.THIRD_PARTY_NOTICES.md" />
+    <EmbeddedResource Include="..\..\THIRD_PARTY_NOTICES_EN.md" LogicalName="DSOptimizer.Core.THIRD_PARTY_NOTICES_EN.md" />
     <EmbeddedResource Include="Localization\Translations\*.json" LogicalName="DSOptimizer.Core.Translations.%(Filename).json" />
   </ItemGroup>
   <ItemGroup>
