@@ -106,7 +106,7 @@
     "risk": "caution",
     "scope": "machine",
     "warnings": [
-      "Nie używaj na plikach systemowych ani w WindowsApps – zmiana właściciela może zepsuć aktualizacje Windows i aplikacje.",
+      "Zdejmuje ochronę pliku: pełny dostęp dla administratorów. Na plikach systemowych i w WindowsApps może zepsuć aktualizacje i aplikacje.",
       "Cofnięcie usuwa tylko wpis z menu; zmienionych właścicieli i uprawnień plików nie przywraca."
     ],
     "registry": [

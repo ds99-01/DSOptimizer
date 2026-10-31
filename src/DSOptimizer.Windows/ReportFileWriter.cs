@@ -48,7 +48,12 @@ public sealed class ReportFileWriter
 
         if (_mirrorDirectory is not null)
         {
-            results.Add(WriteCopy(Path.Combine(_mirrorDirectory, fileName), content, () => Directory.CreateDirectory(_mirrorDirectory)));
+            var mirrorFile = Path.Combine(_mirrorDirectory, fileName);
+            results.Add(WriteCopy(mirrorFile, content, () =>
+            {
+                MirrorPathGuard.EnsureDirectory(_mirrorDirectory);
+                MirrorPathGuard.EnsureFile(mirrorFile);
+            }));
         }
 
         return results;

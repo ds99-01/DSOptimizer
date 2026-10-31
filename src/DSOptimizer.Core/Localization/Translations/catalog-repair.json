@@ -3,6 +3,14 @@
   "data": true,
   "entries": [
     {
+      "pl": "Ochrona systemu była włączona przed zmianą – zostaje włączona.",
+      "en": "System Protection was on before the change – it stays on."
+    },
+    {
+      "pl": "Brak wpisu w historii – nie wiadomo, czy ochrona systemu była włączona; nic nie zmieniono. Wyłączyć ją można w oknie „Ochrona systemu”.",
+      "en": "There's no history entry – it's unknown whether System Protection was on; nothing was changed. You can turn it off in the \"System Protection\" window."
+    },
+    {
       "pl": "Wyczyść pamięć DNS",
       "en": "Clear the DNS cache"
     },
@@ -287,8 +295,8 @@
       "en": "Windows and DSOptimizer can create restore points that you can go back to if something goes wrong. The cost is some space on the C: drive."
     },
     {
-      "pl": "Zastosowanie: Enable-ComputerRestore -Drive 'C:\\'; limit miejsca na punkty ustawia Windows sam (ok. 3% dysku C:), DSOptimizer go nie zmienia i nie woła vssadmin. Cofnięcie: Disable-ComputerRestore -Drive 'C:\\'; istniejące punkty zostają na dysku i wrócą po ponownym włączeniu ochrony, a usuwa się je w oknie „Ochrona systemu” (Konfiguruj → Usuń). Stan: wpis woluminu C: (GUID z Win32_Volume) w wartości REG_MULTI_SZ {09F7EDC5-294E-4180-AF6A-FB0E6A0E9513} klucza HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SPP\\Clients oznacza włączoną ochronę, brak wpisu – wyłączoną (niezależnie od istniejących punktów). Włączenie i wyłączenie liczą się dopiero po odczycie zwrotnym tego wpisu.",
-      "en": "Apply: Enable-ComputerRestore -Drive 'C:\\'; the space limit for restore points is set by Windows itself (about 3% of the C: drive), DSOptimizer doesn't change it and doesn't call vssadmin. Undo: Disable-ComputerRestore -Drive 'C:\\'; existing points stay on the disk and come back when protection is turned on again, and they're deleted in the \"System Protection\" window (Configure → Delete). State: an entry for volume C: (GUID from Win32_Volume) in the REG_MULTI_SZ value {09F7EDC5-294E-4180-AF6A-FB0E6A0E9513} of the HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SPP\\Clients key means that protection is on, no entry – that it's off (regardless of existing points). Turning it on or off counts only after this entry is verified."
+      "pl": "Zastosowanie: Enable-ComputerRestore -Drive 'C:\\'; limit miejsca na punkty ustawia Windows sam (ok. 3% dysku C:), DSOptimizer go nie zmienia i nie woła vssadmin. Cofnięcie: Disable-ComputerRestore -Drive 'C:\\', tylko gdy ochronę włączył program; istniejące punkty zostają na dysku i wrócą po ponownym włączeniu ochrony, a usuwa się je w oknie „Ochrona systemu” (Konfiguruj → Usuń). Stan: wpis woluminu C: (GUID z Win32_Volume) w wartości REG_MULTI_SZ {09F7EDC5-294E-4180-AF6A-FB0E6A0E9513} klucza HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SPP\\Clients oznacza włączoną ochronę, brak wpisu – wyłączoną (niezależnie od istniejących punktów). Włączenie i wyłączenie liczą się dopiero po odczycie zwrotnym tego wpisu.",
+      "en": "Apply: Enable-ComputerRestore -Drive 'C:\\'; the space limit for restore points is set by Windows itself (about 3% of the C: drive), DSOptimizer doesn't change it and doesn't call vssadmin. Undo: Disable-ComputerRestore -Drive 'C:\\', only if the program turned protection on; existing points stay on the disk and come back when protection is turned on again, and they're deleted in the \"System Protection\" window (Configure → Delete). State: an entry for volume C: (GUID from Win32_Volume) in the REG_MULTI_SZ value {09F7EDC5-294E-4180-AF6A-FB0E6A0E9513} of the HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SPP\\Clients key means that protection is on, no entry – that it's off (regardless of existing points). Turning it on or off counts only after this entry is verified."
     },
     {
       "pl": "Cofnięcie wyłącza ochronę: nowe punkty nie powstaną, a z istniejących nie przywrócisz systemu (zostają na dysku).",

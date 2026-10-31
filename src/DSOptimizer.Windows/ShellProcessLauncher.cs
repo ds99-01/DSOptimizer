@@ -60,6 +60,12 @@ public sealed class ShellProcessLauncher : IProcessLauncher
             ShellSessionCheck.RequireOwnExplorer(_explorers, _sessionId, _ownerSid);
         }
 
+        // CreateProcess dziedziczy środowisko procesu; PowerShell startowany tędy (WinUtil) ma mieć tę samą ścieżkę modułów co skrypty katalogu.
+        if (string.Equals(command.FileName, PowerShellScriptRunner.PowerShellPath, StringComparison.OrdinalIgnoreCase))
+        {
+            Environment.SetEnvironmentVariable(PowerShellEnvironment.ModulePathVariable, PowerShellEnvironment.ModulePath);
+        }
+
         try
         {
             // Uchwyty procesu nie są potrzebne (nie czekamy); explorer.exe oddający otwarcie powłoce kończy się sam.

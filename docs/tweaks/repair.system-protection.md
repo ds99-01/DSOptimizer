@@ -1,10 +1,10 @@
 # repair.system-protection – Ochrona systemu
 
 ## Werdykt 26H2
-Portować jako `kind=tweak`, `risk=safe` (kategoria „Naprawy”, Etap 4b partia 1): na świeżej 26H2 Home i Pro ochrona systemu jest wyłączona, więc żaden punkt przywracania nie powstaje; `Enable-ComputerRestore -Drive 'C:\'` włącza ją tak samo jak okno „Ochrona systemu”, a skutek da się odczytać z rejestru. Cofnięcie wyłącza ochronę, ale nie usuwa istniejących punktów.
+Portować jako `kind=tweak`, `risk=safe` (kategoria „Naprawy”, Etap 4b partia 1): na świeżej 26H2 Home i Pro ochrona systemu jest wyłączona, więc żaden punkt przywracania nie powstaje; `Enable-ComputerRestore -Drive 'C:\'` włącza ją tak samo jak okno „Ochrona systemu”, a skutek da się odczytać z rejestru. Cofnięcie wyłącza ochronę tylko wtedy, gdy włączył ją program, i nie usuwa istniejących punktów.
 
 ## Co zmienia
-Skrypt (`script.detect` / `apply` / `undo`), po nazwach poleceń (testy je mockują):
+Skrypt (`script.detect` / `capture` / `apply` / `undo`), po nazwach poleceń (testy je mockują):
 - `Enable-ComputerRestore -Drive 'C:\'` (apply) i `Disable-ComputerRestore -Drive 'C:\'` (undo). Limit miejsca ustawia VSS sam (3% woluminu, ta sama wartość co przy włączeniu z okna); **bez `vssadmin resize`**, więc `vssadmin` w ogóle nie jest wołany.
 - Odczyt (tylko odczyt, helpery mockowane w testach): `Get-DsoSystemVolumeId` (CIM `Win32_Volume`, `DriveLetter='C:'`, `DeviceID` = `\\?\Volume{GUID}\`) i `Get-DsoProtectionClients` (wartość REG_MULTI_SZ `{09F7EDC5-294E-4180-AF6A-FB0E6A0E9513}` w `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SPP\Clients`, widok 64-bit).
 
@@ -19,7 +19,7 @@ Home i Pro (odczyt 2026-10-22): `SPP\Clients` bez wpisu, `vssadmin list shadowst
 ## Detekcja i undo
 - Detect: wpis woluminu C: w `SPP\Clients` = `Applied`, brak wpisu (albo klucza/wartości) = `NotApplied`, niezależnie od tego, czy kopie (punkty) nadal istnieją. Nie da się ustalić woluminu C: albo odczytać rejestru = błąd skryptu = stan nieznany (nie `NotApplied`).
 - Apply kończy się sukcesem dopiero po odczycie zwrotnym (wpis C: jest); inaczej błąd „Ochrona systemu nie została włączona…”. Już włączona = `AlreadyApplied` (silnik, przed skryptem).
-- Undo: `Disable-ComputerRestore`, potem odczyt zwrotny (wpisu nie ma). Nie przywraca żadnego snapshotu (stan to jeden wpis), więc `original` i snapshot nie mają znaczenia.
+- Capture zapisuje stan sprzed zmiany (`Applied` albo `NotApplied`). Undo: snapshot `NotApplied` = `Disable-ComputerRestore`, potem odczyt zwrotny (wpisu nie ma); `Applied` = ochrona zostaje, nic się nie zmienia; brak snapshotu (brak wpisu w historii, także wpis sprzed 4.0.2) = odmowa bez zmian, bo nie wiadomo, kto włączył ochronę.
 
 ## Ryzyka i ostrzeżenia
 - `risk=safe`.

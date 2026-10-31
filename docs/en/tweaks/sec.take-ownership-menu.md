@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.take-ownership-menu.md sha256: a2d369ed5e32b6ca4761b058360d4ce80d321c34fb906178a2c756a1395e191b -->
+<!-- source: docs/tweaks/sec.take-ownership-menu.md sha256: 0fcf411982be9f1ccfe007e0ff6ce4b08acd9fe7d2c7fc2103e5f54e7594fda6 -->
 
 # sec.take-ownership-menu – Add "Take ownership" to the context menu
 
@@ -60,7 +60,7 @@ Read from the Home and Pro VMs (2026-10-18): none of the keys `...\shell\DSOptim
 - The aliases `sec_take_ownership` and `sec_take_ownership_remove` point to the same item; "remove" in v3.2 = undo of this item.
 
 ## Risks and warnings
-- `risk=caution`. Warnings in the catalog: "Don't use it on system files or in WindowsApps – changing the owner can break Windows updates and apps." and "Undo only removes the menu entry; it doesn't restore changed file owners and permissions."
+- `risk=caution`. Warnings in the catalog: "Removes the file's protection: administrators get full access. On system files and in WindowsApps it can break updates and apps." and "Undo only removes the menu entry; it doesn't restore changed file owners and permissions."
 - Risk details (some in the program's technical details, some only here):
   - Changing the owner of system files can break updates and Windows Resource Protection; the TrustedInstaller state can't be restored easily.
   - Undo removes only the menu and **doesn't undo** owner or permission changes.

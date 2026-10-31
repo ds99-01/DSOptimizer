@@ -79,6 +79,7 @@ Microsoftu. Strona „Przygotowanie” otwiera w przeglądarce strony producent�
 
 Historia zmian, logi i raporty zostają na komputerze, w folderze `%ProgramData%\DSOptimizer`. Gdy program
 uruchomisz z pendrive'a, kopia logu i raportów trafia też obok `DSOptimizer.exe`.
+Raport ze specyfikacją zawiera numery seryjne dysków – pamiętaj o tym, zanim udostępnisz pendrive'a albo raport.
 
 ## Co da się cofnąć, a co nie
 

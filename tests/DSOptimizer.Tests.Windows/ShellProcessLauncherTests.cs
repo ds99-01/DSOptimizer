@@ -116,6 +116,16 @@ public class ShellProcessLauncherTests
     }
 
     [Fact]
+    public void Launch_PowerShell_InheritsModulePathWithoutUserFolders()
+    {
+        Environment.SetEnvironmentVariable("PSModulePath", @"C:\Users\ktos\Documents\WindowsPowerShell\Modules");
+
+        Launcher().Launch(new LaunchSpec { File = "powershell.exe" });
+
+        Assert.Equal(PowerShellEnvironment.ModulePath, Environment.GetEnvironmentVariable("PSModulePath"));
+    }
+
+    [Fact]
     public void Launch_ShellGuid_WithOwnExplorerInSession_StartsExplorerFromWindowsDirectoryThroughCreateProcess()
     {
         _explorers.Processes.Add(new ExplorerProcessInfo(Session, Me, @"C:\Windows\Explorer.EXE"));

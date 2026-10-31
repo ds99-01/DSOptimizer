@@ -69,7 +69,8 @@ public sealed class FileLog : ILog
             if (_mirrorDirectory is { } mirror
                 && !TryRun(() =>
                 {
-                    Directory.CreateDirectory(mirror);
+                    MirrorPathGuard.EnsureDirectory(mirror);
+                    MirrorPathGuard.EnsureFile(Path.Combine(mirror, fileName));
                     Append(mirror, fileName, line);
                 }))
             {

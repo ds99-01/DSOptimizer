@@ -716,7 +716,7 @@ public class RepairCatalogTests
     [Fact]
     public void SystemProtection_Undo_DisablesCThenReadsBack_AndReportsSuccess()
     {
-        var run = PowerShellHarness.Run(Undo(SystemProtectionId), ProtectionMocks(OwnClient), string.Empty);
+        var run = PowerShellHarness.Run(Undo(SystemProtectionId), ProtectionMocks(OwnClient), "NotApplied");
 
         Assert.Equal(0, run.ExitCode);
         Assert.Empty(run.Error);
@@ -730,7 +730,7 @@ public class RepairCatalogTests
     [Fact]
     public void SystemProtection_Undo_EntryStillThere_IsFailure()
     {
-        var run = PowerShellHarness.Run(Undo(SystemProtectionId), ProtectionMocks(OwnClient, disableWorks: false), string.Empty);
+        var run = PowerShellHarness.Run(Undo(SystemProtectionId), ProtectionMocks(OwnClient, disableWorks: false), "NotApplied");
 
         Assert.NotEqual(0, run.ExitCode);
         Assert.Contains("Ochrona systemu nie została wyłączona", run.Error, StringComparison.Ordinal);
@@ -739,7 +739,7 @@ public class RepairCatalogTests
     [Fact]
     public void SystemProtection_Undo_DisableThrows_IsFailureWithReason()
     {
-        var run = PowerShellHarness.Run(Undo(SystemProtectionId), ProtectionMocks(OwnClient, disableBody: "throw 'odmowa'"), string.Empty);
+        var run = PowerShellHarness.Run(Undo(SystemProtectionId), ProtectionMocks(OwnClient, disableBody: "throw 'odmowa'"), "NotApplied");
 
         Assert.NotEqual(0, run.ExitCode);
         Assert.Contains("Wyłączenie ochrony systemu nie powiodło się: odmowa", run.Error, StringComparison.Ordinal);
@@ -748,10 +748,42 @@ public class RepairCatalogTests
     [Fact]
     public void SystemProtection_Undo_ReadbackFails_IsFailureSayingEffectNotConfirmed()
     {
-        var run = PowerShellHarness.Run(Undo(SystemProtectionId), ProtectionMocks(OwnClient, readBody: "if (-not $script:on) { throw 'rejestr niedostępny' }"), string.Empty);
+        var run = PowerShellHarness.Run(Undo(SystemProtectionId), ProtectionMocks(OwnClient, readBody: "if (-not $script:on) { throw 'rejestr niedostępny' }"), "NotApplied");
 
         Assert.NotEqual(0, run.ExitCode);
         Assert.Contains("skutku nie potwierdzono", run.Error, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SystemProtection_Capture_ReturnsStateBeforeChange()
+    {
+        var off = PowerShellHarness.Run(Get(SystemProtectionId).Script!.Capture!, ProtectionMocks(string.Empty), string.Empty);
+        var on = PowerShellHarness.Run(Get(SystemProtectionId).Script!.Capture!, ProtectionMocks(OwnClient), string.Empty);
+
+        Assert.Equal("NotApplied", off.LastLine);
+        Assert.Equal("Applied", on.LastLine);
+    }
+
+    [Fact]
+    public void SystemProtection_Undo_WasOnBeforeChange_StaysOn()
+    {
+        var run = PowerShellHarness.Run(Undo(SystemProtectionId), ProtectionMocks(OwnClient), "Applied");
+
+        Assert.Equal(0, run.ExitCode);
+        Assert.DoesNotContain(run.Output, line => line.Contains("CALL disable", StringComparison.Ordinal));
+        Assert.Equal("Ochrona systemu była włączona przed zmianą – zostaje włączona.", run.LastLine);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("cokolwiek")]
+    public void SystemProtection_Undo_NoKnownSnapshot_RefusesWithoutChange(string snapshot)
+    {
+        var run = PowerShellHarness.Run(Undo(SystemProtectionId), ProtectionMocks(OwnClient), snapshot);
+
+        Assert.NotEqual(0, run.ExitCode);
+        Assert.DoesNotContain(run.Output, line => line.Contains("CALL disable", StringComparison.Ordinal));
+        Assert.Contains("nic nie zmieniono", run.Error, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -759,7 +791,7 @@ public class RepairCatalogTests
     {
         foreach (var body in new[] { Apply(SystemProtectionId), Undo(SystemProtectionId) })
         {
-            var run = PowerShellHarness.Run(body, string.Empty, string.Empty);
+            var run = PowerShellHarness.Run(body, string.Empty, "NotApplied");
             Assert.NotEqual(0, run.ExitCode);
             Assert.Contains("Bezpiecznik harnessu", run.Error, StringComparison.Ordinal);
         }

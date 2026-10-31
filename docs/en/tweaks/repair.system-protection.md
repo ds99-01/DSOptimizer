@@ -1,12 +1,12 @@
-<!-- source: docs/tweaks/repair.system-protection.md sha256: 4baa851e435bc5277e5f3bc5b72220f475f3d54bba1189f859692a8a8e4f8733 -->
+<!-- source: docs/tweaks/repair.system-protection.md sha256: 611620c24514c2fdc5289675668466f2f2a4019f4e3b591d7a8ff159a1c6b4bf -->
 
 # repair.system-protection – System Protection
 
 ## Verdict for 26H2
-Port as `kind=tweak`, `risk=safe` ("Repairs" category, Stage 4b, round 1): on a fresh 26H2 Home and Pro, System Protection is turned off, so no restore point is created; `Enable-ComputerRestore -Drive 'C:\'` turns it on the same way as the "System Protection" window, and the effect can be read from the registry. Undo turns protection off, but doesn't delete existing points.
+Port as `kind=tweak`, `risk=safe` ("Repairs" category, Stage 4b, round 1): on a fresh 26H2 Home and Pro, System Protection is turned off, so no restore point is created; `Enable-ComputerRestore -Drive 'C:\'` turns it on the same way as the "System Protection" window, and the effect can be read from the registry. Undo turns protection off only if the program turned it on, and doesn't delete existing points.
 
 ## What it changes
-Script (`script.detect` / `apply` / `undo`), by command name (the tests mock them):
+Script (`script.detect` / `capture` / `apply` / `undo`), by command name (the tests mock them):
 - `Enable-ComputerRestore -Drive 'C:\'` (apply) and `Disable-ComputerRestore -Drive 'C:\'` (undo). VSS sets the space limit itself (3% of the volume, the same value as when turned on from the window); **no `vssadmin resize`**, so `vssadmin` isn't called at all.
 - Reading (read-only, helpers mocked in the tests): `Get-DsoSystemVolumeId` (CIM `Win32_Volume`, `DriveLetter='C:'`, `DeviceID` = `\\?\Volume{GUID}\`) and `Get-DsoProtectionClients` (the REG_MULTI_SZ value `{09F7EDC5-294E-4180-AF6A-FB0E6A0E9513}` in `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SPP\Clients`, 64-bit view).
 
@@ -21,7 +21,7 @@ Home and Pro (reading 2026-10-22): `SPP\Clients` without an entry, `vssadmin lis
 ## Detection and undo
 - Detect: an entry for volume C: in `SPP\Clients` = `Applied`, no entry (or no key/value) = `NotApplied`, regardless of whether shadow copies (points) still exist. If volume C: can't be determined or the registry can't be read = script error = unknown state (not `NotApplied`).
 - Apply counts as success only after verification (the C: entry exists); otherwise the error "System Protection wasn't turned on…". Already turned on = `AlreadyApplied` (engine, before the script).
-- Undo: `Disable-ComputerRestore`, then verification (the entry is gone). It doesn't restore any snapshot (the state is a single entry), so `original` and the snapshot don't matter.
+- Capture saves the state before the change (`Applied` or `NotApplied`). Undo: snapshot `NotApplied` = `Disable-ComputerRestore`, then verification (the entry is gone); `Applied` = protection stays on, nothing changes; no snapshot (no history entry, also an entry from before 4.0.2) = refusal without changes, because it's unknown who turned protection on.
 
 ## Risks and warnings
 - `risk=safe`.

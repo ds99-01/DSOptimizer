@@ -568,6 +568,10 @@
     {
       "pl": "Nie znaleziono pliku {0} (niepełna ścieżka).",
       "en": "File {0} wasn't found (incomplete path)."
+    },
+    {
+      "pl": "Ścieżka kopii prowadzi przez junction albo dowiązanie: {0}",
+      "en": "The copy's path goes through a junction or link: {0}"
     }
   ]
 }

@@ -82,6 +82,7 @@ Google in your browser, but sends nothing by itself.
 
 Change history, logs and reports stay on the computer, in the `%ProgramData%\DSOptimizer` folder. When you run the
 program from a USB drive, a copy of the log and reports is also saved next to `DSOptimizer.exe`.
+The specification report contains disk serial numbers, so keep that in mind before sharing the drive or the report.
 
 ## What can and cannot be undone
 

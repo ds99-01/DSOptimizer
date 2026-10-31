@@ -58,7 +58,7 @@ Odczyt z VM Home i Pro (2026-10-18): żaden z kluczy `...\shell\DSOptimizer.Take
 - Aliasy `sec_take_ownership` i `sec_take_ownership_remove` wskazują tę samą pozycję; „usuń” w v3.2 = undo tej pozycji.
 
 ## Ryzyka i ostrzeżenia
-- `risk=caution`. Ostrzeżenia w katalogu: „Nie używaj na plikach systemowych ani w WindowsApps – zmiana właściciela może zepsuć aktualizacje Windows i aplikacje.” oraz „Cofnięcie usuwa tylko wpis z menu; zmienionych właścicieli i uprawnień plików nie przywraca.”
+- `risk=caution`. Ostrzeżenia w katalogu: „Zdejmuje ochronę pliku: pełny dostęp dla administratorów. Na plikach systemowych i w WindowsApps może zepsuć aktualizacje i aplikacje.” oraz „Cofnięcie usuwa tylko wpis z menu; zmienionych właścicieli i uprawnień plików nie przywraca.”
 - Szczegóły ryzyk (część w szczegółach technicznych programu, część tylko tutaj):
   - Zmiana właściciela plików systemowych może zepsuć aktualizacje i Windows Resource Protection; stanu TrustedInstaller nie da się łatwo przywrócić.
   - Cofnij usuwa tylko menu i **nie cofa** zmian właściciela ani uprawnień.

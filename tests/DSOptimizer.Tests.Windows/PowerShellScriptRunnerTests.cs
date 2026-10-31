@@ -21,6 +21,17 @@ public class PowerShellScriptRunnerTests
         => new PowerShellScriptRunner(temp.AppRoot, new NullLog()).Run(request, progress, token);
 
     [Fact]
+    public void Run_ModulePath_HasOnlyProtectedFolders()
+    {
+        using var temp = new TempDirectory();
+
+        var result = Run(temp, new ScriptRequest { Body = "Write-Output $env:PSModulePath" });
+
+        Assert.Equal(PowerShellEnvironment.ModulePath, result.LastLine);
+        Assert.DoesNotContain(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), result.LastLine, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Run_ReturnsStdoutLinesAndZeroExit()
     {
         using var temp = new TempDirectory();

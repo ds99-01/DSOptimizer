@@ -155,6 +155,7 @@ public sealed class PowerShellScriptRunner : IScriptRunner
         };
         startInfo.EnvironmentVariables[ScriptWrapper.UserSidVariable] = request.UserSid;
         startInfo.EnvironmentVariables[ScriptWrapper.SnapshotVariable] = request.Snapshot;
+        startInfo.EnvironmentVariables[PowerShellEnvironment.ModulePathVariable] = PowerShellEnvironment.ModulePath;
 
         using var job = new JobObject();
         using var process = new Process { StartInfo = startInfo };
