@@ -2,6 +2,8 @@
 
 **English** | [Polski](README.pl.md)
 
+Website: [dsoptimizer.com](https://dsoptimizer.com/)
+
 DSOptimizer is a free tool for cleaning up and configuring Windows 11, best used right after installing the system.
 It brings together in one window the things you would usually do by hand in many different places: turning off
 unneeded features and ads, removing preinstalled apps, installing popular programs, simple system repairs

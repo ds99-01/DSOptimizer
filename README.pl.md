@@ -2,6 +2,8 @@
 
 [English](README.md) | **Polski**
 
+Strona: [dsoptimizer.com/pl](https://dsoptimizer.com/pl/)
+
 DSOptimizer to darmowy program do porządkowania i ustawiania Windows 11, najlepiej zaraz po instalacji systemu.
 Zbiera w jednym oknie rzeczy, które zwykle robi się ręcznie w wielu miejscach: wyłączanie zbędnych funkcji
 i reklam, usuwanie preinstalowanych aplikacji, instalację popularnych programów, proste naprawy systemu
