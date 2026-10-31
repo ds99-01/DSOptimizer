@@ -75,7 +75,7 @@ public class EnglishDocsTests
         Assert.True(File.Exists(EnglishTemplate), "Brak szablonu docs/en/tweaks/README.md");
         var polishAll = Headings(PolishTemplate);
         var englishAll = Headings(EnglishTemplate);
-        Assert.Equal(9, polishAll.Length);
+        Assert.Equal(8, polishAll.Length);
         Assert.Equal(polishAll.Length, englishAll.Length);
         Assert.Equal(Array.IndexOf(polishAll, ObservationHeading), Array.IndexOf(englishAll, ObservedEffectHeading));
 

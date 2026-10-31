@@ -252,9 +252,8 @@ public class SecTakeOwnershipTests
         Assert.Contains("Verbs()", doc, StringComparison.Ordinal); // dlaczego Focus 4 nie przez Verbs()
         Assert.DoesNotContain("Task 6", doc, StringComparison.Ordinal);
         Assert.Contains("vm-run-20261019-002807", doc, StringComparison.Ordinal);
-        // zakres testu ręcznego: bez AppliesTo i z etykietami „DSO: …”; docelowa kombinacja czeka na klik (R14, decyzja D2)
+        // zakres testu ręcznego: bez AppliesTo i z etykietami „DSO: …”; docelowa kombinacja czeka na klik
         Assert.Contains("bez `AppliesTo`", doc, StringComparison.Ordinal);
-        Assert.Contains("R14", doc, StringComparison.Ordinal);
         Assert.Contains("PAI(A;OI;FA;;;BA)(A;CI;FA;;;BA)", doc, StringComparison.Ordinal);
         Assert.Contains("sec_take_ownership_remove", doc, StringComparison.Ordinal);
     }

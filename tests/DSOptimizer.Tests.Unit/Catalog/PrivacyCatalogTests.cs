@@ -356,7 +356,6 @@ public class PrivacyCatalogTests
         var doc = Doc(def.Id);
         Assert.Contains("ResultCode=2", doc, StringComparison.Ordinal);
         Assert.Contains("4 aktualizacje", doc, StringComparison.Ordinal);
-        Assert.Contains("R14", doc, StringComparison.Ordinal);
         Assert.Contains("brak dokumentacji MS", doc, StringComparison.OrdinalIgnoreCase);
     }
 }

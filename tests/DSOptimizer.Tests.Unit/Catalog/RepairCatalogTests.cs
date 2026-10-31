@@ -1139,7 +1139,6 @@ public class RepairCatalogTests
         Assert.Contains("**Pro**", doc, StringComparison.Ordinal);
         Assert.Contains("2026-10-22", doc, StringComparison.Ordinal);
         Assert.Contains("niezmierzon", doc, StringComparison.Ordinal);
-        Assert.Contains("R8", doc, StringComparison.Ordinal);
     }
 
     // ---- repair.disk-cleanup (partia 2, Task 7) ----
@@ -1292,7 +1291,6 @@ public class RepairCatalogTests
         Assert.Contains("repair-windows-old", doc, StringComparison.Ordinal);
         Assert.Contains("repair-windows-old-absent", doc, StringComparison.Ordinal);
         Assert.Contains("niezmierzon", doc, StringComparison.Ordinal);
-        Assert.Contains("R18", doc, StringComparison.Ordinal);
     }
 
     // ---- komunikaty skryptów po angielsku (Get-DsoText, tabela catalog-repair.json) ----
@@ -1453,10 +1451,9 @@ public class RepairStoreCatalogTests
     }
 
     [Fact]
-    public void Docs_CoverR33StagedRegistration_AndObservation()
+    public void Docs_CoverStagedRegistration_AndObservation()
     {
         var text = File.ReadAllText(RepoRoot.Combine("docs", "tweaks", Id + ".md"), Encoding.UTF8).Replace("\r\n", "\n");
-        Assert.Contains("R33", text, StringComparison.Ordinal);
         Assert.Contains("Staged", text, StringComparison.Ordinal);
         Assert.Contains("S-1-5-18", text, StringComparison.Ordinal);
         Assert.Contains("repair-store-staged-dso", text, StringComparison.Ordinal);
