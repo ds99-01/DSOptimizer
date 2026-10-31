@@ -169,3 +169,8 @@ Program korzysta z bibliotek i czcionek innych autorów, na ich własnych licenc
 ## Autor
 
 Dawid Świeboda – [github.com/ds99-01](https://github.com/ds99-01)
+
+## Kontakt
+
+- Pytania i uwagi: [kontakt@dsoptimizer.pl](mailto:kontakt@dsoptimizer.pl)
+- Sprawy bezpieczeństwa: [security@dsoptimizer.com](mailto:security@dsoptimizer.com)

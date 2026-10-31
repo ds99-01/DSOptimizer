@@ -172,3 +172,8 @@ The program uses libraries and fonts by other authors, under their own licenses 
 ## Author
 
 Dawid Świeboda – [github.com/ds99-01](https://github.com/ds99-01)
+
+## Contact
+
+- Questions and feedback: [contact@dsoptimizer.com](mailto:contact@dsoptimizer.com)
+- Security issues: [security@dsoptimizer.com](mailto:security@dsoptimizer.com)
