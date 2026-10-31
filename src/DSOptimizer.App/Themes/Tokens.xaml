@@ -18,7 +18,7 @@
 
   <!-- Kolory -->
   <!--
-    Akcent „S4” (cyjan, decyzja Dawida 2026-10-26, wariant B) zależny od motywu: tu wartości jasnego motywu (motyw startowy App.xaml),
+    Akcent „S4” (cyjan, decyzja autora 2026-10-26, wariant B) zależny od motywu: tu wartości jasnego motywu (motyw startowy App.xaml),
     a ThemeController przy każdej zmianie motywu wpisuje do zasobów aplikacji kolory z Core BrandPalette (jasny #007CA5 + biały tekst,
     ciemny #00A9D4 + ciemny tekst). Dlatego pędzle BrandAccent*/BrandOnAccentBrush bierze się wyłącznie przez DynamicResource
     (pilnuje tego test AppIconTests). Akcent tylko w: zaznaczonym polu wyboru, krawędzi 3 px wiersza w serii, pasku „L” nad dziennikiem,
@@ -104,7 +104,7 @@
   </Style>
 
   <!--
-    Przyciski (wariant B, decyzja Dawida): wysokość 28, padding 12,0, promień 3, 13 Medium.
+    Przyciski (wariant B, decyzja autora): wysokość 28, padding 12,0, promień 3, 13 Medium.
     Główny: akcent, tekst BrandOnAccentBrush, bez obrysu. Drugorzędny: ControlFillColorSecondary + obrys 1 px ControlStrokeColorDefault.
     Stany: najechanie (główny BrandAccentHoverBrush, drugorzędny ControlFillColorTertiary), wciśnięcie głównego BrandAccentPressedBrush
     (kolory obu motywów w Core BrandPalette),
@@ -267,7 +267,7 @@
   </Style>
 
   <!-- „Szczegóły techniczne” w panelu szczegółów (spec opisów 2026-10-26): nagłówek = SectionHeaderText + strzałka Segoe Fluent Icons
-       po prawej stronie tekstu (E76C zwinięte, E70D rozwinięte), kursor ręki. Bez tła, ramki, karty i paska z boku, bez ozdobników (uwagi Dawida)
+       po prawej stronie tekstu (E76C zwinięte, E70D rozwinięte), kursor ręki. Bez tła, ramki, karty i paska z boku, bez ozdobników (uwagi autora)
        i bez akcentu – kolory tekstu neutralne. Fokus klawiatury na nagłówku = BrandFocusVisual; Enter i Spacja
        przełączają (ToggleButton). Treść pod nagłówkiem tylko po rozwinięciu. -->
   <Style x:Key="TechnicalDetailsExpander" TargetType="Expander">

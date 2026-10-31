@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.settings-suggestions.md sha256: a804060897fa78c0c8eda653bd720f15e1af7328a93dd4c190e63ef90091787f -->
+<!-- source: docs/tweaks/privacy.settings-suggestions.md sha256: 6bd1ca1c305f467fa511d33bb50839d8336da637f92bd27a1fb743694c32c2c0 -->
 
 # privacy.settings-suggestions – Turn off recommendations and offers in Settings
 
@@ -33,6 +33,3 @@ Case `privacy-settings-suggestions` (`Flow=Full`) in `tests/vm/cases.psd1` (`Not
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: the "Rekomendacje i oferty w ustawieniach" (Recommendations and offers in Settings) toggle in Settings (UI Automation) after writing the three values through the API. Result: toggle "wyłączone" (Off); writing `1` = "włączone" (On). Evidence: toggle state in Settings; the content itself wasn't observed.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

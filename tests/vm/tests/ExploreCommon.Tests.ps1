@@ -160,7 +160,7 @@ Describe 'Save-ExploreResult' {
         @(Get-ChildItem -LiteralPath $Work -Force).Count | Should -Be 0
     }
     It 'odrzuca obcą VM i nazwę pliku ze ścieżką' {
-        { Save-ExploreResult -Result @{} -OutDirectory $TestDrive -VmName 'Bruteforce_LTSC' -FileName 'x.json' } | Should -Throw
+        { Save-ExploreResult -Result @{} -OutDirectory $TestDrive -VmName 'ObcaVM' -FileName 'x.json' } | Should -Throw
         { Save-ExploreResult -Result @{} -OutDirectory $TestDrive -VmName 'DSO-26H2-Pro' -FileName '..\x.json' } | Should -Throw
     }
 }
@@ -225,7 +225,7 @@ Describe 'Complete-ExploreVmCleanup (wspólny kontrakt stanu końcowego VM)' {
         Should -Invoke -ModuleName ExploreCommon Disconnect-VMNetworkAdapter -Times 1 -Exactly
     }
     It 'VmName tylko DSO-26H2-Home/Pro; obca VM odrzucona przed jakimkolwiek krokiem' {
-        { Complete-ExploreVmCleanup -VmName 'Bruteforce_LTSC' -CheckpointName 'czysta-26H2' } | Should -Throw
+        { Complete-ExploreVmCleanup -VmName 'ObcaVM' -CheckpointName 'czysta-26H2' } | Should -Throw
         $Attr = (Get-Command -Module ExploreCommon -Name 'Complete-ExploreVmCleanup').Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
         $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
         @($script:Order).Count | Should -Be 0
@@ -365,12 +365,12 @@ Describe 'Orkiestracja (mocki; VM i Hyper-V nietknięte)' {
         @($Outcome.Paths).Count | Should -Be 1
         ($Order | Where-Object { $_ -eq 'start:DSO-26H2-Pro' }) | Should -Not -BeNullOrEmpty
     }
-    It 'VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro (obca VM Bruteforce_LTSC odrzucona)' {
+    It 'VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro (obca VM odrzucona)' {
         foreach ($Command in 'Invoke-ExploreVmRun', 'Invoke-ExploreAll') {
             $Attr = (Get-Command -Module ExploreCommon -Name $Command).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
             $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
         }
-        { Invoke-ExploreVmRun -VmName 'Bruteforce_LTSC' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw
+        { Invoke-ExploreVmRun -VmName 'ObcaVM' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw
         $Order | Should -BeNullOrEmpty
     }
 }

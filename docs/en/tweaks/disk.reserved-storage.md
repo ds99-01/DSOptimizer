@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.reserved-storage.md sha256: 88618b2ca5af81db0b382dda25a9199519d0183e47cf49ca80199e3f75dc0f5a -->
+<!-- source: docs/tweaks/disk.reserved-storage.md sha256: b00c7702262bee05aa2459d4254f99cdf18b2989341656b7c1aa5362560f4ef5 -->
 
 # disk.reserved-storage – Turn off reserved storage for updates
 
@@ -44,6 +44,3 @@ VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (
 Case `disk-reserved-storage` (`Flow=Full`, `main` run), Home and Pro:
 - Checked: `detect-before` = `NotApplied` (cmdlet: `Enabled`), `apply` code 0, `detect-after-apply` = `Applied`, `undo` code 0, `detect-after-undo` = `NotApplied`. A **Check** independent of the cmdlet: `CheckAfterApplyResult` = `Passed` (`ReserveManager\PassedPolicy` = 0), `CheckAfterUndoResult` = `Passed` (`PassedPolicy` = 1). `SnapshotDiff` empty for `PassedPolicy` (before 1, after undo 1). `MiscPolicyInfo` is neither in the Snapshot nor in the Check (it stays after undo, as described above).
 - **Not checked:** the behavior with a pending update (only a unit test on a mock), the actual size of the reserve, managed environments (WSUS/ConfigMgr).
-
-## Reddit
-To be added in part E.

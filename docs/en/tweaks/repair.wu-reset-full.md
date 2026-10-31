@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.wu-reset-full.md sha256: 6a135a4dd12bc74d79d34b55a90ecbff2aa52057d60cb2d52bf87cdac46aed65 -->
+<!-- source: docs/tweaks/repair.wu-reset-full.md sha256: db4f4d86902a0acda6752a11feca9850d86e88d4233a50d77486d8096784f9b8 -->
 
 # repair.wu-reset-full – Reset Windows Update and remove blocks
 
@@ -9,7 +9,7 @@ Port as `kind=action`, `risk=experimental` ("Repairs" category, Stage 4b, round 
 C# handler (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`, `full` variant). Steps on top of `repair.wu-reset`:
 1. First the refusal: `IDomainInfo.IsDomainJoined()` (`Win32_ComputerSystem.PartOfDomain`) = `true` → `Refused` "The computer is joined to a domain: Windows Update policies are set by the domain administrator."; `null` → `Refused` "Couldn't check whether the computer is joined to a domain." Nothing is changed.
 2. Reading the services also covers `UsoSvc` (startup type for step 5; `UsoSvc` isn't stopped).
-3. Backup of the policies, before any change (R13): when the key `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate` exists – `%SystemRoot%\System32\reg.exe export "<key>" "<backups>\wu-policies-<yyyyMMdd-HHmmss>.reg" /y` (`System32ToolRunner`, the export includes the `AU` subkey) and a check that the file size is > 0. `<backups>` = `%ProgramData%\DSOptimizer\backups`, created with a trusted ACL at the first backup (`SecureDirectory.Ensure`), not at program startup. An unreadable key, an export with code ≠ 0, an empty file or an inaccessible backup folder → `Failed` "… the policies stay unchanged. Nothing was changed." (services and folders untouched). Key missing → no file, the line "No Windows Update policies."
+3. Backup of the policies, before any change: when the key `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate` exists – `%SystemRoot%\System32\reg.exe export "<key>" "<backups>\wu-policies-<yyyyMMdd-HHmmss>.reg" /y` (`System32ToolRunner`, the export includes the `AU` subkey) and a check that the file size is > 0. `<backups>` = `%ProgramData%\DSOptimizer\backups`, created with a trusted ACL at the first backup (`SecureDirectory.Ensure`), not at program startup. An unreadable key, an export with code ≠ 0, an empty file or an inaccessible backup folder → `Failed` "… the policies stay unchanged. Nothing was changed." (services and folders untouched). Key missing → no file, the line "No Windows Update policies."
 4. Stopping the services and moving the folders as in `repair.wu-reset` (all or nothing). When this stage fails, the policies stay, and the `.reg` file stays in `<backups>` (path in the result).
 5. Removing the policies, after the folders are moved and before the services start: `IRegistry.DeleteKeyTree` of the key with its subkeys (only when the backup was created), with verification (the key is gone). A deletion failure or the key still existing → `Failed` (after the services are restored) with the backup path and the hint `reg import "<file>"`.
 6. Starting the services as in `repair.wu-reset`.
@@ -18,7 +18,7 @@ C# handler (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`, `full` variant)
 
 When the run stops after step 5 but before step 7 – there was no folder to move, or the services couldn't be restarted – the result is `Failed`, and the heading ends with the sentences "Windows Update policies have already been removed (backup: <file>; to restore: reg import "<file>")." (only when there were policies and they were removed) and "Service startup types weren't changed."; the MDM warning is in the result then too.
 
-Table of startup types (the same on Home and Pro, R10):
+Table of startup types (the same on Home and Pro):
 
 | Service | Startup type after the reset |
 |---|---|
@@ -55,6 +55,3 @@ VM run (Task 10, 2026-10-22, full `tests/vm/Invoke-VmTests.ps1` on the `etap4b-1
 Method: an exploration probe (`tests/vm/explore/Invoke-E4B1Exploration.ps1`): writing the 6 policies together and each one separately, a screenshot of the Windows Update page in Settings (the organization message, the state of the "Sprawdź aktualizacje" (Check for updates) button), `reg export` / `reg delete` / `reg import` with a comparison of the values, `ChangeServiceConfig` for each WU service; raw results outside git.
 - **Home** (`DSO-26H2-Home`, 26300.9457), 2026-10-22: 6 policies together and each one separately – no message in Settings, "Sprawdź aktualizacje" (Check for updates) active (no effect visible in the UI; the effect on an offline scan can't be measured). `reg export` of the key also writes `AU` (one file), `reg delete` removes everything, `reg import` restores 1:1. `ChangeServiceConfig`: `wuauserv`, `bits`, `cryptsvc`, `UsoSvc` OK; `msiserver`, `WaaSMedicSvc`, `DoSvc` refusal 5. Reset of the services and folders as in `repair.wu-reset`.
 - **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: 6 policies together → "Ustawieniami usługi Windows Update zarządza Twoja organizacja." (Your organization manages the Windows Update settings.) and an inactive button; separately, only `SetDisableUXWUAccess` gives the message and the block, the other 5 have no visible effect. After the key is removed the message disappears, `reg import` restores the state 1:1. `ChangeServiceConfig` as on Home (`wuauserv` Disabled and back – WaaSMedic doesn't restore it within 10 s). Reset of the services and folders and the update history as in `repair.wu-reset` (N1).
-
-## Reddit
-To be added in part E.

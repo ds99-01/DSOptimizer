@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.ipv6-prefer-ipv4.md sha256: 83f1e7ab609dbd84ddfc9ed36a4f728cbc56753737bde4bc5fa533e2f1af4ae8 -->
+<!-- source: docs/tweaks/net.ipv6-prefer-ipv4.md sha256: 4eecbdf2831dcee31d48fe91a96844de45d8274c878c0dae98b6fd4054942a09 -->
 
 # net.ipv6-prefer-ipv4 – Prefer IPv4 over IPv6
 
@@ -39,6 +39,3 @@ Case `net-ipv6-prefer-ipv4` (`Flow=Reboot`, run `reboot-net-ipv6-prefer-ipv4`, a
 - `CheckAfterApply` (after the restart, `Get-NetPrefixPolicy`): **Passed**. The script requires exactly one `::ffff:0:0/96` entry, exactly one `::/0` entry, and the `Precedence` of the first higher than that of the second. Before the change, the VM reading gave 35 and 40 (that is, the other way around), so the criterion tells the state before from the state after. The specific values after apply aren't stored in the report (only the Passed result). The criterion comes from the MS sentence quoted in the "Detection and undo" section; the VM confirmed it as the behavior of `Get-NetPrefixPolicy` after a restart, not as an effect on traffic.
 - In run 20261018-195830, `CheckAfterUndo` wasn't defined: the return of the prefix policy table to 35 / 40 after undo and a restart wasn't checked then (only the missing registry value and `NotApplied` were checked). After the final review, `CheckAfterUndo` was added (precedence of `::ffff:0:0/96` lower than that of `::/0`). In run 20261018-204534 (`reboot-net-ipv6-prefer-ipv4`, Home and Pro), `CheckAfterUndo` = **Passed**, just like `CheckAfterApply`: after undo and the second restart, the precedence of `::ffff:0:0/96` is again lower than that of `::/0`.
 - **Not checked:** the actual preference for IPv4 in traffic (VM without a network), the behavior on hardware with working IPv6.
-
-## Reddit
-To be added in part E.

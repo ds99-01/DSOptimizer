@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.network-private.md sha256: a24a5e480bf2e797978a906ed6e466d4646d7507e4184b9f2cc39c6ddaa13a7a -->
+<!-- source: docs/tweaks/net.network-private.md sha256: 72c0174f093e4802dd34740edf3c349965aed0a627cf6758e01796f17d314987 -->
 
 # net.network-private – Change the active network from public to private
 
@@ -41,6 +41,3 @@ Two cases in `tests/vm/cases.psd1` (`Flow=Execute`, `Catalog=BuiltIn`):
 - `net-network-private-change`: **Skipped** ("brak sieci na VM" (no network on the VM)), the real change of a `Public` profile → `Private`. Reported as skipped, never as passed.
 
 **Not tested on the VM: no network.** Not checked: the change of a real profile, reading `NetworkCategory`/`IPv4Connectivity` as enum names on a real profile (the VMs have 0 profiles, so the `[string]NetworkCategory` cast on a real profile remains unmeasured; assumption: `[string]` gives the English name; if it didn't, the script would end with the message "no active connection…" instead of changing anything), the firewall behavior after the change, or the behavior under a policy. The network effect (computer visibility, firewall rules) is outside the scope of the VM tests.
-
-## Reddit
-To be added in part E.

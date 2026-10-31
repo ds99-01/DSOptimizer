@@ -21,7 +21,7 @@ public class AppsBloatCatalogTests
     {
         "https://support.norton.com/sp/en/us/home/current/solutions/v60392881",
 
-        // McAfee blokuje pobranie strony (timeout) i curl (403); adres podał i sprawdził ręcznie Dawid 2026-10-21.
+        // McAfee blokuje pobranie strony (timeout) i curl (403); adres podał i sprawdził ręcznie autor 2026-10-21.
         "https://www.mcafee.com/support/s/article/000002766?language=pl",
     };
 
@@ -159,7 +159,7 @@ public class AppsBloatCatalogTests
         "Microsoft.MicrosoftSolitaireCollection", "Microsoft.PowerAutomateDesktop", "Microsoft.Todos", "Microsoft.WindowsFeedbackHub",
     };
 
-    // Pakiety z VM, które mają zostać w grupie „Pozostałe” (decyzje Dawida i ostrożność; zob. docs/apps/README.md).
+    // Pakiety z VM, które mają zostać w grupie „Pozostałe” (decyzje autora i ostrożność; zob. docs/apps/README.md).
     public static readonly string[] VmOtherPackages =
     {
         "Microsoft.XboxGamingOverlay", "Microsoft.Xbox.TCUI", "Microsoft.XboxIdentityProvider", "Microsoft.XboxSpeechToTextOverlay",
@@ -232,7 +232,7 @@ public class AppsBloatCatalogTests
     }
 
     [Fact]
-    public void DecisionsOfDawid_OneDriveOutlookQuickAssistTeamsGameBar_NotSuggested()
+    public void DecisionsOfAuthor_OneDriveOutlookQuickAssistTeamsGameBar_NotSuggested()
     {
         Assert.Equal(AppGroup.Other, ClassifyOne(Program("Microsoft OneDrive")).Group);
         Assert.Equal(AppGroup.Other, ClassifyOne(Store("Microsoft.OutlookForWindows")).Group);
@@ -362,9 +362,9 @@ public class AppsBloatCatalogTests
             Assert.DoesNotContain("powszechnie znana", e.Source, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("do potwierdzenia", e.Source, StringComparison.OrdinalIgnoreCase);
             Assert.True(
-                e.Source.IndexOf("https://", StringComparison.Ordinal) >= 0 || e.Source.IndexOf("spec 6.2 (decyzja Dawida)", StringComparison.Ordinal) >= 0
+                e.Source.IndexOf("https://", StringComparison.Ordinal) >= 0 || e.Source.IndexOf("spec 6.2 (decyzja autora)", StringComparison.Ordinal) >= 0
                     || e.Source.StartsWith("Odczyt VM 26H2", StringComparison.Ordinal),
-                e.Id + ": źródło wpisu sugerowanego musi mieć adres https://, znacznik „spec 6.2 (decyzja Dawida)” albo odczyt VM 26H2");
+                e.Id + ": źródło wpisu sugerowanego musi mieć adres https://, znacznik „spec 6.2 (decyzja autora)” albo odczyt VM 26H2");
         });
     }
 

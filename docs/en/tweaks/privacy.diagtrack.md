@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/privacy.diagtrack.md sha256: c5acb62ab25f892c7af04a7fc7357470b1e7ed6c60f4beb49246619b678cd602 -->
+<!-- source: docs/tweaks/privacy.diagtrack.md sha256: d71bedc80abd1e8416ebefba5dae34634fae995f1214e81239a26b14572fbb59 -->
 
 # privacy.diagtrack – Turn off the DiagTrack telemetry service
 
 ## Verdict for 26H2
-Port as `risk=caution`, `suggested=true` (ruling R14): a test on a 26H2 VM (Home and Pro) showed that the service is stopped and doesn't start after a restart, and that a Windows Update search after a restart with the service disabled works. No Microsoft documentation for disabling this service; evidence: VM test. The item doesn't promise that Windows stops sending diagnostic data.
+Port as `risk=caution`, `suggested=true`: a test on a 26H2 VM (Home and Pro) showed that the service is stopped and doesn't start after a restart, and that a Windows Update search after a restart with the service disabled works. No Microsoft documentation for disabling this service; evidence: VM test. The item doesn't promise that Windows stops sending diagnostic data.
 
 ## What it changes
 - The `DiagTrack` service (`services[]`): `startType=Disabled`, `stop=true`; `scope=machine`. No registry entries and no script (service API in C#).
@@ -23,7 +23,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `DiagTrack` sta
 - Undo restores the snapshot from before the change from the journal (the startup type, and starts the service if it was running); `original` = Automatic is only a fallback.
 
 ## Risks and warnings
-- `risk=caution` (R14), `suggested=true`.
+- `risk=caution`, `suggested=true`.
 - Warnings in the catalog: "Microsoft doesn't document turning off this service, and Windows Update also uses it – if you have trouble with updates, undo the change." and "It doesn't guarantee that Windows stops sending diagnostic data."
 - Beyond the notes in the program (in the technical details or only here): on the VM (Home and Pro) a Windows Update search after a restart with the service disabled worked (WUA `Search`: ResultCode=2, 4 updates, no error). This is one observation, not a guarantee.
 - Known engine limitation (deferred): it stops the service only when it is `Running`; a service that is still starting at the moment of apply may run until the restart. The startup type is `Disabled` in both cases.
@@ -36,6 +36,3 @@ Case `privacy-diagtrack` (`Flow=Full`) in `tests/vm/cases.psd1`: a non-empty `Sn
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: service state (startup type, running) after the change and after a VM restart; Windows Update Agent `Search("IsInstalled=0 and Type='Software'")` after the restart. Result: the service is stopped and doesn't start after the restart; search: ResultCode=2 (success), 4 updates, no error. After undo: Automatic and Running.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.feedback-notifications.md sha256: 50dae53799474a71494fecac234b0c58c8b0b64bf816f9b09308682f70c2ce95 -->
+<!-- source: docs/tweaks/privacy.feedback-notifications.md sha256: 09beac62c77656e5cc3540d311861b57cca3e0b2a82ab9e49749f4a9dea2ddd2 -->
 
 # privacy.feedback-notifications – Turn off feedback notifications
 
@@ -32,6 +32,3 @@ Case `privacy-feedback-notifications` (`Flow=Full`) in `tests/vm/cases.psd1`: `K
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: UI Automation of Settings (Diagnostics & feedback) and screenshots after a write through the registry API. Result: the "zarządza organizacja" (managed by your organization) banner, the "Częstotliwość opinii" (Feedback frequency) list disappears from the page; the notifications themselves weren't observed. After undo the list comes back and the banner disappears.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

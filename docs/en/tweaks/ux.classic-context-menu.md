@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.classic-context-menu.md sha256: eaeeda17e54ea1c3c98e7bc6815460ed04b91788ac91a6782a5e6eb993183f33 -->
+<!-- source: docs/tweaks/ux.classic-context-menu.md sha256: 5d3da3c4f4156bbead608f0721330c2ae2d716736674cbe7a1c8d9dca05e503b -->
 
 # ux.classic-context-menu – Bring back the classic right-click menu
 
@@ -8,7 +8,7 @@ Port: a test on a 26H2 VM (Home and Pro) showed a real effect. There is no MS do
 ## What it changes
 - `HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32`, **default value** (empty name), **String** (REG_SZ), empty string; `scope=user` (the signed-in user's hive, not the Administrator account's).
 - On a fresh 26H2 neither the `{86ca…}` key nor its `InprocServer32` subkey exists. Apply creates both, undo deletes both (the engine saves the highest missing key in the snapshot and, after restoring the missing value, deletes the empty keys from `InprocServer32` up to `{86ca…}`).
-- Apply doesn't restart File Explorer (ruling R15). The menu changes after File Explorer restarts: use the `tools.restart-explorer` action or sign in again.
+- Apply doesn't restart File Explorer. The menu changes after File Explorer restarts: use the `tools.restart-explorer` action or sign in again.
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457): write and undo through the registry API (.NET `RegistryKey`), observation of the menu window.
@@ -33,6 +33,3 @@ Case `ux-classic-context-menu` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyAbsen
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: right-click on the desktop in the `dso` session after File Explorer restarted, reading the class of the opened menu window. Result: with the key, a right-click on the desktop opens a window of class `#32768` (Win32 menu); without the key, `Microsoft.UI.Content.PopupWindowSiteBridge` opens (Windows 11 menu). After undo (both keys deleted) and a File Explorer restart, the Windows 11 menu comes back.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

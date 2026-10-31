@@ -1,11 +1,11 @@
 # privacy.start-recommended-section – Ukryj sekcję „Proponowane” w menu Start
 
 ## Werdykt 26H2
-Portować: polityka `HideRecommendedSection` chowa sekcję „Proponowane” w Start; test na VM 26H2 (Home i Pro) pokazał realny skutek. Pozycja niesugerowana (R12): sekcja pokazuje także ostatnio otwierane pliki, z których można korzystać na co dzień.
+Portować: polityka `HideRecommendedSection` chowa sekcję „Proponowane” w Start; test na VM 26H2 (Home i Pro) pokazał realny skutek. Pozycja niesugerowana: sekcja pokazuje także ostatnio otwierane pliki, z których można korzystać na co dzień.
 
 ## Co zmienia
 - `HKCU\Software\Policies\Microsoft\Windows\Explorer` (w silniku `HKU\<SID zalogowanego>`), wartość `HideRecommendedSection`, **DWord**, ustawiana na `1`; `scope=user`.
-- Sekcja znika z menu Start po ponownym zalogowaniu i po restarcie komputera (obserwacja na VM była po restarcie Eksploratora i zabiciu SearchHost oraz StartMenuExperienceHost); po cofnięciu wraca. Apply nie restartuje niczego (R15); czy sam `tools.restart-explorer` wystarcza, nie sprawdzano (ostrzeżenie: „sam restart Eksploratora może nie wystarczyć”).
+- Sekcja znika z menu Start po ponownym zalogowaniu i po restarcie komputera (obserwacja na VM była po restarcie Eksploratora i zabiciu SearchHost oraz StartMenuExperienceHost); po cofnięciu wraca. Apply nie restartuje niczego; czy sam `tools.restart-explorer` wystarcza, nie sprawdzano (ostrzeżenie: „sam restart Eksploratora może nie wystarczyć”).
 - Ta sama wartość w `HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer` daje ten sam skutek (opisane, bez własnej pozycji); pozycja używa zakresu użytkownika.
 - `HideRecommendedPersonalizedSites` zawiera się w tej pozycji (patrz `privacy.recommended-personalized-sites.md`).
 
@@ -22,7 +22,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: wartość `HideRecommended
 - Undo przywraca snapshot sprzed zmiany z journala: wartość i klucz `Explorer`, których nie było przed apply, po undo znów nie istnieją (Review Focus 4); `original` = `<RemoveEntry>` to tylko fallback.
 
 ## Ryzyka i ostrzeżenia
-- `risk=safe`, `suggested=false` (R12).
+- `risk=safe`, `suggested=false`.
 - Ostrzeżenia w katalogu: „Razem z sekcją znikają z menu Start ostatnio otwierane pliki.” oraz „Zmiana zadziała po ponownym zalogowaniu; sam restart Eksploratora może nie wystarczyć.”
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): skutku samego restartu Eksploratora (`tools.restart-explorer`) nie sprawdzano.
 
@@ -32,6 +32,3 @@ Przypadek `privacy-start-recommended-section` (`Flow=Full`) w `tests/vm/cases.ps
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: zrzut menu Start przed i po zapisie polityki oraz restarcie Eksploratora, a także po restarcie VM. Wynik: sekcja „Proponowane” znika z Start (po restarcie Eksploratora i po restarcie VM); po cofnięciu wraca.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

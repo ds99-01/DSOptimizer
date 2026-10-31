@@ -42,6 +42,3 @@ Przypadek `disk-ntfs-last-access` (`Flow=Reboot`, przebieg `reboot-disk-ntfs-las
 - Przypadek `disk-ntfs-last-access-mode3` (`DetectOnly`, w przebiegu `main`): Setup zapisał `0x80000003` przez API .NET, detekcja = `Applied` (zgodnie z maską z Taska 2).
 - Check: brak.
 - **Nie sprawdzono:** skutku na `LastAccessTime` plików i zachowania na sprzęcie. Szczegółowe wartości snapshotu z odświeżonego przebiegu nie były tu analizowane (ostatnia analiza `SnapshotDiff` pochodzi z przebiegu C1: undo przywróciło wartość ze snapshotu, nie fallback).
-
-## Reddit
-Do uzupełnienia w części E.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/perf.sysmain.md sha256: e0fb82ae38bf42e2edd00758e716eb3010e70ba2797b0cf15f68bf01d491222a -->
+<!-- source: docs/tweaks/perf.sysmain.md sha256: 3b97e9366538eab266c6939a63e61ec733ef59e0c8b53af525d6293971678281 -->
 
 # perf.sysmain – Turn off the SysMain service (Superfetch)
 
@@ -39,6 +39,3 @@ VM run of 2026-10-18 (13:51, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Home (C
 Case `perf-sysmain` (`Flow=Full`, `main` run), Home and Pro identical:
 - Checked: `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = false), `detect-after-apply` = `Applied`, `undo` = `Undone` (`finalState` = `NotApplied`), `detect-after-undo` = `NotApplied`. `CheckAfterApply` Passed (service `Stopped`, `StartMode` `Disabled`), `CheckAfterUndo` Passed (`State` and `StartMode` as before apply: `Running`/`Auto`). Final state = state before (snapshot `Services\SysMain\Start`).
 - **Not checked:** the effect on performance, the state after a restart, the persistence of the setting after Windows Update (an update may restore the service), the path with running dependent services (covered only by a unit test on fakes).
-
-## Reddit
-To be added in part E.

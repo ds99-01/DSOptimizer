@@ -692,7 +692,7 @@ Describe 'Wysyłka funkcji do VM (C4) i struktura skryptu' {
             $Names | Should -Not -Contain $Forbidden
         }
         $Text = [System.IO.File]::ReadAllText($script:C4ScriptPath, [System.Text.Encoding]::UTF8)
-        $Text | Should -Not -Match 'HKCU:|HKEY_CURRENT_USER|Bruteforce_LTSC\s*[''"]'
+        $Text | Should -Not -Match 'HKCU:|HKEY_CURRENT_USER'
         $Text | Should -Not -Match '(?i)ClearAllAutoUnlockKeys|SkipHardwareTest|-MethodName Decrypt|Wait-C4Conversion|-Collector|Reconnect'
         # Katalog wyników na hoście tworzy dopiero Save-ExploreResult po sprawdzeniu dostawcy FileSystem: blok główny nie woła New-Item.
         $Main = $Ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.IfStatementAst] -and $n.Extent.Text -match '^if \(\$MyInvocation\.InvocationName' }, $false)[0]
@@ -705,12 +705,12 @@ Describe 'Wysyłka funkcji do VM (C4) i struktura skryptu' {
         $Text.Substring(0, 400) | Should -Match 'Instrukcja uruchomienia'
         $Text | Should -Match 'Opis działania'
     }
-    It 'parametr VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro (nigdy Bruteforce_LTSC), w skrypcie i w Invoke-C4Exploration' {
+    It 'parametr VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro (nigdy obcej VM), w skrypcie i w Invoke-C4Exploration' {
         $Attr = (Get-Command $script:C4ScriptPath).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
         $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
         $Attr2 = (Get-Command Invoke-C4Exploration).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
         $Attr2.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
-        { Invoke-C4Exploration -VmName 'Bruteforce_LTSC' -OutDirectory $TestDrive } | Should -Throw
+        { Invoke-C4Exploration -VmName 'ObcaVM' -OutDirectory $TestDrive } | Should -Throw
     }
     Context 'Wybór sond (-Probe)' {
         It 'bez -Probe: wszystkie siedem sond w ustalonej kolejności; z -Probe tylko wybrane (kolejność pełnego przebiegu), pozostałe nie są wołane' {
@@ -973,7 +973,7 @@ Describe 'Przebieg hosta C4 (orkiestracja na mockach; Hyper-V nietknięty)' {
             $Order | Should -Be @('restore:DSO-26H2-Home')
         }
         It 'ręczny test UAC: tylko VM z allowlisty' {
-            { Invoke-C4ManualUacTest -Mode Prepare -VmName 'Bruteforce_LTSC' -OutDirectory $TestDrive } | Should -Throw
+            { Invoke-C4ManualUacTest -Mode Prepare -VmName 'ObcaVM' -OutDirectory $TestDrive } | Should -Throw
         }
         It 'checkpoint z parametru trafia do revertu; skrypt nie dubluje logiki Hyper-V (tylko Invoke-ExploreAll)' {
             $null = Invoke-C4Exploration -VmName @('DSO-26H2-Home') -OutDirectory $TestDrive -CheckpointName 'inny'

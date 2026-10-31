@@ -273,7 +273,7 @@ Wniosek dla katalogu: `original` = DWORD 0 (wartość istnieje, więc snapshot z
 | `FeatureSettingsOverrideMask` | **brak** | to samo |
 | `FeatureSettings` (wartość pokrewna, nie z KB) | DWORD 0 | to samo |
 
-Odpowiedź na pytanie 1: na świeżym 26H2 obu wartości **nie ma**. Pytania 2–4 nie badane: pozycja nie jest portowana (decyzja Dawida z 2026-10-18, plan w archiwum autora, sekcja „Decyzje Dawida”). Pytanie 5 (ręczne porównanie z KB4073119) to zadanie dokumentacyjne, nie VM – pozostaje otwarte. Znaczenie `FeatureSettings` nie występuje w źródłach punktu 3 – nie interpretuję.
+Odpowiedź na pytanie 1: na świeżym 26H2 obu wartości **nie ma**. Pytania 2–4 nie badane: pozycja nie jest portowana (decyzja autora z 2026-10-18, plan w archiwum autora, sekcja „Decyzje autora”). Pytanie 5 (ręczne porównanie z KB4073119) to zadanie dokumentacyjne, nie VM – pozostaje otwarte. Znaczenie `FeatureSettings` nie występuje w źródłach punktu 3 – nie interpretuję.
 
 ### 4. perf.vbs-hvci [win32-deviceguard, rejestr-deviceguard, rejestr-ci-state, rejestr-lsacfgflags, bcdedit-enum-current] (tylko odczyt)
 

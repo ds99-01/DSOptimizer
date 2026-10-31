@@ -1,7 +1,7 @@
 # net.smb-signing-client-off – Nie wymagaj podpisywania SMB po stronie klienta
 
 ## Werdykt 26H2
-Portować z ograniczeniem, jako `risk=caution`. Nowa pozycja (decyzja Dawida z 2026-10-18, rozbicie `lan_godmode`): MS opisuje podpisywanie i dostęp gościa jako osobne ustawienia, a na Windows 11 24H2 Pro/Enterprise/Education dostęp gościa wymaga też wyłączenia wymagania podpisywania („Requiring SMB signing also disables guest access to shares”). MS jednocześnie odradza wyłączanie podpisywania. Dotyczy tylko klienta SMB (połączenia wychodzące); serwer SMB nie jest ruszany (v3.2 też go nie ruszała).
+Portować z ograniczeniem, jako `risk=caution`. Nowa pozycja (decyzja autora z 2026-10-18, rozbicie `lan_godmode`): MS opisuje podpisywanie i dostęp gościa jako osobne ustawienia, a na Windows 11 24H2 Pro/Enterprise/Education dostęp gościa wymaga też wyłączenia wymagania podpisywania („Requiring SMB signing also disables guest access to shares”). MS jednocześnie odradza wyłączanie podpisywania. Dotyczy tylko klienta SMB (połączenia wychodzące); serwer SMB nie jest ruszany (v3.2 też go nie ruszała).
 
 ## Co zmienia
 - Rejestr (`registry[]`, zapis przez API C#): `HKLM\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters`, wartość `RequireSecuritySignature`, **DWord**, `0`. `scope=machine`, bez `requiresReboot` (MS: zmiana polityki podpisywania działa bez restartu; zapis przez API rejestru jest widoczny w `Get-SmbClientConfiguration` bez restartu: potwierdził przebieg VM 2026-10-18, zob. „Test VM”). Ścieżkę i typ ustalił odczyt na VM po zmianie oficjalnym cmdletem `Set-SmbClientConfiguration -RequireSecuritySignature $false`.
@@ -46,6 +46,3 @@ Przypadek `net-smb-signing-client-off` (`Flow=Full`, `Catalog=BuiltIn`, bez rest
 - `CheckAfterApply` (`RequireSecuritySignature -eq $false`, zaraz po apply, bez restartu): **Passed**: zapis przez API rejestru jest widoczny w cmdlecie bez restartu (zmiana z True na False). `CheckAfterUndo` (`-eq $true`): **Passed**: po usunięciu wartości odczyt wraca do domyślnego True.
 - `net-smb-lan-effect`: **Skipped** („brak sieci i serwera SMB na VM”).
 - **Nie testowane na VM: brak sieci i serwera SMB.** Nie sprawdzono: połączenia z serwerem wymagającym lub niewspierającym podpisywania, zachowania pod polityką, trwałości po restarcie.
-
-## Reddit
-Do uzupełnienia w części E.

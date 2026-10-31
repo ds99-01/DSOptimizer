@@ -65,6 +65,3 @@ Przypadek `perf-vbs-hvci` (`Flow=Reboot`, przebieg `reboot-perf-vbs-hvci`, osobn
 Przebieg po poprawce E3-P2 (2026-10-21, `Flow=Reboot`): `detect-before` = `NotApplied`, `apply` = `Applied`, po restarcie `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`, kod 0.
 
 **Realny stan nie testowany na VM:** na świeżej VM Gen2 memory integrity nie działa (`VirtualizationBasedSecurityStatus` = 0). Przypadek VM sprawdza więc konfigurację (zapis, restart, undo, zniknięcie klucza) oraz to, że `Win32_DeviceGuard` dalej nie raportuje 2 w `SecurityServicesRunning`. Scenariusz „konfiguracja wyłączona, memory integrity jeszcze działa” (`PendingReboot`, potem `Applied` po restarcie), odmowę przy `Locked` = 1 i detekcję z różnych tablic `SecurityServicesRunning` pokrywają testy jednostkowe na mockach i fake'ach (`PerfVbsHvciTests`). Nie sprawdzono: czy VBS wystartuje po włączeniu na VM Gen2, zachowanie przy prawdziwej blokadzie UEFI, skutek na sprzęcie z działającym memory integrity.
-
-## Reddit
-Do uzupełnienia w części E.

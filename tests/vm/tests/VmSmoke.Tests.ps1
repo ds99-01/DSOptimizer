@@ -75,8 +75,8 @@ BeforeAll {
 
 Describe 'Invoke-GuiSmoke.ps1 (parametry skryptu)' {
     BeforeAll { $script:Command = Get-Command $script:ScriptPath }
-    It 'odrzuca Bruteforce_LTSC jeszcze przy wiązaniu parametrów (nic się nie uruchamia)' {
-        { & $script:ScriptPath -VmName 'Bruteforce_LTSC' -OutDirectory $TestDrive } | Should -Throw '*Bruteforce_LTSC*'
+    It 'odrzuca obcą VM jeszcze przy wiązaniu parametrów (nic się nie uruchamia)' {
+        { & $script:ScriptPath -VmName 'ObcaVM' -OutDirectory $TestDrive } | Should -Throw '*ObcaVM*'
     }
     It 'dopuszcza tylko DSO-26H2-Home i DSO-26H2-Pro' {
         $Set = $script:Command.Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
@@ -205,8 +205,8 @@ Describe 'Save-DsoVmThumbnail' {
         Mock -ModuleName VmSmoke Invoke-CimMethod { [pscustomobject]@{ ReturnValue = 32768; ImageData = $null } }
         { Save-DsoVmThumbnail -VmName 'DSO-26H2-Pro' -Path (Join-Path $TestDrive 'e.png') } | Should -Throw '*32768*'
     }
-    It 'odrzuca Bruteforce_LTSC' {
-        { Save-DsoVmThumbnail -VmName 'Bruteforce_LTSC' -Path (Join-Path $TestDrive 'e.png') } | Should -Throw
+    It 'odrzuca obcą VM' {
+        { Save-DsoVmThumbnail -VmName 'ObcaVM' -Path (Join-Path $TestDrive 'e.png') } | Should -Throw
         Should -Invoke -ModuleName VmSmoke Get-CimInstance -Times 0 -Exactly
     }
 }
@@ -710,8 +710,8 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         $Result.passed | Should -BeFalse
         ($Result.errors -join ' ') | Should -BeLike '*checkpoint zajęty*'
     }
-    It 'odrzuca Bruteforce_LTSC' {
-        { Invoke-DsoGuiSmoke -VmName 'Bruteforce_LTSC' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' } | Should -Throw
+    It 'odrzuca obcą VM' {
+        { Invoke-DsoGuiSmoke -VmName 'ObcaVM' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' } | Should -Throw
         Should -Invoke -ModuleName VmSmoke Restore-VmCleanState -Times 0 -Exactly
     }
     It 'rzuca przed jakąkolwiek operacją, gdy brakuje DSOptimizer.exe w buildzie' {

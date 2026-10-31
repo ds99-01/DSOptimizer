@@ -1,7 +1,7 @@
 # net.smb-harden – Wyłącz logowanie gościa i wymagaj podpisywania SMB
 
 ## Werdykt 26H2
-Portować z ograniczeniem, jako `kind=action`, `risk=caution` (decyzja Dawida z 2026-10-18: tylko klient SMB, `caution` zamiast `safe` ze specu). Akcja ustawia dwa ustawienia klienta SMB na wartości, które Microsoft podaje jako bezpieczne: niezabezpieczone logowanie gościa wyłączone, podpisywanie wymagane. Stara pozycja `lan_panic` z v3.2 robiła więcej (wszystkie profile sieci na Public, zatrzymanie usług odnajdywania, NetBIOS), czego Microsoft nie opisuje jako utwardzania, więc tego nie przenosimy; opis „zabetonowanie usług sieciowych” był nieprawdziwy względem tego, co robi ta wersja.
+Portować z ograniczeniem, jako `kind=action`, `risk=caution` (decyzja autora z 2026-10-18: tylko klient SMB, `caution` zamiast `safe` ze specu). Akcja ustawia dwa ustawienia klienta SMB na wartości, które Microsoft podaje jako bezpieczne: niezabezpieczone logowanie gościa wyłączone, podpisywanie wymagane. Stara pozycja `lan_panic` z v3.2 robiła więcej (wszystkie profile sieci na Public, zatrzymanie usług odnajdywania, NetBIOS), czego Microsoft nie opisuje jako utwardzania, więc tego nie przenosimy; opis „zabetonowanie usług sieciowych” był nieprawdziwy względem tego, co robi ta wersja.
 
 Akcja nie ma detekcji, journala ani undo (`TweakEngine.Execute` uruchamia tylko `script.apply`). Jedynym dowodem skutku jest **odczyt zwrotny** w samym skrypcie: gdy nie zgadza się z oczekiwanym, skrypt kończy się kodem ≠ 0 i silnik zwraca `Failed` z komunikatem, a nie zielone `Executed`.
 
@@ -51,6 +51,3 @@ Przypadek `net-smb-harden` (`Flow=Execute`, `Catalog=BuiltIn`), **Passed** na Ho
 - `Cleanup` bez błędu (`CleanupError` brak): skrypt sprzątania ustawia wartości edycji cmdletem, usuwa jawne DWORD-y i sam rzuca wyjątek, gdy odczyt nie zgadza się z domyślną edycji, więc brak błędu oznacza, że **po usunięciu DWORD-ów odczyt cmdletu zgadza się z domyślną edycji** (Home: gość True, Pro: False; podpisywanie True). Ograniczenie: `Cleanup` ustawia przed usunięciem wartości już równe domyślnym, więc sam ten odczyt nie odróżnia „wróciło do domyślnej po usunięciu” od „odczyt się nie zmienił”. Mocniejszy dowód (zmiana odczytu po usunięciu wartości) dają `net.smb-guest-access` (Pro) i `net.smb-signing-client-off` (Home i Pro).
 - `Snapshot` (`AllowInsecureGuestAuth`, `RequireSecuritySignature`): brak wartości przed i po `Cleanup`, `SnapshotDiff` pusty, czyli po przypadku nie zostały ślady w rejestrze.
 - **Nie testowane na VM: brak sieci i serwera SMB.** Nie sprawdzono: połączeń z serwerem wymagającym lub niewspierającym podpisywania, połączeń z gościem, zachowania pod polityką (brak sieci i serwera SMB na VM).
-
-## Reddit
-Do uzupełnienia w części E.

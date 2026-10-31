@@ -13,7 +13,7 @@ Autor sprawdził wyrywkowo trzy kluczowe twierdzenia bezpośrednio w MS Learn (2
 **Najważniejsze dla planu Etapu 4a:**
 - **Home:** w tabelach edycji Policy CSP nie występuje. Każda polityka HKLM `Policies` wymaga sprawdzenia skutku na VM Home.
 - **Pro nie obsługuje wielu „oczywistych” polityk.** Dotyczy to consumer experiences, całego Spotlight, Tips, sugestii w Ustawieniach, `DoNotUseWebResults` (Bing w Start) i poziomu telemetrii 0. Zapis do rejestru może przejść bez żadnego skutku, a katalog nie może wtedy obiecywać efektu.
-- **Bez dokumentacji MS:** klasyczne menu kontekstowe (CLSID w HKCU), `TaskbarEndTask`, `TaskbarDa`, `BingSearchEnabled`, klucze ContentDeliveryManager. Według zasad repo („nie wymyślaj kluczy”) mogą wejść tylko po decyzji Dawida i z dowodem z VM, inaczej wypadają.
+- **Bez dokumentacji MS:** klasyczne menu kontekstowe (CLSID w HKCU), `TaskbarEndTask`, `TaskbarDa`, `BingSearchEnabled`, klucze ContentDeliveryManager. Według zasad repo („nie wymyślaj kluczy”) mogą wejść tylko po decyzji autora i z dowodem z VM, inaczej wypadają.
 - **Utrata danych przy wyłączaniu Recall:** `AllowRecallEnablement=0` / `DisableAIDataAnalysis=1` kasują migawki. Przed taką zmianą potrzebne jest ostrzeżenie w katalogu.
 
 ## Etap 4a, część 1 – Copilot, Recall/Click to Do, Widgets, Bing w Start (research 2026-10-20)
@@ -203,7 +203,7 @@ Grep (copilot, recall, bing, TaskbarDa, ClickToDo, NewsAndInterests, Dsh) po `*.
 | privacy.search-bing-hkcu (nie dodawać) | HKCU `...\Search` `BingSearchEnabled`=0 | n/d | do ustalenia | **hipoteza (źródło nie-MS / do potwierdzenia na VM)** |
 | privacy.search-highlights-off | HKLM `...\Windows Search` `EnableDynamicContentInWSB`=0 | MS: Pro+ | safe | MS (klucz+wartość) |
 
-### 6. Pytania do Dawida (max 5)
+### 6. Pytania do autora (max 5)
 
 1. **Home vs Pro:** MS nie deklaruje żadnej z tych polityk dla Home. Czy pozycje z kluczami Policies mają być dostępne także na Home (zapis „na próbę”, skutek potwierdzony na VM), czy na Home ukrywać/oznaczać „bez wsparcia MS”? (decyzja projektowa)
 2. **Copilot:** czy wystarczy `TurnOffWindowsCopilot` jako zapis polityki (MS: przestarzała, stary panel), czy chcesz też akcję usunięcia pakietu `Microsoft.Copilot` (komenda MS, ale per-user, może wrócić, brak prostego undo)? Czy dopuszczasz usunięcie bez undo?
@@ -264,7 +264,7 @@ Jedyne okolice: `ux_menu` (MenuShowDelay, nie dotyczy), `sec_take_ownership*` (c
   AllowWindowsSpotlightOnSettings – „This policy allows IT admins to turn off Suggestions in Settings app." (UI: Settings -> Privacy -> General -> Show me suggested content in Settings app.)
 - Poza ThirdParty wszystkie mają zależność DependsOn `AllowWindowsSpotlight` = 1. Wartości MS: 0 = Not allowed (najbardziej restrykcyjne), 1 = Allowed (domyślne); w ADMX semantyka odwrócona (`Disable*` = 1).
 - **Pro: ❌ prawie wszędzie; ✅ Pro tylko `AllowThirdPartySuggestionsInWindowsSpotlight` i (1d) `AllowTailoredExperiencesWithDiagnosticData`.** Home – brak w tabeli.
-- Jedyna droga użytkownika Home/Pro to przełączniki w Ustawieniach (Personalizacja/Prywatność), ale ich klucze (ContentDeliveryManager `SubscribedContent-*`, `SystemPaneSuggestionsEnabled`, `SilentInstalledAppsEnabled` itp.) **nie występują w żadnym przejrzanym źródle MS** -> hipoteza (źródło nie-MS). Nie wpisywać do katalogu bez VM i decyzji Dawida.
+- Jedyna droga użytkownika Home/Pro to przełączniki w Ustawieniach (Personalizacja/Prywatność), ale ich klucze (ContentDeliveryManager `SubscribedContent-*`, `SystemPaneSuggestionsEnabled`, `SilentInstalledAppsEnabled` itp.) **nie występują w żadnym przejrzanym źródle MS** -> hipoteza (źródło nie-MS). Nie wpisywać do katalogu bez VM i decyzji autora.
 **Detekcja/Undo:** rejestr + snapshot. Wartości w HKCU: tweak z zakresem User, API C# na `HKU\{UserSid}` (zasada repo: bez `HKCU:` w skryptach).
 **Ryzyka:** polityki Cloud Content na Pro/Home mogą być ignorowane; w Ustawieniach może pojawić się „zarządzane przez organizację".
 **Do VM:** Home/Pro: czy po zapisie `DisableWindowsSpotlightFeatures`/`DisableThirdPartySuggestions` Personalizacja pokazuje komunikat o organizacji i czy Spotlight na ekranie blokady znika.
@@ -337,7 +337,7 @@ wyszukiwarka zwróciła tylko strony nie-MS oraz wątek Microsoft Q&A (to nie do
 
 ### 3. Klasyczne menu kontekstowe Windows 11 („Show more options")
 **Czy MS dokumentuje przełącznik/politykę?** W przejrzanych źródłach MS nie znalazłem żadnej polityki, wartości rejestru ani ustawienia przywracającego klasyczne menu jako domyślne. Sprawdzone: Policy CSP Start (pokrewne tylko `DisableContextMenus` – blokuje menu **w Start**, nie w Eksploratorze), support File Explorer context menu, blog deweloperski, strona o rozszerzeniach.
-**Znany mechanizm – klucz CLSID `{86ca1aa0-...}` z podkluczem `InprocServer32` w `HKCU\Software\Classes\CLSID` (pusta wartość domyślna) – jest NIEudokumentowany przez MS.** Pochodzi z forów/blogów nie-MS; pełnego GUID-a nie weryfikowałem w żadnym źródle MS, więc w pliku podaję tylko prefiks z zadania. -> hipoteza (źródło nie-MS / do potwierdzenia na VM); do katalogu dopiero po decyzji Dawida (zasada repo: źródło MS albo test na VM).
+**Znany mechanizm – klucz CLSID `{86ca1aa0-...}` z podkluczem `InprocServer32` w `HKCU\Software\Classes\CLSID` (pusta wartość domyślna) – jest NIEudokumentowany przez MS.** Pochodzi z forów/blogów nie-MS; pełnego GUID-a nie weryfikowałem w żadnym źródle MS, więc w pliku podaję tylko prefiks z zadania. -> hipoteza (źródło nie-MS / do potwierdzenia na VM); do katalogu dopiero po decyzji autora (zasada repo: źródło MS albo test na VM).
 **Co MS mówi o menu**
 - Blog Windows Developer (2021-07-19), https://blogs.windows.com/windowsdeveloper/2021/07/19/extending-the-context-menu-and-share-dialog-in-windows-11/ : „'Show more options' loads the Windows 10 context menu as-is" (dla rzadkich czasowników powłoki i aplikacji w trakcie portowania); „Shift-F10 or the keyboard menu key will also load the Windows 10 context menu."; „No commands have been removed entirely."; „Apps extend the menu with IExplorerCommand + app identity."; „Unpackaged Win32 apps can use Sparse Manifests." Blog nie opisuje trwałego przywrócenia klasycznego menu.
 - MS Learn, https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/integrate-packaged-app-with-file-explorer (2026-07-16): „Windows 11 apps extend the modern File Explorer context menu by implementing IExplorerCommand and registering the command with app identity." oraz „Use Show more options only to inspect legacy context-menu extensions." (rejestracja: `windows.comServer` + `windows.fileExplorerContextMenus` w manifeście pakietu).
@@ -379,7 +379,7 @@ wyszukiwarka zwróciła tylko strony nie-MS oraz wątek Microsoft Q&A (to nie do
 | Klasyczne menu PPM | HKU\{SID} Software\Classes\CLSID\{86ca1aa0-...}\InprocServer32 (puste) | n/d | caution | **NIEudokumentowane przez MS** – hipoteza |
 | End Task na pasku zadań | HKU\{SID} ...\Explorer\Advanced\TaskbarDeveloperSettings\TaskbarEndTask=1 | n/d | safe | funkcja: MS (Learn+blog); **klucz: hipoteza (nie-MS)** |
 
-### Pytania do Dawida (max 5)
+### Pytania do autora (max 5)
 1. Pozycje, gdzie MS pisze „❌ Pro" (consumer features, Spotlight, Windows Tips, sugestie w Ustawieniach): wpisywać do katalogu na podstawie klucza z ADMX z wymogiem potwierdzenia efektu na VM Home/Pro, czy pomijać do czasu dowodu (zasada „sukces = realny stan")?
 2. Klucze bez dokumentacji MS (klasyczne menu PPM, TaskbarEndTask, ContentDeliveryManager): dopuszczasz je z adnotacją „źródło: test na VM 26H2, brak dokumentacji MS" (zasady repo dopuszczają „test na VM 26H2")?
 3. AllowTelemetry: akceptujesz uczciwy opis „ustaw Required (1)" bez obietnicy „wyłączenia telemetrii" na Home/Pro, a na Enterprise/Education oferować też 0?
@@ -429,7 +429,7 @@ obserwowany stan we wszystkich pozycjach, które wchodzą. Wyjątkiem było tło
 | Spersonalizowane oferty (Tailored experiences) | przełącznik = `HKU\<SID>\...\CurrentVersion\Privacy` `PersonalizedOffersEnabled` DWORD 0 (domyślnie brak = wyłączone; włączenie zapisuje 1) | przełącznik zgodny z wartością zapisaną przez API | to samo | – | **wchodzi** |
 | Tailored, polityka | `HKU\<SID>\Software\Policies\Microsoft\Windows\CloudContent` `DisableTailoredExperiencesWithDiagnosticData` DWORD 1 | baner „zarządza organizacja”, przełącznik „Spersonalizowane oferty” wyszarzony | to samo | – | działa, alternatywa blokująca przełącznik |
 | Consumer experiences | `HKLM\...\Policies\Microsoft\Windows\CloudContent` `DisableWindowsConsumerFeatures` DWORD 1 | brak dla zalogowanego konta (przypięte WhatsApp, LinkedIn, Solitaire zostają, Ustawienia bez zmian), także po restarcie VM | to samo | restart VM | **wypada**: skutek najwyżej dla nowych profili (poza zakresem) |
-| Spotlight, wszystko | `HKU\<SID>\Software\Policies\Microsoft\Windows\CloudContent` `DisableWindowsSpotlightFeatures` DWORD 1 | tło pulpitu przełącza się z „W centrum uwagi Windows” na „Obraz” (znika ikona „Dowiedz się więcej o tym zdjęciu”); **po cofnięciu tło zostaje „Obraz”**; ekran blokady bez zmiany w Ustawieniach | to samo | – | **wypada** (R9): cofnięcie nie przywraca tła Spotlight, czyli łamie obietnicę undo; do decyzji Dawida: ewentualnie niesugerowana z ostrzeżeniem |
+| Spotlight, wszystko | `HKU\<SID>\Software\Policies\Microsoft\Windows\CloudContent` `DisableWindowsSpotlightFeatures` DWORD 1 | tło pulpitu przełącza się z „W centrum uwagi Windows” na „Obraz” (znika ikona „Dowiedz się więcej o tym zdjęciu”); **po cofnięciu tło zostaje „Obraz”**; ekran blokady bez zmiany w Ustawieniach | to samo | – | **wypada**: cofnięcie nie przywraca tła Spotlight, czyli łamie obietnicę undo; do decyzji autora: ewentualnie niesugerowana z ostrzeżeniem |
 | Spotlight w Ustawieniach | `...\CloudContent` `DisableWindowsSpotlightOnSettings` DWORD 1 (HKU) | brak, także po restarcie VM | brak | restart VM | **wypada** |
 | Sugestie zewnętrzne Spotlight | `...\CloudContent` `DisableThirdPartySuggestions` DWORD 1 (HKU) | brak | brak | – | **wypada** |
 | Porady Windows (polityka) | `HKLM\...\CloudContent` `DisableSoftLanding` DWORD 1 | brak: pole porad dalej aktywne i zaznaczone | brak | – | **wypada** (zostaje pole porad wyżej) |
@@ -449,13 +449,13 @@ obserwowany stan we wszystkich pozycjach, które wchodzą. Wyjątkiem było tło
   używa przełącznika z Ustawień (`IsGlobalWebSearchProviderToggleEnabled` = 0): to stan, który użytkownik widzi w Prywatność > Wyszukaj
   („Zezwalaj aplikacjom wyszukiwania na wyświetlanie wyników”), wyłącza wszystkich dostawców wyników z sieci, nie blokuje przełącznika
   i nie rusza pola wyszukiwania Eksploratora. Skutek obserwowano po restarcie Eksploratora i SearchHost; bez restartu nie sprawdzano,
-  więc pozycja ma ostrzeżenie o restarcie Eksploratora (R15: sama go nie wykonuje).
+  więc pozycja ma ostrzeżenie o restarcie Eksploratora (sama go nie wykonuje).
 - **Polityki kontra przełączniki użytkownika** (ID reklamowy, Tailored). Obie drogi działają na Home i Pro. Propozycja: pozycja zapisuje
   wartości przełącznika (nie odbiera właścicielowi wyboru, zgodnie ze spec 5.2), polityki zostają opisane jako alternatywa. Na świeżej
   instalacji z odpowiedzią „nie” w OOBE oba przełączniki są już wyłączone, więc detekcja zwróci `Applied` od razu.
 - **Spotlight (`DisableWindowsSpotlightFeatures`)** ma realny skutek (koniec Spotlight na pulpicie), ale cofnięcie polityki nie przywraca
-  tła „W centrum uwagi Windows”: użytkownik musi wybrać je ponownie w Personalizacja > Tło. Decyzja autora R9: nie wchodzi do partii 1,
-  bo łamie obietnicę undo. Do decyzji Dawida: ewentualnie pozycja niesugerowana z ostrzeżeniem „po cofnięciu tło trzeba wybrać ponownie”.
+  tła „W centrum uwagi Windows”: użytkownik musi wybrać je ponownie w Personalizacja > Tło. Decyzja autora: nie wchodzi do partii 1,
+  bo łamie obietnicę undo. Do decyzji autora: ewentualnie pozycja niesugerowana z ostrzeżeniem „po cofnięciu tło trzeba wybrać ponownie”.
   Ekranu blokady nie dało się sprawdzić, bo nieaktywowany Windows blokuje personalizację.
 - **TaskbarDa** jest chroniony: zapis odrzuca system dla każdego naszego procesu (sprawdzone z `powershell.exe` i z osobnego exe).
   Widżety wyłącza polityka `AllowNewsAndInterests`; blokuje ona też przełącznik w Ustawieniach i nie da się tego uniknąć.
@@ -465,9 +465,9 @@ obserwowany stan we wszystkich pozycjach, które wchodzą. Wyjątkiem było tło
   Testy UI nie mogą zakładać jednego `AutomationId` dla tych pozycji; wartości rejestru się nie zmieniają.
 - **Restart.** Żadna wchodząca pozycja nie wymaga restartu komputera (`requiresReboot=false`). Restartu Eksploratora wymagają:
   przycisk Widżetów (tablica jest zablokowana od razu), wyniki z sieci w Start, sekcja Proponowane, zalecenia w Start, menu PPM, „Zakończ zadanie”.
-  Decyzja autora R15: żadna pozycja nie restartuje Eksploratora sama. Apply go nie wykonuje, pozycja ma ostrzeżenie, a do restartu
+  Decyzja autora: żadna pozycja nie restartuje Eksploratora sama. Apply go nie wykonuje, pozycja ma ostrzeżenie, a do restartu
   służy istniejąca akcja `tools.restart-explorer`.
-- **Rodzaj dowodu** (R13): pozycje potwierdzone tylko stanem przełącznika w Ustawieniach zostają w katalogu, ale ich docs i specyfikacja
+- **Rodzaj dowodu**: pozycje potwierdzone tylko stanem przełącznika w Ustawieniach zostają w katalogu, ale ich docs i specyfikacja
   niżej mówią wprost „stan przełącznika w Ustawieniach, treści nie obserwowano”.
 
 ### Domyślne wartości na świeżym 26H2 (`original`), Home = Pro
@@ -504,18 +504,18 @@ Cofnięcie w katalogu odtwarza snapshot, więc po cofnięciu stan = stan z insta
 | `privacy.windows-tips` | `SubscribedContent-338389Enabled`=0 | privacy | tak |
 | `privacy.settings-account-notifications` | `EnableAccountNotifications`=0 (HKU `SystemSettings\AccountNotifications`) | privacy | tak |
 | `privacy.start-recommendations` | `Start_IrisRecommendations`=0 (HKU `Explorer\Advanced`) | privacy | tak |
-| `privacy.start-recommended-section` | `HideRecommendedSection`=1 (HKU `Policies\Microsoft\Windows\Explorer`) | privacy | nie (R12: ukrywa też ostatnio otwierane pliki, z których użytkownicy korzystają) |
+| `privacy.start-recommended-section` | `HideRecommendedSection`=1 (HKU `Policies\Microsoft\Windows\Explorer`) | privacy | nie (ukrywa też ostatnio otwierane pliki, z których użytkownicy korzystają) |
 | `privacy.advertising-id` | `AdvertisingInfo\Enabled`=0 i `CPSS\Store\AdvertisingInfo\Value`=0 (HKU) | privacy | tak |
 | `privacy.tailored-experiences` | `Privacy\PersonalizedOffersEnabled`=0 (HKU) | privacy | tak |
 | `privacy.diagnostic-data-required` | `AllowTelemetry`=1 (HKLM `Policies\Microsoft\Windows\DataCollection`) | privacy | tak |
 | `privacy.feedback-notifications` | `DoNotShowFeedbackNotifications`=1 (HKLM `...\DataCollection`) | privacy | tak |
-| `privacy.diagtrack` | usługa `DiagTrack`: `Disabled` i zatrzymanie | privacy | tak, ryzyko `caution` (R14; Windows Update działa bez niej, sprawdzone) |
+| `privacy.diagtrack` | usługa `DiagTrack`: `Disabled` i zatrzymanie | privacy | tak, ryzyko `caution` (Windows Update działa bez niej, sprawdzone) |
 | `ux.classic-context-menu` | klucz `Software\Classes\CLSID\{86ca1aa0-…}\InprocServer32` z pustą wartością domyślną (HKU) | ux | nie |
 | `ux.taskbar-end-task` | `TaskbarEndTask`=1 (HKU `Explorer\Advanced\TaskbarDeveloperSettings`) | ux | nie |
 
 Wypadają (werdykt do `docs/tweaks/<id>.md` i mapy drogowej autora): Copilot (`TurnOffWindowsCopilot`), Recall (`AllowRecallEnablement`,
 `DisableAIDataAnalysis`), Click to Do, `TaskbarDa`, `ConnectedSearchUseWeb`, `DisableWebSearch`, `EnableDynamicContentInWSB`,
-`DisableWindowsConsumerFeatures`, `DisableWindowsSpotlightFeatures` (R9: cofnięcie nie przywraca tła; Dawid może poprosić o pozycję
+`DisableWindowsConsumerFeatures`, `DisableWindowsSpotlightFeatures` (cofnięcie nie przywraca tła; autor może poprosić o pozycję
 niesugerowaną z ostrzeżeniem), `DisableWindowsSpotlightOnSettings`, `DisableThirdPartySuggestions`, `DisableSoftLanding`,
 środowisko powitalne i „Zaproponuj sposoby…” (brak w 26H2), `HideRecommendedPersonalizedSites`, `LimitDiagnosticLogCollection`,
 `LimitDumpCollection`, `ux.game-dvr`. Działające alternatywy bez własnej pozycji: `DisableSearchBoxSuggestions`, `BingSearchEnabled`,
@@ -527,7 +527,7 @@ niesugerowaną z ostrzeżeniem), `DisableWindowsSpotlightOnSettings`, `DisableTh
 Jeden wiersz = jedna pozycja (12 `privacy` + 2 `ux`). Ścieżka „na VM” to klucz odczytany w eksploracji (`<SID>` = SID konta `dso`);
 ścieżka „w JSON” to zapis w katalogu (`HKCU\…` silnik mapuje na `HKU\<SID zalogowanego>\…`). „Klucze nieistniejące przed” to kandydaci
 do `KeyAbsentAfterUndo` w `tests/vm/cases.psd1`; „brak” znaczy, że klucz istniał już na świeżej instalacji. Restart: żadna pozycja nie
-restartuje Eksploratora sama (R15); „Eksplorator” = pozycja dostaje ostrzeżenie i odsyła do akcji `tools.restart-explorer`.
+restartuje Eksploratora sama; „Eksplorator” = pozycja dostaje ostrzeżenie i odsyła do akcji `tools.restart-explorer`.
 Wartości, stany domyślne i wyniki cofnięcia są takie same na Home i Pro.
 
 #### Task 5 (Widżety, wyniki z sieci)
@@ -545,7 +545,7 @@ Wartości, stany domyślne i wyniki cofnięcia są takie same na Home i Pro.
 | `privacy.windows-tips` | `HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager` | `HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager` | `SubscribedContent-338389Enabled` / DWord / 0 | 1 (pole „Uzyskaj porady i sugestie…” zaznaczone) | brak | pole znowu zaznaczone | użytkownik | brak | stan przełącznika w Ustawieniach, treści nie obserwowano | tak | safe |
 | `privacy.settings-account-notifications` | `HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\SystemSettings\AccountNotifications` | `HKCU\Software\Microsoft\Windows\CurrentVersion\SystemSettings\AccountNotifications` | `EnableAccountNotifications` / DWord / 0 | brak wartości (przełącznik „Pokaż powiadomienia w ustawieniach” włączony); klucz istnieje | brak | przełącznik znowu „włączony” | użytkownik | brak | stan przełącznika w Ustawieniach, treści nie obserwowano | tak | safe |
 | `privacy.start-recommendations` | `HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced` | `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced` | `Start_IrisRecommendations` / DWord / 0 | brak wartości (przełącznik włączony); klucz istnieje | brak | przełącznik znowu „włączony” | użytkownik | Eksplorator (Ustawienia pokazują nowy stan od razu; menu Start mogło nie mieć takich treści) | stan przełącznika w Ustawieniach, treści nie obserwowano | tak | safe |
-| `privacy.start-recommended-section` | `HKU\<SID>\Software\Policies\Microsoft\Windows\Explorer` | `HKCU\Software\Policies\Microsoft\Windows\Explorer` | `HideRecommendedSection` / DWord / 1 | brak wartości i brak klucza `Explorer` (klucz `HKU\<SID>\Software\Policies\Microsoft\Windows` istnieje) | `HKU\<SID>\Software\Policies\Microsoft\Windows\Explorer` (w JSON: `HKCU\Software\Policies\Microsoft\Windows\Explorer`) | wartość i klucz usunięte; sekcja „Proponowane” wraca (po restarcie Eksploratora i po restarcie VM) | użytkownik | Eksplorator | skutek widoczny | nie (R12) | safe |
+| `privacy.start-recommended-section` | `HKU\<SID>\Software\Policies\Microsoft\Windows\Explorer` | `HKCU\Software\Policies\Microsoft\Windows\Explorer` | `HideRecommendedSection` / DWord / 1 | brak wartości i brak klucza `Explorer` (klucz `HKU\<SID>\Software\Policies\Microsoft\Windows` istnieje) | `HKU\<SID>\Software\Policies\Microsoft\Windows\Explorer` (w JSON: `HKCU\Software\Policies\Microsoft\Windows\Explorer`) | wartość i klucz usunięte; sekcja „Proponowane” wraca (po restarcie Eksploratora i po restarcie VM) | użytkownik | Eksplorator | skutek widoczny | nie | safe |
 | `privacy.advertising-id` | `HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo` oraz `HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\CPSS\Store\AdvertisingInfo` | `HKCU\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo` oraz `HKCU\Software\Microsoft\Windows\CurrentVersion\CPSS\Store\AdvertisingInfo` | `Enabled` / DWord / 0 (pierwszy klucz); `Value` / DWord / 0 (drugi klucz) | `Enabled`=0, `Value`=0, brak wartości `Id` (wyłączony po OOBE z unattend); oba klucze istnieją | brak | po zapisie 1/1 i cofnięciu przełącznik „wyłączony” | użytkownik | brak | stan przełącznika w Ustawieniach, treści nie obserwowano | tak | safe |
 | `privacy.tailored-experiences` | `HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\Privacy` | `HKCU\Software\Microsoft\Windows\CurrentVersion\Privacy` | `PersonalizedOffersEnabled` / DWord / 0 | brak wartości (przełącznik „Spersonalizowane oferty” wyłączony); klucz istnieje | brak | przełącznik wraca do stanu sprzed | użytkownik | brak | stan przełącznika w Ustawieniach, treści nie obserwowano | tak | safe |
 
@@ -559,7 +559,7 @@ sprawdzono, czy same wartości 0/0 bez usunięcia `Id` dają ten sam stan przeł
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | `privacy.diagnostic-data-required` | `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection` | `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection` | `AllowTelemetry` / DWord / 1 | brak wartości; klucz istnieje na świeżej instalacji | brak (klucz zostaje po cofnięciu: kandydat do `KeyPresentAfterUndo`) | wartość usunięta; baner „zarządza organizacja” znika, przełącznik opcjonalnych danych znowu aktywny | maszyna | brak | skutek widoczny (baner, przełącznik opcjonalnych danych zablokowany) | tak | caution |
 | `privacy.feedback-notifications` | `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection` | `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection` | `DoNotShowFeedbackNotifications` / DWord / 1 | brak wartości; klucz istnieje na świeżej instalacji | brak (jak wyżej, `KeyPresentAfterUndo`) | wartość usunięta; lista „Częstotliwość opinii” wraca, baner znika | maszyna | brak | stan w Ustawieniach (baner, lista znika), samych powiadomień nie obserwowano | tak | safe |
-| `privacy.diagtrack` | usługa `DiagTrack` (Connected User Experiences and Telemetry) | usługa `DiagTrack` | startType `Disabled`, stop = true | startType `Automatic`, stan `Running` | – | startType `Automatic` i stan `Running` przywrócone (także po restarcie VM) | maszyna | brak (skutek od razu, trwały po restarcie VM) | skutek widoczny: usługa zatrzymana i nie startuje po restarcie VM; Windows Update Agent `Search("IsInstalled=0 and Type='Software'")` po restarcie z wyłączoną usługą: ResultCode=2 (powodzenie), 4 aktualizacje, bez błędu, na Home i Pro | tak (R14) | caution (R14) |
+| `privacy.diagtrack` | usługa `DiagTrack` (Connected User Experiences and Telemetry) | usługa `DiagTrack` | startType `Disabled`, stop = true | startType `Automatic`, stan `Running` | – | startType `Automatic` i stan `Running` przywrócone (także po restarcie VM) | maszyna | brak (skutek od razu, trwały po restarcie VM) | skutek widoczny: usługa zatrzymana i nie startuje po restarcie VM; Windows Update Agent `Search("IsInstalled=0 and Type='Software'")` po restarcie z wyłączoną usługą: ResultCode=2 (powodzenie), 4 aktualizacje, bez błędu, na Home i Pro | tak | caution |
 
 #### Task 8 (`ux`)
 
@@ -658,7 +658,7 @@ sprawdzany niezależnym odczytem byłby wtedy nieprawdziwy. `-AllUsers` działa,
 Na świeżej VM nie ma żadnego wpisu z `QuietUninstallString`, `WindowsInstaller=1`, `ParentKeyName` ani `ReleaseType`. Ścieżki MSI,
 cichego deinstalatora i aktualizacji sprawdzą dopiero pakiety testowe z Tasku 7.
 
-### Pakiety AppX – propozycja grupy (dla Tasku 9, decyzję podejmuje Dawid)
+### Pakiety AppX – propozycja grupy (dla Tasku 9, decyzję podejmuje autor)
 
 „Obraz” = pakiet jest też w `Get-AppxProvisionedPackage -Online`. „Nazwa” = nazwa w Start konta `dso`, a gdy aplikacji nie ma w Start,
 `Package.DisplayName` w kontekście `dso`. Wszystkie widoczne pakiety pochodzą od Microsoftu, więc na VM nie ma czego przypisać do
@@ -673,11 +673,11 @@ grup `producent` ani `trial`. Te grupy wymagają sprzętu (mapa drogowa autora).
 | `Microsoft.AV1VideoExtension` | AV1 Video Extension | Microsoft Corporation | Store | tak | Home, Pro | chroniony | kodek, spec 6.2 |
 | `Microsoft.AVCEncoderVideoExtension` | Rozszerzenie wideo kodera AVC | Microsoft Corporation | Store | tak | Home, Pro | chroniony | kodek |
 | `Microsoft.BingNews` | Microsoft News - Wiadomości | Microsoft Corporation | Store | tak | Home, Pro | sugerowany | microsoft; spec 6.2; usunięty na VM |
-| `Microsoft.BingSearch` | Microsoft Bing | Microsoft Corporation | Store | tak | Home, Pro | pozostały | Microsoft Bing, bez wpisu w Start; nie ma w spec – do decyzji Dawida |
+| `Microsoft.BingSearch` | Microsoft Bing | Microsoft Corporation | Store | tak | Home, Pro | pozostały | Microsoft Bing, bez wpisu w Start; nie ma w spec – do decyzji autora |
 | `Microsoft.BingWeather` | Pogoda | Microsoft Corporation | Store | tak | Home, Pro | sugerowany | microsoft; spec 6.2; usunięty na VM |
 | `Microsoft.Copilot` | Copilot | Microsoft Corporation | Store | tak | Home | sugerowany | microsoft; spec 6.2 (tylko Home) |
 | `Microsoft.GamingApp` | Xbox | Microsoft Corporation | Store | tak | Home, Pro | sugerowany | microsoft; Xbox, spec 6.2 |
-| `Microsoft.GetHelp` | Uzyskaj pomoc | Microsoft Corporation | Store | tak | Home, Pro | sugerowany | microsoft; „Uzyskaj pomoc” – odpowiednik „Porad” ze spec (Getstarted nie ma na 26H2); do potwierdzenia przez Dawida |
+| `Microsoft.GetHelp` | Uzyskaj pomoc | Microsoft Corporation | Store | tak | Home, Pro | sugerowany | microsoft; „Uzyskaj pomoc” – odpowiednik „Porad” ze spec (Getstarted nie ma na 26H2); do potwierdzenia przez autora |
 | `Microsoft.HEIFImageExtension` | Rozszerzenie obrazów HEIF | Microsoft Corporation | Store | tak | Home, Pro | chroniony | kodek, spec 6.2 |
 | `Microsoft.HEVCVideoExtension` | Rozszerzenia wideo HEVC od producenta urządzenia | Microsoft Corporation | Store | tak | Home, Pro | chroniony | kodek, spec 6.2 |
 | `Microsoft.MicrosoftEdge.Stable` | Microsoft Edge | Microsoft Corporation | Developer | tak | Home, Pro | chroniony | Edge, spec 6.2 |
@@ -705,7 +705,7 @@ grup `producent` ani `trial`. Te grupy wymagają sprzętu (mapa drogowa autora).
 | `Microsoft.WindowsStore` | Microsoft Store | Microsoft Corporation | Store | tak | Home, Pro | chroniony | spec 6.2 |
 | `Microsoft.WindowsTerminal` | Terminal | Microsoft Corporation | Store | tak | Home, Pro | chroniony | spec 6.2 |
 | `Microsoft.Xbox.TCUI` | Xbox TCUI | Microsoft Corporation | Store | tak | Home, Pro | pozostały | zależność gier/Game Bar (logowanie Xbox); spec: Xbox bez Game Bar – do decyzji |
-| `Microsoft.XboxGamingOverlay` | Game Bar | Microsoft Corporation | Store | tak | Home, Pro | pozostały | Game Bar – do decyzji Dawida w renderze (spec 6.2) |
+| `Microsoft.XboxGamingOverlay` | Game Bar | Microsoft Corporation | Store | tak | Home, Pro | pozostały | Game Bar – do decyzji autora w renderze (spec 6.2) |
 | `Microsoft.XboxIdentityProvider` | Xbox Identity Provider | Microsoft Corporation | Store | tak | Home, Pro | pozostały | jak wyżej |
 | `Microsoft.XboxSpeechToTextOverlay` | Game Speech Window | Microsoft Corporation | Store | tak | Home, Pro | pozostały | nakładka Game Bar |
 | `Microsoft.YourPhone` | Aplikacja Łącze z telefonem | Microsoft Corporation | Store | tak | Home, Pro | pozostały | Łącze z telefonem |

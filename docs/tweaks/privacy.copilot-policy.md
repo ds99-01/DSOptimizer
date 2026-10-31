@@ -25,6 +25,3 @@ Nie dotyczy (nie wchodzi): pozycji nie ma w katalogu, więc nie ma przypadku VM.
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: zapis polityki przez API rejestru, restart Eksploratora, klawisz Win+C i przycisk na pasku w sesji `dso`. Wynik: **brak skutku**, aplikacja Copilot (preinstalowana i przypięta) dalej otwiera się przez Win+C, a przycisk zostaje.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Wynik: **brak skutku do pokazania**, bo na świeżym Pro nie ma aplikacji Copilot (nie ma czego wyłączać).
-
-## Reddit
-Do uzupełnienia w części E.

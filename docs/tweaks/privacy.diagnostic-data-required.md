@@ -35,6 +35,3 @@ Przypadek `privacy-diagnostic-data-required` (`Flow=Full`) w `tests/vm/cases.psd
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Metoda: UI Automation Ustawień (Prywatność i zabezpieczenia > Diagnostyka i opinie) i zrzuty po zapisie przez API rejestru. Wynik: baner „Niektórymi z tych ustawień zarządza Twoja organizacja” i „Twoja organizacja zezwala na wysyłanie tylko wymaganych danych diagnostycznych”, przełącznik opcjonalnych danych diagnostycznych wyszarzony. Po cofnięciu (wartość usunięta) baner znika, przełącznik znowu aktywny.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

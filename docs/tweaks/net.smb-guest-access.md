@@ -64,6 +64,3 @@ Przypadek `net-smb-guest-access` (`Flow=Full`, `Catalog=BuiltIn`, bez restartu),
 - `CheckAfterUndo` (odczyt cmdletu równy domyślnej edycji, edycja z `EditionID`: Home True, Pro False): **Passed** na obu. Po usunięciu wartości (undo ze snapshotu bez wartości) cmdlet wraca do domyślnej edycji. Rozstrzygający jest **Pro** (po apply True, po undo False); na Home brak rozróżnienia (True w obu stanach).
 - `net-smb-lan-effect`: **Skipped** („brak sieci i serwera SMB na VM”), raportowane jako pominięte, nie zaliczone.
 - **Nie testowane na VM: brak sieci i serwera SMB.** Nie sprawdzono: skutku w LAN (połączenie z gościem, widoczność komputerów), trwałości po restarcie oraz zachowania samej pozycji (apply/undo/detekcji) pod polityką Group Policy; zmierzony został tylko wpływ wartości polityki na odczyt cmdletu (zob. „Detekcja i undo”, sonda 7).
-
-## Reddit
-Do uzupełnienia w części E.

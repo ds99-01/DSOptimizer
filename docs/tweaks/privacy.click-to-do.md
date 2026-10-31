@@ -25,6 +25,3 @@ Nie dotyczy (nie wchodzi): pozycji nie ma w katalogu, więc nie ma przypadku VM.
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: poszukiwanie punktu wejścia, procesu i strony w Ustawieniach przed i po zapisie polityki oraz restarcie Eksploratora. Wynik: **brak skutku do pokazania**, funkcja jest niedostępna już przed zmianą (VM bez NPU).
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

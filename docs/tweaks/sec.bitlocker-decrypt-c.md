@@ -46,13 +46,10 @@ Brak detekcji (`kind=action`). **Brak cofnięcia** (brak journala): odszyfrowani
 - Potwierdzenie w UI przed uruchomieniem (spec, sekcja 7); CLI nie pyta.
 
 ## Test VM
-Ścieżka zaszyfrowanego dysku: prawdziwy `Decrypt` przećwiczony na VM na OBU edycjach (Home i Pro), bo po starcie checkpointu działa tam automatyczne szyfrowanie urządzenia; własnego szyfrowania w VM nie robimy (decyzja Dawida). Nie sprawdzamy więc na VM: `Decrypt` na w pełni zaszyfrowanym dysku (`ConversionStatus` = 1), kodu `0x80310029` ani wznowienia (3, 5); te ścieżki są pokryte tylko testami jednostkowymi na mockach helperów.
+Ścieżka zaszyfrowanego dysku: prawdziwy `Decrypt` przećwiczony na VM na OBU edycjach (Home i Pro), bo po starcie checkpointu działa tam automatyczne szyfrowanie urządzenia; własnego szyfrowania w VM nie robimy (decyzja autora). Nie sprawdzamy więc na VM: `Decrypt` na w pełni zaszyfrowanym dysku (`ConversionStatus` = 1), kodu `0x80310029` ani wznowienia (3, 5); te ścieżki są pokryte tylko testami jednostkowymi na mockach helperów.
 
 Wyniki przebiegów VM (build 26300.9457, 2026-10-19):
-- Pełny przebieg `vm-run-20261019-002807` (HEAD `d589405`): **Home Passed** (`Executed`, „Odszyfrowywanie C: rozpoczęte: 6% zaszyfrowane…”, `Check` Passed). **Pro: akcja `Executed`** („Odszyfrowywanie C: rozpoczęte: 78% zaszyfrowane…”), ale `Check` **Failed**: stary `Check` wymagał na Pro statusu 0, a odczyt zwrotny dał 3. To był błąd przypadku (założenie stabilnego stanu BitLockera na checkpoincie), nie akcji; poprawka `962ae0e` (R15).
+- Pełny przebieg `vm-run-20261019-002807` (HEAD `d589405`): **Home Passed** (`Executed`, „Odszyfrowywanie C: rozpoczęte: 6% zaszyfrowane…”, `Check` Passed). **Pro: akcja `Executed`** („Odszyfrowywanie C: rozpoczęte: 78% zaszyfrowane…”), ale `Check` **Failed**: stary `Check` wymagał na Pro statusu 0, a odczyt zwrotny dał 3. To był błąd przypadku (założenie stabilnego stanu BitLockera na checkpoincie), nie akcji; poprawka `962ae0e`.
 - Powtórka samego przypadku po poprawce, `vm-run-decrypt-20261019-005135` (HEAD `962ae0e`): **Home 4 zaliczone / 0 błędów** („…78% zaszyfrowane…”), **Pro 4 / 0** („…76% zaszyfrowane…”), `Check` (`ReturnValue` 0, `ConversionStatus` ∈ {3, 0}) Passed. Obie VM po przebiegach `Off` na checkpoincie `czysta-26H2`.
 - Sprawdzono więc prawdziwą ścieżkę `Decrypt` + odczyt zwrotny na OBU edycjach, dzięki automatycznemu szyfrowaniu urządzenia działającemu po starcie checkpointu. Ścieżka „już odszyfrowany” (status 0) nie została zmierzona na VM; jest pokryta tylko testami jednostkowymi na mockach (podobnie 1, 4, 3/5 i `0x80310029`).
 - Przypadek `sec-bitlocker-decrypt-c` (`Flow=Execute`, `Catalog=BuiltIn`) jest w `tests/vm/cases.psd1`; ma jeden `Check` dla obu edycji: `GetConversionStatus` zwraca `ReturnValue` 0, a `ConversionStatus` jest 3 lub 0 (postęp auto-szyfrowania w momencie akcji jest niedeterministyczny).
-
-## Reddit
-Do uzupełnienia w części E.

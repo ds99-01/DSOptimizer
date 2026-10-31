@@ -32,6 +32,3 @@ Nie dotyczy. Pozycja odrzucona w partii C1. Powrót możliwy, gdy pojawi się ź
 
 ## Test VM
 Nie dotyczy (nie portowane): pozycji nie ma w katalogu, więc nie było przypadku VM.
-
-## Reddit
-Do uzupełnienia w części E.

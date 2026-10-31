@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.diagnostic-data-required.md sha256: 7570ee277e8666d06ef3f63a8cec623229155cfa1ecc048ab83b3d07a9ee326e -->
+<!-- source: docs/tweaks/privacy.diagnostic-data-required.md sha256: 38d23ef37a1be22db05004d1272d755a9af6090694d5ffb45985c3f93cc98024 -->
 
 # privacy.diagnostic-data-required – Limit diagnostic data to required data
 
@@ -37,6 +37,3 @@ Case `privacy-diagnostic-data-required` (`Flow=Full`) in `tests/vm/cases.psd1`: 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: UI Automation of Settings (Privacy & security > Diagnostics & feedback) and screenshots after a write through the registry API. Result: the banner "Niektórymi z tych ustawień zarządza Twoja organizacja" (Some of these settings are managed by your organization) and "Twoja organizacja zezwala na wysyłanie tylko wymaganych danych diagnostycznych" (Your organization allows only required diagnostic data to be sent), the optional diagnostic data toggle grayed out. After undo (value deleted) the banner disappears and the toggle is active again.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

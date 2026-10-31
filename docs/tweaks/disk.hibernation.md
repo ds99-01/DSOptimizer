@@ -52,6 +52,3 @@ Przebieg VM z 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro
 - `disk-hibernation-unsupported` (`Flow=DetectOnly`, przebieg `main`): **Passed** na Home i Pro. `detect-before` kod 0, wynik `Success`, stan **`NotSupported`**. To potwierdza przebiegiem regułę 3 detekcji dla czystej VM; `SystemS4` = FALSE jest tu wnioskiem pośrednim (skrypt zwrócił `NotSupported`), nie osobnym odczytem. Przypadek `DetectOnly` nie ma `Snapshot`, więc brak zmian w rejestrze nie był tu osobno sprawdzany.
 - `disk-hibernation` (`Flow=Full`): **Skipped** na Home i Pro. Powód z `cases.psd1`: „VM Hyper-V bez obsługi S4 – apply/undo do weryfikacji na sprzęcie”. Pominięte to wszystkie testy tego przypadku (10 z 10 pominiętych w `main`), nigdy zaliczone.
 - **Nie sprawdzono (do weryfikacji na sprzęcie z obsługą hibernacji):** apply `powercfg /h off` i zniknięcie `hiberfil.sys`, undo `/h on`, zachowanie `SystemS4` po wyłączeniu, skutek dla Szybkiego uruchamiania, przywrócenie typu i rozmiaru pliku. Pozycja zostaje `risk=experimental`.
-
-## Reddit
-Do uzupełnienia w części E.

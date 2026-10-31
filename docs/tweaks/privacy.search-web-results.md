@@ -6,7 +6,7 @@ Portować: test na VM 26H2 (Home i Pro) pokazał realny skutek. Brak dokumentacj
 ## Co zmienia
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\SearchSettings` (w silniku `HKU\<SID zalogowanego>`), wartość `IsGlobalWebSearchProviderToggleEnabled`, **DWord**, ustawiana na `0`; `scope=user`. To stan przełącznika „Zezwalaj aplikacjom wyszukiwania na wyświetlanie wyników” (Prywatność > Wyszukaj).
 - Wyłącza wszystkich dostawców wyników z sieci, nie blokuje przełącznika i nie rusza pola wyszukiwania Eksploratora.
-- Apply nie restartuje Eksploratora (R15). Skutek obserwowano po restarcie Eksploratora i zabiciu SearchHost (zrobiono też StartMenuExperienceHost przy pozycjach Start). Katalog podaje więc skutek „po ponownym zalogowaniu”; czy sam restart Eksploratora (`tools.restart-explorer`) wystarcza, nie sprawdzano, pozycja mówi o tym wprost („sam restart Eksploratora może nie wystarczyć”).
+- Apply nie restartuje Eksploratora. Skutek obserwowano po restarcie Eksploratora i zabiciu SearchHost (zrobiono też StartMenuExperienceHost przy pozycjach Start). Katalog podaje więc skutek „po ponownym zalogowaniu”; czy sam restart Eksploratora (`tools.restart-explorer`) wystarcza, nie sprawdzano, pozycja mówi o tym wprost („sam restart Eksploratora może nie wystarczyć”).
 
 ### Działające alternatywy (opisane, bez własnych pozycji katalogu)
 Wszystkie trzy dały ten sam efekt (wyniki Bing znikają) na Home i Pro, po restarcie Eksploratora:
@@ -38,6 +38,3 @@ Przypadek `privacy-search-web-results` (`Flow=Full`) w `tests/vm/cases.psd1` (`N
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: zrzuty ekranu wyników wyszukiwania (Win+S) dla frazy „pogoda” w sesji `dso`, po zapisie przez API rejestru i restarcie Eksploratora oraz SearchHost. Wynik: znika sekcja „Microsoft Bing sugestie internetowe” i karta „Microsoft Bing” w wynikach; po cofnięciu sekcja wraca.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

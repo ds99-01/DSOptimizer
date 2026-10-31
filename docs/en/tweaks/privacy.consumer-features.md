@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.consumer-features.md sha256: 84ad96a6bcd5163de2184e0924e6cc944c446e1e46901f7807c28bbb0b658878 -->
+<!-- source: docs/tweaks/privacy.consumer-features.md sha256: 665bacbc5223f247d33b9e41a23f8ec2265142bb99ce4ef47b6b5d0cb6916049 -->
 
 # privacy.consumer-features – Consumer experiences (DisableWindowsConsumerFeatures)
 
@@ -28,6 +28,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: writing the policy, checking Start and Settings, restarting the VM. Result: **no effect** for the signed-in account (pinned WhatsApp, LinkedIn, Solitaire stay, Settings unchanged), also after restarting the VM.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

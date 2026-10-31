@@ -234,7 +234,7 @@ Describe 'Bezpieczniki (VM-only, mock-only, Defender tylko do odczytu)' {
     It '-VmName spoza ValidateSet odrzucony: skrypt, Invoke-E5VmRun i Restart-E5VmAndWait; VM nietknięta (sprzątanie: Complete-ExploreVmCleanup z ExploreCommon)' {
         Mock Restore-VmCleanState { throw 'nie wolno' }
         Mock Get-DsoVmCredential { throw 'nie wolno' }
-        { & $script:E5ScriptPath -VmName 'Bruteforce_LTSC' -ShowPlan -OutDirectory (Join-Path $TestDrive 'w') 6>$null } | Should -Throw
+        { & $script:E5ScriptPath -VmName 'ObcaVM' -ShowPlan -OutDirectory (Join-Path $TestDrive 'w') 6>$null } | Should -Throw
         { Invoke-E5VmRun -VmName 'DSO-26H2-Test' -OutDirectory $TestDrive -Phases @('defender') } | Should -Throw
         Should -Invoke Restore-VmCleanState -Times 0 -Exactly
         Should -Invoke Get-DsoVmCredential -Times 0 -Exactly
@@ -701,7 +701,7 @@ Describe 'Wysyłka funkcji do VM i treść skryptu' {
             $Names | Should -Not -Contain $Forbidden
         }
         $Text = [System.IO.File]::ReadAllText((Resolve-Path $script:E5ScriptPath), [System.Text.Encoding]::UTF8)
-        $Text | Should -Not -Match 'HKCU:|HKEY_CURRENT_USER|EncodedCommand|Bruteforce_LTSC\s*[''"]|\.Kill\('
+        $Text | Should -Not -Match 'HKCU:|HKEY_CURRENT_USER|EncodedCommand|\.Kill\('
     }
     It 'plik ma BOM UTF-8 oraz sekcje Instrukcja uruchomienia i Opis działania' {
         $Bytes = [System.IO.File]::ReadAllBytes((Resolve-Path $script:E5ScriptPath))

@@ -36,6 +36,3 @@ Dwa przypadki `Flow=Full` (przebieg `main`), Home i Pro, w obu: `detect-before` 
 - `ux-game-dvr-policy` (brak `AllowGameDVR` przed apply, `SnapshotBefore` `Exists=false`): oczekiwanie przypadku (Pester zielony) = po undo klucz `...\Policies\Microsoft\Windows\GameDVR` nie istnieje, a `...\Policies\Microsoft\Windows` zostaje; po apply `AllowGameDVR` = DWORD 0.
 - `ux-game-dvr-policy-prev-value` (`AllowGameDVR` = DWORD 1 przed apply, `SnapshotBefore` `Exists=true`): undo przywraca 1 ze snapshotu (`SnapshotDiff` pusty), a nie usuwa wartości; klucze `GameDVR` i `Windows` zostają.
 - **Nie sprawdzono:** czy polityka jest egzekwowana na 26H2 Home/Pro (Game Bar, nagrywanie, komunikat „zarządzane przez organizację”); VM sprawdza tylko zapis, detekcję i czysty undo.
-
-## Reddit
-Do uzupełnienia w części E.

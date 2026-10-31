@@ -469,7 +469,7 @@ public class AppsInstallCatalogTests
     [Fact]
     public void BuiltIn_NoEntryPreselected()
     {
-        // Format nie ma pola zaznaczenia ani presetów (decyzja Dawida 2026-10-15): wbudowany plik nie ma żadnych nieznanych pól.
+        // Format nie ma pola zaznaczenia ani presetów (decyzja autora 2026-10-15): wbudowany plik nie ma żadnych nieznanych pól.
         var allowed = new[] { "id", "wingetId", "github", "title", "summary", "category", "match", "warning", "source" };
         var root = JObject.Parse(BuiltInCatalog.AppsInstallSource.Json.TrimStart('\uFEFF'));
 

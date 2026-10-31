@@ -31,6 +31,3 @@ Przypadek `privacy-windows-tips` (`Flow=Full`) w `tests/vm/cases.psd1` (`NotWrit
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: pole „Uzyskaj porady i sugestie podczas korzystania z systemu Windows” w Ustawieniach (UI Automation) po zapisie przez API. Wynik: pole odznaczone; po cofnięciu zaznaczone. dowód: stan przełącznika w Ustawieniach, treści nie obserwowano.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

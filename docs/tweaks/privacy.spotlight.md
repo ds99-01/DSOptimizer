@@ -1,7 +1,7 @@
 # privacy.spotlight – Wyłącz Windows Spotlight (zdjęcia dnia)
 
 ## Werdykt 26H2
-Portować jako pozycję **niesugerowaną** z ostrzeżeniem (decyzja Dawida 2026-10-21, pytanie 1 po partii 1). Skutek jest: tło pulpitu przestaje być zdjęciem dnia. Cofnięcie usuwa politykę, ale tła „W centrum uwagi Windows” nie przywraca (dlatego w partii 1 pozycja wypadła, R9). Ostrzeżenie w katalogu mówi, że zdjęcia dnia trzeba wybrać ponownie w Ustawienia > Personalizacja > Tło.
+Portować jako pozycję **niesugerowaną** z ostrzeżeniem (decyzja autora 2026-10-21, pytanie 1 po partii 1). Skutek jest: tło pulpitu przestaje być zdjęciem dnia. Cofnięcie usuwa politykę, ale tła „W centrum uwagi Windows” nie przywraca (dlatego w partii 1 pozycja wypadła). Ostrzeżenie w katalogu mówi, że zdjęcia dnia trzeba wybrać ponownie w Ustawienia > Personalizacja > Tło.
 
 ## Co zmienia
 - `HKCU\Software\Policies\Microsoft\Windows\CloudContent` (w silniku `HKU\<SID zalogowanego>`), wartość `DisableWindowsSpotlightFeatures`, **DWord**, ustawiana na `1`; `scope=user`.
@@ -32,6 +32,3 @@ Przypadek `privacy-spotlight` (`Flow=Full`) w `tests/vm/cases.psd1` (`NotWritten
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: zrzuty tła pulpitu i Ustawień przed zapisem polityki, po zapisie i po cofnięciu. Wynik: tło przełącza się z „W centrum uwagi Windows” na „Obraz” (znika ikona „Dowiedz się więcej o tym zdjęciu”); **po cofnięciu tło zostaje „Obraz”**. Ekranu blokady nie dało się sprawdzić (nieaktywowany Windows blokuje personalizację).
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

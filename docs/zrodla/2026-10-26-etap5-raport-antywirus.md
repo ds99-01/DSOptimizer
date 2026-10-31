@@ -41,7 +41,7 @@ Na wszystkich 4 zrzutach `motw.png` po 5 s: okno „System Windows ochronił ten
 uniemożliwił uruchomienie nierozpoznanej aplikacji… Więcej informacji / Nie uruchamiaj”. Dla zipu MotW przechodzi na
 rozpakowane pliki (Eksplorator) i okno jest to samo. Z nośnika bez MotW okna nie ma (przebiegi av/startup). Automatyczny detektor
 w skrypcie nie rozpoznaje tego okna (w 26H2 hostuje je `explorer.exe`, `ProxyModalWindow`/`ApplicationFrameWindow` bez tytułu) –
-ocena po zrzutach (ruling autora). Obejście dla użytkownika: „Więcej informacji” → „Uruchom mimo to” (README).
+ocena po zrzutach (decyzja autora). Obejście dla użytkownika: „Więcej informacji” → „Uruchom mimo to” (README).
 
 ## Czas startu (z nośnika, do pojawienia się okna głównego „DSOptimizer 4.0.0”)
 
@@ -76,13 +76,13 @@ z wydania roboczego (SHA256 zipu `6f3077a4…40da`) i jeden exe z archiwum autor
 Zakładka „Behavior” (piaskownice CAPE, Zenbox, VirusTotal Jujubox) dla obu exe: brak werdyktu złośliwości; sygnatury MITRE tylko
 MEDIUM/LOW/INFO (folder: 8 MEDIUM, 15 LOW, 6 INFO; jeden exe: 9 INFO), zero HIGH, zero reguł IDS i Sigma. Biblioteki zewnętrzne
 (Wpf.Ui, Newtonsoft.Json, System.*, CommunityToolkit.Mvvm) nie wysyłane – to niezmienione pakiety NuGet. Pliki na VirusTotal są
-widoczne dla subskrybentów i firm antywirusowych (warunek serwisu, zgoda Dawida).
+widoczne dla subskrybentów i firm antywirusowych (warunek serwisu, zgoda autora).
 
 ## Decyzja formy (reguła spec 3.1 / plan Task 6 Step 7)
 
 Wykrycia: remis (0 = 0). Mediana startu: jeden exe przekracza medianę folderu o 1,18 s (Pro) i 2,0 s (Home) – więcej niż próg
 1 s. **Wydanie = Folder (zip).** VirusTotal (2026-10-26) potwierdza remis: 0 wykryć w obu wariantach, więc decyzja jest
-ostateczna. Koszt dla użytkownika: zip trzeba rozpakować (Dawid: „tak będę robił”).
+ostateczna. Koszt dla użytkownika: zip trzeba rozpakować (autor: „tak będę robił”).
 
 ## Podpis cyfrowy – rekomendacja
 

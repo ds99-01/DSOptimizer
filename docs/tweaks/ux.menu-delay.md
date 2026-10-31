@@ -38,6 +38,3 @@ Przypadek `ux-menu-delay` (`Flow=Full`, przebieg `main`), Home i Pro:
 - Sprawdzono: `detect-before` = `NotApplied` (Setup ustawił `MenuShowDelay` = `"250"`, inaczej niż `original` `"400"`), `apply` kod 0, `detect-after-apply` = `Applied`, `undo` kod 0, `detect-after-undo` = `NotApplied`. `SnapshotBefore` zawiera `HKU\<SID>\Control Panel\Desktop\MenuShowDelay` String `"250"`, a `SnapshotDiff` (przed vs. po undo) jest pusty, więc undo przywróciło wartość ze snapshotu, nie z fallbacku `"400"`. Snapshot po apply = `"10"`. `NotWrittenToDiff` pusty: apply nie ruszył `HKCU` konta Administrator.
 - Check: brak (pozycja rejestrowa). Restartu nie było (nie wymagany w katalogu).
 - **Nie sprawdzono:** czy menu faktycznie otwierają się szybciej, czy zmiana wymaga ponownego zalogowania i jak zachowują się aplikacje Win32 (VM sprawdza tylko zapis, detekcję i undo wartości).
-
-## Reddit
-Do uzupełnienia w części E.

@@ -37,6 +37,3 @@ Przebieg VM z 2026-10-18 (13:51, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Hom
 Przypadek `perf-sysmain` (`Flow=Full`, przebieg `main`), Home i Pro identycznie:
 - Sprawdzono: `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = false), `detect-after-apply` = `Applied`, `undo` = `Undone` (`finalState` = `NotApplied`), `detect-after-undo` = `NotApplied`. `CheckAfterApply` Passed (usługa `Stopped`, `StartMode` `Disabled`), `CheckAfterUndo` Passed (`State` i `StartMode` jak przed apply: `Running`/`Auto`). Stan końcowy = stan przed (snapshot `Services\SysMain\Start`).
 - **Nie sprawdzono:** skutku na wydajność, stanu po restarcie, trwałości ustawienia po Windows Update (aktualizacja może przywrócić usługę), ścieżki z działającymi usługami zależnymi (pokryta tylko testem jednostkowym na fake'ach).
-
-## Reddit
-Do uzupełnienia w części E.

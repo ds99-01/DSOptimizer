@@ -29,6 +29,3 @@ Przypadek `privacy-settings-account-notifications` (`Flow=Full`) w `tests/vm/cas
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: przełącznik „Pokaż powiadomienia w ustawieniach” w Ustawieniach (UI Automation) po zapisie przez API. Wynik: przełącznik „wyłączone”; po cofnięciu „włączone”. dowód: stan przełącznika w Ustawieniach, treści nie obserwowano.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

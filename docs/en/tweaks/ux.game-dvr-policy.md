@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.game-dvr-policy.md sha256: 116d9691cdf3040db5913712406515910b24eff257789d6c42c3a1dc23c6c821 -->
+<!-- source: docs/tweaks/ux.game-dvr-policy.md sha256: c0681969f4ed933633c83a99ccf7d5d56c12d25f82fdf651cc7f19c0d07746cb -->
 
 # ux.game-dvr-policy – Block game recording and broadcasting on the whole computer
 
@@ -38,6 +38,3 @@ Two `Flow=Full` cases (`main` run), Home and Pro, in both: `detect-before` = `No
 - `ux-game-dvr-policy` (no `AllowGameDVR` before apply, `SnapshotBefore` `Exists=false`): the case's expectation (Pester green) = after undo the key `...\Policies\Microsoft\Windows\GameDVR` doesn't exist, and `...\Policies\Microsoft\Windows` stays; after apply `AllowGameDVR` = DWORD 0.
 - `ux-game-dvr-policy-prev-value` (`AllowGameDVR` = DWORD 1 before apply, `SnapshotBefore` `Exists=true`): undo restores 1 from the snapshot (`SnapshotDiff` empty) instead of deleting the value; the `GameDVR` and `Windows` keys stay.
 - **Not checked:** whether the policy is enforced on 26H2 Home/Pro (Game Bar, recording, the "managed by your organization" message); the VM checks only the write, detection and a clean undo.
-
-## Reddit
-To be added in part E.

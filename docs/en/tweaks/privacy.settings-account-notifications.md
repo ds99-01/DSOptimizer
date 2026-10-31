@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.settings-account-notifications.md sha256: b437111885f0cb1f2b7c89ce0682e834d67db4858a70cc4134102881398f12b9 -->
+<!-- source: docs/tweaks/privacy.settings-account-notifications.md sha256: 5cfa9d825158513a6d82d6debaee04b2232965f29fff1afe1e63687bfd293b6f -->
 
 # privacy.settings-account-notifications – Turn off account notifications in Settings
 
@@ -31,6 +31,3 @@ Case `privacy-settings-account-notifications` (`Flow=Full`) in `tests/vm/cases.p
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: the "Pokaż powiadomienia w ustawieniach" (Show notifications in Settings) toggle in Settings (UI Automation) after a write through the API. Result: toggle "wyłączone" (Off); after undo "włączone" (On). Evidence: toggle state in Settings; the content itself wasn't observed.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

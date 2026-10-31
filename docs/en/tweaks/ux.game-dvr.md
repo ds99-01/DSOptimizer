@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.game-dvr.md sha256: 3b070db62862b6a592269fcd9ab5527bdd9d4eceaaf33556d739330cb2aa6695 -->
+<!-- source: docs/tweaks/ux.game-dvr.md sha256: a9d794f779ed1c1ff6740d116c8c7db2f9b9f1d203c7ff0851610a5f0cd16497 -->
 
 # ux.game-dvr – Game DVR background recording (per user)
 
@@ -34,6 +34,3 @@ Not applicable. The item was rejected in round C1. It can come back when an MS s
 
 ## VM test
 Not applicable (not ported): the item isn't in the catalog, so there was no VM case.
-
-## Reddit
-To be added in part E.

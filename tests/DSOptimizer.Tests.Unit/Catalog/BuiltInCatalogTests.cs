@@ -142,7 +142,7 @@ public class BuiltInCatalogTests
     public void DocsReadme_HasTemplateHeadings()
     {
         Assert.Equal(
-            new[] { "Werdykt 26H2", "Co zmienia", "Źródła", "Wartości domyślne na świeżym 26H2", "Detekcja i undo", "Ryzyka i ostrzeżenia", "Test VM", "Obserwacja skutku", "Reddit" },
+            new[] { "Werdykt 26H2", "Co zmienia", "Źródła", "Wartości domyślne na świeżym 26H2", "Detekcja i undo", "Ryzyka i ostrzeżenia", "Test VM", "Obserwacja skutku" },
             Headings(Path.Combine(TweaksDocsDirectory, "README.md")));
     }
 

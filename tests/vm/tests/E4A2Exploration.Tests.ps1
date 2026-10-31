@@ -323,7 +323,7 @@ Describe 'Skrypt dziecka K2 i wysyłka funkcji do VM' {
             $Names | Should -Not -Contain $Forbidden
         }
         $Text = [System.IO.File]::ReadAllText((Resolve-Path $script:E4A2ScriptPath), [System.Text.Encoding]::UTF8)
-        $Text | Should -Not -Match 'HKCU:|HKEY_CURRENT_USER|EncodedCommand|Bruteforce_LTSC\s*[''"]'
+        $Text | Should -Not -Match 'HKCU:|HKEY_CURRENT_USER|EncodedCommand'
     }
     It 'plik ma BOM UTF-8 oraz sekcje Instrukcja uruchomienia i Opis działania; VmName tylko Home/Pro' {
         $Bytes = [System.IO.File]::ReadAllBytes((Resolve-Path $script:E4A2ScriptPath))

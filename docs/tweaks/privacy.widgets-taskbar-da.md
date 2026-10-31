@@ -25,6 +25,3 @@ Nie dotyczy (nie wchodzi): pozycji nie ma w katalogu, więc nie ma przypadku VM.
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: zapis przez .NET `RegistryKey` (jak API aplikacji) i z osobnego exe. Wynik: `UnauthorizedAccessException`, sterownik UCPD działa; przełącznik z Ustawień chowa przycisk, ale to zapis systemowy, którego nie możemy powtórzyć.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

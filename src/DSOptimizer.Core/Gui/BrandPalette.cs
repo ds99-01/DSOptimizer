@@ -4,7 +4,7 @@ namespace DSOptimizer.Core.Gui;
 public sealed record BrandAccentColors(string Accent, string Hover, string Pressed, string OnAccent);
 
 /// <summary>
-/// Akcent „S4” (cyjan, decyzja Dawida 2026-10-26, wariant B): w treści zależny od motywu – w jasnym ciemniejszy cyjan z białym tekstem
+/// Akcent „S4” (cyjan, decyzja autora 2026-10-26, wariant B): w treści zależny od motywu – w jasnym ciemniejszy cyjan z białym tekstem
 /// (kontrast pola wyboru i paska z tłem ≥ 4:1), w ciemnym jasny cyjan z ciemnym tekstem. Znacznik menu i pierścień znaku leżą na stałej
 /// ciemnej ramie, więc mają jeden kolor w obu motywach. Aplikacja wpisuje te wartości do zasobów przy każdej zmianie motywu
 /// (<c>ThemeController</c>); <c>Tokens.xaml</c> ma wartości jasnego motywu, <c>BrandMark.xaml</c> literalny pierścień (pilnują tego testy).

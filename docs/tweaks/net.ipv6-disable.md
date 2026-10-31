@@ -37,6 +37,3 @@ Przypadek `net-ipv6-disable` (`Flow=Reboot`, przebieg `reboot-net-ipv6-disable`,
 - Sprawdzono: `detect-before` = `NotApplied` (`DisabledComponents` nie istnieje), `apply` = `Applied` (`requiresReboot` = true; snapshot po apply: DWORD 255 = 0xFF), `detect-after-apply` = `Applied`, **prawdziwy restart** (późniejszy `LastBootUpTime`, `MarkerGone` = true), `detect-after-reboot` = `Applied`, `undo` = `Undone` (`requiresReboot` = true), po drugim restarcie `detect-after-undo` = `NotApplied`. Stan końcowy = stan przed: wartość nieobecna, klucz `Tcpip6\Parameters` zostaje (`KeyPresentAfterUndo`), `SnapshotDiff` pusty.
 - Bez `CheckAfterApply`: MS nie definiuje odczytu stanu stosu przy 0xFF (pole wyboru karty się nie zmienia), więc sprawdzana jest tylko wartość rejestru i jej trwałość po restarcie.
 - **Nie sprawdzono:** skutku dla składników Windows i ruchu (VM bez sieci), czasu startu, zachowania usług zależnych od IPv6.
-
-## Reddit
-Do uzupełnienia w części E.

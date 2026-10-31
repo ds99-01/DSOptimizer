@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.restore-point.md sha256: 4c8745b51064d46917feefd72bc6df82637f07d0e1046aeff5b9fd5b61d0378e -->
+<!-- source: docs/tweaks/repair.restore-point.md sha256: 69d7cd87cf34b8ecc9ab738c793952e6090d8ccd03ac948a304d90b9b8072643 -->
 
 # repair.restore-point – Create a restore point now
 
@@ -35,6 +35,3 @@ VM run (Task 10, 2026-10-22, full `tests/vm/Invoke-VmTests.ps1` on the `etap4b-1
 Method: creating a point through the same service (`IRestorePointService`) and reading `Get-ComputerRestorePoint` and `vssadmin list shadows`; raw results outside git. The manual action calls the same service with a different description, so the measurement covers the service, not the handler itself.
 - **Home** (`DSO-26H2-Home`, 26300.9457), 2026-10-22: after protection is turned on, the point is created and is visible in the list and as a shadow copy in `vssadmin list shadows`; with protection turned off, a point can't be created (WMI returns a disabled-service error, which the service maps to `ProtectionDisabled`).
 - **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: a point through `DSOptimizer.exe --apply vmtest.hklm-value --restore-point required` = `Created` ("DSOptimizer – przed vmtest.hklm-value" (DSOptimizer – before vmtest.hklm-value)); the behavior with protection turned off is the same as on Home.
-
-## Reddit
-To be added in part E.

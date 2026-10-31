@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.hibernation.md sha256: 11a239c55830fa116224df629ce890d9d8a15dc4c40de42d50732eeb04799c48 -->
+<!-- source: docs/tweaks/disk.hibernation.md sha256: 68120069a8f37796b85c80b9ec531d9f1c03c607d2b8a0758ff0cb5d8dfff13e -->
 
 # disk.hibernation – Turn off hibernation
 
@@ -54,6 +54,3 @@ VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (
 - `disk-hibernation-unsupported` (`Flow=DetectOnly`, `main` run): **Passed** on Home and Pro. `detect-before` code 0, result `Success`, state **`NotSupported`**. This confirms detection rule 3 for a clean VM with a run; `SystemS4` = FALSE is an indirect conclusion here (the script returned `NotSupported`), not a separate reading. The `DetectOnly` case has no `Snapshot`, so the absence of registry changes wasn't checked separately here.
 - `disk-hibernation` (`Flow=Full`): **Skipped** on Home and Pro. Reason from `cases.psd1`: "VM Hyper-V bez obsługi S4 – apply/undo do weryfikacji na sprzęcie" (Hyper-V VM without S4 support – apply/undo to be verified on hardware). All tests of this case were skipped (10 of 10 skipped in `main`); none of them passed.
 - **Not checked (to be verified on hardware with hibernation support):** apply `powercfg /h off` and the removal of `hiberfil.sys`, undo `/h on`, the behavior of `SystemS4` after turning it off, the effect on fast startup, restoring the file type and size. The item stays `risk=experimental`.
-
-## Reddit
-To be added in part E.

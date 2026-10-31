@@ -33,6 +33,3 @@ Przebieg VM (Task 10, 2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1` na gałę
 Metoda: utworzenie punktu przez tę samą usługę (`IRestorePointService`) i odczyt `Get-ComputerRestorePoint` oraz `vssadmin list shadows`; surowe wyniki poza gitem. Akcja ręczna wywołuje tę samą usługę z innym opisem, więc pomiar dotyczy usługi, a nie samego handlera.
 - **Home** (`DSO-26H2-Home`, 26300.9457), 2026-10-22: po włączeniu ochrony punkt powstaje i jest widoczny na liście oraz jako kopia w `vssadmin list shadows`; przy wyłączonej ochronie punktu nie da się utworzyć (WMI zwraca błąd usługi wyłączonej, co usługa mapuje na `ProtectionDisabled`).
 - **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: punkt przez `DSOptimizer.exe --apply vmtest.hklm-value --restore-point required` = `Created` („DSOptimizer – przed vmtest.hklm-value”); zachowanie przy wyłączonej ochronie jak na Home.
-
-## Reddit
-Do uzupełnienia w części E.

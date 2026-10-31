@@ -980,7 +980,7 @@ Describe 'Sondy C5 (mocki; procesy, Explorer, Appx, zadania i okna hosta nietkni
             Mock Invoke-C5ElevationQuery { throw 'Add-Type: błąd kompilacji' }
             (Get-C5ProcessTokenInfo -ProcessId 1).Error | Should -Match 'błąd kompilacji'
         }
-        It 'Test-C5VmComputerName: tylko DSO-26H2-HOME i DSO-26H2-PRO (nazwy z New-TestVm), host Dawida nie przechodzi' {
+        It 'Test-C5VmComputerName: tylko DSO-26H2-HOME i DSO-26H2-PRO (nazwy z New-TestVm), host autora nie przechodzi' {
             Test-C5VmComputerName -ComputerName 'DSO-26H2-PRO' | Should -BeTrue
             Test-C5VmComputerName -ComputerName 'dso-26h2-home' | Should -BeTrue
             foreach ($Bad in 'DAWID-PC', 'BRUTEFORCE_LTSC', 'DSO-26H2-TEST', '', $env:COMPUTERNAME) { Test-C5VmComputerName -ComputerName $Bad | Should -BeFalse }
@@ -1138,7 +1138,7 @@ Describe 'Wysyłka funkcji do VM (C5) i struktura skryptu' {
             $Names | Should -Not -Contain $Forbidden
         }
         $Text = [System.IO.File]::ReadAllText($script:C5ScriptPath, [System.Text.Encoding]::UTF8)
-        $Text | Should -Not -Match 'HKCU:|HKEY_CURRENT_USER|EncodedCommand|\[Microsoft\.Win32\.Registry\]|windev|-Preset|Bruteforce_LTSC\s*[''"]'
+        $Text | Should -Not -Match 'HKCU:|HKEY_CURRENT_USER|EncodedCommand|\[Microsoft\.Win32\.Registry\]|windev|-Preset'
         # Polecenie WinUtil występuje dokładnie raz (jako dana w Get-C5WinUtilCommand).
         ([regex]::Matches($Text, [regex]::Escape('irm https://christitus.com/win | iex'))).Count | Should -Be 1
         $Main = $Ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.IfStatementAst] -and $n.Extent.Text -match '^if \(\$MyInvocation\.InvocationName' }, $false)[0]
@@ -1151,12 +1151,12 @@ Describe 'Wysyłka funkcji do VM (C5) i struktura skryptu' {
         $Text.Substring(0, 400) | Should -Match 'Instrukcja uruchomienia'
         $Text | Should -Match 'Opis działania'
     }
-    It 'parametr VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro (nigdy Bruteforce_LTSC), w skrypcie i w Invoke-C5Exploration' {
+    It 'parametr VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro (nigdy obcej VM), w skrypcie i w Invoke-C5Exploration' {
         $Attr = (Get-Command $script:C5ScriptPath).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
         $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
         $Attr2 = (Get-Command Invoke-C5Exploration).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
         $Attr2.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
-        { Invoke-C5Exploration -VmName 'Bruteforce_LTSC' -OutDirectory $TestDrive } | Should -Throw
+        { Invoke-C5Exploration -VmName 'ObcaVM' -OutDirectory $TestDrive } | Should -Throw
         (Get-Command $script:C5ScriptPath).Parameters.Keys | Should -Not -Contain 'PrepareManualTest'
     }
     It 'ValidateSet -Probe jest identyczny w skrypcie, Invoke-C5Collection i Invoke-C5Exploration (cztery nazwy w kolejności przebiegu)' {

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.widgets-taskbar-da.md sha256: 1a0bb73427e28cbef845d1072d6c74731c6286e6ea8413e21e1faaf64954c6f9 -->
+<!-- source: docs/tweaks/privacy.widgets-taskbar-da.md sha256: a19b76b42075ea8975eeaaeb4f24b04a9a923e3cd7f23dc5b2aec47cecb6a936 -->
 
 # privacy.widgets-taskbar-da – Widgets button through TaskbarDa (user)
 
@@ -27,6 +27,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: write through .NET `RegistryKey` (like the app's API) and from a separate exe. Result: `UnauthorizedAccessException`, the UCPD driver is active; the toggle in Settings hides the button, but that is a system write that we can't repeat.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

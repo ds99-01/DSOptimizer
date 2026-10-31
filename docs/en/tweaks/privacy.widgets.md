@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.widgets.md sha256: de1edfe946ffb6dbecc65d5c76ba56c75fa7387e0c829127a709ac3017c605dc -->
+<!-- source: docs/tweaks/privacy.widgets.md sha256: 7aa5646c68c6b04473f4d1bcbda40b51824a6a0e749182b8ea64326bb6022f7c -->
 
 # privacy.widgets – Turn off Widgets
 
@@ -8,7 +8,7 @@ Port: a test on a 26H2 VM (Home and Pro) showed a real effect. No Microsoft docu
 ## What it changes
 - `HKLM\SOFTWARE\Policies\Microsoft\Dsh`, value `AllowNewsAndInterests`, **DWord**, set to `0`; `scope=machine`.
 - On a fresh 26H2 neither the value nor the `Dsh` key exists. Apply creates the key, undo deletes the value and the empty `Dsh` key created by apply.
-- Apply doesn't restart File Explorer (ruling R15). The Widgets button disappears from the taskbar after File Explorer restarts: use the `tools.restart-explorer` action or sign in again. The board is blocked right away.
+- Apply doesn't restart File Explorer. The Widgets button disappears from the taskbar after File Explorer restarts: use the `tools.restart-explorer` action or sign in again. The board is blocked right away.
 - The user variant considered, `HKCU\...\Explorer\Advanced\TaskbarDa`, isn't ported, because the system blocks the write (see `privacy.widgets-taskbar-da.md`).
 
 ## Sources
@@ -33,6 +33,3 @@ Case `privacy-widgets` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyAbsentAfterUn
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: UI Automation of Settings by `AutomationId`, screenshots, the Win+W keys in the `dso` session. Result: after writing `AllowNewsAndInterests`=0 the Win+W shortcut doesn't open the board; the "Widżety" (Widgets) toggle in Settings is grayed out and off; the taskbar button disappears after File Explorer restarts (without a restart the board is blocked, the button is still visible). After undo (value and key deleted) Win+W opens the board again, the toggle is active, the button comes back after File Explorer restarts.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.copilot-policy.md sha256: 314abe4ddc703f554b2c916b1a12e9793596b43ae8928e211c11da92ff9de5d5 -->
+<!-- source: docs/tweaks/privacy.copilot-policy.md sha256: 301d19bfdbddb0cbc41aaa943d0581558fef23c1c79af9ee92f38a72b209bd92 -->
 
 # privacy.copilot-policy – TurnOffWindowsCopilot policy
 
@@ -27,6 +27,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: writing the policy through the registry API, restarting File Explorer, the Win+C key and the taskbar button in the `dso` session. Result: **no effect**, the Copilot app (preinstalled and pinned) still opens with Win+C, and the button stays.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Result: **no effect to show**, because a fresh Pro has no Copilot app (there is nothing to turn off).
-
-## Reddit
-To be added in part E.

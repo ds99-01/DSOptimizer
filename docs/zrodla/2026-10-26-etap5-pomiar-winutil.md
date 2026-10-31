@@ -57,7 +57,7 @@ Decyzja: **B – `RemoteSigned`** (B otwiera GUI WinUtil bez detekcji na Home i 
 ## Wnioski
 
 - Na czystej 26H2 z aktualnymi sygnaturami i ochroną w chmurze (`MAPSReporting` = 2, `SubmitSamplesConsent` = 1)
-  **Defender nie blokuje żadnego wariantu, także dzisiejszego `irm … | iex`.** Blokada, którą Dawid widział przy WinUtil,
+  **Defender nie blokuje żadnego wariantu, także dzisiejszego `irm … | iex`.** Blokada, którą autor widział przy WinUtil,
   nie odtwarza się w tych warunkach – możliwe przyczyny: inny antywirus u klienta, starsza wersja WinUtil albo
   sygnatur z tamtego dnia, reguły ASR/polityki firmowe. Nie da się tego rozstrzygnąć na VM.
 - Mimo to zmiana zostaje (spec 3.3 pkt 4): nowa droga usuwa z exe i z linii poleceń znany wzorzec `irm | iex`

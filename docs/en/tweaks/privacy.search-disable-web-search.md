@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.search-disable-web-search.md sha256: 3e1626715e99eae5c6d4c568f5bec53a5477ee6c3aa5f6a7e6ac7f616883b2cf -->
+<!-- source: docs/tweaks/privacy.search-disable-web-search.md sha256: aea20881291e765728b05c7b98c2c76290d19fe4a977dd2103eadf3f0d1c0ed6 -->
 
 # privacy.search-disable-web-search – DisableWebSearch policy
 
@@ -27,6 +27,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: writing the policy through the registry API, restarting File Explorer and SearchHost, search results for the phrase "pogoda" (weather). Result: **no effect**, Bing still in the results.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

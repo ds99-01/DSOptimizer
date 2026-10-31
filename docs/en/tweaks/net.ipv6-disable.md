@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.ipv6-disable.md sha256: 21c53232ff14bc93b2af9b5f1c7fccb3bd44775a9615743c8afee89017a791f9 -->
+<!-- source: docs/tweaks/net.ipv6-disable.md sha256: 4c78a7dc815dea653a641e80e1a711179a7af80e749368a26f15b45f02392213 -->
 
 # net.ipv6-disable – Turn off IPv6
 
@@ -39,6 +39,3 @@ Case `net-ipv6-disable` (`Flow=Reboot`, run `reboot-net-ipv6-disable`, a separat
 - Checked: `detect-before` = `NotApplied` (`DisabledComponents` doesn't exist), `apply` = `Applied` (`requiresReboot` = true; snapshot after apply: DWORD 255 = 0xFF), `detect-after-apply` = `Applied`, **real restart** (later `LastBootUpTime`, `MarkerGone` = true), `detect-after-reboot` = `Applied`, `undo` = `Undone` (`requiresReboot` = true), after the second restart `detect-after-undo` = `NotApplied`. Final state = state before: value absent, the `Tcpip6\Parameters` key stays (`KeyPresentAfterUndo`), `SnapshotDiff` empty.
 - No `CheckAfterApply`: MS doesn't define a reading of the stack state at 0xFF (the adapter checkbox doesn't change), so only the registry value and its persistence after a restart are checked.
 - **Not checked:** the effect on Windows components and traffic (VM without a network), startup time, the behavior of services that depend on IPv6.
-
-## Reddit
-To be added in part E.

@@ -6,7 +6,7 @@ Portować: test na VM 26H2 (Home i Pro) pokazał realny skutek. Brak dokumentacj
 ## Co zmienia
 - `HKLM\SOFTWARE\Policies\Microsoft\Dsh`, wartość `AllowNewsAndInterests`, **DWord**, ustawiana na `0`; `scope=machine`.
 - Na świeżym 26H2 nie ma ani wartości, ani klucza `Dsh`. Apply tworzy klucz, undo usuwa wartość i pusty klucz `Dsh` utworzony przez apply.
-- Apply nie restartuje Eksploratora (decyzja R15). Przycisk Widżetów znika z paska zadań po restarcie Eksploratora: użyj akcji `tools.restart-explorer` albo zaloguj się ponownie. Tablica jest zablokowana od razu.
+- Apply nie restartuje Eksploratora. Przycisk Widżetów znika z paska zadań po restarcie Eksploratora: użyj akcji `tools.restart-explorer` albo zaloguj się ponownie. Tablica jest zablokowana od razu.
 - Rozważany wariant użytkownika `HKCU\...\Explorer\Advanced\TaskbarDa` nie wchodzi, bo zapis blokuje system (patrz `privacy.widgets-taskbar-da.md`).
 
 ## Źródła
@@ -31,6 +31,3 @@ Przypadek `privacy-widgets` (`Flow=Full`) w `tests/vm/cases.psd1`: `KeyAbsentAft
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Metoda: UI Automation Ustawień po `AutomationId`, zrzuty, klawisze Win+W w sesji `dso`. Wynik: po zapisie `AllowNewsAndInterests`=0 skrót Win+W nie otwiera tablicy; przełącznik „Widżety” w Ustawieniach jest wyszarzony i wyłączony; przycisk na pasku znika po restarcie Eksploratora (bez restartu tablica jest zablokowana, przycisk jeszcze widać). Po cofnięciu (wartość i klucz usunięte) Win+W znowu otwiera tablicę, przełącznik aktywny, przycisk wraca po restarcie Eksploratora.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

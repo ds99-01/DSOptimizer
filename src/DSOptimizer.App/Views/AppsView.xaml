@@ -6,7 +6,7 @@
              xmlns:l="clr-namespace:DSOptimizer.App.Gui"
              xmlns:apps="clr-namespace:DSOptimizer.Core.Apps;assembly=DSOptimizer.Core"
              xmlns:gui="clr-namespace:DSOptimizer.Core.Gui;assembly=DSOptimizer.Core">
-  <!-- Strona „Aplikacje” (render Tasku 1, wariant B wybrany przez Dawida 2026-10-21): nagłówek z „Odśwież listę”, wyszukiwarka
+  <!-- Strona „Aplikacje” (render Tasku 1, wariant B wybrany przez autora 2026-10-21): nagłówek z „Odśwież listę”, wyszukiwarka
        strony, przełącznik grup z licznikami nad listą, lista jak na stronach kategorii (pole wyboru | nazwa i wydawca | rodzaj),
        panel szczegółów o szerokości jak na stronie kategorii i własny pasek serii „Usuń (N)” (obramowanie „L” jak pasek kategorii).
        Bez kart, ramek i teł do wyróżniania. Teksty z AppsPageText. -->

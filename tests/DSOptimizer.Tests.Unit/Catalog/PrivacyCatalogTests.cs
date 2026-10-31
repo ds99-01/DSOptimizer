@@ -282,7 +282,7 @@ public class PrivacyCatalogTests
     [Fact]
     public void Spotlight_IsNotSuggestedAndWarnsThatUndoDoesNotRestoreDailyPictures()
     {
-        // Decyzja Dawida 2026-10-21 (po partii 1): pozycja niesugerowana z ostrzeżeniem, bo cofnięcie nie przywraca tła Spotlight.
+        // Decyzja autora 2026-10-21 (po partii 1): pozycja niesugerowana z ostrzeżeniem, bo cofnięcie nie przywraca tła Spotlight.
         var def = Get("privacy.spotlight");
         Assert.False(def.Suggested);
         var warnings = string.Join(" ", def.Warnings);

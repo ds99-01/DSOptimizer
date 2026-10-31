@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.ntfs-8dot3.md sha256: 9807c4af689f1e7f6111a8cc724ab994bdae75af38c1aa70aefd77650905d081 -->
+<!-- source: docs/tweaks/disk.ntfs-8dot3.md sha256: 61d10ad85e556c14d2c8edb9210acddf1fc89a2092b11b928244a4df42a65e42 -->
 
 # disk.ntfs-8dot3 – Turn off creating 8.3 short file names
 
@@ -42,6 +42,3 @@ Case `disk-ntfs-8dot3` (`Flow=Full`, `main` run), Home and Pro:
 - Checked: `detect-before` = `NotApplied` (Setup set 0, unlike the `original` 2), `apply` code 0, `detect-after-apply` = `Applied` (registry = 1), `undo` code 0, `detect-after-undo` = `NotApplied`. `SnapshotBefore` `NtfsDisable8dot3NameCreation` DWORD 0, `SnapshotDiff` empty, so undo restored the value from the snapshot, not the fallback 2.
 - Check: none. There was no restart (`requiresReboot` = false).
 - **Not checked:** the effect on files (`dir /x`, new 8.3 names), the state of the C: volume (`fsutil 8dot3name query`), whether the write takes effect on new files without a restart; only the global registry value is checked.
-
-## Reddit
-To be added in part E.

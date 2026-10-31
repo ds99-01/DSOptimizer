@@ -22,7 +22,7 @@ Odrzucone warianty (nie osobne pozycje; dane z VM w sekcji „Źródła”):
 Nie dotyczy: pozycja nie czyta ani nie zapisuje ustawień. Stan systemu po uruchomieniu to tylko proces okna (odczyt VM, 2026-10-19, wyżej).
 
 ## Detekcja i undo
-Nie dotyczy: `kind=panel` nie ma detekcji ani cofnięcia. `Executed` oznacza tylko, że proces wystartował; czy okno się pokazało, ocenia test VM (K2; smoke z prawdziwym DSOptimizer.exe w sesji dso – do potwierdzenia przez Dawida (R30)).
+Nie dotyczy: `kind=panel` nie ma detekcji ani cofnięcia. `Executed` oznacza tylko, że proces wystartował; czy okno się pokazało, ocenia test VM (K2; smoke z prawdziwym DSOptimizer.exe w sesji dso – do potwierdzenia przez autora).
 
 ## Ryzyka i ostrzeżenia
 - `risk=safe`: pozycja niczego nie zmienia w systemie; okno zamykasz sam (DSOptimizer nie czeka na nie i go nie zamyka).
@@ -33,9 +33,6 @@ Nie dotyczy: `kind=panel` nie ma detekcji ani cofnięcia. `Executed` oznacza tyl
 Przebieg VM `20261019-110405` (2026-10-19, HEAD `fd320ed`, build 26300.9457): Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Raporty lokalne poza gitem. Przebieg łącznie: Home 401 zaliczonych / 0 błędów / 29 pominiętych, Pro 401 / 0 / 29 (`main` 313/0/29 + przebiegi Reboot); w przypadkach C5 `CleanupError` puste.
 - `panels-region` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** na Home i Pro (`ExecuteExit=0`, `Executed`). `Check` odpytuje w pętli: żyje `rundll32.exe` z linią poleceń zawierającą `intl.cpl`; `Cleanup` zamyka tylko procesy pasujące do `Check`. **Check dowodzi, że proces z polecenia żyje (K1, PS Direct jako Administrator, sesja 0), nie że okno pojawiło się u użytkownika.**
 - Eksploracja K2 (zadanie interaktywne w sesji `dso`, token `Limited`): okno „Region”. Home = Pro. Research i wyniki eksploracji K2: `docs/zrodla/2026-10-19-partia-c5-zrodla.md` (sekcje „Wyniki VM”, „Sonda uzupełniająca”).
-- Klik ręczny Dawida (VM Pro, sesja `dso`, Win+R, 2026-10-19): `intl.cpl` otwiera klasyczne okno.
+- Klik ręczny autora (VM Pro, sesja `dso`, Win+R, 2026-10-19): `intl.cpl` otwiera klasyczne okno.
 - Kliknięte polecenie (`intl.cpl`) nie jest tym samym co `launch` pozycji (`control.exe /name Microsoft.RegionAndLanguage`): klik potwierdza panel, a `launch` pozycji potwierdza dopiero eksploracja K2.
-- **Smoke z prawdziwym `DSOptimizer.exe` w sesji `dso`: do potwierdzenia przez Dawida** (Ruling R30). Nie wykonany, bo Dawid wyjechał; pozycja wchodzi do `main` z tym zastrzeżeniem (jak D2 w partii C4). Rozbieżność między „proces żyje” (Check) a oknem widocznym dla użytkownika wyjdzie dopiero przy pierwszym użyciu z aplikacji.
-
-## Reddit
-Do uzupełnienia w części E.
+- **Smoke z prawdziwym `DSOptimizer.exe` w sesji `dso`: do potwierdzenia przez autora**. Nie wykonany, bo autor wyjechał; pozycja wchodzi do `main` z tym zastrzeżeniem (jak D2 w partii C4). Rozbieżność między „proces żyje” (Check) a oknem widocznym dla użytkownika wyjdzie dopiero przy pierwszym użyciu z aplikacji.

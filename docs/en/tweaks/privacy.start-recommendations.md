@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.start-recommendations.md sha256: 51bb6585637b481f0483ef2e5045c832ca19fcbd5a33bd15c109bad7630ab6d0 -->
+<!-- source: docs/tweaks/privacy.start-recommendations.md sha256: 6b2ca6fd0a5d1b6bcd3cf3938b330a3a8d1d726fd1b971fe20bd1e9c2d8f5cc8 -->
 
 # privacy.start-recommendations – Turn off recommendations in the Start menu
 
@@ -7,7 +7,7 @@ Port: the Start recommendations toggle is changed by writing one value; a test o
 
 ## What it changes
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced` (in the engine `HKU\<SID of the signed-in user>`), value `Start_IrisRecommendations`, **DWord**, set to `0`; `scope=user`.
-- Settings shows the new state right away; the catalog describes the Start menu view (based on the observation on the VM after restarting File Explorer and killing SearchHost and StartMenuExperienceHost) as visible after you sign in again. Apply doesn't restart anything (R15); whether `tools.restart-explorer` alone is enough wasn't checked (the warning says "restarting File Explorer alone may not be enough").
+- Settings shows the new state right away; the catalog describes the Start menu view (based on the observation on the VM after restarting File Explorer and killing SearchHost and StartMenuExperienceHost) as visible after you sign in again. Apply doesn't restart anything; whether `tools.restart-explorer` alone is enough wasn't checked (the warning says "restarting File Explorer alone may not be enough").
 - Note for UI tests: on Home, after the first restart with the network on, a new version of the Start menu turned on (in Settings the control's `AutomationId` is `SystemSettings_Start_IrisRecommendations_CheckBox` instead of `_ToggleSwitch`); the registry value doesn't change.
 
 ## Sources
@@ -24,7 +24,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `Explorer\A
 - The `Explorer\Advanced` key existed before apply and stays.
 
 ## Risks and warnings
-- `risk=safe`, `suggested=true` (R12: stays suggested).
+- `risk=safe`, `suggested=true` (stays suggested).
 - Warning in the catalog: "The change takes effect after you sign in again; restarting File Explorer alone may not be enough."
 - Beyond the notes in the program (in the technical details or only here): the effect of restarting File Explorer alone (`tools.restart-explorer`) wasn't checked.
 
@@ -34,6 +34,3 @@ Case `privacy-start-recommendations` (`Flow=Full`) in `tests/vm/cases.psd1` (`No
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: the recommendations toggle in Settings (Personalization > Start; UI Automation) after a write through the API and restarting File Explorer. Result: toggle "wyłączone" (Off); the Start menu had no content of this type, so no change is visible in the menu. Evidence: toggle state in Settings; the content itself wasn't observed.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

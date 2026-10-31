@@ -24,7 +24,7 @@ Home i Pro (odczyt 2026-10-22): `SPP\Clients` bez wpisu, `vssadmin list shadowst
 ## Ryzyka i ostrzeżenia
 - `risk=safe`.
 - Ostrzeżenia w katalogu: „Cofnięcie wyłącza ochronę: nowe punkty nie powstaną, a z istniejących nie przywrócisz systemu (zostają na dysku).” oraz „Samo włączenie nie tworzy punktu – pierwszy powstanie przed zmianą albo po „Utwórz punkt przywracania teraz”.”
-- Pierwsze ostrzeżenie to skrót tekstu zmienionego względem specu (pomiar przeczy „usuwa wszystkie punkty”, Ruling R7). Pełny tekst R7: „Wyłączenie ochrony systemu blokuje tworzenie nowych punktów przywracania i przywracanie systemu z istniejących. Istniejące punkty zostają na dysku (zajmują miejsce) i wrócą po ponownym włączeniu ochrony; usunąć je można w oknie »Ochrona systemu« (Konfiguruj → Usuń).”
+- Pierwsze ostrzeżenie to skrót tekstu zmienionego względem specu (pomiar przeczy „usuwa wszystkie punkty”). Pełny tekst: „Wyłączenie ochrony systemu blokuje tworzenie nowych punktów przywracania i przywracanie systemu z istniejących. Istniejące punkty zostają na dysku (zajmują miejsce) i wrócą po ponownym włączeniu ochrony; usunąć je można w oknie »Ochrona systemu« (Konfiguruj → Usuń).”
 - Limit miejsca ustawia Windows (3% dysku C: na zmierzonej maszynie); program go nie zmienia.
 - Samo włączenie nie tworzy punktu. Wyłączenie ochrony „z kasowaniem punktów” (`vssadmin delete shadows`) to osobna, nieodwracalna operacja, której tu nie ma i której nie mierzono.
 
@@ -37,6 +37,3 @@ Przebieg VM (Task 10, 2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1` na gałę
 Metoda: odczyt `SPP\Clients`, `vssadmin list shadowstorage` i `Get-ComputerRestorePoint` przed i po zmianie; punkt tworzony po włączeniu; surowe wyniki poza gitem.
 - **Home** (`DSO-26H2-Home`, 26300.9457), 2026-10-22: włączenie z okna „Ochrona systemu” (`SystemPropertiesProtection.exe` → Konfiguruj → „Włącz ochronę systemu”) i `Enable-ComputerRestore -Drive 'C:\'` (24–26 ms) dają ten sam stan: wpis w `SPP\Clients`, shadow storage powstaje przy pierwszym punkcie z limitem 2 052 367 196 B = 3,0% woluminu 68 412 239 872 B. `Disable-ComputerRestore -Drive 'C:\'` usuwa wpis, ale punkt zostaje (`Get-ComputerRestorePoint` i `vssadmin list shadows` go widzą po 3 s, 60 s i po restarcie VM); po ponownym `Enable-ComputerRestore` punkt jest znów na liście. Przy wyłączonej ochronie punktu nie da się utworzyć (WMI: usługa wyłączona).
 - **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: identycznie jak na Home (przebiegi P1 i A2).
-
-## Reddit
-Do uzupełnienia w części E.

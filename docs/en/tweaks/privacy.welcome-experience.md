@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.welcome-experience.md sha256: 852fde5dba01e2ed4c66d08648dec1e707fdd709c6e803ff4a47f98c731a1945 -->
+<!-- source: docs/tweaks/privacy.welcome-experience.md sha256: 35d9e1b870875d6b769edf55ab185b4d553cea2fb5286f30827edfc151ed001b -->
 
 # privacy.welcome-experience – "Show the Windows welcome experience" and "Suggest ways…" (removed settings)
 
@@ -28,6 +28,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: checking System > Notifications > Additional settings (UI Automation). Result: there is only the tips and suggestions checkbox; these two settings are missing.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

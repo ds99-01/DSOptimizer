@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.disk-cleanup.md sha256: d6374029a0112b57016ec7e142a43fb4b2613175ccd57988b9916475bf4f1501 -->
+<!-- source: docs/tweaks/repair.disk-cleanup.md sha256: 73f0b6b8f5aa98b225025ebae11cdfaefcd6a9bf5738be613f7f65d27a4aa98e -->
 
 # repair.disk-cleanup – Clean up the disk
 
@@ -16,7 +16,7 @@ C# handler `disk-cleanup` (`DiskCleanupHandler`), without a catalog script:
 7. Step 6 of 6 "Account thumbnails": `thumbcache_*.db` files directly in `<profile>\AppData\Local\Microsoft\Windows\Explorer` (`IRepairFileSystem.DeleteFilesByName`, the same handle mechanism, no subfolders, no `iconcache_*`); locked ones are skipped and counted. Account condition as in step 2.
 8. Free space after. Message: "Freed: <DiskSpaceText.Freed>." (MB or GB with one decimal place, rounded down; a drop in free space = "the freed space can't be reported accurately (other programs were writing to the disk)") and one line per step: "done (files: N, X; kept, newer than 24 h: …; kept, in use: …)", "skipped – <reason>", "error – <reason>".
 
-Result: `Executed` when no step has an error and nothing was left running in the background; a step error = `Failed` with the list (the other steps run anyway, Ruling R20: an error also wins over a stop and the time limit); DISM after the limit or "Stop" between steps (the remaining steps "skipped – stopped.") = `NotConfirmed` (Ruling R10). Skips don't spoil the result (spec 2).
+Result: `Executed` when no step has an error and nothing was left running in the background; a step error = `Failed` with the list (the other steps run anyway: an error also wins over a stop and the time limit); DISM after the limit or "Stop" between steps (the remaining steps "skipped – stopped.") = `NotConfirmed`. Skips don't spoil the result (spec 2).
 
 Doesn't touch: the Recycle Bin, the Downloads folder, restore points, memory dumps (`*.dmp`, `Minidump`), Windows.old (a separate item) – spec 5.2, test `NeverTouchesRecycleBinDownloadsDumps`.
 
@@ -56,6 +56,3 @@ Method: measurement of the mechanisms (Task 2, `tests/vm/explore/Invoke-E4B2Expl
 - `cleanmgr` "Temporary Files" from PS Direct: deletes only the file from 10 days ago, doesn't finish in 20 min (4a, 4f) – it isn't the mechanism of this item.
 - The handler itself (2026-10-23, Home and Pro, cases `repair-disk-cleanup` and `repair-disk-cleanup-admin`): `Executed`; an independent reading in the VM confirms the deleted old files, the untouched fresh files and guard file behind the junction, the empty `Download`, the deleted thumbnail and the restored services. On a clean checkpoint `StartComponentCleanup` didn't free any measurable space (the free space on C: dropped by 1–120 MB during the run). The 449/367 MB from Task 2 (4d) was measured in a run where `DISM /RestoreHealth` and `/ScanHealth` had run earlier – they probably created the "Cache and Temporary Data" (**not measured**). How much space it frees on a computer in use: **to be confirmed on hardware**.
 - A large gain from Delivery Optimization after finished downloads: **to be confirmed on hardware** (on the VM, WU was downloading during the measurement).
-
-## Reddit
-To be added in part E.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.search-highlights.md sha256: e1269bee2fa548b94ab0da9b711d95a3498479838bf3373a9e04a73f673cb8d4 -->
+<!-- source: docs/tweaks/privacy.search-highlights.md sha256: 833d5b2e85b99bedfecaef628112c8966abfb9f5c70a4be9179bbc247511feaf -->
 
 # privacy.search-highlights – search highlights (EnableDynamicContentInWSB)
 
@@ -27,6 +27,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: screenshot of the search home page (Win+S) and a check of Settings before and after writing the policy and restarting File Explorer. Result: **no effect to show**, there are no highlights either before or after; Settings has no toggle.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

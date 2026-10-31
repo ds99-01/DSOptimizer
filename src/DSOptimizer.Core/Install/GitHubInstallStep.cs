@@ -105,7 +105,7 @@ internal sealed class GitHubInstallStep
                 return;
             }
 
-            // M3 final review: jedyny wyjątek od „program niczego nie pobiera” – log mówi, CO pobrano i zweryfikowano, także przy sukcesie.
+            // Wyjątek od „program niczego nie pobiera” – log mówi, CO pobrano i zweryfikowano, także przy sukcesie.
             _log.Info(
                 Component,
                 L.F("Pobrano i sprawdzono {0} ({1}): {2} B, SHA256 {3}, podpis: {4}",

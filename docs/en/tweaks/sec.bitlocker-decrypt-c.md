@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.bitlocker-decrypt-c.md sha256: 48e749fea5f64fa8bc5da9cbe4bce80c2bafc042111bba1c3a5e5a1f19d39847 -->
+<!-- source: docs/tweaks/sec.bitlocker-decrypt-c.md sha256: fd187af41fbec18305bd05db0904b2b20d6774dba7c2e72472334022bb03693c -->
 
 # sec.bitlocker-decrypt-c – Turn off BitLocker encryption on the C: drive
 
@@ -48,13 +48,10 @@ No detection (`kind=action`). **No undo** (no journal): decryption has no revers
 - Confirmation in the UI before running (spec, section 7); the CLI doesn't ask.
 
 ## VM test
-Encrypted drive path: a real `Decrypt` exercised on the VM on BOTH editions (Home and Pro), because automatic device encryption runs there after the checkpoint starts; we don't do our own encryption in the VM (Dawid's decision). So we don't check on the VM: `Decrypt` on a fully encrypted drive (`ConversionStatus` = 1), the code `0x80310029`, or resuming (3, 5); these paths are covered only by unit tests on helper mocks.
+Encrypted drive path: a real `Decrypt` exercised on the VM on BOTH editions (Home and Pro), because automatic device encryption runs there after the checkpoint starts; we don't do our own encryption in the VM (the author's decision). So we don't check on the VM: `Decrypt` on a fully encrypted drive (`ConversionStatus` = 1), the code `0x80310029`, or resuming (3, 5); these paths are covered only by unit tests on helper mocks.
 
 VM run results (build 26300.9457, 2026-10-19):
-- Full run `vm-run-20261019-002807` (HEAD `d589405`): **Home Passed** (`Executed`, "Odszyfrowywanie C: rozpoczęte: 6% zaszyfrowane…" (Decryption of C: started: 6% encrypted…), `Check` Passed). **Pro: action `Executed`** ("Odszyfrowywanie C: rozpoczęte: 78% zaszyfrowane…" (Decryption of C: started: 78% encrypted…)), but `Check` **Failed**: the old `Check` required status 0 on Pro, and the verification gave 3. This was a bug in the case (it assumed a stable BitLocker state at the checkpoint), not in the action; fix `962ae0e` (R15).
+- Full run `vm-run-20261019-002807` (HEAD `d589405`): **Home Passed** (`Executed`, "Odszyfrowywanie C: rozpoczęte: 6% zaszyfrowane…" (Decryption of C: started: 6% encrypted…), `Check` Passed). **Pro: action `Executed`** ("Odszyfrowywanie C: rozpoczęte: 78% zaszyfrowane…" (Decryption of C: started: 78% encrypted…)), but `Check` **Failed**: the old `Check` required status 0 on Pro, and the verification gave 3. This was a bug in the case (it assumed a stable BitLocker state at the checkpoint), not in the action; fix `962ae0e`.
 - Rerun of this case alone after the fix, `vm-run-decrypt-20261019-005135` (HEAD `962ae0e`): **Home 4 passed / 0 failed** ("…78% zaszyfrowane…" (…78% encrypted…)), **Pro 4 / 0** ("…76% zaszyfrowane…" (…76% encrypted…)), `Check` (`ReturnValue` 0, `ConversionStatus` ∈ {3, 0}) Passed. After the runs, both VMs are `Off` at the `czysta-26H2` checkpoint.
 - So the real `Decrypt` path + verification was checked on BOTH editions, thanks to automatic device encryption running after the checkpoint starts. The "already decrypted" path (status 0) wasn't measured on the VM; it's covered only by unit tests on mocks (likewise 1, 4, 3/5 and `0x80310029`).
 - The `sec-bitlocker-decrypt-c` case (`Flow=Execute`, `Catalog=BuiltIn`) is in `tests/vm/cases.psd1`; it has one `Check` for both editions: `GetConversionStatus` returns `ReturnValue` 0, and `ConversionStatus` is 3 or 0 (the progress of automatic encryption at the moment of the action isn't deterministic).
-
-## Reddit
-To be added in part E.

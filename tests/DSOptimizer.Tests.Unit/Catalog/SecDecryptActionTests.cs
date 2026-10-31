@@ -403,7 +403,7 @@ public class SecDecryptActionTests
         Assert.Contains("Win32_EncryptableVolume", doc, StringComparison.Ordinal);
         Assert.Contains("Get-DsoVolumeConversionStatus", doc, StringComparison.Ordinal);
         Assert.Contains("Invoke-DsoVolumeDecrypt", doc, StringComparison.Ordinal);
-        Assert.Contains("Ścieżka zaszyfrowanego dysku: prawdziwy `Decrypt` przećwiczony na VM na OBU edycjach (Home i Pro), bo po starcie checkpointu działa tam automatyczne szyfrowanie urządzenia; własnego szyfrowania w VM nie robimy (decyzja Dawida)", doc, StringComparison.Ordinal);
+        Assert.Contains("Ścieżka zaszyfrowanego dysku: prawdziwy `Decrypt` przećwiczony na VM na OBU edycjach (Home i Pro), bo po starcie checkpointu działa tam automatyczne szyfrowanie urządzenia; własnego szyfrowania w VM nie robimy (decyzja autora)", doc, StringComparison.Ordinal);
         Assert.DoesNotContain("Task 6", doc, StringComparison.Ordinal);
         Assert.Contains("vm-run-20261019-002807", doc, StringComparison.Ordinal);
         Assert.Contains("vm-run-decrypt-20261019-005135", doc, StringComparison.Ordinal);

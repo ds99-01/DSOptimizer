@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/perf.vbs-hvci.md sha256: 0171adc7537a2a7d0f9aa36421fda760b9f98d7353d4ec113f41f989792200b3 -->
+<!-- source: docs/tweaks/perf.vbs-hvci.md sha256: a4476ed9dab37f9858cef4e6e21c0b92092a52b53e672043765e4bea0e626856 -->
 
 # perf.vbs-hvci – Turn off memory integrity (HVCI)
 
@@ -67,6 +67,3 @@ Case `perf-vbs-hvci` (`Flow=Reboot`, run `reboot-perf-vbs-hvci`, a separate run 
 Run after the E3-P2 fix (2026-10-21, `Flow=Reboot`): `detect-before` = `NotApplied`, `apply` = `Applied`, after the restart `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`, code 0.
 
 **Real state not tested on a VM:** on a fresh Gen2 VM memory integrity isn't running (`VirtualizationBasedSecurityStatus` = 0). So the VM case checks the configuration (write, restart, undo, disappearance of the key) and that `Win32_DeviceGuard` still doesn't report 2 in `SecurityServicesRunning`. The scenario "configuration off, memory integrity still running" (`PendingReboot`, then `Applied` after the restart), the refusal on `Locked` = 1 and detection from different `SecurityServicesRunning` arrays are covered by unit tests on mocks and fakes (`PerfVbsHvciTests`). Not checked: whether VBS starts after being turned on on a Gen2 VM, the behavior with a real UEFI lock, the effect on hardware with memory integrity running.
-
-## Reddit
-To be added in part E.

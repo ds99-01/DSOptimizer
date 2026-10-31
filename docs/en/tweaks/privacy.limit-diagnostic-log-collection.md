@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.limit-diagnostic-log-collection.md sha256: 9337777dc135a18472ae3d640dc535225a776b81203ed0bc0db4eb0fbdde3d53 -->
+<!-- source: docs/tweaks/privacy.limit-diagnostic-log-collection.md sha256: a4a679d04787683e6ce5a3b1c4140911f3bcab13b1249ad13f70a3975807266c -->
 
 # privacy.limit-diagnostic-log-collection – LimitDiagnosticLogCollection
 
@@ -28,6 +28,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: writing the policy and checking the Diagnostics & feedback page in Settings. Result: **no repeatable effect** (nothing in the "after" reading; one ambiguous reading after undo: a grayed-out toggle).
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method. Result: **no effect**.
-
-## Reddit
-To be added in part E.

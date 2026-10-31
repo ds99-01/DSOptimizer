@@ -24,14 +24,15 @@ Opis działania:
     zaznacza sugestie do serii) i sprawdza „Zastosuj (N)”, gdzie N = sugerowane pozycje NotApplied/Partial z raportów CLI --detect tego
     przebiegu, uruchomionych przed sondą (PrivacySuggestedApply). Potem sonda wchodzi na „Aplikacje” i po zakończonym odczycie listy
     sprawdza „Usuń (N)”, gdzie N = wiersze grupy Suggested z Removability=Removable z CLI --list-apps tego przebiegu, uruchomionego przed sondą
-    jako 'dso' - to samo konto co okno (AppsSuggestedRemove); niczego nie usuwa ani nie klika. Jako ostatnie sonda wchodzi na „Przygotowanie”
+    jako 'dso' - to samo konto co okno (AppsSuggestedRemove); niczego nie usuwa ani nie klika. Potem sonda wchodzi na „Przygotowanie”
     i po zakończonym odczycie (najwyżej 60 s, bez „Wczytywanie…”) sprawdza 7 tytułów kroków, przycisk „Otwórz Windows Update” (albo notatkę
-    zastępczą, gdy PrepLinks.SettingsOpenable = false) i linię karty w kroku „Grafika” (PrepPage); żadnego linku nie klika.
+    zastępczą, gdy PrepLinks.SettingsOpenable = false) i linię karty w kroku „Grafika” (PrepPage); żadnego linku nie klika. Jako ostatnie sonda wchodzi na „Instalacja” (kategorie i tytuły
+    z apps.json, „Zainstaluj (0)” nieaktywne – InstallPage); niczego nie zaznacza ani nie instaluje.
     Zrzuty ekranu (Msvm_VirtualSystemManagementService.
     GetVirtualSystemThumbnailImage) po starcie i po sondzie UI oraz wynik (gui-smoke-<VM>.json) trafiają do -OutDirectory.
     Jedyna operacja to ta jedna bezpieczna pozycja (VM i tak wraca do checkpointu). Błąd uwierzytelnienia PowerShell Direct przerywa
     przebieg od razu (bez ponawiania). Bez -KeepRunning na końcu revert i VM Off. Kod wyjścia: 0 gdy wszystkie sprawdzenia
-    przeszły, 1 w przeciwnym razie. Dotyka wyłącznie DSO-26H2-Home i DSO-26H2-Pro (Bruteforce_LTSC jest odrzucana).
+    przeszły, 1 w przeciwnym razie. Dotyka wyłącznie DSO-26H2-Home i DSO-26H2-Pro (inne nazwy są odrzucane).
 #>
 [CmdletBinding()]
 param(

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/README.md sha256: a3a8ce212807ba19bf55dfc7b91e60aa6044c06f164319b0b11faae19292e876 -->
+<!-- source: docs/tweaks/README.md sha256: 10ac3740a45662883c679c85e2071d50cf3f84580f4fd1f43e72829e4a2e3cc5 -->
 
 # Catalog item documentation
 
@@ -33,6 +33,3 @@ Result of the VM run: date, version (Home/Pro), `Passed` or `Skipped` with the r
 Evidence of a real effect (Stage 4a rule): Home and Pro separately, each with the observation method (screenshot, UIA, process, Settings),
 result and date. Writing the value alone is not evidence. An item without an observed effect on a given edition gets `editions`
 (`NotSupported` on the others); without any evidence it is dropped from the catalog.
-
-## Reddit
-Reports of problems and opinions about placebo on 24H2/25H2/26H2 (added in part E); until then: "to be added".

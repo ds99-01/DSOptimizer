@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.limit-dump-collection.md sha256: 4322e0da7e0882f78163283a773510f73d7df880d392ed63fd8f952fdbf20a04 -->
+<!-- source: docs/tweaks/privacy.limit-dump-collection.md sha256: 9e3f352ffc2a7c212022aa61df4a75b90442bdbc06f4fb06324d05e9f10e6179 -->
 
 # privacy.limit-dump-collection – LimitDumpCollection
 
@@ -28,6 +28,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: writing the policy and checking the Diagnostics & feedback page in Settings. Result: **no effect**.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

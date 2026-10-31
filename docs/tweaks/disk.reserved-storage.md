@@ -42,6 +42,3 @@ Przebieg VM z 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro
 Przypadek `disk-reserved-storage` (`Flow=Full`, przebieg `main`), Home i Pro:
 - Sprawdzono: `detect-before` = `NotApplied` (cmdlet: `Enabled`), `apply` kod 0, `detect-after-apply` = `Applied`, `undo` kod 0, `detect-after-undo` = `NotApplied`. Niezależny od cmdletu **Check**: `CheckAfterApplyResult` = `Passed` (`ReserveManager\PassedPolicy` = 0), `CheckAfterUndoResult` = `Passed` (`PassedPolicy` = 1). `SnapshotDiff` pusty dla `PassedPolicy` (przed 1, po undo 1). `MiscPolicyInfo` nie jest w Snapshot ani w Check (zostaje po undo, zgodnie z opisem powyżej).
 - **Nie sprawdzono:** zachowanie przy oczekującej aktualizacji (tylko test jednostkowy na mocku), rzeczywisty rozmiar rezerwy, środowiska zarządzane (WSUS/ConfigMgr).
-
-## Reddit
-Do uzupełnienia w części E.

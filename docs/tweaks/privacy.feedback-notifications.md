@@ -30,6 +30,3 @@ Przypadek `privacy-feedback-notifications` (`Flow=Full`) w `tests/vm/cases.psd1`
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Metoda: UI Automation Ustawień (Diagnostyka i opinie) i zrzuty po zapisie przez API rejestru. Wynik: baner „zarządza organizacja”, lista „Częstotliwość opinii” znika ze strony; samych powiadomień nie obserwowano. Po cofnięciu lista wraca, baner znika.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

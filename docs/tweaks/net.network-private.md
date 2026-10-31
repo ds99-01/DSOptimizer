@@ -39,6 +39,3 @@ Dwa przypadki w `tests/vm/cases.psd1` (`Flow=Execute`, `Catalog=BuiltIn`):
 - `net-network-private-change`: **Skipped** („brak sieci na VM”), realna zmiana profilu `Public` → `Private`. Raportowane jako pominięte, nigdy jako zaliczone.
 
 **Nie testowane na VM: brak sieci.** Nie sprawdzono: zmiany prawdziwego profilu, odczytu `NetworkCategory`/`IPv4Connectivity` jako nazw enumów na prawdziwym profilu (na VM są 0 profili, więc rzutowanie `[string]NetworkCategory` na prawdziwym profilu pozostaje niezmierzone; założenie: `[string]` daje angielską nazwę; gdyby było inaczej, skrypt zakończy się komunikatem „brak aktywnego połączenia…” zamiast zmieniać cokolwiek), zachowania zapory po zmianie ani zachowania pod polityką. Skutek sieciowy (widoczność komputera, reguły zapory) jest poza zakresem testów VM.
-
-## Reddit
-Do uzupełnienia w części E.

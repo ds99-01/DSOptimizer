@@ -24,7 +24,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: klucz `Privacy` istnieje, 
 - Klucz `Privacy` istniał przed apply i zostaje.
 
 ## Ryzyka i ostrzeżenia
-- `risk=safe`, `suggested=true` (R13).
+- `risk=safe`, `suggested=true`.
 - Bez ostrzeżeń w katalogu.
 
 ## Test VM
@@ -33,6 +33,3 @@ Przypadek `privacy-tailored-experiences` (`Flow=Full`) w `tests/vm/cases.psd1` (
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: przełącznik „Spersonalizowane oferty” w Ustawieniach (UI Automation) po zapisie przez API. Wynik: przełącznik zgodny z zapisaną wartością (brak wartości = wyłączony, `1` = włączony). dowód: stan przełącznika w Ustawieniach, treści nie obserwowano.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

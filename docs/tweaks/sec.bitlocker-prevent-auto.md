@@ -43,6 +43,3 @@ Pełny przebieg VM `vm-run-20261019-002807` (2026-10-19, ok. 00:28–00:46, buil
 - `sec-bitlocker-prevent-auto-effect` (`Flow=DetectOnly`): **Skipped** na Home i Pro. Powód: skutek „szyfrowanie nie startuje” wymaga nowego OOBE z kontem Microsoft, a VM ma konto lokalne i checkpoint po OOBE. Raportowane jako pominięte, nie zaliczone.
 - Podsumowanie przebiegu (wszystkie przypadki): Home 309 zaliczonych / 0 błędów / 21 pominiętych (`main` 221/0/21 + 6 przebiegów Reboot zielonych), Pro 308 / 1 / 21 (jedyny błąd to stary `Check` przypadku `sec-bitlocker-decrypt-c`, poprawiony w `962ae0e`; zob. `sec.bitlocker-decrypt-c`).
 - **Nie testowane na VM:** skutek wartości (czy auto-szyfrowanie nie startuje w OOBE).
-
-## Reddit
-Do uzupełnienia w części E.

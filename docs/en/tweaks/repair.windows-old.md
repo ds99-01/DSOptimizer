@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.windows-old.md sha256: fb655e905fe7b481793cb6a549fe23dc8e75265f81271cd7f98fdf9258b654b8 -->
+<!-- source: docs/tweaks/repair.windows-old.md sha256: d92332e215c748e417a85ab70e73ff4f1424672f5c8f79782c8a0684197d45a6 -->
 
 # repair.windows-old – Remove the previous Windows installation
 
@@ -6,7 +6,7 @@
 Port as `kind=action`, `risk=caution` ("Repairs" category, Stage 4b, round 2, a long repair with a progress window). Mechanism
 measured on 26H2 Home and Pro VMs (`docs/zrodla/2026-10-22-etap4b-2-pomiary.md` (in Polish), items 5, 5f and 6): the
 "Previous Installations" handler of Disk Cleanup (`cleanmgr /sagerun`) recognizes a prepared `C:\Windows.old` folder and deletes it.
-Only mechanism A – no taking ownership and no ACL changes in C# (Dawid's decision R8, Ruling R18). The prepared folder is ordinary
+Only mechanism A – no taking ownership and no ACL changes in C# (the author's decision). The prepared folder is ordinary
 files owned by `BUILTIN\Administratorzy` (BUILTIN\Administrators on English Windows); a real `Windows.old` after a feature update has files with a `TrustedInstaller` ACL and
 thousands of items – this scenario is **to be confirmed on hardware**.
 
@@ -25,7 +25,7 @@ C# handler `windows-old` (`WindowsOldHandler`), without a catalog script:
    or a missing `VolumeCaches\Previous Installations` key = `Failed` "… – nothing was changed."; we don't write or start
    anything. The number `WindowsOldHandler.SageRunId = 7351` comes from measurement 5f (on a fresh 26H2 there's no `StateFlags*` value at all
    under the 31 handlers; `cleanmgr` accepts 0–9999).
-4. Once confirmed, the run can't be stopped (Ruling R30): both progress events have `ActionProgress.Stoppable = false`, so
+4. Once confirmed, the run can't be stopped: both progress events have `ActionProgress.Stoppable = false`, so
    `ActionRun.CanStop` is `false` during the whole run and the window doesn't offer "Stop" (test `GuiModel_CanStopFalseThroughoutRun`).
    The handler doesn't read the cancellation token; a token canceled before the start is handled by the engine (`TweakEngine.RunHandler`: "Canceled
    before starting"), and the CLI has no stop. You can back out only in the confirmation window.
@@ -42,7 +42,7 @@ C# handler `windows-old` (`WindowsOldHandler`), without a catalog script:
    - the folder exists = `Failed` "The Windows.old folder still exists (freed: …).";
    - an error checking the folder (`ProbeDirectory` throws) = `NotConfirmed` "Disk Cleanup finished, but checking whether folder … is gone
      failed (<error>) – check it manually"; the note about the cleanmgr code stays, and a flag that wasn't removed still gives
-     `Failed` with an entry in "Not restored" (Ruling R27);
+     `Failed` with an entry in "Not restored";
    - after the limit = `NotConfirmed` "Cleanup is still running in the background – the program stopped waiting after 45 min." + the folder state ("still
      exists – check it later", "no longer exists (freed: …)" or "couldn't check folder … (<error>)"); cleanmgr
      keeps working.
@@ -85,8 +85,7 @@ cleanmgr finishes, and the free space before/after. A deleted previous installat
 Cases in `tests/vm/cases.psd1` (Task 8), `Flow='Execute'`, built-in catalog, no network:
 - `repair-windows-old-absent` (without `RunAs`): a fresh VM without `Windows.old` → `NotSupported`, code 1, message "nie ma czego usuwać" (nothing to remove);
   `Check`: the folder doesn't exist, no `StateFlags7351` value under `VolumeCaches`, cleanmgr isn't running.
-- `repair-windows-old` (`RunAs='dso'`, CLI from a Task Scheduler task of the `dso` account – from PS Direct cleanmgr doesn't finish, measurement 5,
-  Ruling R18), `CliTimeoutSeconds = 3000` (above the handler limit of 2,700 s, so that a `NotConfirmed` result also reaches the report).
+- `repair-windows-old` (`RunAs='dso'`, CLI from a Task Scheduler task of the `dso` account – from PS Direct cleanmgr doesn't finish, measurement 5), `CliTimeoutSeconds = 3000` (above the handler limit of 2,700 s, so that a `NotConfirmed` result also reaches the report).
   `Setup`: an ordinary `C:\Windows.old` folder as in measurement 5 (test files in `Windows\System32`, `Windows\SysWOW64`,
   `Users\Public\Documents`, `Program Files\DsoTest`, `ProgramData\DsoTest`, owner Administratorzy (Administrators), no ACL change).
   `Check`: `C:\Windows.old` doesn't exist, no `StateFlags7351` under any `VolumeCaches\*`, cleanmgr isn't running.
@@ -112,7 +111,4 @@ Method: measurement of the mechanism (Task 2): a prepared 200 MB folder, `StateF
   it finishes, nothing keeps working in the background. Why the Task 2 measurement (K2: `Process` with `CreateNoWindow` in a Task Scheduler task) took
   641/665 s, while the handler run (`CreateProcessW` from DSOptimizer in a task of the `dso` account) took 7 s – **not measured**.
 - A real `Windows.old` after a feature update (`TrustedInstaller` files, from a few to a dozen or so GB, the go-back option in Settings):
-  **to be confirmed on hardware** – on a VM it can't be honestly recreated without changing ACLs (R8).
-
-## Reddit
-To be added in part E.
+  **to be confirmed on hardware** – on a VM it can't be honestly recreated without changing ACLs.

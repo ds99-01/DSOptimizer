@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.network-reset.md sha256: 27b44348b431fa1f4a7a56829e562ca042d7f7bb8280b72b15e10cce21dd2750 -->
+<!-- source: docs/tweaks/repair.network-reset.md sha256: bde2f21c8c42bb6c07bb43451e2921dc75866c1b30fc376b3d721673a348a340 -->
 
 # repair.network-reset – Reset network settings
 
@@ -16,7 +16,7 @@ An error after a successful `netsh winsock reset` (steps 3–4) ends the message
 
 Last line of stdout: "The commands succeeded. Takes effect after the computer restarts. The IP configuration from before the reset is above and in the log file." The script resets `$LASTEXITCODE` to zero after accepting code 1 with a note, because the script wrapper ends with `exit $LASTEXITCODE`.
 
-**Rule for judging `netsh int ip reset`** (VM measurement, ruling R9): code 0 = success. Code 1 **and** exactly one line ending with `failed.` **and** "Odmowa dost…" or "Access is denied" in the next non-empty line **and** all other `Resetting …` entries ending with `OK!` = success with the note "One entry protected by the system denied access – this is normal on Windows 11, the rest was reset." Any other case (another code, more than one `failed`, another message, no denial) = `Failed` with the output. The comparison is done without Polish characters ("Odmowa dost"), because the message arrives in the wrong encoding ("dost─Öpu": UTF-8 bytes read as OEM 852); the test covers the PL, EN and garbled variants. The test example is the verbatim output from the Home VM (34 entries, 33 `OK!`, one `failed.`).
+**Rule for judging `netsh int ip reset`** (VM measurement): code 0 = success. Code 1 **and** exactly one line ending with `failed.` **and** "Odmowa dost…" or "Access is denied" in the next non-empty line **and** all other `Resetting …` entries ending with `OK!` = success with the note "One entry protected by the system denied access – this is normal on Windows 11, the rest was reset." Any other case (another code, more than one `failed`, another message, no denial) = `Failed` with the output. The comparison is done without Polish characters ("Odmowa dost"), because the message arrives in the wrong encoding ("dost─Öpu": UTF-8 bytes read as OEM 852); the test covers the PL, EN and garbled variants. The test example is the verbatim output from the Home VM (34 entries, 33 `OK!`, one `failed.`).
 
 ## Sources
 - Test on 26H2 Home and Pro VMs (26300.9457), 2026-10-22, contexts K1 (PowerShell Direct, Administrator) and K2 (process of the `dso` account, Interactive + Highest): `docs/zrodla/2026-10-22-etap4b-1-pomiary.md` (in Polish), section 2 and probe S1.
@@ -40,12 +40,9 @@ Not applicable: `kind=action` has no detection or undo (no journal). **There's n
 ## VM test
 Case `repair-network-reset` (`Flow=Execute`, `Check`: `netsh winsock show catalog` works; the report has `requiresReboot=true` thanks to `Expect.RequiresReboot` in the runner): added to `tests/vm/cases.psd1` in Task 5.
 
-VM run (Task 10, 2026-10-22, full `tests/vm/Invoke-VmTests.ps1` on the `etap4b-1` branch; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-network-reset`: **Passed** on Home and Pro – `Executed` with code 0, `requiresReboot=true` in the report, the message contains the IP configuration from before the reset (APIPA, no network), `netsh winsock reset: kod 0` and `netsh int ip reset: kod 1` ("kod" = code) with the note (R9); `Check` (`netsh winsock show catalog` works) passed. The VM wasn't restarted after the reset and has no network or manual IP on a connected adapter – to be confirmed on hardware.
+VM run (Task 10, 2026-10-22, full `tests/vm/Invoke-VmTests.ps1` on the `etap4b-1` branch; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-network-reset`: **Passed** on Home and Pro – `Executed` with code 0, `requiresReboot=true` in the report, the message contains the IP configuration from before the reset (APIPA, no network), `netsh winsock reset: kod 0` and `netsh int ip reset: kod 1` ("kod" = code) with the note; `Check` (`netsh winsock show catalog` works) passed. The VM wasn't restarted after the reset and has no network or manual IP on a connected adapter – to be confirmed on hardware.
 
 ## Observed effect
 Method: exit codes and the full `netsh` output, reading the registry `HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\{GUID}` (`IPAddress`, `SubnetMask`, `DefaultGateway`, `NameServer`) before the reset, right after it and after a VM restart; a manual IP set with `netsh interface ipv4 set address … source=static` and `Set-DnsClientServerAddress`.
 - **Home** (`DSO-26H2-Home`, 26300.9457, no network), 2026-10-22: `winsock reset` code 0; `int ip reset` code 1 (one access denial, the rest OK). The `IPAddress`, `SubnetMask`, `DefaultGateway` values disappear from the registry right away; the manual address works until the restart, and after the restart the adapter is on DHCP (APIPA, because there's no network). The manual DNS servers (`NameServer`) survived the reset and the restart.
 - **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22 (runs P1 and A2): the same result as Home. The network results of P1 are invalid (after the reset the adapter didn't get an address from DHCP); the result is based on A2.
-
-## Reddit
-To be added in part E.

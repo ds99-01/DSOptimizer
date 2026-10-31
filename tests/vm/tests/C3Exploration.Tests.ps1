@@ -339,7 +339,7 @@ Describe 'Przebieg hosta C3' {
         $Seen.RemoteScript | Should -Match 'function Invoke-C3Collection \{'
         Should -Invoke Set-SmbClientConfiguration -Times 0 -Exactly
     }
-    It 'parametr VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro (nigdy Bruteforce_LTSC)' {
+    It 'parametr VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro (nigdy obcej VM)' {
         $Attr = (Get-Command (Join-Path $PSScriptRoot '..\explore\Invoke-C3Exploration.ps1')).Parameters['VmName'].Attributes |
             Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
         $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')

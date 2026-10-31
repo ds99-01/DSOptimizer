@@ -9,7 +9,7 @@ Instrukcja uruchomienia:
     -OutDirectory jest wymagany: ścieżka bezwzględna (dysk albo UNC) poza repo; w repo tylko katalog ignorowany przez git.
     Czas: ok. 25-35 minut na VM (panele 2 x 30 wariantów po ok. 13 s, Store, Explorer, start i revert VM).
     Tylko sonda uzupełniająca paneli (3 warianty, K1 i K2): ok. 5 minut na VM.
-    Bez trybu ręcznego (ruling R9): oba konteksty (K1, K2) automatycznie; potwierdzenie wzrokowe okien idzie do smoke z Dawidem.
+    Bez trybu ręcznego (ruling R9): oba konteksty (K1, K2) automatycznie; potwierdzenie wzrokowe okien idzie do smoke z autorem.
 Opis działania:
     Skrypt zbiera dowody z prawdziwej VM 26H2 dla partii C5 (panele systemowe, restart Explorera, ponowna rejestracja Store, launcher WinUtil).
     Zapisuje FAKTY (surowe wartości), bez interpretacji. Wszystko dzieje się WYŁĄCZNIE wewnątrz VM (na hoście nic się nie uruchamia ani nie zmienia),
@@ -55,7 +55,7 @@ Opis działania:
     -Variant: filtr wariantów sondy panels (np. -Probe panels -Variant security-maintenance-control,system-properties-control,devices-printers-explorer);
     wymaga sondy panels; bez -Variant wszystkie 30 wariantów.
     -ShowPlan: wypisuje rozstrzygnięte argumenty (VM, katalog, checkpoint, limit, sondy, warianty) jako JSON i kończy, nic nie uruchamia.
-    Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy Bruteforce_LTSC.
+    Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy obcej VM.
     Kod wyjścia: 0 gdy wszystkie wybrane VM zebrane bez błędu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]

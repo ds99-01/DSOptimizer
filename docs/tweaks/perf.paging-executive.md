@@ -36,6 +36,3 @@ Przypadek `perf-paging-executive` (`Flow=Reboot`, przebieg `reboot-perf-paging-e
 - Sprawdzono: `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = true), `detect-after-apply` = `Applied`, **prawdziwy restart** (potwierdzony późniejszym `LastBootUpTime` i zniknięciem ulotnego znacznika), `detect-after-reboot` = `Applied`, `undo` = `Undone` (`requiresReboot` = true, `finalState` = `NotApplied`), `detect-after-undo` = `NotApplied`. Stan końcowy = stan przed (DWORD 0).
 - Przypadku „wartości brak na starcie” nie ma, bo na Home i Pro wartość istnieje; ścieżkę `<RemoveEntry>` pokrywa test jednostkowy na fake'ach.
 - **Nie sprawdzono:** skutku `DisablePagingExecutive` (system nie daje wskaźnika, a pozycja nie ma dowodu korzyści na 26H2), zachowania pod obciążeniem pamięci ani na sprzęcie. Sprawdzana jest tylko wartość rejestru i jej trwałość po restarcie.
-
-## Reddit
-Do uzupełnienia w części E.

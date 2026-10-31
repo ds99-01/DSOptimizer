@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.tailored-experiences.md sha256: c29e1f4a26f71483354e708b027c7019a271ffa711bc8280c8adb917e5e1a470 -->
+<!-- source: docs/tweaks/privacy.tailored-experiences.md sha256: 5c9ecb0e5f3edfbd2d2ecddde4d8b5ccce71c67a542135a70486b78eaef88aaa -->
 
 # privacy.tailored-experiences – Turn off personalized offers
 
@@ -26,7 +26,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `Privacy` k
 - The `Privacy` key existed before apply and stays.
 
 ## Risks and warnings
-- `risk=safe`, `suggested=true` (R13).
+- `risk=safe`, `suggested=true`.
 - No warnings in the catalog.
 
 ## VM test
@@ -35,6 +35,3 @@ Case `privacy-tailored-experiences` (`Flow=Full`) in `tests/vm/cases.psd1` (`Not
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: the "Spersonalizowane oferty" (Personalized offers) toggle in Settings (UI Automation) after a write through the API. Result: the toggle matches the written value (no value = off, `1` = on). Evidence: toggle state in Settings; the content itself wasn't observed.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

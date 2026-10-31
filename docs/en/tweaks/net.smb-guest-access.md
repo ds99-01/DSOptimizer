@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.smb-guest-access.md sha256: 4c82aed6a011fef864aae55daef0fb297116aea6690f93d7b5547547e15ecfe7 -->
+<!-- source: docs/tweaks/net.smb-guest-access.md sha256: 3721aa3f04572c7b35dd028b5f5663f363f22f1fe60f1de48164ebdb85560965 -->
 
 # net.smb-guest-access – Allow guest logons to network shares
 
@@ -66,6 +66,3 @@ Case `net-smb-guest-access` (`Flow=Full`, `Catalog=BuiltIn`, no restart), **Pass
 - `CheckAfterUndo` (cmdlet reading equal to the edition's default, edition from `EditionID`: Home True, Pro False): **Passed** on both. After the value is deleted (undo from a snapshot without a value), the cmdlet goes back to the edition's default. The decisive one is **Pro** (True after apply, False after undo); on Home there's no distinction (True in both states).
 - `net-smb-lan-effect`: **Skipped** ("brak sieci i serwera SMB na VM" (no network and no SMB server on the VM)), reported as skipped, not passed.
 - **Not tested on the VM: no network and no SMB server.** Not checked: the effect on the LAN (guest connection, computer visibility), persistence after a restart, and the behavior of the item itself (apply/undo/detection) under Group Policy; only the effect of the policy value on the cmdlet reading was measured (see "Detection and undo", probe 7).
-
-## Reddit
-To be added in part E.

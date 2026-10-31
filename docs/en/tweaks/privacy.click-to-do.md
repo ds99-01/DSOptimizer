@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.click-to-do.md sha256: 37506514cc1ceb742f2090f82e65c7fea96bcdb0506d195ed4adfe607b27e58f -->
+<!-- source: docs/tweaks/privacy.click-to-do.md sha256: 2d807c5a88e9b7216c04204b04f546c13d5f51e7783066cd8d1916b78ad01958 -->
 
 # privacy.click-to-do – DisableClickToDo policy
 
@@ -27,6 +27,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: looking for an entry point, a process and a page in Settings before and after writing the policy and restarting File Explorer. Result: **no effect to show**, the feature is unavailable even before the change (VM without an NPU).
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

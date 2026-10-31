@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.recall.md sha256: e4fdb900b973ab357bfedb0822edc9edf265395ccb1cf9854b5b324bcf15843c -->
+<!-- source: docs/tweaks/privacy.recall.md sha256: c373ee943dfb14207ad73118634f015a17a9f4f3190a651913e3ff201fde8e12 -->
 
 # privacy.recall – Recall: AllowRecallEnablement and DisableAIDataAnalysis (snapshots)
 
@@ -31,6 +31,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: reading the state of the `Recall` feature, the Settings pages, writing the policies through the registry API and restarting the VM. Result: **no effect to show**, the `Recall` feature = `DisabledWithPayloadRemoved` before the change and after restarting the VM, and Settings has no Recall page (VM without an NPU).
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result. Snapshots (`DisableAIDataAnalysis`): also no effect to show, because the feature is unavailable.
-
-## Reddit
-To be added in part E.

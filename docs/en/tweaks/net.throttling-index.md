@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/net.throttling-index.md sha256: 934561574ac22ee34db9125511e3ac4ffd6af49659a5ef32ec72e189657dda7c -->
+<!-- source: docs/tweaks/net.throttling-index.md sha256: a34b4e4451124b95dfc95a3240d5b1f86238c6da3b75b6efa614123e2515d18b -->
 
 # net.throttling-index – NetworkThrottlingIndex / SystemResponsiveness (not ported)
 
 ## Verdict for 26H2
-Not ported (Dawid's decision of 2026-10-18): `NetworkThrottlingIndex` has no MS documentation, and `SystemResponsiveness` = 0 from v3.2 is treated as 20 according to MS, so it changes nothing. The v3.2 alias `net_throttle` has no item in the catalog.
+Not ported (the author's decision of 2026-10-18): `NetworkThrottlingIndex` has no MS documentation, and `SystemResponsiveness` = 0 from v3.2 is treated as 20 according to MS, so it changes nothing. The v3.2 alias `net_throttle` has no item in the catalog.
 
 ## What it changes
 The item isn't in the catalog and changes nothing. Entry considered (v3.2): `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile`, `NetworkThrottlingIndex` = 0xFFFFFFFF and `SystemResponsiveness` = 0 (both DWord).
@@ -34,6 +34,3 @@ Reasons in the "What it changes" section. If the item were ever added, it would 
 
 ## VM test
 Not applicable (the item isn't ported, there's no VM case in the catalog). Only the reading of the defaults on the Home and Pro VMs was done on 2026-10-18 (10 and 20, see "Defaults on a fresh 26H2"). Writing 0xFFFFFFFF, persistence after a restart and the network effect weren't checked.
-
-## Reddit
-To be added in part E.

@@ -1,4 +1,4 @@
-<!-- source: docs/apps/install-README.md sha256: 1f3a700e307c5aa4d49ef4b83a61a370476b024bcca06264a512e1b6dc96c2a2 -->
+<!-- source: docs/apps/install-README.md sha256: c010dc4ff5a56cfcb48fa59b24fc59d2da86732cffeeca602c12404961bc50d1 -->
 
 # App install – list `apps.json`
 
@@ -6,9 +6,10 @@ The file `src/DSOptimizer.Catalog/catalog/apps.json` is the app list of the "Ins
 `AppsInstallCatalog.Load` (Core). It's embedded as a separate resource `BuiltInCatalog.AppsInstallSource`
 (`DSOptimizer.AppsInstall.apps.json`) and, like `apps-bloat.json`, isn't part of `BuiltInCatalog.Sources` (the tweak catalog).
 The program itself doesn't download anything. winget installs, only from the `winget` source (`--source winget`), with verification of the installer hash
-from the manifest. Exception: one item downloaded by the program: RustDesk from GitHub, rules in `RustDeskSource`
+from the manifest. Exception on this list: one item downloaded by the program: RustDesk from GitHub, rules in `RustDeskSource`
 (one repository, one signing publisher, rules in the code,
-not in this file; evidence in the section "RustDesk from GitHub (spike 2026-10-24)").
+not in this file; evidence in the section "RustDesk from GitHub (spike 2026-10-24)"). The second exception is outside this list: `winutil.ps1`
+from `ChrisTitusTech/winutil`, rules in `WinUtilSource`.
 
 ## Format
 
@@ -51,7 +52,7 @@ not in this file; evidence in the section "RustDesk from GitHub (spike 2026-10-2
 - `source`: absolute `https` address (manufacturer's page or the manifest in `microsoft/winget-pkgs`; a `github` item – the releases page
   of the repository, `https://github.com/rustdesk/rustdesk/releases`).
 
-There's no selection field and no presets (Dawid's decision 2026-10-15: nothing selects itself). The test
+There's no selection field and no presets (the author's decision 2026-10-15: nothing selects itself). The test
 `AppsInstallCatalogTests.BuiltIn_NoEntryPreselected` makes sure the built-in file has no other fields than the ones above.
 
 An error in the file = `InstallCatalogException(entryId, field, message)` with the message `apps: <id>, field <field>: <text>`. The same
@@ -85,11 +86,11 @@ exception is thrown for a duplicate `id` or `wingetId` and an unknown category.
 ## List – entries with evidence (35)
 
 Evidence: VM measurement 2026-10-24 (`docs/zrodla/2026-10-24-etap4c-pomiary.md` (in Polish), raw results outside git). `show` = 0 on Home and Pro for every item (installer type in brackets
-from `show`). "Pro"/"Home" = code and time of the attempt without `--locale` (the program's command, Ruling R14); `0x8A150061` = already installed
+from `show`). "Pro"/"Home" = code and time of the attempt without `--locale` (the program's command); `0x8A150061` = already installed
 in the `network` phase or as a dependency. "Scope" = branch of the measured Uninstall entry (`winget show` v1.11 doesn't print the installer
 scope): HKU = signed-in account only, HKLM/HKLM32 = whole computer. "Entry" = visible Uninstall entry (`DisplayName` /
 `Publisher`) after installation. `source` = manifest folder in `microsoft/winget-pkgs` (existence checked through the GitHub API
-on 2026-10-24 for every item). Foxit PDF Reader was added later the same day (Dawid's request): winget measurement (Pro only) and CLI run, raw results outside git.
+on 2026-10-24 for every item). Foxit PDF Reader was added later the same day (the author's request): winget measurement (Pro only) and CLI run, raw results outside git.
 RustDesk (`install.rustdesk`) has no winget package: the `wingetId` column holds the `github` repository, `show` doesn't apply, and the evidence
 is the Home VM spike (section "RustDesk from GitHub (spike 2026-10-24)"); the Pro, Home and "CLI run" columns come from the CLI run
 with network (RustDesk plan, Task 7 – paragraph "RustDesk: CLI run with network" below; `msiexec` time from the MSI log `/l*v`).
@@ -100,7 +101,7 @@ with network (RustDesk plan, Task 7 – paragraph "RustDesk: CLI run with networ
 | `install.firefox` | `Mozilla.Firefox` | browsers | 0 (nullsoft) | computer (HKLM) | 0 (26 s, `network` phase, with `--locale` → 129.0.2) | 0 (23 s, as above) | Pro: `Installed` (24 s); Home: `Installed` (24 s) | `Mozilla Firefox (x64 pl)` / `Mozilla`; spike without `--locale`: `Mozilla Firefox (x64 en-US)` 157.0.1 | `displayName: "Mozilla Firefox (*"`, `publisher: "Mozilla"` | in (also installs `Mozilla Maintenance Service`) | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Mozilla/Firefox |
 | `install.brave` | `Brave.Brave` | browsers | 0 (exe) | account (HKU) | 0 (68 s) | – | Pro: `Installed` (44 s) | `Brave` / `Autorzy Brave` | `displayName: "Brave"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/b/Brave/Brave |
 | `install.opera` | `Opera.Opera` | browsers | 0 (exe) | account (HKU) | 0 (35 s) | – | Pro: `Installed` (46 s) | `Opera Stable 137.0.6036.39` / `Opera Software` (after a few minutes `.63`) | `displayName: "Opera Stable*"`, `publisher: "Opera Software"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/Opera/Opera |
-| `install.discord` | `Discord.Discord` | messengers | 0 (exe) | account (HKU) | 0 (11 s) | 0 (14 s) | Pro: `Installed` (33 s); Home: `Installed` (25 s) | `Discord` / `Discord Inc.` (spike); in the reading right after code 0 the entry isn't there yet, `list --id --exact` a few seconds later = 0 with the name `Discord` (Home and Pro) | `displayName: "Discord"`, `publisher: "Discord Inc."` | in (entry with a delay, verification up to 60 s – R16) | https://github.com/microsoft/winget-pkgs/tree/master/manifests/d/Discord/Discord |
+| `install.discord` | `Discord.Discord` | messengers | 0 (exe) | account (HKU) | 0 (11 s) | 0 (14 s) | Pro: `Installed` (33 s); Home: `Installed` (25 s) | `Discord` / `Discord Inc.` (spike); in the reading right after code 0 the entry isn't there yet, `list --id --exact` a few seconds later = 0 with the name `Discord` (Home and Pro) | `displayName: "Discord"`, `publisher: "Discord Inc."` | in (entry with a delay, verification up to 60 s) | https://github.com/microsoft/winget-pkgs/tree/master/manifests/d/Discord/Discord |
 | `install.telegram` | `Telegram.TelegramDesktop` | messengers | 0 (inno) | account (HKU) | 0 (19 s) | – | Pro: `Installed` (17 s) | `Telegram Desktop` / `Telegram FZ-LLC` | `displayName: "Telegram Desktop*"`, `publisher: "Telegram FZ-LLC"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/Telegram/TelegramDesktop |
 | `install.signal` | `OpenWhisperSystems.Signal` | messengers | 0 (nullsoft) | account (HKU) | 0 (42 s) | – | Pro: `Installed` (36 s) | `Signal 8.32.0` / `Signal Messenger, LLC` | `displayName: "Signal*"`, `publisher: "Signal Messenger, LLC"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/OpenWhisperSystems/Signal |
 | `install.zoom` | `Zoom.Zoom` | messengers | 0 (msi) | computer (HKLM) | 0 (21 s) | – | Pro: `Installed` (30 s) | `Zoom Workplace (64-bit)` / `Zoom` | `displayName: "Zoom Workplace*"`, `publisher: "Zoom"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/z/Zoom/Zoom |
@@ -118,9 +119,9 @@ with network (RustDesk plan, Task 7 – paragraph "RustDesk: CLI run with networ
 | `install.winrar` | `RARLab.WinRAR` | tools | 0 (exe) | computer (HKLM) | 0 (5 s, `pl` installer with `--locale`) | – | Pro: `Installed` (12 s) | `WinRAR 7.23 (64-bitowy)` / `win.rar GmbH` (+ AppX `WinRAR.ShellExtension`) | `displayName: "WinRAR*"`, `publisher: "win.rar GmbH"` | in (paid after the trial period) | https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/RARLab/WinRAR |
 | `install.sharex` | `ShareX.ShareX` | tools | 0 (inno) | computer (HKLM) | 0 (26 s) | – | Pro: `Installed` (41 s) | `ShareX` / `ShareX Team` | `displayName: "ShareX"`, `publisher: "ShareX Team"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/s/ShareX/ShareX |
 | `install.cpu-z` | `CPUID.CPU-Z` | tools | 0 (inno) | computer (HKLM) | 0 (5 s) | – | Pro: `Installed` (7 s) | `CPUID CPU-Z 3.01` / `CPUID, Inc.` | `displayName: "CPUID CPU-Z*"`, `publisher: "CPUID, Inc."` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/CPUID/CPU-Z |
-| `install.hwmonitor` | `CPUID.HWMonitor` | tools | 0 (inno) | computer (HKLM) | 0 (5 s) | – | Pro: `Failed` `0x80004004` (winget "Cancelling operation", program installed – `--list-install` = `true`; after R21 = `NotConfirmed`); Home (retry): `Installed` (8 s) | `CPUID HWMonitor 1.68` / `CPUID, Inc.` | `displayName: "CPUID HWMonitor*"`, `publisher: "CPUID, Inc."` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/CPUID/HWMonitor |
+| `install.hwmonitor` | `CPUID.HWMonitor` | tools | 0 (inno) | computer (HKLM) | 0 (5 s) | – | Pro: `Failed` `0x80004004` (winget "Cancelling operation", program installed – `--list-install` = `true`; after the fix = `NotConfirmed`); Home (retry): `Installed` (8 s) | `CPUID HWMonitor 1.68` / `CPUID, Inc.` | `displayName: "CPUID HWMonitor*"`, `publisher: "CPUID, Inc."` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/CPUID/HWMonitor |
 | `install.gpu-z` | `TechPowerUp.GPU-Z` | tools | 0 (exe) | computer (HKLM32) | 0 (23 s) | – | Pro: `Installed` (19 s) | `TechPowerUp GPU-Z` / `TechPowerUp` | `displayName: "TechPowerUp GPU-Z"`, `publisher: "TechPowerUp"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/TechPowerUp/GPU-Z |
-| `install.hwinfo` | `REALiX.HWiNFO` | tools | 0 (inno – entry `…_is1`; license "Proprietary", free version) | computer (HKLM) | 0 (10 s; the installer starts HWiNFO64 by itself after installation) | – | Pro: CLI run – to be added | `HWiNFO® 64` (character U+00AE) / `Martin Malik, REALiX s.r.o.` | `displayName: "HWiNFO* 64"`, `publisher: "Martin Malik, REALiX s.r.o."` | in (added 2026-10-26 at Dawid's request) | https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/REALiX/HWiNFO |
+| `install.hwinfo` | `REALiX.HWiNFO` | tools | 0 (inno – entry `…_is1`; license "Proprietary", free version) | computer (HKLM) | 0 (10 s; the installer starts HWiNFO64 by itself after installation) | – | Pro: CLI run – to be added | `HWiNFO® 64` (character U+00AE) / `Martin Malik, REALiX s.r.o.` | `displayName: "HWiNFO* 64"`, `publisher: "Martin Malik, REALiX s.r.o."` | in (added 2026-10-26 at the author's request) | https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/REALiX/HWiNFO |
 | `install.rustdesk` | `github`: `rustdesk/rustdesk` | remote-help | – (not in winget; GitHub API `releases/latest`: `1.5.0`, MSI) | computer (HKLM) | 0 (`msiexec` 3.7 s, CLI run) | 0 (`msiexec` 3.5 s, CLI run; spike 7.5 s) | Pro (with 7-Zip): `Installed` (7.6 s), second time `AlreadyInstalled`; Home: `Installed` (7.2 s), second time `AlreadyInstalled` | `RustDesk` / `Purslane Tech Pte. Ltd.` 1.5.0.29846474 (HKLM 64, MSI `{9D5F8A39-0D7B-4BC4-851D-DA8501D03DE7}`, `MsiExec.exe /X{…}`) | `displayName: "RustDesk"`, `publisher: "Purslane Tech*"` (doesn't catch `RustDesk Client`) | in (Home spike: `msiexec` code 0 in 7.5 s; installs the `RustDesk` service, 2 firewall rules, desktop/Start/Startup shortcuts for all accounts) | https://github.com/rustdesk/rustdesk/releases |
 | `install.anydesk` | `AnyDesk.AnyDesk` | remote-help | 0 (exe) | computer (HKLM32) | 0 (12 s) | 0 (65 s) | Pro: `Installed` (13 s) | `AnyDesk` / `AnyDesk Software GmbH` | `displayName: "AnyDesk"`, `publisher: "AnyDesk Software GmbH"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/AnyDesk/AnyDesk |
 | `install.teamviewer` | `TeamViewer.TeamViewer` | remote-help | 0 (wix in zip) | computer (HKLM) | 0 (21 s) | – | Pro: `Installed` (23 s); Home: `Installed` (18 s) | `TeamViewer` / `TeamViewer` | `displayName: "TeamViewer"`, `publisher: "TeamViewer"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/TeamViewer/TeamViewer |
@@ -141,7 +142,7 @@ dependency), plus PuTTY from outside the list. No item stays on the list only be
 
 Discord: right after code 0 the Uninstall entry wasn't there yet (Home and Pro), but `winget list --id Discord.Discord --exact`
 run a few seconds later returned 0 with the `Discord` row, and the spike read the HKU entry `Discord` / `Discord Inc.`. The program's
-verification waits up to 60 s (Ruling R16), so the item stays.
+verification waits up to 60 s, so the item stays.
 
 Longest installation: VLC on Home, 230 s (EXE). The limit `InstallTimeouts.PerApp` = 30 min stays (a change would only be needed
 for an installation longer than 7 min).
@@ -159,14 +160,14 @@ Task Scheduler task (`tests/vm/explore/Invoke-E4CExploration.ps1 -Phase cli-inst
   `0x80004004` (E_ABORT), while the Inno installer reached "Installation process succeeded" in the `--log` log and wrote the Uninstall entry.
   Most likely cause: winget was interrupted by the App Installer update at the same time (not measured directly).
   Retry on Home (VC++ x64 + HWMonitor, winget v1.11.510): both `Installed`, code 0. The item stays.
-  After the R21 fix (the wave after the final review), the same run would give "Not confirmed – winget ended with code 0x80004004, but the
+  After the fix (the wave after the final review), the same run would give "Not confirmed – winget ended with code 0x80004004, but the
   program is on the list of installed apps; check the winget log" (`NotConfirmed`, CLI code 4 instead of 1): after an unknown code
   the list item gets one fresh reading, and a visible program is never "Installed", because the code can also mean
   an installation interrupted halfway. The result wasn't measured again on a VM (it needs the App Installer self-update to be repeated).
 - **Home (one item from each category, different from the Task 2 measurement) + `winget:PuTTY.PuTTY`:** 9/9 `Installed`, CLI code 0,
   3 min 34 s; PuTTY confirmed by `winget list --id --exact` (`Installed`, not `InstalledUnverified`). `--list-install`:
   8 list items from this batch = `installed = true`. winget without an update (v1.11.510).
-- **Discord (R16):** the HKU entry appeared after winget exited – "Zainstalowano i sprawdzono." (Installed and verified.) about 14 s (Home) and 20 s (Pro) after the line
+- **Discord:** the HKU entry appeared after winget exited – "Zainstalowano i sprawdzono." (Installed and verified.) about 14 s (Home) and 20 s (Pro) after the line
   "Successfully installed", so within the 60 s window. Only Adobe Acrobat Reader waited longer (about 30 s, Pro).
 - **VC++ as a component of another installer:** on Home one of the batch installers (with no winget dependency in the output; the logs can't tell which one) installed
   `Microsoft Visual C++ 2015-2022 Redistributable (x64)` and `(x86)` – 14.51.36231 (older entry name). The rule from T11 didn't
@@ -274,8 +275,8 @@ Raw results outside git (`releases.json`, `download.json`, `install.json`, `diff
 |---|---|---|
 | `Spotify.Spotify` | the installer doesn't work from an administrator account: `0x8A150056` "The installer cannot be run from an administrator context." | spike 2026-10-24 (Pro); `show` = 0 (the package is in the source) |
 | `RustDesk.RustDesk` | not in the `winget` source; use `install.rustdesk` from GitHub instead | `show` = `0x8A150014` on Home and Pro; GitHub API: no `manifests/r/RustDesk/RustDesk` (404, 2026-10-24) |
-| `Microsoft.DirectX` | spec: no Uninstall entry. Measurement: the installer is an **MSIX** package today (`UAPSignedBinary_Microsoft.DirectX.x64.appx`) and wasn't installed, so the status and verification are unconfirmed (Ruling R18) | `show` = 0, `Installer Type: msix` |
-| `Microsoft.Teams` | it's already on a fresh 26H2 (AppX `MSTeams`, 4a research). winget returns `0x8A150061`, and an MSIX installation through winget wasn't confirmed. The "Apps" page (4a) suggests Teams for removal, so an item on the install list would be misleading (Ruling R18) | `show` = 0, `install` = `0x8A150061` (Pro) |
+| `Microsoft.DirectX` | spec: no Uninstall entry. Measurement: the installer is an **MSIX** package today (`UAPSignedBinary_Microsoft.DirectX.x64.appx`) and wasn't installed, so the status and verification are unconfirmed | `show` = 0, `Installer Type: msix` |
+| `Microsoft.Teams` | it's already on a fresh 26H2 (AppX `MSTeams`, 4a research). winget returns `0x8A150061`, and an MSIX installation through winget wasn't confirmed. The "Apps" page (4a) suggests Teams for removal, so an item on the install list would be misleading | `show` = 0, `install` = `0x8A150061` (Pro) |
 
 Deliberately outside the list (spec point 4): graphics card drivers, Microsoft Edge, Store packages (`msstore`).
 
@@ -291,4 +292,4 @@ Deliberately outside the list (spec point 4): graphics card drivers, Microsoft E
 - One "Search apps, such as VLC" field filters the list live (`InstallSearch`: title, `summary`, `wingetId`, GitHub repo; the query and the text are joined without spaces, "-", "." and "_", so "7zip" finds "7-Zip"). Result: a "From the list (N)" section with category headers. winget starts only after Enter or "Also search winget" and adds an "In winget (N)" section (packages not on the list, with a note that they weren't checked on a VM). A winget result with the Id of a list item (also `RustDesk.RustDesk` → `install.rustdesk`) isn't a separate package – the note "is on the list – above".
 - Clicking a category clears the field. The selection survives a change of category, text and a new search; "Selected" shows list items and winget results together.
 - The list is flat: app rows interleaved with non-focusable lines (headers, notes, messages).
-- Change history shows the install entry with the kind icon, the second line "App install" and a short failure reason from `JournalEvent.Reason` ("Not installed – no internet connection"). The codes `0x800704C7` (installer interrupted, possibly an antivirus) and `0x800700E1`/`0x800700E2` (an antivirus blocked the installer) have their own texts; for a list item with a visible program, they're covered by the R21 rule (`NotConfirmed`).
+- Change history shows the install entry with the kind icon, the second line "App install" and a short failure reason from `JournalEvent.Reason` ("Not installed – no internet connection"). The codes `0x800704C7` (installer interrupted, possibly an antivirus) and `0x800700E1`/`0x800700E2` (an antivirus blocked the installer) have their own texts; for a list item with a visible program, they're covered by the same rule (`NotConfirmed`).

@@ -5,7 +5,7 @@ Pomiar na VM Hyper-V `DSO-26H2-Home` (EditionID `Core`) i `DSO-26H2-Pro` (`Profe
 Skrypt: `tests/vm/explore/Invoke-E4B2Exploration.ps1` (Pester na mockach: `tests/vm/tests/E4B2Exploration.Tests.ps1`).
 Surowe wyniki (JSON + bajty wyjścia + segmenty logów) poza gitem: zapis pomiaru w archiwum autora.
 
-**Zakres (decyzja Dawida R8, 2026-10-22):** bez uszkadzania plików systemowych i bez zmiany właściciela/ACL. SFC i DISM
+**Zakres (decyzja autora, 2026-10-22):** bez uszkadzania plików systemowych i bez zmiany właściciela/ACL. SFC i DISM
 mierzone tylko na zdrowej VM. Werdykty „naprawiono”, „nie udało się naprawić”, „naprawa czeka na restart” i kody braku
 źródła DISM pochodzą z dokumentacji MS i są oznaczone **niezmierzony**. Windows.old = zwykły folder z plikami testowymi
 utworzony kontem Administratora (właściciel `BUILTIN\Administratorzy`, ACL dziedziczone), tylko mechanizm A (cleanmgr).
@@ -211,10 +211,10 @@ poniżej 1 min (bez cleanmgr). `windows-old` – folder znika w kilka sekund, a 
 **`CliTimeoutSeconds` przypadków VM:** `repair-system-files` offline ok. 130 s → domyślne 600 s wystarcza (zapas: 1200).
 `repair-windows-old` → `RunAs='dso'` i `CliTimeoutSeconds` 2700 (z PS Direct cleanmgr się nie kończy).
 
-## 7. R17 – narzędzie po wyjściu programu (Task 6, 2026-10-23)
+## 7. Narzędzie po wyjściu programu (Task 6, 2026-10-23)
 
-Pytanie (Ruling R17): czy DISM i SFC uruchomione przez `ServicingToolRunner` (bez Job Objectu, potok stdout bez zamykania
-po limicie – R16) kończą pracę, gdy proces, który je uruchomił, wychodzi po limicie czekania, a razem z nim znika koniec
+Pytanie: czy DISM i SFC uruchomione przez `ServicingToolRunner` (bez Job Objectu, potok stdout bez zamykania
+po limicie) kończą pracę, gdy proces, który je uruchomił, wychodzi po limicie czekania, a razem z nim znika koniec
 odczytu potoku (narzędzie pisze dalej do zamkniętego potoku). Skrypt jednorazowy poza gitem:
 zapis pomiaru w archiwum autora (+ surowe JSON). VM od `czysta-26H2`, bez sieci, na końcu revert, VM `Off`.
 

@@ -537,8 +537,6 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | Ryzyka i ostrzeżenia | Risks and warnings | Template heading |
 | Test VM | VM test | Template heading |
 | Obserwacja skutku | Observed effect | Template heading; optional, as in Polish (older documents don't have it) |
-| Reddit | Reddit | Template heading |
-| Do uzupełnienia w części E. | To be added in part E. | Placeholder sentence in the "Reddit" section |
 | do uzupełnienia | to be added | Placeholder value |
 | brak (wartość rejestru) / brak klucza | none / key missing | Values in "Defaults on a fresh 26H2" |
 | Nie sprawdzono: | Not checked: | Start of a line listing what wasn't checked |
@@ -547,7 +545,6 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | `dostęp <data>` | `accessed <date>` | Access date of a source; the date stays ISO ("accessed 2026-10-18") |
 | odwołanie do `docs/zrodla/…` | `docs/zrodla/…` (in Polish) | Added after every reference to a file in `docs/zrodla/`; those records exist only in Polish |
 | Etap N / część E / partia X | Stage N / part E / round X | Project stages in the documents: "Stage 4a", "round 1", "Task 9 of the round", "Round C4 research". "Batch" is only the program's series (Key decisions). |
-| decyzja R14 / decyzja projektowa / `decyzja <imię> z <data>` | ruling R14 / design decision / `<name>'s decision of <date>` | Ruling ids (R…) are not changed |
 | klasa B (research) | class B | Evidence class of a research source |
 | Portować / `Portować jako <x>` / Portować z ograniczeniem | Port / `Port as <x>` / Port with a restriction | Verdict; as in the template ("port / don't port / placebo") |
 | nie wchodzi / Nie portowane | Not ported | Verdict; capitalized at the start of the verdict ("Not ported:") |

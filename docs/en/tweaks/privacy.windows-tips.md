@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.windows-tips.md sha256: 61bcd50c8b64144727cd5d3659ea8f078b77f43add4f00967a43cd3e90978741 -->
+<!-- source: docs/tweaks/privacy.windows-tips.md sha256: aa7a2323a8d2e714c0384cdf97a6e6d9d8838f34a8cc720f32979690046b1f4a -->
 
 # privacy.windows-tips – Turn off Windows tips and suggestions
 
@@ -33,6 +33,3 @@ Case `privacy-windows-tips` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenT
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: the "Uzyskaj porady i sugestie podczas korzystania z systemu Windows" (Get tips and suggestions when using Windows) checkbox in Settings (UI Automation) after a write through the API. Result: checkbox cleared; after undo selected. Evidence: toggle state in Settings; the content itself wasn't observed.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

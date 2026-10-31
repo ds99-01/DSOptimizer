@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.ntfs-last-access.md sha256: 1d805c0f09744d6b5aadb774ed40fa7b7b96d80a994f1817f39737e48ac6ca88 -->
+<!-- source: docs/tweaks/disk.ntfs-last-access.md sha256: 2be2b9ec5b698f15e093f4a3f7da186be4315865b88889aa3000158fcbe4a957 -->
 
 # disk.ntfs-last-access – Turn off recording the last access time of files
 
@@ -44,6 +44,3 @@ Case `disk-ntfs-last-access` (`Flow=Reboot`, run `reboot-disk-ntfs-last-access`,
 - Case `disk-ntfs-last-access-mode3` (`DetectOnly`, in the `main` run): Setup wrote `0x80000003` through the .NET API, detection = `Applied` (consistent with the mask from Task 2).
 - Check: none.
 - **Not checked:** the effect on the `LastAccessTime` of files and the behavior on real hardware. The detailed snapshot values from the refreshed run weren't analyzed here (the last `SnapshotDiff` analysis comes from the C1 run: undo restored the value from the snapshot, not the fallback).
-
-## Reddit
-To be added in part E.

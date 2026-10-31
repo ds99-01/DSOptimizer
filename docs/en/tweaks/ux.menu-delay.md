@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.menu-delay.md sha256: 7679f06aeb8234cb212cd7d4c8780b1f063da0ce36181ceabdec123464e21724 -->
+<!-- source: docs/tweaks/ux.menu-delay.md sha256: dc7fad67cacf084894bd636b954914678ffbe0a0708d587187c48b0e92956129 -->
 
 # ux.menu-delay – Open submenus faster
 
@@ -40,6 +40,3 @@ Case `ux-menu-delay` (`Flow=Full`, `main` run), Home and Pro:
 - Checked: `detect-before` = `NotApplied` (Setup set `MenuShowDelay` = `"250"`, unlike the `original` `"400"`), `apply` code 0, `detect-after-apply` = `Applied`, `undo` code 0, `detect-after-undo` = `NotApplied`. `SnapshotBefore` contains `HKU\<SID>\Control Panel\Desktop\MenuShowDelay` String `"250"`, and `SnapshotDiff` (before vs. after undo) is empty, so undo restored the value from the snapshot, not from the `"400"` fallback. Snapshot after apply = `"10"`. `NotWrittenToDiff` empty: apply didn't touch the `HKCU` of the Administrator account.
 - Check: none (registry item). There was no restart (not required in the catalog).
 - **Not checked:** whether menus really open faster, whether the change requires signing in again, and how Win32 applications behave (the VM checks only the write, detection and undo of the value).
-
-## Reddit
-To be added in part E.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.search-web-results.md sha256: db86aba3589d4f9772cea0763e9b050aeddaa24f5a20e665bc218434d59198b5 -->
+<!-- source: docs/tweaks/privacy.search-web-results.md sha256: 4ad4bf6d2be6e54972289dd2f8e852f57853b228a8072bb1e260952db2b93228 -->
 
 # privacy.search-web-results – Turn off web results in Windows search
 
@@ -8,7 +8,7 @@ Port: a test on a 26H2 VM (Home and Pro) showed a real effect. No Microsoft docu
 ## What it changes
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\SearchSettings` (in the engine `HKU\<SID of the signed-in user>`), value `IsGlobalWebSearchProviderToggleEnabled`, **DWord**, set to `0`; `scope=user`. This is the state of the "Let search apps show results" toggle (Privacy & security > Search).
 - It turns off all providers of web results, doesn't lock the toggle and doesn't touch the File Explorer search box.
-- Apply doesn't restart File Explorer (R15). The effect was observed after restarting File Explorer and killing SearchHost (StartMenuExperienceHost was also killed for the Start items). The catalog therefore gives the effect as "after you sign in again"; whether restarting File Explorer alone (`tools.restart-explorer`) is enough wasn't checked, and the item says explicitly "restarting File Explorer alone may not be enough".
+- Apply doesn't restart File Explorer. The effect was observed after restarting File Explorer and killing SearchHost (StartMenuExperienceHost was also killed for the Start items). The catalog therefore gives the effect as "after you sign in again"; whether restarting File Explorer alone (`tools.restart-explorer`) is enough wasn't checked, and the item says explicitly "restarting File Explorer alone may not be enough".
 
 ### Working alternatives (described, without their own catalog items)
 All three gave the same effect (Bing results disappear) on Home and Pro, after restarting File Explorer:
@@ -40,6 +40,3 @@ Case `privacy-search-web-results` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWr
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: screenshots of the search results (Win+S) for the phrase "pogoda" (weather) in the `dso` session, after a write through the registry API and restarting File Explorer and SearchHost. Result: the "Microsoft Bing sugestie internetowe" (Microsoft Bing web suggestions) section and the "Microsoft Bing" card disappear from the results; after undo the section comes back.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

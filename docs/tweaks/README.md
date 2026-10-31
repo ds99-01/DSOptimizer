@@ -30,6 +30,3 @@ Wynik przebiegu na VM: data, wersja (Home/Pro), `Passed` albo `Skipped` z powode
 Dowód realnego skutku (zasada Etapu 4a): Home i Pro osobno, każda z metodą obserwacji (zrzut, UIA, proces, Ustawienia),
 wynikiem i datą. Sam zapis wartości nie jest dowodem. Pozycja bez obserwowanego skutku na danej edycji dostaje `editions`
 (`NotSupported` na pozostałych); bez żadnego dowodu wypada z katalogu.
-
-## Reddit
-Zgłoszenia problemów i opinie o placebo na 24H2/25H2/26H2 (uzupełniane w części E); do tego czasu: "do uzupełnienia".

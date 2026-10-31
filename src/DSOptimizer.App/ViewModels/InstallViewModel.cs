@@ -23,7 +23,7 @@ namespace DSOptimizer.App.ViewModels;
 /// do zaznaczenia (decyzja planu 1); tylko błąd odczytu listy zainstalowanych zastępuje listę komunikatem. Odczyt
 /// (<see cref="InstallSession.Load"/>) i wyszukiwanie w winget poza wątkiem UI. Własne zaznaczenie (ze wszystkich kategorii i wyników
 /// winget; przetrwa zmianę kategorii, zmianę tekstu, nowe wyszukiwanie i odświeżenie) i pasek „Zainstaluj (N)”, który zawsze idzie
-/// przez okno serii (<c>MainViewModel</c>). Nic nie zaznacza się samo (bez presetów, decyzja Dawida 2026-10-15).
+/// przez okno serii (<c>MainViewModel</c>). Nic nie zaznacza się samo (bez presetów, decyzja autora 2026-10-15).
 /// Load biegnie poza blokadą <see cref="GuiSession"/>, więc w trakcie operacji (<see cref="IsBusy"/>) odświeżenie czeka na jej koniec.
 /// </summary>
 public sealed class InstallViewModel : ObservableObject

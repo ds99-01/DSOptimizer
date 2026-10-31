@@ -42,6 +42,3 @@ Przebieg VM (Task 10, 2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1` na gałę
 Metoda: w procesie konta `dso` (zadanie Harmonogramu Interactive + Highest, jak DSOptimizer po UAC) usunięcie aliasu `winget.exe`, potem `Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe` i `winget --version`; surowe wyniki poza gitem.
 - **Home** (`DSO-26H2-Home`, 26300.9457), 2026-10-22: po usunięciu aliasu `winget` = „Nie można odnaleźć określonego pliku”, pakiet dalej `Installed`; rejestracja po nazwie rodziny (0,4–0,5 s) przywraca alias, `winget --version` = `v1.11.510`, kod 0. `Remove-AppxPackage` dla konta: odmowa 0x80073CFA.
 - **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: identycznie (przebieg A2: rejestracja 0,53 s). Z siecią (N1): `winget source list` kod 0, `winget search PowerToys` pobrał źródło i zwrócił wynik, kod 0 (akcja tego nie sprawdza).
-
-## Reddit
-Do uzupełnienia w części E.

@@ -28,20 +28,20 @@
   <Geometry x:Key="IconInfoFill">M9.05,6.5 A0.95,0.95 0 1 1 10.95,6.5 A0.95,0.95 0 1 1 9.05,6.5 Z</Geometry>
   <Geometry x:Key="IconWarningStroke">M10,3 L17.5,16.25 H2.5 Z M10,8 V11.5</Geometry>
   <Geometry x:Key="IconWarningFill">M9.05,13.75 A0.95,0.95 0 1 1 10.95,13.75 A0.95,0.95 0 1 1 9.05,13.75 Z</Geometry>
-  <!-- Prywatność i AI (E4, wybór Dawida 2026-10-21): oko przekreślone, kontur i źrenica przerwane przy kresce -->
+  <!-- Prywatność i AI (E4, wybór autora 2026-10-21): oko przekreślone, kontur i źrenica przerwane przy kresce -->
   <Geometry x:Key="IconPrivacyStroke">M2.75,10 A7.63,7.63 0 0 1 4.09,7.55 M8.18,4.97 A7.63,7.63 0 0 1 17.25,10 A7.63,7.63 0 0 1 15.91,12.45 M11.82,15.03 A7.63,7.63 0 0 1 2.75,10 M9.25,12.65 A2.75,2.75 0 0 1 7.35,10.75 M10.75,7.35 A2.75,2.75 0 0 1 12.65,9.25 M3.5,3.5 L16.5,16.5</Geometry>
   <!-- Pozycja sugerowana (wariant C): żarówka -->
   <Geometry x:Key="IconSuggestedStroke">M7.5,14.25 V12.9 A5.25,5.25 0 1 1 12.5,12.9 V14.25 Z M8.25,17 H11.75</Geometry>
-  <!-- Aplikacje (K1, wybór Dawida 2026-10-21): siatka 2×2 zaokrąglonych kafli -->
+  <!-- Aplikacje (K1, wybór autora 2026-10-21): siatka 2×2 zaokrąglonych kafli -->
   <Geometry x:Key="IconAppsStroke">M4.5,3.25 H7.5 A1.25,1.25 0 0 1 8.75,4.5 V7.5 A1.25,1.25 0 0 1 7.5,8.75 H4.5 A1.25,1.25 0 0 1 3.25,7.5 V4.5 A1.25,1.25 0 0 1 4.5,3.25 Z M12.5,3.25 H15.5 A1.25,1.25 0 0 1 16.75,4.5 V7.5 A1.25,1.25 0 0 1 15.5,8.75 H12.5 A1.25,1.25 0 0 1 11.25,7.5 V4.5 A1.25,1.25 0 0 1 12.5,3.25 Z M4.5,11.25 H7.5 A1.25,1.25 0 0 1 8.75,12.5 V15.5 A1.25,1.25 0 0 1 7.5,16.75 H4.5 A1.25,1.25 0 0 1 3.25,15.5 V12.5 A1.25,1.25 0 0 1 4.5,11.25 Z M12.5,11.25 H15.5 A1.25,1.25 0 0 1 16.75,12.5 V15.5 A1.25,1.25 0 0 1 15.5,16.75 H12.5 A1.25,1.25 0 0 1 11.25,15.5 V12.5 A1.25,1.25 0 0 1 12.5,11.25 Z</Geometry>
   <!-- Instalacja (I2, render Tasku 1 Etapu 4c, ruling R5): strzałka w dół nad tacą -->
   <Geometry x:Key="IconInstallStroke">M10,3 V11.5 M6.5,8 L10,11.5 L13.5,8 M4,12.5 V14.75 A1.5,1.5 0 0 0 5.5,16.25 H14.5 A1.5,1.5 0 0 0 16,14.75 V12.5</Geometry>
-  <!-- Przygotowanie (I1, wybór Dawida 2026-10-21): lista z ptaszkami – dwa wiersze odhaczone, trzeci (kółko) czeka -->
+  <!-- Przygotowanie (I1, wybór autora 2026-10-21): lista z ptaszkami – dwa wiersze odhaczone, trzeci (kółko) czeka -->
   <Geometry x:Key="IconPrepStroke">M3.25,5.25 L4.75,6.75 L7.25,4 M10,5.5 H16.75 M3.25,10.25 L4.75,11.75 L7.25,9 M10,10.5 H16.75 M3.6,15.25 A1.65,1.65 0 1 1 6.9,15.25 A1.65,1.65 0 1 1 3.6,15.25 Z M10,15.25 H16.75</Geometry>
   <!-- Aplikacja chroniona (render Tasku 1): kłódka z kropką zamiast pola wyboru -->
   <Geometry x:Key="IconLockStroke">M5.5,9 H14.5 A1.5,1.5 0 0 1 16,10.5 V15.5 A1.5,1.5 0 0 1 14.5,17 H5.5 A1.5,1.5 0 0 1 4,15.5 V10.5 A1.5,1.5 0 0 1 5.5,9 Z M6.75,9 V6.25 A3.25,3.25 0 0 1 13.25,6.25 V9</Geometry>
   <Geometry x:Key="IconLockFill">M9.1,13 A0.9,0.9 0 1 1 10.9,13 A0.9,0.9 0 1 1 9.1,13 Z</Geometry>
-  <!-- Naprawy (wariant A, wybór Dawida 2026-10-22): klucz płaski dwustronny, oba końce otwarte, ukośnie TL-BR; tylko kontur. -->
+  <!-- Naprawy (wariant A, wybór autora 2026-10-22): klucz płaski dwustronny, oba końce otwarte, ukośnie TL-BR; tylko kontur. -->
   <Geometry x:Key="IconRepairStroke">M11.87,13.57 A3,3 0 0 0 15.76,17.46 L13.11,14.81 A1.2,1.2 0 0 1 14.81,13.11 L17.46,15.76 A3,3 0 0 0 13.57,11.87 L8.13,6.43 A3,3 0 0 0 4.24,2.54 L6.89,5.19 A1.2,1.2 0 0 1 5.19,6.89 L2.54,4.24 A3,3 0 0 0 6.43,8.13 Z</Geometry>
   <Geometry x:Key="IconOpenLocationStroke">M3.5,15.5 V5 A1,1 0 0 1 4.5,4 H8 L9.75,5.75 H14.5 A1,1 0 0 1 15.5,6.75 V8.75 M3.5,15.5 L6.25,8.75 H17.5 L14.75,15.5 Z</Geometry>
 

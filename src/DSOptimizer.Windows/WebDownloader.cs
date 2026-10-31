@@ -9,7 +9,7 @@ using DSOptimizer.Core.Localization;
 namespace DSOptimizer.Windows;
 
 /// <summary>
-/// HTTPS dla jedynego wyjątku od „program sam niczego nie pobiera” (RustDesk z GitHuba). <see cref="HttpWebRequest"/>; TLS: przy
+/// HTTPS dla dwóch wyjątków od „program sam niczego nie pobiera” (RustDesk i WinUtil z GitHuba). <see cref="HttpWebRequest"/>; TLS: przy
 /// domyślnym <c>SystemDefault</c> wersję wybiera system (1.2/1.3), przy jawnie ustawionej liście protokołów dodawany jest TLS 1.2
 /// (<see cref="EnsureTls12"/>). Proxy systemowe z poświadczeniami domyślnymi (tylko dla proxy – serwer nie dostaje poświadczeń), bez
 /// dekompresji i bez automatycznych przekierowań: każdy skok ocenia predykat wywołującego przed kolejnym żądaniem, a żądanie idzie dokładnie tym obiektem

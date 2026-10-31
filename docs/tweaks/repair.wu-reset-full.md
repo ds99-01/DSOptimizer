@@ -7,7 +7,7 @@ Portować jako `kind=action`, `risk=experimental` (kategoria „Naprawy”, Etap
 Handler C# (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`, wariant `full`). Kroki ponad `repair.wu-reset`:
 1. Najpierw odmowa: `IDomainInfo.IsDomainJoined()` (`Win32_ComputerSystem.PartOfDomain`) = `true` → `Refused` „Komputer jest w domenie: polityki Windows Update ustawia administrator domeny.”; `null` → `Refused` „Nie udało się sprawdzić, czy komputer jest w domenie.” Nic nie jest zmieniane.
 2. Odczyt usług obejmuje też `UsoSvc` (typ startu do kroku 5; `UsoSvc` nie jest zatrzymywany).
-3. Kopia polityk, przed jakąkolwiek zmianą (R13): gdy klucz `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate` istnieje – `%SystemRoot%\System32\reg.exe export "<klucz>" "<backups>\wu-policies-<rrrrMMdd-HHmmss>.reg" /y` (`System32ToolRunner`, eksport obejmuje podklucz `AU`) i sprawdzenie, że plik ma rozmiar > 0. `<backups>` = `%ProgramData%\DSOptimizer\backups`, tworzony z zaufanym ACL przy pierwszej kopii (`SecureDirectory.Ensure`), nie przy starcie programu. Nieczytelny klucz, eksport z kodem ≠ 0, pusty plik albo niedostępny katalog kopii → `Failed` „… polityki zostają bez zmian. Nic nie zmieniono.” (usługi i foldery nietknięte). Brak klucza → bez pliku, linia „Brak polityk Windows Update.”
+3. Kopia polityk, przed jakąkolwiek zmianą: gdy klucz `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate` istnieje – `%SystemRoot%\System32\reg.exe export "<klucz>" "<backups>\wu-policies-<rrrrMMdd-HHmmss>.reg" /y` (`System32ToolRunner`, eksport obejmuje podklucz `AU`) i sprawdzenie, że plik ma rozmiar > 0. `<backups>` = `%ProgramData%\DSOptimizer\backups`, tworzony z zaufanym ACL przy pierwszej kopii (`SecureDirectory.Ensure`), nie przy starcie programu. Nieczytelny klucz, eksport z kodem ≠ 0, pusty plik albo niedostępny katalog kopii → `Failed` „… polityki zostają bez zmian. Nic nie zmieniono.” (usługi i foldery nietknięte). Brak klucza → bez pliku, linia „Brak polityk Windows Update.”
 4. Zatrzymanie usług i przeniesienie folderów jak w `repair.wu-reset` (wszystko albo nic). Gdy ten etap się nie uda, polityki zostają, a plik `.reg` zostaje w `<backups>` (ścieżka w wyniku).
 5. Usunięcie polityk, po przeniesieniu folderów, przed startem usług: `IRegistry.DeleteKeyTree` klucza z podkluczami (tylko gdy kopia powstała), z odczytem zwrotnym (klucza nie ma). Błąd usunięcia albo klucz nadal jest → `Failed` (po przywróceniu usług) ze ścieżką kopii i podpowiedzią `reg import "<plik>"`.
 6. Start usług jak w `repair.wu-reset`.
@@ -16,7 +16,7 @@ Handler C# (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`, wariant `full`)
 
 Gdy przebieg zatrzyma się po kroku 5, a przed krokiem 7 – nie było żadnego folderu do przeniesienia albo nie udało się ponownie uruchomić usług – wynik to `Failed`, a nagłówek kończy się zdaniami „Polityki Windows Update zostały już usunięte (kopia: <plik>; przywrócenie: reg import "<plik>").” (tylko gdy polityki były i zostały usunięte) oraz „Typy startu usług nie zostały zmienione.”; ostrzeżenie MDM jest w wyniku także wtedy.
 
-Tabela typów startu (ta sama na Home i Pro, R10):
+Tabela typów startu (ta sama na Home i Pro):
 
 | Usługa | Typ startu po resecie |
 |---|---|
@@ -53,6 +53,3 @@ Przebieg VM (Task 10, 2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1` na gałę
 Metoda: sonda eksploracji (`tests/vm/explore/Invoke-E4B1Exploration.ps1`): zapis 6 polityk razem i każdej osobno, zrzut strony Windows Update w Ustawieniach (komunikat organizacji, stan przycisku „Sprawdź aktualizacje”), `reg export` / `reg delete` / `reg import` z porównaniem wartości, `ChangeServiceConfig` dla każdej usługi WU; surowe wyniki poza gitem.
 - **Home** (`DSO-26H2-Home`, 26300.9457), 2026-10-22: 6 polityk razem i każda osobno – brak komunikatu w Ustawieniach, „Sprawdź aktualizacje” aktywny (skutku widocznego w UI nie ma; skutku na skan offline nie da się zmierzyć). `reg export` klucza zapisuje też `AU` (jeden plik), `reg delete` usuwa całość, `reg import` przywraca 1:1. `ChangeServiceConfig`: `wuauserv`, `bits`, `cryptsvc`, `UsoSvc` OK; `msiserver`, `WaaSMedicSvc`, `DoSvc` odmowa 5. Reset usług i folderów jak w `repair.wu-reset`.
 - **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: 6 polityk razem → „Ustawieniami usługi Windows Update zarządza Twoja organizacja.” i nieaktywny przycisk; osobno komunikat i blokadę daje tylko `SetDisableUXWUAccess`, pozostałe 5 bez widocznego skutku. Po usunięciu klucza komunikat znika, `reg import` przywraca stan 1:1. `ChangeServiceConfig` jak Home (`wuauserv` Disabled i powrót – WaaSMedic nie przywraca w 10 s). Reset usług i folderów oraz historia aktualizacji jak w `repair.wu-reset` (N1).
-
-## Reddit
-Do uzupełnienia w części E.

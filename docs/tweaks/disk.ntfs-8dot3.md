@@ -40,6 +40,3 @@ Przypadek `disk-ntfs-8dot3` (`Flow=Full`, przebieg `main`), Home i Pro:
 - Sprawdzono: `detect-before` = `NotApplied` (Setup ustawił 0, inaczej niż `original` 2), `apply` kod 0, `detect-after-apply` = `Applied` (rejestr = 1), `undo` kod 0, `detect-after-undo` = `NotApplied`. `SnapshotBefore` `NtfsDisable8dot3NameCreation` DWORD 0, `SnapshotDiff` pusty, więc undo przywróciło wartość ze snapshotu, nie fallback 2.
 - Check: brak. Restartu nie było (`requiresReboot` = false).
 - **Nie sprawdzono:** skutek na plikach (`dir /x`, nowe nazwy 8.3), stan woluminu C: (`fsutil 8dot3name query`), czy zapis działa na nowe pliki bez restartu; sprawdzana jest tylko globalna wartość rejestru.
-
-## Reddit
-Do uzupełnienia w części E.

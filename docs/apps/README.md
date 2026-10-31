@@ -24,12 +24,12 @@ pilnuje, że plik na dysku i zasób są tym samym.
 - `summary` – ≤ 160 znaków, po polsku, bez nazw kluczy rejestru i cmdletów.
 - `warning` – opcjonalne ostrzeżenie pokazywane przy wierszu.
 - `source` – skąd wiemy, że to śmieć (dokumentacja MS, odczyt VM, spec, producent). Wpis sugerowany musi mieć źródło
-  z adresem `https://`, znacznikiem „spec 6.2 (decyzja Dawida)” albo odczytem VM; pilnuje tego test `SuggestedEntries_HaveVerifiableSource`.
+  z adresem `https://`, znacznikiem „spec 6.2 (decyzja autora)” albo odczytem VM; pilnuje tego test `SuggestedEntries_HaveVerifiableSource`.
 - `cleanupUrl` – opcjonalny adres `https` oficjalnego narzędzia producenta do czyszczenia resztek. Program niczego z niego nie pobiera,
   pokazuje go tylko jako tekst. Wolno wpisać wyłącznie adres sprawdzony pobraniem strony (tabela niżej); test `VerifiedCleanupUrls` pilnuje,
   że w pliku nie ma żadnego innego.
 - `reason` (tylko `protected`) – dlaczego aplikacja jest chroniona, pokazywany przy kłódce.
-- `source` w `protected` – opcjonalne, tylko dla czytającego plik (loader go nie czyta); mają je wpisy zależności uruchomieniowych (R21).
+- `source` w `protected` – opcjonalne, tylko dla czytającego plik (loader go nie czyta); mają je wpisy zależności uruchomieniowych.
 
 Kolejność wpisów w `entries` ma znaczenie: **pierwszy pasujący** wyznacza grupę, więc wąskie reguły idą przed szerokimi.
 Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
@@ -56,7 +56,7 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 - **Trial:** wzorce McAfee i Norton zawężone do produktów konsumenckich. McAfee Agent / Endpoint / Drive Encryption / Data Loss Prevention
   i Trellix są na liście **chronionych** (mogą być oprogramowaniem firmowym). Norton Family i Utilities nie pasują do żadnego wzorca.
 - Wzorce chronionych sterowników po wydawcy (`Intel*`, `NVIDIA*` itd.) są szerokie celowo: lepiej nie pozwolić usunąć niż pozwolić.
-- **Zależności uruchomieniowe Win32 (R21):** Visual C++ Redistributable, .NET Runtime / Windows Desktop Runtime, ASP.NET Core Runtime
+- **Zależności uruchomieniowe Win32:** Visual C++ Redistributable, .NET Runtime / Windows Desktop Runtime, ASP.NET Core Runtime
   i Shared Framework, Microsoft Update Health Tools, Microsoft GameInput. Na świeżej VM 26H2 ich nie ma (są tylko ukryte pakiety AppX
   VCLibs/.NET Native), więc nazwy wpisów Uninstall pochodzą z odczytu hosta Windows 11 (2026-10-21, tylko odczyt), a uzasadnienie
   z Microsoft Learn / Microsoft Support (adresy w polu `source`, sprawdzone pobraniem strony 2026-10-21). GameInput to program MSI
@@ -69,7 +69,7 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 | Adres | Sprawdzono | Wynik |
 |---|---|---|
 | `https://support.norton.com/sp/en/us/home/current/solutions/v60392881` | 2026-10-21 | działa; tytuł „Download and run the Norton 360 Remover tool for Windows”, opis: usuwa lub usuwa i instaluje ponownie aplikację Norton device security |
-| `https://www.mcafee.com/support/s/article/000002766?language=pl` | 2026-10-21 | artykuł McAfee o narzędziu usuwania (MCPR); pobranie strony: timeout, curl: 403 (blokada botów) – adres podał i sprawdził ręcznie Dawid. Przypisany do LiveSafe, Total Protection, AntiVirus Plus, Internet Security i Personal Security |
+| `https://www.mcafee.com/support/s/article/000002766?language=pl` | 2026-10-21 | artykuł McAfee o narzędziu usuwania (MCPR); pobranie strony: timeout, curl: 403 (blokada botów) – adres podał i sprawdził ręcznie autor. Przypisany do LiveSafe, Total Protection, AntiVirus Plus, Internet Security i Personal Security |
 
 ### Nie dopisane, bo nie dało się potwierdzić
 
@@ -89,7 +89,7 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 | Family (`MicrosoftCorporationII.MicrosoftFamily`) | Pozostałe | Kontrola rodzicielska, może być w użyciu |
 | Sticky Notes (`Microsoft.MicrosoftStickyNotes`) | **Chronione** | Aplikacja użytkowa (decyzja projektowa) |
 | Xbox TCUI, Xbox Identity Provider, Game Speech Window | Pozostałe | Zależności Xbox, mogą być potrzebne grom i Game Bar (decyzja projektowa) |
-| Game Bar (`Microsoft.XboxGamingOverlay`) | Pozostałe, jawny wpis | Decyzja Dawida 2026-10-21 |
+| Game Bar (`Microsoft.XboxGamingOverlay`) | Pozostałe, jawny wpis | Decyzja autora 2026-10-21 |
 | Łącze z telefonem, Urządzenia przenośne, Windows Web Experience Pack | Pozostałe | Bez wpisu; Widżety obsługuje partia 1 |
 | Ulepszenia zgodności, kodeki AVC/MPEG-2/VP9/RAW/WebMedia, Zakupy w Sklepie | Chronione | Składniki systemu i kodeki, jak reszta kodeków ze specu |
 | Edge jako pakiet (`Microsoft.MicrosoftEdge.Stable`) | Chronione | Na VM pakiet istnieje jako osobna pozycja obok wpisu Win32 Edge |
@@ -97,16 +97,16 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 | HP Support Assistant, Dell SupportAssist | **Pozostałe** (szkic miał „sugerowane”) | Mogą aktualizować sterowniki; brak sprzętu OEM do sprawdzenia |
 | MyASUS, Armoury Crate, MyDell, Dell Optimizer | Pozostałe + ostrzeżenie o baterii i Fn | Sterują baterią i wydajnością |
 | Dell Digital Delivery | Pozostałe + ostrzeżenie | Może trzymać instalatory kupionego oprogramowania |
-| McAfee WebAdvisor, Security Scan Plus | Sugerowane | Bez niezależnego źródła; decyzja Dawida 2026-10-21 po przeczytaniu listy |
+| McAfee WebAdvisor, Security Scan Plus | Sugerowane | Bez niezależnego źródła; decyzja autora 2026-10-21 po przeczytaniu listy |
 | Konsumenckie McAfee i Norton | Sugerowane + ostrzeżenie „jeśli to płatny antywirus, nie usuwaj” | Spec 6.2 mówi: trial sugerowany; program nie odróżni próby od płatnej licencji |
 | McAfee Agent, Endpoint, Drive Encryption, DLP, Trellix | **Chronione** | Mogą być oprogramowaniem firmowym |
 | McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Sugerowane; w `source` oficjalne strony mcafee.com | Spec 6.2 (trial McAfee); wzorce to nazwy produktów, nie całe „McAfee*” |
-| McAfee Personal Security | Sugerowane + ostrzeżenie | Nie znaleziono oficjalnej strony McAfee dla tej nazwy (R1); sugerowany decyzją Dawida 2026-10-21 |
-| WildTangent, HP Games by WildTangent | Sugerowane; źródło „spec 6.2 (decyzja Dawida)” | Brak oficjalnej strony producenta w sprawdzonych źródłach; wzorce `WildTangent*` i `HP Games by WildTangent*` (R1: bez `*WildTangent*`) |
-| Booking.com | Sugerowane; źródło „spec 6.2 (decyzja Dawida)” | Brak oficjalnej strony wpisu; nazwa z Which? |
+| McAfee Personal Security | Sugerowane + ostrzeżenie | Nie znaleziono oficjalnej strony McAfee dla tej nazwy; sugerowany decyzją autora 2026-10-21 |
+| WildTangent, HP Games by WildTangent | Sugerowane; źródło „spec 6.2 (decyzja autora)” | Brak oficjalnej strony producenta w sprawdzonych źródłach; wzorce `WildTangent*` i `HP Games by WildTangent*` (bez `*WildTangent*`) |
+| Booking.com | Sugerowane; źródło „spec 6.2 (decyzja autora)” | Brak oficjalnej strony wpisu; nazwa z Which? |
 | Microsoft 365 (Office Hub), Porady | Sugerowane; źródło MS Learn (adres w `source`) | Nazw nie ma na świeżym 26H2, tylko w archiwalnej liście z Windows 10 |
-| Microsoft Visual C++ Redistributable (`Microsoft Visual C++ * Redistributable*`) | **Chronione** (R21) | Wiele programów i gier ich wymaga; po usunięciu przestaną się uruchamiać |
-| .NET Runtime, Windows Desktop Runtime (`Microsoft .NET*Runtime*`, `Microsoft Windows Desktop Runtime*`) | **Chronione** (R21) | Bez nich programy .NET się nie uruchomią |
-| ASP.NET Core Runtime / Shared Framework (`Microsoft ASP.NET Core*Runtime*`, `…*Shared Framework*`) | **Chronione** (R21) | Bez nich programy i usługi ASP.NET Core się nie uruchomią |
-| Microsoft Update Health Tools | **Chronione** (R21) | Składnik usługi Windows Update (KB4023057) |
-| Microsoft GameInput (`Microsoft GameInput*`, program MSI) | **Chronione** (R21) | Obsługa kontrolerów w grach; gry instalują go z powrotem |
+| Microsoft Visual C++ Redistributable (`Microsoft Visual C++ * Redistributable*`) | **Chronione** | Wiele programów i gier ich wymaga; po usunięciu przestaną się uruchamiać |
+| .NET Runtime, Windows Desktop Runtime (`Microsoft .NET*Runtime*`, `Microsoft Windows Desktop Runtime*`) | **Chronione** | Bez nich programy .NET się nie uruchomią |
+| ASP.NET Core Runtime / Shared Framework (`Microsoft ASP.NET Core*Runtime*`, `…*Shared Framework*`) | **Chronione** | Bez nich programy i usługi ASP.NET Core się nie uruchomią |
+| Microsoft Update Health Tools | **Chronione** | Składnik usługi Windows Update (KB4023057) |
+| Microsoft GameInput (`Microsoft GameInput*`, program MSI) | **Chronione** | Obsługa kontrolerów w grach; gry instalują go z powrotem |

@@ -32,7 +32,7 @@ Opis działania:
     czy odczyt rozróżnia oba stany) -> logoff (wylogowanie dso, czy „pending removal” To Do po -User <SID> dokańcza się); wszystko cofa revert.
     Ostatni bezpiecznik po stronie VM: Assert-E4A2InsideVm (nazwa komputera DSO-26H2-HOME/PRO i brak DSO_VM_TESTS_MOCK_ONLY) na początku
     każdej funkcji ze skutkiem. Pierwszy błąd uwierzytelnienia przerywa cały skrypt (blokada konta). Skrypt dotyka wyłącznie VM
-    DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy Bruteforce_LTSC; na hoście niczego nie usuwa.
+    DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy obcej VM; na hoście niczego nie usuwa.
     Wynik: <OutDirectory>\<VmName>\e4a2.json (UTF-8), zrzuty K2 <OutDirectory>\<VmName>\shots\*.png i zrzuty hosta host-start-*.png.
     Kod wyjścia: 0 gdy wszystkie wybrane VM zebrane bez błędu przebiegu, 1 w przeciwnym razie.
 #>

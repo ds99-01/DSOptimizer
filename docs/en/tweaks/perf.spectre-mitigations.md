@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/perf.spectre-mitigations.md sha256: 7d95ed29fe68d8554611c6c41f51ff3a42bbb6f7d78f3ba7e7dfdfe7d27ab6ab -->
+<!-- source: docs/tweaks/perf.spectre-mitigations.md sha256: ad80b4b2b0c2b23286185f16509d600987742c2b9da3ab7d5c68619fa4da92bf -->
 
 # perf.spectre-mitigations – turning off Spectre/Meltdown mitigations (not ported)
 
 ## Verdict for 26H2
-Not ported: the MS client page (KB4073119) ends at Windows 11 23H2, turning off the mitigations lowers protection on someone else's computer with no measured benefit, and detection sees only the registry, not the real state of the mitigations. Dawid's decision of 2026-10-18. The `cpu_spectre` alias from v3.2 has no item in the catalog.
+Not ported: the MS client page (KB4073119) ends at Windows 11 23H2, turning off the mitigations lowers protection on someone else's computer with no measured benefit, and detection sees only the registry, not the real state of the mitigations. The author's decision of 2026-10-18. The `cpu_spectre` alias from v3.2 has no item in the catalog.
 
 ## What it changes
 The item isn't in the catalog and changes nothing. Entry considered (v3.2 and MS): `HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`, values `FeatureSettingsOverride` = 3 and `FeatureSettingsOverrideMask` = 3 (both DWord), restart required.
@@ -36,6 +36,3 @@ Reasons in the "What it changes" section. If the item ever went in, it would nee
 
 ## VM test
 Not applicable (the item isn't ported). Only the defaults were read, see above.
-
-## Reddit
-To be added in part E.

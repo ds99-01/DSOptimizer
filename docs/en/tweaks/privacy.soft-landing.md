@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.soft-landing.md sha256: cf4b931cf4aefc789af08ffacb1adcd629cefe5d5c94a91208358d4d02d886d6 -->
+<!-- source: docs/tweaks/privacy.soft-landing.md sha256: 8064f575ace1bbf5a38bb3ae3759d6ea749ab99b440cb804c34528be6be0ae32 -->
 
 # privacy.soft-landing – Windows tips, policy (DisableSoftLanding)
 
@@ -28,6 +28,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: writing the policy, checking the tips checkbox in Settings. Result: **no effect**, the "Uzyskaj porady i sugestie…" (Get tips and suggestions…) checkbox is still active and selected.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

@@ -15,7 +15,7 @@ Opis działania:
     serwisowania, czyszczenie dysku (stare pliki tymczasowe, Optymalizacja dostarczania, SoftwareDistribution\Download,
     StartComponentCleanup, miniatury, porównanie z cleanmgr /sagerun) i Windows.old przez cleanmgr („Previous Installations”) – raz
     z PowerShell Direct (sesja 0) i raz w sesji dso (zadanie Harmonogramu Interactive + Highest, czyli jak DSOptimizer po UAC).
-    Zakres zawężony decyzją Dawida (R8, 2026-10-22): żadnego uszkadzania plików systemowych, żadnej zmiany właściciela ani ACL;
+    Zakres zawężony decyzją autora (R8, 2026-10-22): żadnego uszkadzania plików systemowych, żadnej zmiany właściciela ani ACL;
     SFC i DISM tylko na zdrowej VM; Windows.old = zwykły folder z plikami testowymi utworzony kontem Administratora.
     Wszystkie zmiany WYŁĄCZNIE w VM DSO-26H2-Home/Pro; na hoście skrypt tylko podłącza/odłącza kartę sieciową VM (Default Switch,
     wyłącznie na fazę network), kopiuje surowe pliki wyników z VM i zapisuje JSON.

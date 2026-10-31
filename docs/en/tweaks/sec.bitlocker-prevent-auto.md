@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.bitlocker-prevent-auto.md sha256: aaf36dc7249e113e11a5ca0c1c9833f996b8f089476a6176bc0e4a8f14dcadfb -->
+<!-- source: docs/tweaks/sec.bitlocker-prevent-auto.md sha256: 6af0ea3ca3fe115279ea2561332404c361a13bb45327a960b7c9c23e62e736d8 -->
 
 # sec.bitlocker-prevent-auto – Block automatic drive encryption (BitLocker)
 
@@ -45,6 +45,3 @@ Full VM run `vm-run-20261019-002807` (2026-10-19, about 00:28–00:46, build 263
 - `sec-bitlocker-prevent-auto-effect` (`Flow=DetectOnly`): **Skipped** on Home and Pro. Reason: the effect "encryption doesn't start" requires a new OOBE with a Microsoft account, and the VM has a local account and a checkpoint after OOBE. Reported as skipped, not passed.
 - Run summary (all cases): Home 309 passed / 0 failed / 21 skipped (`main` 221/0/21 + 6 green Reboot runs), Pro 308 / 1 / 21 (the only failure is the old `Check` of the `sec-bitlocker-decrypt-c` case, fixed in `962ae0e`; see `sec.bitlocker-decrypt-c`).
 - **Not tested on the VM:** the effect of the value (whether automatic encryption doesn't start in OOBE).
-
-## Reddit
-To be added in part E.

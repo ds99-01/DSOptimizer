@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/perf.paging-executive.md sha256: 14741cbc82268ccfec5e098189440fc17166d6121038050a2338b485781b7048 -->
+<!-- source: docs/tweaks/perf.paging-executive.md sha256: 527b0636a5a8cd851d9f103a459d22a34e05402760062636b791f4c5d303ffd4 -->
 
 # perf.paging-executive – Keep kernel and driver code in memory
 
@@ -38,6 +38,3 @@ Case `perf-paging-executive` (`Flow=Reboot`, run `reboot-perf-paging-executive`,
 - Checked: `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = true), `detect-after-apply` = `Applied`, **real restart** (confirmed by a later `LastBootUpTime` and the disappearance of a volatile marker), `detect-after-reboot` = `Applied`, `undo` = `Undone` (`requiresReboot` = true, `finalState` = `NotApplied`), `detect-after-undo` = `NotApplied`. Final state = state before (DWORD 0).
 - There is no "value missing at the start" case, because the value exists on Home and Pro; the `<RemoveEntry>` path is covered by a unit test on fakes.
 - **Not checked:** the effect of `DisablePagingExecutive` (the system gives no indicator, and the item has no evidence of a benefit on 26H2), the behavior under memory load or on real hardware. Only the registry value and its persistence after a restart are checked.
-
-## Reddit
-To be added in part E.

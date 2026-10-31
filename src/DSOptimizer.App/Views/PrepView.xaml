@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="clr-namespace:DSOptimizer.App.Views"
              xmlns:prep="clr-namespace:DSOptimizer.Core.Prep;assembly=DSOptimizer.Core">
-  <!-- Układ A (wybór Dawida 2026-10-21, makieta Tasku 1): jedna kolumna, kroki numerowane jak sekcje Specyfikacji (nagłówek sekcji
+  <!-- Układ A (wybór autora 2026-10-21, makieta Tasku 1): jedna kolumna, kroki numerowane jak sekcje Specyfikacji (nagłówek sekcji
        + cienka linia), pod spodem etykieta | wartość ze wspólną kolumną etykiet dla całej strony. Problem = ikona Warning 14 px
        + kolor tekstu wartości (Attention = SystemFillColorCautionBrush, Problem = SystemFillColorCriticalBrush), bez tła, ramek i pasków.
        Linki = TextLinkButton (jak link autora w Ustawieniach): przy nagłówku kroku z prawej, link wiersza (PrepLine.Action) w wierszu. -->

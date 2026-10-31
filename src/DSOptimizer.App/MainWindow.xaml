@@ -285,7 +285,7 @@
             <TextBlock Style="{StaticResource SubText}" Text="{Binding RowSubtitle}" ToolTip="{Binding RowSubtitle}" />
           </DockPanel>
         </StackPanel>
-        <!-- Żarówka = pozycja sugerowana (wariant C, wybór Dawida 2026-10-21); znika na pozycji nieobsługiwanej (nie jest wtedy sugerowana) -->
+        <!-- Żarówka = pozycja sugerowana (wariant C, wybór autora 2026-10-21); znika na pozycji nieobsługiwanej (nie jest wtedy sugerowana) -->
         <Grid Grid.Column="3" Margin="12,0,12,0" VerticalAlignment="Center" Background="Transparent"
               ToolTip="{x:Static gui:GuiText.SuggestedTooltip}">
           <Grid.Style>
@@ -633,7 +633,7 @@
           <!-- RequestBringIntoView na treści, nie na ScrollViewerze: jego obsługa klasy działa przed obsługą instancji i oznacza zdarzenie jako obsłużone -->
           <StackPanel Margin="0,0,12,12" Grid.IsSharedSizeScope="True" RequestBringIntoView="OnDetailContentRequestBringIntoView">
             <TextBlock Style="{StaticResource DetailTitleText}" Text="{Binding Title}" />
-            <!-- Co zyskasz (tylko tweak i akcja): płaskie neutralne tło (jak bloki Ustawień Windows 11), bez obrysu i paska – wariant B, wybór Dawida.
+            <!-- Co zyskasz (tylko tweak i akcja): płaskie neutralne tło (jak bloki Ustawień Windows 11), bez obrysu i paska – wariant B, wybór autora.
                  Panel nie ma benefitu: opis bez nagłówka. -->
             <Border Margin="0,14,0,0" Padding="14,11,14,13" CornerRadius="4"
                     Background="{DynamicResource SubtleFillColorSecondaryBrush}"
@@ -724,7 +724,7 @@
     <!-- Stały pasek akcji serii nad dziennikiem: stała wysokość, tylko na stronach kategorii; przyciski nieaktywne przy 0 zaznaczonych.
          W wierszu treści przy dolnej krawędzi, żeby uchwyt dziennika sąsiadował z wierszem „*” (GridSplitter zmienia sąsiednie wiersze).
          Dolny margines 8: uchwyt nie przykleja się do paska. Obramowanie „L” w kolorze marki: lewa 3 px + dolna 1 px
-         (wybór Dawida z czterech renderowanych wariantów, 2026-10-21). -->
+         (wybór autora z czterech renderowanych wariantów, 2026-10-21). -->
     <Border Grid.Row="2" Grid.Column="1" Height="56" Margin="22,0,16,8" Padding="14,0,12,0" VerticalAlignment="Bottom"
             BorderThickness="3,0,0,1" BorderBrush="{DynamicResource BrandAccentBrush}"
             Background="{DynamicResource SubtleFillColorSecondaryBrush}"

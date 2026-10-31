@@ -7,7 +7,7 @@ Instrukcja uruchomienia:
     Jedna VM:
         .\tests\vm\explore\Invoke-C4Exploration.ps1 -VmName DSO-26H2-Pro -OutDirectory C:\ścieżka\do\wyników
     Bez -OutDirectory wynik trafia do tests\vm\out\c4-<data> (katalog out\ jest w .gitignore).
-    Czas: kilka do kilkunastu minut na VM. Brak szyfrowania i odszyfrowania C: (decyzja Dawida): BitLocker tylko odczyt.
+    Czas: kilka do kilkunastu minut na VM. Brak szyfrowania i odszyfrowania C: (decyzja autora): BitLocker tylko odczyt.
 Opis działania:
     Skrypt zbiera dowody z prawdziwej VM 26H2 dla partii C4 (pozycje sec.*: BitLocker i menu "Przejmij na własność").
     Zapisuje FAKTY (surowe wartości), bez interpretacji. Wszystkie zmiany są WYŁĄCZNIE wewnątrz VM (na hoście nic się nie zmienia),
@@ -48,7 +48,7 @@ Opis działania:
           => revert, start, zapis wariantu menu, pliki testowe C:\DsoTest\manual-uac (właściciel: dso), VM ZOSTAJE URUCHOMIONA, skrypt drukuje instrukcję.
         .\tests\vm\explore\Invoke-C4Exploration.ps1 -FinishManualUacTest -VmName DSO-26H2-Pro -OutDirectory <katalog>
           => odczyt właściciela i ACL elementów testowych (c4-manual-uac-finish.json), zatrzymanie i revert do czysta-26H2 (zawsze, także po błędzie).
-    Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy Bruteforce_LTSC.
+    Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy obcej VM.
     Kod wyjścia: 0 gdy wszystkie wybrane VM zebrane bez błędu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]

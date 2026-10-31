@@ -6,7 +6,7 @@ Portować: test na VM 26H2 (Home i Pro) pokazał realny skutek. Brak dokumentacj
 ## Co zmienia
 - `HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32`, **wartość domyślna** (pusta nazwa), **String** (REG_SZ), pusty ciąg; `scope=user` (hive zalogowanego użytkownika, nie konta Administratora).
 - Na świeżym 26H2 nie ma ani klucza `{86ca…}`, ani jego podklucza `InprocServer32`. Apply tworzy oba, undo usuwa oba (silnik zapisuje w snapshocie najwyższy brakujący klucz i po przywróceniu brakującej wartości kasuje puste klucze od `InprocServer32` w górę do `{86ca…}`).
-- Apply nie restartuje Eksploratora (decyzja R15). Menu zmienia się po restarcie Eksploratora: użyj akcji `tools.restart-explorer` albo zaloguj się ponownie.
+- Apply nie restartuje Eksploratora. Menu zmienia się po restarcie Eksploratora: użyj akcji `tools.restart-explorer` albo zaloguj się ponownie.
 
 ## Źródła
 - Test na VM 26H2 Home i Pro, 2026-10-21 (build 26300.9457): zapis i cofnięcie przez API rejestru (.NET `RegistryKey`), obserwacja okna menu.
@@ -31,6 +31,3 @@ Przypadek `ux-classic-context-menu` (`Flow=Full`) w `tests/vm/cases.psd1`: `KeyA
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Metoda: prawy klik na pulpicie w sesji `dso` po restarcie Eksploratora, odczyt klasy otwartego okna menu. Wynik: z kluczem prawy klik na pulpicie otwiera okno klasy `#32768` (menu Win32); bez klucza otwiera się `Microsoft.UI.Content.PopupWindowSiteBridge` (menu Windows 11). Po cofnięciu (oba klucze usunięte) i restarcie Eksploratora wraca menu Windows 11.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

@@ -26,7 +26,7 @@ Opis działania:
     Fazy: inventory (K1 + K2: zapytania) -> settings (K2: oba adresy po kolei, między nimi zamknięcie Ustawień) -> devices (K1: kod 22,
     karta graficzna, INF); wszystko cofa revert. Ostatni bezpiecznik po stronie VM: Assert-E4A3InsideVm (nazwa komputera DSO-26H2-HOME/PRO
     i brak DSO_VM_TESTS_MOCK_ONLY) na początku każdej funkcji ze skutkiem. Pierwszy błąd uwierzytelnienia przerywa cały skrypt (blokada
-    konta). Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy Bruteforce_LTSC; na hoście niczego nie zmienia.
+    konta). Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy obcej VM; na hoście niczego nie zmienia.
     Wynik: <OutDirectory>\<VmName>\e4a3.json (UTF-8), zrzuty K2 <OutDirectory>\<VmName>\shots\*.png.
     Kod wyjścia: 0 gdy wszystkie wybrane VM zebrane bez błędu przebiegu, 1 w przeciwnym razie.
 #>

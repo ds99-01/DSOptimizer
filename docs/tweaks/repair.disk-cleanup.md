@@ -14,7 +14,7 @@ Handler C# `disk-cleanup` (`DiskCleanupHandler`), bez skryptu katalogu:
 7. Krok 6 z 6 „Miniatury konta”: pliki `thumbcache_*.db` bezpośrednio w `<profil>\AppData\Local\Microsoft\Windows\Explorer` (`IRepairFileSystem.DeleteFilesByName`, ten sam mechanizm uchwytu, bez podfolderów, bez `iconcache_*`); zablokowane pomijane i liczone. Warunek konta jak w kroku 2.
 8. Wolne miejsce po. Komunikat: „Zwolniono: <DiskSpaceText.Freed>.” (MB albo GB z jednym miejscem, zaokrąglone w dół; spadek wolnego miejsca = „nie da się uczciwie podać zwolnionego miejsca (inne programy zapisywały na dysku)”) i po jednej linii na krok: „wykonano (plików: N, X; młodszych niż 24 h zostało: …; w użyciu zostało: …)”, „pominięto – <powód>”, „błąd – <powód>”.
 
-Wynik: `Executed`, gdy żaden krok nie ma błędu i nic nie zostało w tle; błąd kroku = `Failed` z listą (pozostałe kroki i tak się wykonują, Ruling R20: błąd wygrywa też z zatrzymaniem i limitem); DISM po limicie albo „Zatrzymaj” między krokami (pozostałe kroki „pominięto – zatrzymano.”) = `NotConfirmed` (Ruling R10). Pominięcia nie psują wyniku (spec 2).
+Wynik: `Executed`, gdy żaden krok nie ma błędu i nic nie zostało w tle; błąd kroku = `Failed` z listą (pozostałe kroki i tak się wykonują: błąd wygrywa też z zatrzymaniem i limitem); DISM po limicie albo „Zatrzymaj” między krokami (pozostałe kroki „pominięto – zatrzymano.”) = `NotConfirmed`. Pominięcia nie psują wyniku (spec 2).
 
 Nie rusza: Kosza, folderu Pobrane, punktów przywracania, zrzutów pamięci (`*.dmp`, `Minidump`), Windows.old (osobna pozycja) – spec 5.2, test `NeverTouchesRecycleBinDownloadsDumps`.
 
@@ -54,6 +54,3 @@ Metoda: pomiar mechanizmów (Task 2, `tests/vm/explore/Invoke-E4B2Exploration.ps
 - `cleanmgr` „Temporary Files” z PS Direct: usuwa tylko plik sprzed 10 dni, nie kończy się w 20 min (4a, 4f) – nie jest mechanizmem tej pozycji.
 - Sam handler (2026-10-23, Home i Pro, przypadki `repair-disk-cleanup` i `repair-disk-cleanup-admin`): `Executed`; niezależny odczyt w VM potwierdza usunięte stare pliki, nietknięte świeże pliki i strażnika za junction, pusty `Download`, usuniętą miniaturę i przywrócone usługi. Na czystym checkpoincie `StartComponentCleanup` nie zwolnił mierzalnego miejsca (wolne C: spadło w trakcie o 1–120 MB). 449/367 MB z Tasku 2 (4d) zmierzono w przebiegu, w którym wcześniej działały `DISM /RestoreHealth` i `/ScanHealth` – prawdopodobnie to one wytworzyły „Cache and Temporary Data” (**niezmierzone**). Ile miejsca zwalnia na używanym komputerze: **do potwierdzenia na sprzęcie**.
 - Duży zysk z Optymalizacji dostarczania po zakończonych pobraniach: **do potwierdzenia na sprzęcie** (na VM WU pobierał w trakcie pomiaru).
-
-## Reddit
-Do uzupełnienia w części E.

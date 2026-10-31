@@ -47,7 +47,7 @@ Porównanie z wersją 4.0 (Pro, folder): pierwszy 9,1 s, mediana 0,75 s.
 
 ## VirusTotal
 
-Plików wersji 4.0.1 nie wysyłano na VirusTotal. Ostatni wynik z tego serwisu dotyczy wersji 4.0 (0 wykryć, raport 4.0).
+Plików wersji 4.0.1 nie wysyłano na VirusTotal. Ostatni wynik z tego serwisu (0 wykryć, raport 4.0) dotyczy plików z wydania roboczego sprzed poprawek 4.0; opublikowanych zipów 4.0 ani 4.0.1 nie skanowano.
 
 ## Do potwierdzenia
 

@@ -6,7 +6,7 @@
       "group": "microsoft",
       "suggested": true,
       "summary": "Asystent Copilot od Microsoftu. Do niczego innego w systemie nie jest potrzebny.",
-      "source": "Odczyt VM 26H2 Home 2026-10-21 (pakiet jest tylko na Home); dokumentacja MS „manage-windows-copilot” (usuwanie pakietu Microsoft.Copilot); decyzja Dawida 2026-10-21"
+      "source": "Odczyt VM 26H2 Home 2026-10-21 (pakiet jest tylko na Home); dokumentacja MS „manage-windows-copilot” (usuwanie pakietu Microsoft.Copilot); decyzja autora 2026-10-21"
     },
     {
       "id": "ms.bing-news",
@@ -54,7 +54,7 @@
       "group": "microsoft",
       "suggested": false,
       "summary": "Pasek gry (Game Bar): zrzuty ekranu, nagrywanie i nakładka dla gier. Usuń tylko, gdy z niego nie korzystasz.",
-      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21; decyzja Dawida 2026-10-21 (Game Bar nie jest sugerowany)"
+      "source": "Odczyt VM 26H2 Home i Pro 2026-10-21; decyzja autora 2026-10-21 (Game Bar nie jest sugerowany)"
     },
     {
       "id": "ms.teams-new",
@@ -254,7 +254,7 @@
       "suggested": true,
       "summary": "Wersja próbna antywirusa McAfee LiveSafe, preinstalowana przez producenta komputera.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
-      "source": "Oficjalna strona produktu https://www.mcafee.com/en-us/antivirus/mcafee-livesafe.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez Dawida 2026-10-21 (pobranie strony: timeout, curl: 403)",
+      "source": "Oficjalna strona produktu https://www.mcafee.com/en-us/antivirus/mcafee-livesafe.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez autora 2026-10-21 (pobranie strony: timeout, curl: 403)",
       "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
     },
     {
@@ -264,7 +264,7 @@
       "suggested": true,
       "summary": "Wersja próbna antywirusa McAfee Total Protection, preinstalowana przez producenta komputera.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
-      "source": "Oficjalna strona produktu https://www.mcafee.com/en-us/antivirus/mcafee-total-protection.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez Dawida 2026-10-21 (pobranie strony: timeout, curl: 403)",
+      "source": "Oficjalna strona produktu https://www.mcafee.com/en-us/antivirus/mcafee-total-protection.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez autora 2026-10-21 (pobranie strony: timeout, curl: 403)",
       "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
     },
     {
@@ -274,7 +274,7 @@
       "suggested": true,
       "summary": "Wersja próbna antywirusa McAfee AntiVirus Plus, preinstalowana przez producenta komputera.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
-      "source": "Oficjalna strona McAfee z wymaganiami systemowymi, lista produktów konsumenckich (w tym AntiVirus Plus): https://www.mcafee.com/en-in/consumer-support/help/system-requirement.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez Dawida 2026-10-21 (pobranie strony: timeout, curl: 403)",
+      "source": "Oficjalna strona McAfee z wymaganiami systemowymi, lista produktów konsumenckich (w tym AntiVirus Plus): https://www.mcafee.com/en-in/consumer-support/help/system-requirement.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez autora 2026-10-21 (pobranie strony: timeout, curl: 403)",
       "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
     },
     {
@@ -284,7 +284,7 @@
       "suggested": true,
       "summary": "Wersja próbna pakietu McAfee Internet Security, preinstalowana przez producenta komputera.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
-      "source": "Oficjalna strona McAfee z wymaganiami systemowymi, lista produktów konsumenckich (w tym Internet Security): https://www.mcafee.com/en-in/consumer-support/help/system-requirement.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez Dawida 2026-10-21 (pobranie strony: timeout, curl: 403)",
+      "source": "Oficjalna strona McAfee z wymaganiami systemowymi, lista produktów konsumenckich (w tym Internet Security): https://www.mcafee.com/en-in/consumer-support/help/system-requirement.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez autora 2026-10-21 (pobranie strony: timeout, curl: 403)",
       "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
     },
     {
@@ -294,7 +294,7 @@
       "suggested": true,
       "summary": "Wersja próbna McAfee Personal Security, preinstalowana przez producenta komputera.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
-      "source": "Which? https://www.which.co.uk/news/article/the-most-common-bloatware-we-found-on-laptops-aGeJX9U0NgXa (McAfee LiveSafe i Personal Security); oficjalnej strony McAfee dla tej nazwy nie znaleziono; sugerowany – spec 6.2 (decyzja Dawida) z 2026-10-21 po przeczytaniu listy. Narzędzie usuwania McAfee: adres podany i sprawdzony ręcznie przez Dawida 2026-10-21",
+      "source": "Which? https://www.which.co.uk/news/article/the-most-common-bloatware-we-found-on-laptops-aGeJX9U0NgXa (McAfee LiveSafe i Personal Security); oficjalnej strony McAfee dla tej nazwy nie znaleziono; sugerowany – spec 6.2 (decyzja autora) z 2026-10-21 po przeczytaniu listy. Narzędzie usuwania McAfee: adres podany i sprawdzony ręcznie przez autora 2026-10-21",
       "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
     },
     {
@@ -304,7 +304,7 @@
       "suggested": true,
       "summary": "McAfee WebAdvisor: dodatek przeglądarki od McAfee, zwykle razem z wersją próbną antywirusa.",
       "warning": "Może być częścią antywirusa, którego używasz. Własny deinstalator potrafi zostawić resztki.",
-      "source": "Zlecenie projektowe 2026-10-21 (lista konsumenckich produktów McAfee); brak niezależnego źródła; sugerowany – spec 6.2 (decyzja Dawida) z 2026-10-21 po przeczytaniu listy"
+      "source": "Lista konsumenckich produktów McAfee (2026-10-21); brak niezależnego źródła; sugerowany – spec 6.2 (decyzja autora) z 2026-10-21 po przeczytaniu listy"
     },
     {
       "id": "trial.mcafee-security-scan-plus",
@@ -313,7 +313,7 @@
       "suggested": true,
       "summary": "McAfee Security Scan Plus: darmowy skaner McAfee, zwykle dołączany do preinstalowanych programów.",
       "warning": "Własny deinstalator potrafi zostawić resztki.",
-      "source": "Zlecenie projektowe 2026-10-21 (lista konsumenckich produktów McAfee); brak niezależnego źródła; sugerowany – spec 6.2 (decyzja Dawida) z 2026-10-21 po przeczytaniu listy"
+      "source": "Lista konsumenckich produktów McAfee (2026-10-21); brak niezależnego źródła; sugerowany – spec 6.2 (decyzja autora) z 2026-10-21 po przeczytaniu listy"
     },
     {
       "id": "trial.norton-360",
@@ -362,7 +362,7 @@
       "suggested": true,
       "summary": "HP Games by WildTangent: gry próbne dodawane przez HP do nowych komputerów.",
       "warning": "Zakupionych w nich gier nie da się odzyskać bez przywrócenia systemu.",
-      "source": "spec 6.2 (decyzja Dawida); nazwa: https://malwaretips.com/blogs/hp-games-by-wildtangent-should-i-remove-it/ (brak oficjalnej strony producenta w sprawdzonych źródłach)"
+      "source": "spec 6.2 (decyzja autora); nazwa: https://malwaretips.com/blogs/hp-games-by-wildtangent-should-i-remove-it/ (brak oficjalnej strony producenta w sprawdzonych źródłach)"
     },
     {
       "id": "trial.wildtangent",
@@ -371,7 +371,7 @@
       "suggested": true,
       "summary": "Gry próbne WildTangent (także „HP Games by WildTangent”) dodawane przez producentów komputerów.",
       "warning": "Zakupionych w nich gier nie da się odzyskać bez przywrócenia systemu.",
-      "source": "spec 6.2 (decyzja Dawida); nazwa: https://malwaretips.com/blogs/hp-games-by-wildtangent-should-i-remove-it/ (brak oficjalnej strony producenta w sprawdzonych źródłach)"
+      "source": "spec 6.2 (decyzja autora); nazwa: https://malwaretips.com/blogs/hp-games-by-wildtangent-should-i-remove-it/ (brak oficjalnej strony producenta w sprawdzonych źródłach)"
     },
     {
       "id": "trial.booking",
@@ -379,7 +379,7 @@
       "group": "trial",
       "suggested": true,
       "summary": "Aplikacja z ofertami Booking.com preinstalowana na nowych laptopach.",
-      "source": "spec 6.2 (decyzja Dawida); nazwa: https://www.which.co.uk/news/article/the-most-common-bloatware-we-found-on-laptops-aGeJX9U0NgXa (Booking.com na 19% laptopów; brak oficjalnej strony wpisu Uninstall)"
+      "source": "spec 6.2 (decyzja autora); nazwa: https://www.which.co.uk/news/article/the-most-common-bloatware-we-found-on-laptops-aGeJX9U0NgXa (Booking.com na 19% laptopów; brak oficjalnej strony wpisu Uninstall)"
     }
   ],
   "protected": [

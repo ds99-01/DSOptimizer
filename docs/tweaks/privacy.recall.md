@@ -29,6 +29,3 @@ Nie dotyczy (nie wchodzi): pozycji nie ma w katalogu, więc nie ma przypadku VM.
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: odczyt stanu funkcji `Recall`, strony w Ustawieniach, zapis polityk przez API rejestru i restart VM. Wynik: **brak skutku do pokazania**, funkcja `Recall` = `DisabledWithPayloadRemoved` przed zmianą i po restarcie VM, w Ustawieniach nie ma strony Recall (VM bez NPU).
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Ta sama metoda i ten sam wynik. Migawki (`DisableAIDataAnalysis`): także brak skutku do pokazania, bo funkcja jest niedostępna.
-
-## Reddit
-Do uzupełnienia w części E.

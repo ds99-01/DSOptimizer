@@ -26,6 +26,3 @@ Nie dotyczy (nie wchodzi): pozycji nie ma w katalogu, więc nie ma przypadku VM.
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: zapis polityki, przegląd Start i Ustawień, restart VM. Wynik: **brak skutku** dla zalogowanego konta (przypięte WhatsApp, LinkedIn, Solitaire zostają, Ustawienia bez zmian), także po restarcie VM.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

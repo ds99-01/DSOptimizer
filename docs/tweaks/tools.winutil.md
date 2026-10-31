@@ -45,6 +45,3 @@ Nie dotyczy: `kind=action` bez detekcji i cofnięcia. `Executed` oznacza, że pl
 - `tools-winutil-offline` (`Flow=Execute`, `Catalog=BuiltIn`, VM bez sieci): oczekiwane `Failed` z kodem 1 i komunikatem „brak połączenia z GitHubem”; `Check` = brak `powershell.exe` z `-File` wskazującym `C:\ProgramData\DSOptimizer\downloads\*.ps1` i brak plików `*.ps1` w `downloads`. Wynik przebiegu (`Invoke-VmTests.ps1`, VM bez sieci, HEAD `fb4bb9c`, 2026-10-26): **Passed na obu edycjach** – Pro 799 / 0 / 25 pominiętych, Home 799 / 0 / 25 (`tools-winutil-offline` zielony na Pro i Home).
 - `tools-winutil-effect`: **Skipped** (powód: skutek z siecią pokrywa faza `av` eksploracji E5). Okno i GUI WinUtil z siecią zmierzone w Task 1 (wyżej, wariant B).
 - Dawny przypadek `tools-winutil-launch` (partia C5, 2026-10-19, Passed na Home i Pro) usunięty razem z poleceniem `irm … | iex`.
-
-## Reddit
-Do uzupełnienia w części E.

@@ -6,7 +6,7 @@ Portować: test na VM 26H2 (Home i Pro) pokazał realny skutek. Źródło MS dla
 ## Co zmienia
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings`, wartość `TaskbarEndTask`, **DWord**, ustawiana na `1`; `scope=user` (hive zalogowanego użytkownika).
 - Na świeżym 26H2 nie ma ani wartości, ani klucza `TaskbarDeveloperSettings` (tworzy go dopiero przełącznik w Ustawieniach). Apply tworzy klucz, undo usuwa wartość i pusty klucz utworzony przez apply.
-- Apply nie restartuje Eksploratora (decyzja R15). Pozycja pojawia się w menu po restarcie Eksploratora: użyj akcji `tools.restart-explorer` albo zaloguj się ponownie.
+- Apply nie restartuje Eksploratora. Pozycja pojawia się w menu po restarcie Eksploratora: użyj akcji `tools.restart-explorer` albo zaloguj się ponownie.
 
 ## Źródła
 - https://learn.microsoft.com/en-us/windows/advanced-settings/ – MS Learn „Advanced Windows Settings” (2026-01-22): przełącznik „Enable end task in taskbar by right click” w System > Zaawansowane (25H2 i nowsze; wcześniej Dla deweloperów).
@@ -32,6 +32,3 @@ Przypadek `ux-taskbar-end-task` (`Flow=Full`) w `tests/vm/cases.psd1`: `KeyAbsen
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Metoda: menu przycisku programu na pasku zadań w sesji `dso` po restarcie Eksploratora, odczyt pozycji menu. Wynik: z `TaskbarEndTask`=1 menu przycisku ma pozycję „Zakończ zadanie”; po cofnięciu i restarcie Eksploratora pozycji nie ma.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

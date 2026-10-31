@@ -31,6 +31,3 @@ Przypadek `privacy-settings-suggestions` (`Flow=Full`) w `tests/vm/cases.psd1` (
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: przełącznik „Rekomendacje i oferty w ustawieniach” w Ustawieniach (UI Automation) po zapisie trzech wartości przez API. Wynik: przełącznik „wyłączone”; zapis `1` = „włączone”. dowód: stan przełącznika w Ustawieniach, treści nie obserwowano.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

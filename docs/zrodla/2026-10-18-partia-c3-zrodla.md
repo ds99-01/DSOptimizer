@@ -48,7 +48,7 @@ Podstawy (`registry[]`, `services[]`, agregacja stanu) – patrz sekcja 0 w C2. 
 3. Skutek sieciowy – VM bez sieci tego nie sprawdzi (status `Skipped`: „brak sieci”).
 4. (ręcznie, poza VM) czy istnieje strona MS opisująca `NetworkThrottlingIndex`; jeśli nie, pozycja pozostaje bez źródła MS.
 
-**Rekomendacja: nie portować** (domyślnie). Główna wartość nie ma źródła MS, druga (`SystemResponsiveness`=0) jest według MS clamped do 20, a opis v3.2 jest sprzeczny z MS. Gdyby Dawid chciał pozycję mimo to: portować z ograniczeniem – tylko `NetworkThrottlingIndex`=0xFFFFFFFF, experimental, ukryta domyślnie, opis „ustawia wartość z nieoficjalnych poradników; MS tego nie dokumentuje; skutek niezmierzony”, test VM tylko części rejestrowej.
+**Rekomendacja: nie portować** (domyślnie). Główna wartość nie ma źródła MS, druga (`SystemResponsiveness`=0) jest według MS clamped do 20, a opis v3.2 jest sprzeczny z MS. Gdyby autor chciał pozycję mimo to: portować z ograniczeniem – tylko `NetworkThrottlingIndex`=0xFFFFFFFF, experimental, ukryta domyślnie, opis „ustawia wartość z nieoficjalnych poradników; MS tego nie dokumentuje; skutek niezmierzony”, test VM tylko części rejestrowej.
 
 ---
 
@@ -117,7 +117,7 @@ Podstawy (`registry[]`, `services[]`, agregacja stanu) – patrz sekcja 0 w C2. 
 3. Undo + restart: stan jak przed.
 4. Wpływ na komponenty Windows (np. Store, Aktualizacje, Hyper-V Default Switch) – VM bez sieci tego nie wykaże; ewentualnie `Skipped`.
 
-**Rekomendacja: portować z ograniczeniem.** Wartość 0xFF i restart są udokumentowane, a MS wprost odradza – dlatego experimental, ukryta domyślnie, ostrzeżenia dosłownie z MS, bez obietnic wydajności. Alternatywa: nie portować, skoro MS rekomenduje `net.ipv6-prefer-ipv4`; decyzja Dawida.
+**Rekomendacja: portować z ograniczeniem.** Wartość 0xFF i restart są udokumentowane, a MS wprost odradza – dlatego experimental, ukryta domyślnie, ostrzeżenia dosłownie z MS, bez obietnic wydajności. Alternatywa: nie portować, skoro MS rekomenduje `net.ipv6-prefer-ipv4`; decyzja autora.
 
 ---
 
@@ -158,7 +158,7 @@ Podstawy (`registry[]`, `services[]`, agregacja stanu) – patrz sekcja 0 w C2. 
 **Proponowany zakres (reguła: jeden tweak = jeden scope; rejestr i usługi przez API C#)**
 Rekomendacja: **rozbić na dwa tweaki** (+ opcjonalnie trzeci), bo MS opisuje je jako osobne ustawienia, a podpisywanie jest potrzebne także bez gościa (NAS z poświadczeniami, który nie wspiera podpisywania):
 - **A. `net.smb-guest-access`** – dostęp gościa po stronie klienta. `registry[]`: `LanmanWorkstation\Parameters` `AllowInsecureGuestAuth` DWord 1 (ścieżka/klucz z hintu; wymaga potwierdzenia na VM, że cmdlet MS zapisuje dokładnie ten klucz i że polityka go nie przesłania). Realny stan: `script.detect` (PS 5.1) `(Get-SmbClientConfiguration).EnableInsecureGuestLogons` → `Applied`/`NotApplied` (wartość logiczna, bez tekstu) – zgodny z rejestrem tylko, jeśli VM potwierdzi, że cmdlet i klucz opisują ten sam stan; w przeciwnym razie `script.detect` jest wiążący, rejestr jako `detectOnly`/apply. Ostrzeżenie: MS wprost odradza; na 24H2 Pro/Ent/Edu bez wyłączonego podpisywania połączenie z gościem i tak nie zadziała (patrz B).
-- **B. `net.smb-signing-client-off`** (nowa pozycja, do zatwierdzenia przez Dawida) – klient SMB: `RequireSecuritySignature` DWord 0 w `LanmanWorkstation\Parameters` (nazwa wartości potwierdzona jako odpowiednik polityki w MS-archiwum; ścieżka – [SPRAWDZIĆ RĘCZNIE]); realny stan `Get-SmbClientConfiguration | RequireSecuritySignature` (boolean). Ostrzeżenie dosłownie z MS: „We don't recommend disabling SMB signing…”. Strona serwerowa (`LanmanServer`, inbound) – poza zakresem (v3.2 jej nie ruszała); decyzja Dawida, czy ma wejść do B jako drugi wpis.
+- **B. `net.smb-signing-client-off`** (nowa pozycja, do zatwierdzenia przez autora) – klient SMB: `RequireSecuritySignature` DWord 0 w `LanmanWorkstation\Parameters` (nazwa wartości potwierdzona jako odpowiednik polityki w MS-archiwum; ścieżka – [SPRAWDZIĆ RĘCZNIE]); realny stan `Get-SmbClientConfiguration | RequireSecuritySignature` (boolean). Ostrzeżenie dosłownie z MS: „We don't recommend disabling SMB signing…”. Strona serwerowa (`LanmanServer`, inbound) – poza zakresem (v3.2 jej nie ruszała); decyzja autora, czy ma wejść do B jako drugi wpis.
 - **C. Usługi odnajdywania** (`fdPHost`, `FDResPub`, `SSDPSRV`, `upnphost`): **nie wchodzą** do katalogu na tym etapie. Brak źródła MS, że ich typ startu blokuje widoczność w LAN; na świeżym 26H2 mogą być już Manual-z-wyzwalaczem i działać po włączeniu odnajdywania. Wrócą tylko, jeśli VM (po włączeniu Network discovery w Private) pokaże, że usługi nie startują. Jeśli wejdą: `services[]` z `startType: Automatic` (+ `stop: false`), `original` z pomiaru VM, każda osobno w agregacji (`Partial` przy mieszance).
 - `LanmanWorkstation`/`LanmanServer` (v3.2 ustawiała Automatic): wg tabeli MS już Automatic domyślnie – wpis byłby no-opem, pominąć.
 - NetBIOS: poza zakresem (uzasadnienie wyżej).
@@ -212,7 +212,7 @@ Rekomendacja: **rozbić na dwa tweaki** (+ opcjonalnie trzeci), bo MS opisuje je
 - Elementy v3.2 poza SMB (profil Public, usługi Manual + Stop, NetBIOS 0): MS nie podaje, że ma to być część „zabezpieczenia”; typ startu usług odnajdywania Manual to ich domyślna wartość wg tabeli **serwerowej** (klient niezmierzony); zatrzymanie usług odnajdywania pogarsza funkcję bez korzyści udokumentowanej; profil Public jest MS-owym domyślnym dla niezidentyfikowanych sieci. Zmiana wszystkich profili na Public to efekt uboczny – **nie przenosić**.
 - Brak journala i undo: `TweakEngine.Execute` (kod) – akcja nie zapamiętuje stanu sprzed. Cofnięcie hardeningu = osobne działanie; dla stanu „co było przed” nie ma źródła.
 
-**Proponowany skrypt (kind=action, `-File`, PS 5.1)** – tylko 2 ustawienia klienta SMB wg MS: `Set-SmbClientConfiguration -EnableInsecureGuestLogons $false -RequireSecuritySignature $true -Force` przez funkcję pomocniczą (mockowalną), po czym odczyt zwrotny `Get-SmbClientConfiguration` (boolean) i kod wyjścia ≠0, gdy nie zgadza się z oczekiwanym. Bez zmiany profilu, usług i NetBIOS. Opcjonalnie (decyzja Dawida) strona serwerowa `Set-SmbServerConfiguration -RequireSecuritySignature $true`. Wiersz stanu w UI: akcja nie ma detekcji (kind=action), więc jedyny dowód to kod wyjścia i komunikat.
+**Proponowany skrypt (kind=action, `-File`, PS 5.1)** – tylko 2 ustawienia klienta SMB wg MS: `Set-SmbClientConfiguration -EnableInsecureGuestLogons $false -RequireSecuritySignature $true -Force` przez funkcję pomocniczą (mockowalną), po czym odczyt zwrotny `Get-SmbClientConfiguration` (boolean) i kod wyjścia ≠0, gdy nie zgadza się z oczekiwanym. Bez zmiany profilu, usług i NetBIOS. Opcjonalnie (decyzja autora) strona serwerowa `Set-SmbServerConfiguration -RequireSecuritySignature $true`. Wiersz stanu w UI: akcja nie ma detekcji (kind=action), więc jedyny dowód to kod wyjścia i komunikat.
 
 **Undo:** brak z założenia (spec: „bez journala”). Opis musi to powiedzieć wprost; kto użył wcześniej `net.smb-guest-access`/`net.smb-signing-client-off`, dostanie rozjazd z journalem tych tweaków (ich `undo` przywróci snapshot sprzed ich apply, nadpisując hardening). To realne ryzyko spójności – ostrzeżenie + decyzja.
 
@@ -233,7 +233,7 @@ Rekomendacja: **rozbić na dwa tweaki** (+ opcjonalnie trzeci), bo MS opisuje je
 3. Czy po `Execute` na VM stan odczytany zgodny; test `Execute`: `Check` = odczyt `Get-SmbClientConfiguration` (boolean) → `$true`; `Snapshot` = klucze `LanmanWorkstation\Parameters` przed/po (bo akcja nie ma undo, `Cleanup` przywraca wartości z odczytu przed). Zgodnie z zasadami repo `Snapshot` nie zastępuje `Check`.
 4. Efekt w LAN – `Skipped: brak sieci`.
 
-**Rekomendacja: portować z ograniczeniem.** Tylko klient SMB (gość off, podpisywanie wymagane) – wartości i polecenia wprost z MS; bez profilu, usług i NetBIOS (nie są „hardeningiem” według MS). Ryzyko: caution (nie `safe`), brak undo jawnie w opisie, odczyt zwrotny jako dowód. Decyzja Dawida: czy akcja ma dotykać też serwera (`LanmanServer`).
+**Rekomendacja: portować z ograniczeniem.** Tylko klient SMB (gość off, podpisywanie wymagane) – wartości i polecenia wprost z MS; bez profilu, usług i NetBIOS (nie są „hardeningiem” według MS). Ryzyko: caution (nie `safe`), brak undo jawnie w opisie, odczyt zwrotny jako dowód. Decyzja autora: czy akcja ma dotykać też serwera (`LanmanServer`).
 
 ---
 

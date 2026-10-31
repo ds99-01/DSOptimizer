@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.wu-reset.md sha256: 5bfc6fc1678d8da3745e2d81167e2ab1739207847f1e3e3303e6cded1a1c4a64 -->
+<!-- source: docs/tweaks/repair.wu-reset.md sha256: ab9ae70488406cce3a157f646d2a7a7b0d12801a74b3f4b9b35a49d320e7ce80 -->
 
 # repair.wu-reset – Reset Windows Update
 
@@ -34,7 +34,7 @@ Not applicable: `kind=action` has no detection or undo (no journal). Trace: the 
 - Windows Update policies are only listed, not changed (`repair.wu-reset-full` removes them).
 
 ## VM test
-Case `repair-wu-reset` (`Flow=Execute`): `Setup` creates an old copy `C:\Windows\SoftwareDistribution.dso-20000101-000000`; `Check` requires that `wuauserv`, `bits`, `cryptsvc` are running, that exactly one `SoftwareDistribution.dso-*` copy and exactly one `catroot2.dso-*` copy exist, and that the old copy is gone. Added to `tests/vm/cases.psd1` in Task 6. In Task 10, `Check` also compares the state of `AppIDSvc` (`Win32_Service`) and the `applockerfltr` driver (`Win32_SystemDriver`) with the state saved in `Setup` (R8: the dependents return to their previous state).
+Case `repair-wu-reset` (`Flow=Execute`): `Setup` creates an old copy `C:\Windows\SoftwareDistribution.dso-20000101-000000`; `Check` requires that `wuauserv`, `bits`, `cryptsvc` are running, that exactly one `SoftwareDistribution.dso-*` copy and exactly one `catroot2.dso-*` copy exist, and that the old copy is gone. Added to `tests/vm/cases.psd1` in Task 6. In Task 10, `Check` also compares the state of `AppIDSvc` (`Win32_Service`) and the `applockerfltr` driver (`Win32_SystemDriver`) with the state saved in `Setup` (the dependents return to their previous state).
 
 VM run (Task 10, 2026-10-22, full `tests/vm/Invoke-VmTests.ps1` on the `etap4b-1` branch; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-wu-reset`: **Passed** on Home and Pro (`Executed`; `wuauserv`, `bits`, `cryptsvc` stopped together with `applockerfltr` and `AppIDSvc`, folders moved to `.dso-<timestamp>`, the old copy deleted, the services and dependents back in their previous state).
 
@@ -42,6 +42,3 @@ VM run (Task 10, 2026-10-22, full `tests/vm/Invoke-VmTests.ps1` on the `etap4b-1
 Method: an exploration probe (`tests/vm/explore/Invoke-E4B1Exploration.ps1`), stopping services through `ControlService` and `ServiceController.Stop()`, Restart Manager for both folders, moving the folders, reading the files after the services start, the update history API and the Settings page (screenshots in the raw results outside git).
 - **Home** (`DSO-26H2-Home`, 26300.9457, no network), 2026-10-22: `cryptsvc` through `ControlService(STOP)` = code 1051 (`AppIDSvc` and `applockerfltr` are running); `ServiceController.Stop()` stops all three in about 0.5 s, after which `catroot2` can be moved. `SoftwareDistribution` doesn't exist until `wuauserv` starts. After the services start, the new `catroot2` (39 `edb*` database files) is there at second 0; all services return to their previous state (`applockerfltr` starts on its own together with `AppIDSvc`, and starting it explicitly reports "już działa" (already running)). History without a network: empty before and after.
 - **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: stopping and moving the same as Home (P1, N1); the new `SoftwareDistribution` (DataStore, Download, ReportingEvents.log) is there at second 0 after `wuauserv` starts. With a network (N1): before the reset 2 history entries (a driver + Defender definitions); after the reset the history API returns 0, the driver entry disappears in Settings, "Aktualizacje definicji (1)" (Definition updates (1)) stays. After the network was connected, WU installed 2 updates on its own (result Succeeded), the Windows Update page without errors.
-
-## Reddit
-To be added in part E.

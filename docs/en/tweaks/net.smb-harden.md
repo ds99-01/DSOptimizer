@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/net.smb-harden.md sha256: 5489baa7b26bb586dc102bef5cffea282bb06bd94d4caa05a845185f433b884d -->
+<!-- source: docs/tweaks/net.smb-harden.md sha256: 0d0ba29f799cb385533ca4df8a6bcfacc235b1591a968e218277844b4e787394 -->
 
 # net.smb-harden – Turn off guest logons and require SMB signing
 
 ## Verdict for 26H2
-Port with a restriction, as `kind=action`, `risk=caution` (Dawid's decision of 2026-10-18: SMB client only, `caution` instead of `safe` from the spec). The action sets two SMB client settings to the values Microsoft gives as secure: insecure guest logons off, signing required. The old `lan_panic` item from v3.2 did more (all network profiles to Public, stopping discovery services, NetBIOS), which Microsoft doesn't describe as hardening, so we don't carry it over; the description "locking network services down for good" was untrue for what this version does.
+Port with a restriction, as `kind=action`, `risk=caution` (the author's decision of 2026-10-18: SMB client only, `caution` instead of `safe` from the spec). The action sets two SMB client settings to the values Microsoft gives as secure: insecure guest logons off, signing required. The old `lan_panic` item from v3.2 did more (all network profiles to Public, stopping discovery services, NetBIOS), which Microsoft doesn't describe as hardening, so we don't carry it over; the description "locking network services down for good" was untrue for what this version does.
 
 The action has no detection, journal or undo (`TweakEngine.Execute` runs only `script.apply`). The only evidence of the effect is the **verification** in the script itself: when it doesn't match the expected values, the script ends with code ≠ 0 and the engine returns `Failed` with a message, not a green `Executed`.
 
@@ -53,6 +53,3 @@ Case `net-smb-harden` (`Flow=Execute`, `Catalog=BuiltIn`), **Passed** on Home an
 - `Cleanup` without errors (`CleanupError` is empty): the cleanup script sets the edition values with the cmdlet, deletes the explicit DWORDs and throws an exception itself when the reading doesn't match the edition default, so no error means that **after the DWORDs are deleted, the cmdlet reading matches the edition default** (Home: guest True, Pro: False; signing True). Limitation: before deleting, `Cleanup` sets values already equal to the defaults, so this reading alone doesn't tell "went back to the default after deletion" from "the reading didn't change". Stronger evidence (a change in the reading after the value is deleted) comes from `net.smb-guest-access` (Pro) and `net.smb-signing-client-off` (Home and Pro).
 - `Snapshot` (`AllowInsecureGuestAuth`, `RequireSecuritySignature`): no value before and after `Cleanup`, `SnapshotDiff` empty, so the case left no traces in the registry.
 - **Not tested on the VM: no network and no SMB server.** Not checked: connections to a server that requires or doesn't support signing, guest connections, behavior under a policy (no network and no SMB server on the VM).
-
-## Reddit
-To be added in part E.

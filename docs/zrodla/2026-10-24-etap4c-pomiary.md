@@ -257,7 +257,7 @@ Do tego czasu implementacja trzyma się ich jako zalecenia.
 1. **Bez `--locale` (zmiana spec 5.1, decyzja 6).** Polecenie instalacji bez `--locale`. `WingetArguments.Install(id, null, log)`
    już to obsługuje. Uzasadnienie: Firefox 129.0.2 zamiast 157.0.1 to realne ryzyko bezpieczeństwa, a 29 z 31 prób z `--locale`
    i tak wraca do wersji domyślnej, kosztem do 83 s na pozycję. Wynik „zainstalowano w wersji domyślnej (brak wersji <język>)” znika.
-   Alternatywa (gorsza): `--locale` tylko wtedy, gdy wersja z `Found …` = wersja z `show`. Jeśli Dawid chce zostawić `--locale`,
+   Alternatywa (gorsza): `--locale` tylko wtedy, gdy wersja z `Found …` = wersja z `show`. Jeśli autor chce zostawić `--locale`,
    T5 musi przynajmniej porównać te wersje.
 2. **`0x80072EE7` = brak sieci (spec 5.1 i 5.3).** Dopisać do `WingetExitCodes.IsNetwork` / `NoNetwork` (T3) i do warunku
    „pierwsza pozycja serii bez sieci kończy serię” (T5). Przegląd T3 może rozważyć całą rodzinę WinINet `0x80072EE2`–`0x80072EFF`.

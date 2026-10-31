@@ -41,7 +41,7 @@ wymaga potwierdzenia na VM przed wpisaniem do katalogu.
   Typ DWORD jest wnioskiem z „True (1)” → potwierdza odczyt VM (czy klucz istnieje na świeżym 26H2, czy wartość istnieje).
 - **Skutek po OOBE nie jest opisany przez MS.** Auto-szyfrowanie zaczyna się w OOBE, więc tweak stosowany na działającym systemie
   nie odszyfrowuje dysku i nie wiadomo z dokumentacji, czy zatrzyma szyfrowanie już rozpoczęte. Co mówi MS: na komputerze z kontem lokalnym
-  auto-szyfrowanie się nie włącza. **Rozbieżność z obserwacją VM (R15, 2026-10-18/19):** po starcie checkpointu na Home i Pro z kontem lokalnym
+  auto-szyfrowanie się nie włącza. **Rozbieżność z obserwacją VM (2026-10-18/19):** po starcie checkpointu na Home i Pro z kontem lokalnym
   auto-szyfrowanie urządzenia było w toku (zob. „Wyniki VM”). Opis pozycji może obiecać tylko „ustawia wartość, którą Microsoft podaje jako blokadę automatycznego szyfrowania
   urządzenia”, bez obietnicy skutku po OOBE. Odszyfrowanie to osobna akcja (sekcja 2).
 - **Uwaga – licencja:** MS w dokumencie dla OEM pisze, że wyłączanie szyfrowania urządzenia poza scenariuszem OEM „is prohibited
@@ -83,7 +83,7 @@ wymaga potwierdzenia na VM przed wpisaniem do katalogu.
   Kody numeryczne i enum, bez tekstu zależnego od języka (spec 3). Cmdlety BitLocker jako alternatywa, jeśli VM pokaże brak klasy WMI.
 - Dostępność na Home: **nie rozstrzygnięte.** Szyfrowanie urządzenia działa na Home, ale strony MS nie mówią, czy na Home jest klasa WMI
   i moduł BitLocker. Odczyt VM (Home i Pro): czy klasa istnieje, `ConversionStatus` na świeżym dysku, czy działa `Get-BitLockerVolume`.
-- `Decrypt` wraca od razu, a Windows odszyfrowuje w tle. Wniosek do decyzji Dawida: akcja nie musi czekać godzinami. Wystarczy uruchomić,
+- `Decrypt` wraca od razu, a Windows odszyfrowuje w tle. Wniosek do decyzji autora: akcja nie musi czekać godzinami. Wystarczy uruchomić,
   odczytać status i procent, a ponowne uruchomienie pokaże postęp. To spełnia „bez timeoutu” ze specu, bo nic nie jest zabijane po 30 s.
 - Ścieżki wyniku (propozycja):
   - `ConversionStatus` = 0 przed → `Executed`, komunikat „C: nie jest zaszyfrowany – nic nie zmieniono” (cel już spełniony, inaczej niż
@@ -144,7 +144,7 @@ wymaga potwierdzenia na VM przed wpisaniem do katalogu.
   - (C) Bez podniesienia: komenda działa tylko z poziomu procesu administratora. Bezużyteczne przy UAC (Explorer działa bez podniesienia).
 - Komenda (hipoteza, wiąże test VM na polskim 26H2):
   - pliki: `cmd.exe /c takeown /f "%1" /a && icacls "%1" /grant *S-1-5-32-544:F /c /l /q`
-  - foldery: rekurencja `takeown /r /d Y` + `icacls /t` – **do decyzji Dawida** (patrz niżej). Otwarte: czy `/d Y` działa na polskim Windows
+  - foldery: rekurencja `takeown /r /d Y` + `icacls /t` – **do decyzji autora** (patrz niżej). Otwarte: czy `/d Y` działa na polskim Windows
     (MS podaje `Y|N`, nie mówi o lokalizacji odpowiedzi). Alternatywa bez monitu: `icacls "%1" /setowner *S-1-5-32-544 /t /c /l` (MS: „Changes the
     owner of all matching files to the specified user”) – czy działa bez dodatkowych przywilejów, pokaże VM.
   - `/l` w `icacls`: operacja na linku, nie na celu (ochrona przed przejęciem celu dowiązania w drzewie).
@@ -408,15 +408,15 @@ plik: bez `/r /d Y` i `/t`). „Jawne FC" = ACE `S-1-5-32-544`, `Allow`, `FullCo
 - Odpowiedź (G8b, pewność wysoka): poza nazwami z `%` komenda daje właściwego właściciela i jawne FC Administratorów na celu
   (plik albo folder i dziecko), bez zmian właściciela czegokolwiek innego. Nazwy z `%` zawodzą bez skutków (nic się nie zmienia).
 
-### Test ręczny UAC (Dawid, 2026-10-18/19)
+### Test ręczny UAC (autor, 2026-10-18/19)
 Rozstrzyga G1 (czy verb `runas` w podmenu `ExtendedSubCommandsKey` podnosi uprawnienia i czy w ogóle się wykonuje). Test w sesji
-użytkownika z UAC na VM `DSO-26H2-Pro` (checkpoint `czysta-26H2`, build 26300.9457, pl-PL), Dawid klikał w klasycznym menu Explorera
+użytkownika z UAC na VM `DSO-26H2-Pro` (checkpoint `czysta-26H2`, build 26300.9457, pl-PL), autor klikał w klasycznym menu Explorera
 (Shift + „Pokaż więcej opcji”). Skrypt: tryby `Prepare` i `Finish` z `tests/vm/explore/Invoke-C4Exploration.ps1`; drzewo
 `C:\DsoTest\manual-uac` (plik, folder, plik w folderze, „podfolder bez list” z `Deny ListDirectory` dla `dso` i plik w nim; właściciel
 początkowy `dso`, RID 1000). Wyniki: zapis pomiaru w archiwum autora
 (poza gitem). Oba warianty rejestrowano pod `*` i `Directory`, z `Extended`.
 
-| Wariant | Struktura | Co zobaczył Dawid | Stan po (`Finish`) |
+| Wariant | Struktura | Co zobaczył autor | Stan po (`Finish`) |
 |---|---|---|---|
 | 1 `Subkey` (Prepare 2026-10-18 23:38, Finish 23:48) | tylko podklucz `ExtendedSubCommandsKey\Shell\runas` (dosłownie krok 3 MS) | pozycja **bez strzałki podmenu**; kliknięcie: „Z tym plikiem nie jest skojarzona aplikacja…” | właściciel wszystkich elementów nadal `DSO-26H2-PRO\dso`, ACL bez zmian; nic nie zmieniono |
 | 2 `ValuePath` (Prepare 2026-10-18 23:49, Finish 2026-10-19 00:00) | podklucz jak wyżej **oraz** wartość REG_SZ `ExtendedSubCommandsKey` = `<Klasa>\shell\DSOptimizer.TakeOwnership\ExtendedSubCommandsKey` (względem HKCR) | strzałka podmenu widoczna, po wyborze wpisu **pojawił się monit UAC** | po zgodzie właściciel `S-1-5-32-544` (`BUILTIN\Administratorzy`) na pliku, folderze, pliku w folderze, „podfolderze bez list” i pliku w nim; jawne ACE `BA` FullControl na każdym z nich |
@@ -427,7 +427,7 @@ początkowy `dso`, RID 1000). Wyniki: zapis pomiaru w archiwum autora
   aktualizacja 2025-07-03): krok 3 mówi „add an `ExtendedSubCommandsKey` subkey”, a we wstępie jest mowa o ponownym użyciu zestawów
   verbów przez „specifying the same `ExtendedSubCommandsKey`”, czyli o wartości wskazującej ścieżkę. VM rozstrzygnęła: wartość + podklucz
   działa, sam podklucz nie.
-- **Foldery bez prawa listowania (R11):** po komendzie rekurencyjnej „podfolder bez list” ma SDDL
+- **Foldery bez prawa listowania:** po komendzie rekurencyjnej „podfolder bez list” ma SDDL
   `O:BAG:S-1-5-21-…-513D:PAI(A;OI;FA;;;BA)(A;CI;FA;;;BA)`: tylko Administratorzy, dziedziczenie wyłączone (`P`). Wcześniej dziedziczył m.in.
   SYSTEM i Users (`(A;OICIID;FA;;;SY)`, `(A;OICIID;0x1200a9;;;BU)`). `takeown /r /d Y` **zastąpił całą listę ACL** tego folderu
   (MS: przy braku List Folder „The directory permissions are replaced with permission granting the user full control only”); SYSTEM i Users

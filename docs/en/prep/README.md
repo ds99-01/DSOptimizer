@@ -1,4 +1,4 @@
-<!-- source: docs/prep/README.md sha256: c2b0e546071b101bfe2b6434e7a55a27a12a51e1adb3e0a35730b73ba6ead315 -->
+<!-- source: docs/prep/README.md sha256: 82281541f779c72a4ca999c88ebb58c5038773e7c7b902fcff80699222dd41e8 -->
 
 # Preparation – verified manufacturer addresses
 
@@ -111,6 +111,6 @@ Script `tests/vm/explore/Invoke-E4A3Exploration.ps1`, raw results outside git. C
   only Arc and Core Ultra (downloaded page 2026-10-21), not Iris Xe and older ones, so it isn't suitable as one address for every Intel card.
 - **Intel Driver & Support Assistant (rejected)**: `https://www.intel.com/content/www/us/en/support/detect.html` exists (downloaded page
   2026-10-21), but it leads to an installed tool that updates drivers, and spec 7.2/8 forbids suggesting such tools
-  (Ruling R13). Replaced by the "Support for Intel® Graphics" page.
+ . Replaced by the "Support for Intel® Graphics" page.
 - **WMI names outside the table**: `ASUS` (substring in `asus-nb-wmi.c`, no exact match), `MICRO-STAR INT…` (old MSI,
   only a substring in `msi-laptop.c`). Without an exact string they don't go in; such a laptop gets "Search for a support page".

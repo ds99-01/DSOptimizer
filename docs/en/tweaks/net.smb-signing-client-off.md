@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/net.smb-signing-client-off.md sha256: 55d177fee7373fb3278641f3c5d97d736688cef4fd3ccee1c26f3290efd0c77e -->
+<!-- source: docs/tweaks/net.smb-signing-client-off.md sha256: 0d8f6c97d6f3cd13a2b1e0ac96a17307ed1ede4577e91fd718cf44a6fd020e16 -->
 
 # net.smb-signing-client-off – Don't require SMB signing on the client
 
 ## Verdict for 26H2
-Port with a restriction, as `risk=caution`. New item (Dawid's decision of 2026-10-18, split of `lan_godmode`): MS describes signing and guest access as separate settings, and on Windows 11 24H2 Pro/Enterprise/Education guest access also requires turning off the signing requirement ("Requiring SMB signing also disables guest access to shares"). At the same time, MS advises against turning off signing. Affects only the SMB client (outgoing connections); the SMB server isn't touched (v3.2 didn't touch it either).
+Port with a restriction, as `risk=caution`. New item (the author's decision of 2026-10-18, split of `lan_godmode`): MS describes signing and guest access as separate settings, and on Windows 11 24H2 Pro/Enterprise/Education guest access also requires turning off the signing requirement ("Requiring SMB signing also disables guest access to shares"). At the same time, MS advises against turning off signing. Affects only the SMB client (outgoing connections); the SMB server isn't touched (v3.2 didn't touch it either).
 
 ## What it changes
 - Registry (`registry[]`, written through the C# API): `HKLM\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters`, value `RequireSecuritySignature`, **DWord**, `0`. `scope=machine`, no `requiresReboot` (MS: a change of the signing policy takes effect without a restart; a write through the registry API is visible in `Get-SmbClientConfiguration` without a restart: confirmed by the VM run of 2026-10-18, see "VM test"). The path and type were established by a reading on the VM after a change with the official cmdlet `Set-SmbClientConfiguration -RequireSecuritySignature $false`.
@@ -48,6 +48,3 @@ Case `net-smb-signing-client-off` (`Flow=Full`, `Catalog=BuiltIn`, no restart), 
 - `CheckAfterApply` (`RequireSecuritySignature -eq $false`, right after apply, no restart): **Passed**: a write through the registry API is visible in the cmdlet without a restart (change from True to False). `CheckAfterUndo` (`-eq $true`): **Passed**: after the value is deleted, the reading goes back to the default True.
 - `net-smb-lan-effect`: **Skipped** ("brak sieci i serwera SMB na VM" (no network and no SMB server on the VM)).
 - **Not tested on the VM: no network and no SMB server.** Not checked: connections to a server that requires or doesn't support signing, behavior under a policy, persistence after a restart.
-
-## Reddit
-To be added in part E.

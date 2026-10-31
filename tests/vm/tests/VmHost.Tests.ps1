@@ -167,7 +167,7 @@ Describe 'Walidacja nazwy VM' -Skip:(-not $script:HasHyperV) {
         Mock -ModuleName VmHost New-PSSession { throw 'nie powinno być wołane' }
     }
     It 'Restore-VmCleanState odmawia dla <Nazwa> i nie woła Hyper-V' -ForEach @(
-        @{ Nazwa = 'Bruteforce_LTSC' }
+        @{ Nazwa = 'ObcaVM' }
         @{ Nazwa = 'DSO-*' }
     ) {
         { Restore-VmCleanState -VmName $Nazwa -CheckpointName 'czysta-26H2' } | Should -Throw
@@ -175,20 +175,20 @@ Describe 'Walidacja nazwy VM' -Skip:(-not $script:HasHyperV) {
         Should -Invoke -ModuleName VmHost Stop-VM -Times 0
         Should -Invoke -ModuleName VmHost Restore-VMCheckpoint -Times 0
     }
-    It 'Wait-VmReady odmawia dla Bruteforce_LTSC' {
-        { Wait-VmReady -VmName 'Bruteforce_LTSC' -Credential $script:Credential -TimeoutSeconds 1 } | Should -Throw
+    It 'Wait-VmReady odmawia dla obcej VM' {
+        { Wait-VmReady -VmName 'ObcaVM' -Credential $script:Credential -TimeoutSeconds 1 } | Should -Throw
         Should -Invoke -ModuleName VmHost New-PSSession -Times 0
     }
     It 'Invoke-DsoVmRun odmawia dla <Nazwa> i nie woła Hyper-V' -ForEach @(
-        @{ Nazwa = 'Bruteforce_LTSC' }
+        @{ Nazwa = 'ObcaVM' }
         @{ Nazwa = 'DSO-*' }
     ) {
         { Invoke-DsoVmRun -VmName $Nazwa -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive } | Should -Throw
         Should -Invoke -ModuleName VmHost Restore-VMCheckpoint -Times 0
         Should -Invoke -ModuleName VmHost Start-VM -Times 0
     }
-    It 'Invoke-VmTests.ps1 odrzuca Bruteforce_LTSC przy wiązaniu parametrów (exit 1, bez Hyper-V)' {
-        $Output = & powershell.exe -NoProfile -File (Join-Path $script:VmRoot 'Invoke-VmTests.ps1') -VmName 'Bruteforce_LTSC' 2>&1 | Out-String
+    It 'Invoke-VmTests.ps1 odrzuca obcą VM przy wiązaniu parametrów (exit 1, bez Hyper-V)' {
+        $Output = & powershell.exe -NoProfile -File (Join-Path $script:VmRoot 'Invoke-VmTests.ps1') -VmName 'ObcaVM' 2>&1 | Out-String
         $LASTEXITCODE | Should -Be 1
         $Output | Should -BeLike '*VmName*'
     }

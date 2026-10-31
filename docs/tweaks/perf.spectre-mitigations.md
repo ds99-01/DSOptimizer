@@ -1,7 +1,7 @@
 # perf.spectre-mitigations – wyłączenie mitygacji Spectre/Meltdown (nie portowane)
 
 ## Werdykt 26H2
-Nie portowane: strona kliencka MS (KB4073119) kończy się na Windows 11 23H2, wyłączenie mitygacji obniża ochronę na cudzym komputerze bez zmierzonej korzyści, a detekcja widzi tylko rejestr, nie rzeczywisty stan mitygacji. Decyzja Dawida z 2026-10-18. Alias `cpu_spectre` z v3.2 nie ma pozycji w katalogu.
+Nie portowane: strona kliencka MS (KB4073119) kończy się na Windows 11 23H2, wyłączenie mitygacji obniża ochronę na cudzym komputerze bez zmierzonej korzyści, a detekcja widzi tylko rejestr, nie rzeczywisty stan mitygacji. Decyzja autora z 2026-10-18. Alias `cpu_spectre` z v3.2 nie ma pozycji w katalogu.
 
 ## Co zmienia
 Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis (v3.2 i MS): `HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`, wartości `FeatureSettingsOverride` = 3 i `FeatureSettingsOverrideMask` = 3 (oba DWord), wymagany restart.
@@ -34,6 +34,3 @@ Powody w sekcji „Co zmienia”. Gdyby pozycja kiedyś weszła, musiałaby mie�
 
 ## Test VM
 Nie dotyczy (pozycja nie jest portowana). Wykonano tylko odczyt wartości domyślnych, patrz wyżej.
-
-## Reddit
-Do uzupełnienia w części E.

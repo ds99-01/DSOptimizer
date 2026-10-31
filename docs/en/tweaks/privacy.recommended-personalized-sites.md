@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.recommended-personalized-sites.md sha256: e271c42c544124e26d293000c4b7438191a8132ce02e39c62afd18065bc39f10 -->
+<!-- source: docs/tweaks/privacy.recommended-personalized-sites.md sha256: 89a82653eacab3512ee3c3c5b613800fd051d32c28927f7271979fce9d0a3bd5 -->
 
 # privacy.recommended-personalized-sites – Personalized websites in Recommended (HideRecommendedPersonalizedSites)
 
@@ -28,6 +28,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: writing the policy, checking the Recommended section after restarting File Explorer. Result: **can't be observed**, because the local account has no websites in the section.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

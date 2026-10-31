@@ -39,6 +39,3 @@ Przebieg VM (Task 10, 2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1` na gałę
 Metoda: odczyt `Get-DnsClientCache` przed i po `Clear-DnsClientCache` (i `ipconfig /flushdns`), po rozwiązaniu nazw (`Resolve-DnsName`) przy podłączonej sieci; zrzut wyjścia w surowych wynikach (poza gitem).
 - **Home** (`DSO-26H2-Home`, 26300.9457, bez sieci), 2026-10-22: po czyszczeniu (obie metody) zostają tylko 2 wpisy z `hosts` (A nazwy i PTR). Skutek: pamięć wyczyszczona poza wpisami z `hosts`.
 - **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: bez sieci jak Home (2 wpisy z `hosts`); z siecią (`Default Switch`) 3 wpisy, wszystkie z `hosts`, a `wpad` i wpis negatywny znikają. Nazwy publiczne rozwiązane przez `Resolve-DnsName` (15–19 ms, ponowne zapytanie z pamięci 1 ms) nie były widoczne w `Get-DnsClientCache` ani przed, ani po czyszczeniu – dlatego kryterium nie opiera się na spadku liczby wpisów.
-
-## Reddit
-Do uzupełnienia w części E.

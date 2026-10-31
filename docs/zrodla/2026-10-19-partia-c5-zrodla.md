@@ -154,7 +154,7 @@ Strona wymienia elementy „available in Windows 8.1” (nie 11/26H2).
   klasyczne, a nie Ustawienia (albo nic). Każdy panel w katalogu musi mieć odczyt z VM (czy proces `control.exe`/`rundll32`/`mmc` tworzy okno, jaki ma
   tytuł i klasę).
 - Opis w katalogu: „Otwiera panel systemowy Windows (klasyczny, jeśli system go zawiera)”; skutek „otwarte okno” sprawdza test VM.
-- Fallback do Ustawień (jeśli Dawid zechce, decyzja 2): MS „Launch the Windows Settings app” (ms.date 2026-09-26,
+- Fallback do Ustawień (jeśli autor zechce, decyzja 2): MS „Launch the Windows Settings app” (ms.date 2026-09-26,
   https://learn.microsoft.com/en-us/windows/uwp/launch-resume/launch-settings-app) podaje m.in. `ms-settings:powersleep` („Power & sleep”),
   `ms-settings:network-status`, `ms-settings:network-advancedsettings`, `ms-settings:appsfeatures`, `ms-settings:about`.
 
@@ -295,10 +295,10 @@ Wszystkie 14 z tabeli w sekcji 1 (12 bez aliasu). Podział według siły źróde
 
 ## Otwarte pytania dla eksploracji VM (zbiorczo)
 
-Wszystko tylko w VM 26H2 Home i Pro (nigdy na hoście Dawida), bez sieci.
+Wszystko tylko w VM 26H2 Home i Pro (nigdy na hoście autora), bez sieci.
 1. `Test-Path "$env:windir\System32\SystemPropertiesPerformance.exe"`; po uruchomieniu odczyt tytułu okna (`(Get-Process SystemPropertiesPerformance).MainWindowTitle`)
    i czy są przełączniki efektów (UI Automation lub zrzut). Porównanie z `control.exe sysdm.cpl,,3` – którą zakładkę otwiera na 26H2.
-   → rozstrzygnięte: plik istnieje, okno „Opcje wydajności” (`#32770`); `control.exe sysdm.cpl,,3` otwiera „Właściwości systemu” (`SystemPropertiesAdvanced.exe`), nie to okno. Karta Zaawansowane to wniosek z nazwy procesu; przełączników efektów automat nie czytał (klik Dawida: „Efekty wizualne”).
+   → rozstrzygnięte: plik istnieje, okno „Opcje wydajności” (`#32770`); `control.exe sysdm.cpl,,3` otwiera „Właściwości systemu” (`SystemPropertiesAdvanced.exe`), nie to okno. Karta Zaawansowane to wniosek z nazwy procesu; przełączników efektów automat nie czytał (klik autora: „Efekty wizualne”).
 
 2. Dla każdego panelu z 3.1–3.4: uruchomienie polecenia i po 3 s `Get-Process | Where-Object MainWindowTitle` (nazwa procesu i tytuł); odróżnić klasyczne
    okno (proces `control`, `rundll32`, `mmc`, `explorer`, `SystemPropertiesPerformance`) od Ustawień (`SystemSettings.exe`, `ApplicationFrameHost`). Home i Pro osobno.
@@ -402,7 +402,7 @@ Powłoka dso przy starcie: `userShell` = `explorer.exe PID 5632, sesja 1` (H) / 
 1. **`SystemPropertiesPerformance.exe` vs `control.exe sysdm.cpl,,3`.**
    - Plik istnieje: `…Data{panels.visual-effects, ms-exe}.FileExists` = true (H, P). K2: `At3s/At10s.NewWindows` = `'Opcje wydajności'`, klasa `#32770`,
      proces `SystemPropertiesPerformance.exe` (sesja 1, dso), żyje po 10 s (`LaunchedHasExited` = false). K1: proces żyje po 10 s (sesja 0).
-   - Przełączników efektów automat nie czytał (bez UI Automation). Klik Dawida (zapis pomiaru w archiwum autora, B15): w oknie widać „Efekty wizualne”.
+   - Przełączników efektów automat nie czytał (bez UI Automation). Klik autora (zapis pomiaru w archiwum autora, B15): w oknie widać „Efekty wizualne”.
    - `control.exe sysdm.cpl,,3`: `control.exe` kończy się kodem 1 (`At3s.LaunchedExitCode` = 1), a nowym procesem jest
      `"C:\Windows\System32\SystemPropertiesAdvanced.exe"` (K1: sesja 0; K2: sesja 1, okno `'Właściwości systemu'`, `#32770`). Karty z tytułu nie da się odczytać;
      **wniosek** z nazwy procesu: MS („Executing Control Panel Items”) nazywa `SystemPropertiesAdvanced.exe` „Advanced system properties”, czyli karta Zaawansowane.
@@ -422,7 +422,7 @@ Powłoka dso przy starcie: `userShell` = `explorer.exe PID 5632, sesja 1` (H) / 
    i `ApplicationFrameHost.exe`, oba `IsNew` = true, **w sesji 1 jako dso** (H: PID 9440/1264, P: 568/9180). W K2 ten wariant nie dał nowego procesu ani okna
    (okno „Ustawienia” z K1 już było otwarte – `ShellWindows` `'Ustawienia'` `ApplicationFrameWindow`).
    `rstrui.exe` przy stanie ochrony: `probes.panels[ochrona-systemu].Data.RestorePointCount` = 0, `SystemRestoreKey.Values`: `RPSessionInterval` = 0,
-   `SRInitDone` = 1 (H i P) – kreator otwiera się mimo braku punktów (zgodne z klikiem Dawida B18). Uboczny skutek w K1: start usługi `wbengine.exe`
+   `SRInitDone` = 1 (H i P) – kreator otwiera się mimo braku punktów (zgodne z klikiem autora B18). Uboczny skutek w K1: start usługi `wbengine.exe`
    (`…{panels.system-restore, winutil}.At3s.NewProcesses`, H i P).
 5. **`AutoRestartShell`.** `probes.explorer[autorestartshell].Data`: `KeyExists` = true, `Exists` = true, `Kind` = `DWord`, `Value` = 1 (H i P).
    Przypadek „brak wartości” nie wystąpił → zachowanie przy braku **nie rozstrzygnięte**.
@@ -431,7 +431,7 @@ Powłoka dso przy starcie: `userShell` = `explorer.exe PID 5632, sesja 1` (H) / 
      `TaskbarElapsedMs` = 217 (H) / 1386 (P). Rozdzielczość pętli 500 ms.
    - `taskkill /f` na powłoce: **nie rozstrzygnięte** (sonda trafiła w proces `/factory`, patrz wyżej; po jego zabiciu `Found` = false, `Polls` = 53/56 – nowa
      powłoka nie powstaje, czego należało oczekiwać dla procesu, który nie jest powłoką).
-   - Klik Dawida (zapis pomiaru w archiwum autora, C): „Zakończ zadanie” w Menedżerze zadań → pulpit NIE wraca. To inny mechanizm niż `Stop-Process -Force`; przyczyny dane nie wyjaśniają.
+   - Klik autora (zapis pomiaru w archiwum autora, C): „Zakończ zadanie” w Menedżerze zadań → pulpit NIE wraca. To inny mechanizm niż `Stop-Process -Force`; przyczyny dane nie wyjaśniają.
 7. **Token Explorera.**
    - Po logowaniu: `probes.explorer[explorer-po-logowaniu].Data[0].Token.ElevationTypeName` = `Limited`, `Elevated` = false, właściciel `dso`, sesja 1.
    - Po powrocie (winlogon): `…[explorer-stop-process-k1].Data.New` i `…[explorer-stop-process-k2].Data.New`: nowy PID (H: 7092, 2228; P: 9096, 6456),
@@ -482,7 +482,7 @@ K1 = co żyje po 10 s w sesji 0 (`At10s.NewProcesses`, nazwa hosta); K2 = host o
 | control-panel | `control.exe` (WinUtil `control`) | `control.exe` żyje | `explorer.exe /factory` | `Panel sterowania` / `CabinetWClass` | **wchodzi** |
 | mouse | `main.cpl` (WinUtil) | `rundll32` żyje | `rundll32.exe` | `Właściwości: Mysz` / `#32770` | klasyczne |
 | mouse | `control.exe /name Microsoft.Mouse` (MS) | control kod 1; `rundll32` żyje | `rundll32.exe` | `Właściwości: Mysz` / `#32770` | **wchodzi** |
-| devices-printers | `shell:::{A8A91A66-3A7D-4424-8D24-04E180695C7A}` (WinUtil, ShellExecute) | błąd po ~108 s, brak procesu | błąd po 49 ms; okno w głównej powłoce (wniosek, niżej) | `Urządzenia i drukarki — Eksplorator plików` / `CabinetWClass` (pośrednio) | warunkowo – mechanizm do zmiany (R16) |
+| devices-printers | `shell:::{A8A91A66-3A7D-4424-8D24-04E180695C7A}` (WinUtil, ShellExecute) | błąd po ~108 s, brak procesu | błąd po 49 ms; okno w głównej powłoce (wniosek, niżej) | `Urządzenia i drukarki — Eksplorator plików` / `CabinetWClass` (pośrednio) | warunkowo – mechanizm do zmiany |
 | devices-printers | `control.exe /name Microsoft.DevicesAndPrinters` (MS) | control kod 1; nowe `SystemSettings.exe` + `ApplicationFrameHost.exe` (sesja 1) | brak nowego procesu/okna | brak (Ustawienia) | odrzucony (Ustawienia, D2) |
 | programs-features | `appwiz.cpl` (WinUtil) | `rundll32` żyje | `explorer.exe /factory` | `Programy i funkcje` / `CabinetWClass` | klasyczne |
 | programs-features | `control.exe /name Microsoft.ProgramsAndFeatures` (MS) | `control.exe` żyje | `explorer.exe` | `Programy i funkcje` / `CabinetWClass` | **wchodzi** |
@@ -490,7 +490,7 @@ K1 = co żyje po 10 s w sesji 0 (`At10s.NewProcesses`, nazwa hosta); K2 = host o
 | region | `control.exe /name Microsoft.RegionAndLanguage` (MS) | control kod 1; `rundll32` żyje | `rundll32.exe` | `Region` / `#32770` | **wchodzi** |
 | security-maintenance | `wscui.cpl` (WinUtil, ShellExecute) | `rundll32` żyje | `explorer.exe /factory` | `Zabezpieczenia i konserwacja` / `CabinetWClass` | klasyczne; forma `control.exe` niezmierzona |
 | sound | `mmsys.cpl` (WinUtil) | `rundll32` żyje | `rundll32.exe` | `Dźwięk` / `#32770` | klasyczne |
-| sound | `control.exe /name Microsoft.Sound` (MS) | control kod 1; `rundll32` żyje | `rundll32.exe` | `Dźwięk` / `#32770` | **wchodzi** (klik Dawida: brak odpowiedzi – rozbieżność) |
+| sound | `control.exe /name Microsoft.Sound` (MS) | control kod 1; `rundll32` żyje | `rundll32.exe` | `Dźwięk` / `#32770` | **wchodzi** (klik autora: brak odpowiedzi – rozbieżność) |
 | system-properties | `sysdm.cpl` (WinUtil) | brak nowego procesu | brak nowego procesu/okna | brak | nie rozstrzygnięte (patrz niżej) |
 | system-properties | `control.exe /name Microsoft.System` (MS) | `control.exe` żyje | nowy `explorer.exe /factory`, bez okna | brak | odrzucony (brak okna) |
 | date-time | `timedate.cpl` (WinUtil) | `rundll32` żyje | `rundll32.exe` | `Data i godzina` / `#32770` | klasyczne |
@@ -504,11 +504,11 @@ Szczegóły do tabeli:
   Okno `'Urządzenia i drukarki — Eksplorator plików'` (`CabinetWClass`, PID głównej powłoki 5632 H / 5532 P) jest w `ShellWindows` następnego wariantu
   (`{devices-printers, ms-name}.At3s/At10s.ShellWindows`), a NIE w jego `NewWindows`, i nie było go w `ShellWindows` wariantu poprzedniego (`{mouse, ms-name}.At10s`).
   **Wniosek:** okno powstało między tymi odczytami, czyli po `Start-Process 'shell:::…'` – mimo błędu zgłoszonego wywołującemu. Bezpośredniego odczytu brak.
-  Klik Dawida (B8): klasyczne okno. W K1 `shell:::` nie działa (błąd serwera po ~108 s).
+  Klik autora (B8): klasyczne okno. W K1 `shell:::` nie działa (błąd serwera po ~108 s).
 - **`sysdm.cpl` – dlaczego nie rozstrzygnięte:** wariant `{visual-effects, v32-sysdm-3}` zostawił otwarte `SystemPropertiesAdvanced.exe` w obu kontekstach
   (`Cleanup.Stopped` = [], `Cleanup.LeftProcesses` zawiera `SystemPropertiesAdvanced.exe` – nie było na liście `Get-C5PanelAllowNames`). **Hipoteza:** okno
   „Właściwości systemu” jest jednoinstancyjne i `sysdm.cpl` aktywował istniejące okno (brak nowego procesu i uchwytu). Dane tego nie potwierdzają ani nie wykluczają.
-  Klik Dawida (B13, czysty stan): `sysdm.cpl` → klasyczne okno.
+  Klik autora (B13, czysty stan): `sysdm.cpl` → klasyczne okno.
 - **Okna `CabinetWClass`** z wywołania podniesionego (K2) trafiają do `explorer.exe` dso z tokenem `Limited` (proces `/factory` ma token `Limited`:
   `explorer-po-logowaniu.Data[1].Token`), czyli działają bez podniesienia; okna `#32770` w `rundll32`/`SystemProperties*`/`rstrui` i `mmc` są dziećmi procesu
   podniesionego. Uruchamiany `control.exe` kończy się kodem 1 także wtedy, gdy okno się otworzyło → kod wyjścia `control.exe` nie jest sygnałem błędu.
@@ -523,23 +523,23 @@ Różnice tylko w czasach (`Stop-Process` K2: 136 ms H / 1310 ms P; pasek: 217 /
   token `Limited` (nie podniesiony), pasek zadań ≤ 1,39 s; Home = Pro. Wariant v3.2 (`Start-Process explorer.exe`) z K1 tworzy osobny, podniesiony
   `explorer.exe` Administratora w sesji 0 (żyje), z K2 przekazuje otwarcie istniejącej powłoce (proces kończy się kodem 1, brak nowego procesu, nowe okno
   w powłoce). `AutoRestartShell` = DWORD 1 (istnieje) na H i P. `taskkill /f` na powłoce: nie rozstrzygnięte (wada sondy). Ręczne „Zakończ zadanie”
-  w Menedżerze zadań nie przywraca powłoki (klik Dawida).
+  w Menedżerze zadań nie przywraca powłoki (klik autora).
 - **G2 – Appx z K1 NIE rejestruje dla `dso`:** rejestruje dla konta wywołującego (dopisany `Administrator: Installed`), wpis dso bez zmian. W K2 (dso,
   podniesiony) rejestracja kończy się `Ok`, `Status` po = `Ok`. Nazwa `Microsoft.WindowsStore`, manifest czytelny z procesu podniesionego. `wsreset -i`:
   kod 0, stdout „Error: 0x80070520” (K1) / „Error: 0x80072ee7” (K2).
-- **G3 – bezpośrednio odczytane klasyczne okno w K2 (H i P) ma 14 z 15 pozycji**: 12 z wariantem zgodnym z R16 (w tabeli **wchodzi**),
+- **G3 – bezpośrednio odczytane klasyczne okno w K2 (H i P) ma 14 z 15 pozycji**: 12 z wariantem zgodnym z przyjętym mechanizmem uruchamiania (w tabeli **wchodzi**),
   `security-maintenance` tylko przez ShellExecute `wscui.cpl` (forma `control.exe` niezmierzona), `system-properties` tylko przez `control.exe sysdm.cpl,,3`
   (`sysdm.cpl` nierozstrzygnięty – kontaminacja, `/name Microsoft.System` bez okna). 15. pozycja, `devices-printers`, ma okno tylko pośrednio i wyłącznie w K2.
-  Jedyne przekierowanie do Ustawień: `control.exe /name Microsoft.DevicesAndPrinters` (D2/R4: wariant odpada, bez fallbacku `ms-settings:`).
+  Jedyne przekierowanie do Ustawień: `control.exe /name Microsoft.DevicesAndPrinters` (D2: wariant odpada, bez fallbacku `ms-settings:`).
   K1 dla testu VM: każdy wybrany wariant poza `shell:::` zostawia żywy proces w sesji 0 po 10 s (tabela, kolumna K1).
 
 ---
 
 ## Sonda uzupełniająca (2026-10-19)
 
-Ruling R20/R21, skrypt `Invoke-C5Exploration.ps1` @ `01368c9`, `-Probe panels -Variant security-maintenance-control,system-properties-control,devices-printers-explorer`.
+Skrypt `Invoke-C5Exploration.ps1` @ `01368c9`, `-Probe panels -Variant security-maintenance-control,system-properties-control,devices-printers-explorer`.
 Dane: zapis pomiaru w archiwum autora (H: 09:35:02–09:36:30, P: 09:36:30–09:37:52; build 26300.9457).
-Uruchomienie: CreateProcess (`Start-C5CreateProcess`: `ProcessStartInfo.UseShellExecute` = `$false`), tak jak launcher z R16. Powłoka dso: PID 5576 (H) / 5236 (P), sesja 1.
+Uruchomienie: CreateProcess (`Start-C5CreateProcess`: `ProcessStartInfo.UseShellExecute` = `$false`), tak jak launcher. Powłoka dso: PID 5576 (H) / 5236 (P), sesja 1.
 Brak błędów: `Error`, `Launch.Error`, `ChildError`, `UnregisterError` puste; `panele-k2.Available` = true, `ChildToken` `Full`, `ChildSessionId` = 1 (H i P).
 Żaden wariant nie uruchomił Ustawień: `At3s/At10s.SettingsHosts` puste w K1 i K2 (H i P). Home = Pro we wszystkich polach poza PID-ami.
 
@@ -570,23 +570,23 @@ Szczegóły (ścieżki `probes.panels[panele-k1|panele-k2].Data{Name}`):
 - `system-properties-control` – klasyczne okno w K2 (H i P), w K1 żyje `SystemPropertiesComputerName.exe`, bez Ustawień → wchodzi z `launch` = `control.exe` + `sysdm.cpl`.
 - `devices-printers-explorer` – K2: klasyczne okno, uruchomiony Explorer kończy się kodem 1, okno należy do **nowego procesu Explorera dso** (`/factory,{75dff2b7-…}`,
   token `Limited`), a nie do PID powłoki. K1: powstaje nowy, podniesiony `explorer.exe` Administratora w sesji 0 i żyje.
-- **R21:** pozytywnie w tym, co chroni (okno działa jako dso, sesja użytkownika, token `Limited`, uruchomiony proces kończy się); z korektą sformułowania:
+- Pozytywnie w tym, co chroni (okno działa jako dso, sesja użytkownika, token `Limited`, uruchomiony proces kończy się); z korektą sformułowania:
   właścicielem okna jest proces `explorer.exe /factory` konta dso (ten sam wzorzec co okna `CabinetWClass` innych paneli), nie powłoka (`IsUserShell` = false).
   W kontekście bez powłoki użytkownika w tej samej sesji (K1) zachowanie jest negatywne: podniesiony Explorer żyje dalej.
 
 ## Wnioski (rozstrzygnięcia po VM)
 
-Rulingi autora po analizie wyników powyżej (szczegóły w zapisie partii w archiwum autora).
-- **R18 (`tools.restart-explorer`, bramka G1 spełniona):** wchodzi; zatrzymanie wyłącznie `Stop-Process -Force`, powłoka wybierana po `OwnerSid`, sesji i linii poleceń bez `/factory`; `AutoRestartShell` brak albo 0 → `Failed` bez zatrzymania; limit nowego PID 10 s.
-- **R19 (`tools.store-repair`, bramka G2):** SID procesu ≠ `$UserSid` → `Failed` bez rejestracji (K1 rejestruje dla Administratora, nie dla `dso`); pakiet po dokładnej nazwie `Microsoft.WindowsStore`, odczyt zwrotny `Status` = `Ok`, brak pakietu → `Failed`, `wsreset -i` nieużywane.
-- **R20 (bramka G3):** wchodzi 12 paneli z tabeli „Panele wchodzące” (polecenia z wariantów, które dały klasyczne okno; przy remisie nazwa kanoniczna MS); trzy warunkowe poszły do sondy uzupełniającej.
-- **R21 (`shell:::`):** ShellExecute `shell:::` jest fałszywie negatywny w K2 i zawiesza ~108 s w K1, więc odpada; sonda uzupełniająca oceniła CreateProcess `explorer.exe shell:::{GUID}` pozytywnie (okno w procesie `/factory` konta, token `Limited`).
-- **R22 (`tools.winutil`):** `launch` = `powershell.exe` z `-NoExit -Command "irm https://christitus.com/win | iex"` (zmierzone), pod warunkiem zgodności ciągu z README.
-- **R23 (15 paneli i strażnik):** wchodzi 15 paneli (12 + `security-maintenance` `control.exe wscui.cpl`, `system-properties` `control.exe sysdm.cpl`, `devices-printers` przez `%SystemRoot%\explorer.exe shell:::{GUID}`); launcher przed startem Explorera sprawdza, że w bieżącej sesji działa `explorer.exe` tego samego konta, inaczej `Failed` bez startu. Strażnik liczy tylko powłokę (explorer.exe bez `/factory` w linii poleceń, ruling R25), bo procesy `/factory` przeżywają śmierć powłoki. Przypadek VM dla `devices-printers`: przyjęto wariant `Failed` + `MessageContains` (odmowa strażnika w K1 przez PS Direct) zamiast `Skip`.
+Decyzje autora po analizie wyników powyżej (szczegóły w zapisie partii w archiwum autora).
+- **`tools.restart-explorer` (bramka G1 spełniona):** wchodzi; zatrzymanie wyłącznie `Stop-Process -Force`, powłoka wybierana po `OwnerSid`, sesji i linii poleceń bez `/factory`; `AutoRestartShell` brak albo 0 → `Failed` bez zatrzymania; limit nowego PID 10 s.
+- **`tools.store-repair` (bramka G2):** SID procesu ≠ `$UserSid` → `Failed` bez rejestracji (K1 rejestruje dla Administratora, nie dla `dso`); pakiet po dokładnej nazwie `Microsoft.WindowsStore`, odczyt zwrotny `Status` = `Ok`, brak pakietu → `Failed`, `wsreset -i` nieużywane.
+- **Bramka G3:** wchodzi 12 paneli z tabeli „Panele wchodzące” (polecenia z wariantów, które dały klasyczne okno; przy remisie nazwa kanoniczna MS); trzy warunkowe poszły do sondy uzupełniającej.
+- **`shell:::`:** ShellExecute `shell:::` jest fałszywie negatywny w K2 i zawiesza ~108 s w K1, więc odpada; sonda uzupełniająca oceniła CreateProcess `explorer.exe shell:::{GUID}` pozytywnie (okno w procesie `/factory` konta, token `Limited`).
+- **`tools.winutil`:** `launch` = `powershell.exe` z `-NoExit -Command "irm https://christitus.com/win | iex"` (zmierzone), pod warunkiem zgodności ciągu z README.
+- **15 paneli i strażnik:** wchodzi 15 paneli (12 + `security-maintenance` `control.exe wscui.cpl`, `system-properties` `control.exe sysdm.cpl`, `devices-printers` przez `%SystemRoot%\explorer.exe shell:::{GUID}`); launcher przed startem Explorera sprawdza, że w bieżącej sesji działa `explorer.exe` tego samego konta, inaczej `Failed` bez startu. Strażnik liczy tylko powłokę (explorer.exe bez `/factory` w linii poleceń), bo procesy `/factory` przeżywają śmierć powłoki. Przypadek VM dla `devices-printers`: przyjęto wariant `Failed` + `MessageContains` (odmowa strażnika w K1 przez PS Direct) zamiast `Skip`.
 
 ## Wartości liczbowe stałych tokena (uzupełnienie, data dostępu 2026-10-19)
 
-Ruling R13: poniżej rozdzielono wartości podane wprost na stronie MS Learn od wartości wynikających z kolejności enumu i od tych, których strona nie podaje.
+Poniżej rozdzielono wartości podane wprost na stronie MS Learn od wartości wynikających z kolejności enumu i od tych, których strona nie podaje.
 
 | Stała | Wartość | Skąd |
 |---|---|---|

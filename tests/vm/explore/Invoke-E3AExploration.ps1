@@ -20,7 +20,7 @@ Opis działania:
     Przebieg VM (moduł ExploreCommon): przywrócenie checkpointu -> start -> Wait-VmReady -> PowerShell Direct -> zbieranie, a na końcu ZAWSZE
     (finally) zatrzymanie i powrót do checkpointu. Pierwszy błąd uwierzytelnienia przerywa cały skrypt (blokada konta).
     Wynik: <OutDirectory>\<VmName>\e3a-exploration.json (VM) albo <OutDirectory>\host\e3a-exploration.json (-LocalReadOnly), UTF-8.
-    Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy Bruteforce_LTSC.
+    Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy obcej VM.
     Kod wyjścia: 0 gdy zebrano wszystko bez błędu przebiegu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]

@@ -1,7 +1,7 @@
 # privacy.diagtrack – Wyłącz usługę telemetrii DiagTrack
 
 ## Werdykt 26H2
-Portować jako `risk=caution`, `suggested=true` (decyzja R14): test na VM 26H2 (Home i Pro) pokazał, że usługa zostaje zatrzymana i nie startuje po restarcie, a wyszukiwanie Windows Update po restarcie z wyłączoną usługą działa. Brak dokumentacji MS dla wyłączania tej usługi, dowód: test na VM. Pozycja nie obiecuje, że Windows przestanie wysyłać dane diagnostyczne.
+Portować jako `risk=caution`, `suggested=true`: test na VM 26H2 (Home i Pro) pokazał, że usługa zostaje zatrzymana i nie startuje po restarcie, a wyszukiwanie Windows Update po restarcie z wyłączoną usługą działa. Brak dokumentacji MS dla wyłączania tej usługi, dowód: test na VM. Pozycja nie obiecuje, że Windows przestanie wysyłać dane diagnostyczne.
 
 ## Co zmienia
 - Usługa `DiagTrack` (`services[]`): `startType=Disabled`, `stop=true`; `scope=machine`. Bez wpisów rejestru i bez skryptu (API usług w C#).
@@ -21,7 +21,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: `DiagTrack` typ startu **A
 - Undo przywraca snapshot sprzed zmiany z journala (typ startu i, gdy usługa działała, jej start); `original` = Automatic to tylko fallback.
 
 ## Ryzyka i ostrzeżenia
-- `risk=caution` (R14), `suggested=true`.
+- `risk=caution`, `suggested=true`.
 - Ostrzeżenia w katalogu: „Microsoft nie opisuje wyłączania tej usługi, a korzysta z niej też Windows Update – przy kłopotach z aktualizacjami cofnij zmianę.” oraz „Nie gwarantuje, że Windows przestanie wysyłać dane diagnostyczne.”
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): na VM (Home i Pro) wyszukiwanie Windows Update po restarcie z wyłączoną usługą działało (WUA `Search`: ResultCode=2, 4 aktualizacje, bez błędu). To jedna obserwacja, nie gwarancja.
 - Znane ograniczenie silnika (odroczone): usługę zatrzymuje tylko wtedy, gdy jest `Running`; usługa jeszcze startująca w chwili apply może działać do restartu. Typ startu to `Disabled` w obu przypadkach.
@@ -34,6 +34,3 @@ Przypadek `privacy-diagtrack` (`Flow=Full`) w `tests/vm/cases.psd1`: niepusty `S
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Metoda: stan usługi (typ startu, uruchomienie) po zmianie i po restarcie VM; Windows Update Agent `Search("IsInstalled=0 and Type='Software'")` po restarcie. Wynik: usługa zatrzymana i nie startuje po restarcie; wyszukiwanie: ResultCode=2 (powodzenie), 4 aktualizacje, bez błędu. Po cofnięciu: Automatic i Running.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

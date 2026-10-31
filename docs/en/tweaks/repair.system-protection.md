@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.system-protection.md sha256: 611620c24514c2fdc5289675668466f2f2a4019f4e3b591d7a8ff159a1c6b4bf -->
+<!-- source: docs/tweaks/repair.system-protection.md sha256: b4cac7a7a31bb7fa3f5d519ecce57f8bd6c4f1db5b7cb87080c5d981b4d246a2 -->
 
 # repair.system-protection – System Protection
 
@@ -26,7 +26,7 @@ Home and Pro (reading 2026-10-22): `SPP\Clients` without an entry, `vssadmin lis
 ## Risks and warnings
 - `risk=safe`.
 - Warnings in the catalog: "Undo turns protection off: no new points are created, and you can't restore the system from existing ones (they stay on the disk)." and "Turning it on doesn't create a point – the first one is created before a change or with "Create a restore point now"."
-- The first warning is a short form of a text changed from the spec (the measurement contradicts "deletes all points", Ruling R7). Full text of R7: "Turning off System Protection blocks the creation of new restore points and restoring the system from existing ones. Existing points stay on the disk (they take up space) and come back when protection is turned on again; they can be deleted in the 'System Protection' window (Configure → Delete)."
+- The first warning is a short form of a text changed from the spec (the measurement contradicts "deletes all points"). Full text: "Turning off System Protection blocks the creation of new restore points and restoring the system from existing ones. Existing points stay on the disk (they take up space) and come back when protection is turned on again; they can be deleted in the 'System Protection' window (Configure → Delete)."
 - Windows sets the space limit (3% of the C: drive on the measured machine); the program doesn't change it.
 - Turning it on alone doesn't create a point. Turning protection off "with deletion of points" (`vssadmin delete shadows`) is a separate, irreversible operation that isn't here and wasn't measured.
 
@@ -39,6 +39,3 @@ VM run (Task 10, 2026-10-22, full `tests/vm/Invoke-VmTests.ps1` on the `etap4b-1
 Method: reading `SPP\Clients`, `vssadmin list shadowstorage` and `Get-ComputerRestorePoint` before and after the change; a point created after turning it on; raw results outside git.
 - **Home** (`DSO-26H2-Home`, 26300.9457), 2026-10-22: turning it on from the "System Protection" window (`SystemPropertiesProtection.exe` → "Konfiguruj" (Configure) → "Włącz ochronę systemu" (Turn on system protection)) and `Enable-ComputerRestore -Drive 'C:\'` (24–26 ms) give the same state: an entry in `SPP\Clients`; the shadow storage is created with the first point, with a limit of 2,052,367,196 B = 3.0% of the 68,412,239,872 B volume. `Disable-ComputerRestore -Drive 'C:\'` removes the entry, but the point stays (`Get-ComputerRestorePoint` and `vssadmin list shadows` see it after 3 s, 60 s and after a VM restart); after `Enable-ComputerRestore` again, the point is back in the list. With protection turned off, a point can't be created (WMI: the service is disabled).
 - **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: exactly the same as on Home (runs P1 and A2).
-
-## Reddit
-To be added in part E.

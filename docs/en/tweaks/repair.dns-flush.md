@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.dns-flush.md sha256: ef9fa2571fbd9f7dc82ea17b0227a3e1ed363b9564ee268d810bd67d31bb6ba5 -->
+<!-- source: docs/tweaks/repair.dns-flush.md sha256: abae965531a52da0148da31c478bc4a39eb11c21526864bb60333e02f9994ae4 -->
 
 # repair.dns-flush – Clear the DNS cache
 
@@ -41,6 +41,3 @@ VM run (Task 10, 2026-10-22, full `tests/vm/Invoke-VmTests.ps1` on the `etap4b-1
 Method: reading `Get-DnsClientCache` before and after `Clear-DnsClientCache` (and `ipconfig /flushdns`), after resolving names (`Resolve-DnsName`) with the network connected; output captured in the raw results (outside git).
 - **Home** (`DSO-26H2-Home`, 26300.9457, no network), 2026-10-22: after clearing (both methods) only 2 entries from `hosts` stay (A for the name and PTR). Effect: the cache is cleared except for the entries from `hosts`.
 - **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: without a network the same as Home (2 entries from `hosts`); with a network (`Default Switch`) 3 entries, all from `hosts`, while `wpad` and the negative entry disappear. Public names resolved by `Resolve-DnsName` (15–19 ms, a repeated query from the cache 1 ms) weren't visible in `Get-DnsClientCache` either before or after clearing – that's why the criterion isn't based on the drop in the number of entries.
-
-## Reddit
-To be added in part E.

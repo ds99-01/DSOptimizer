@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.search-connected-web.md sha256: a90479268114822aba4dc719e34319c714044f8f96e24769d9efc203b89229d0 -->
+<!-- source: docs/tweaks/privacy.search-connected-web.md sha256: 466dc6e080d5886ca49f0546b737b3b27fef951a8c5e54972eb8445444e8a511 -->
 
 # privacy.search-connected-web – ConnectedSearchUseWeb policy
 
@@ -27,6 +27,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: writing the policy through the registry API, restarting File Explorer and SearchHost, search results for the phrase "pogoda" (weather). Result: **no effect**, Bing still in the results.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

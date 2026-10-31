@@ -37,6 +37,3 @@ Przypadek `net-ipv6-prefer-ipv4` (`Flow=Reboot`, przebieg `reboot-net-ipv6-prefe
 - `CheckAfterApply` (po restarcie, `Get-NetPrefixPolicy`): **Passed**. Skrypt wymaga dokładnie jednego wpisu `::ffff:0:0/96`, dokładnie jednego `::/0` i `Precedence` pierwszego większej niż drugiego. Przed zmianą odczyt z VM dawał 35 i 40 (czyli odwrotnie), więc kryterium rozróżnia stan przed i po. Konkretne wartości po apply nie są zapisane w raporcie (tylko wynik Passed). Kryterium pochodzi ze zdania MS z sekcji „Detekcja i undo”; VM potwierdziła je jako zachowanie `Get-NetPrefixPolicy` po restarcie, nie jako skutek w ruchu.
 - W przebiegu 20261018-195830 `CheckAfterUndo` nie było zdefiniowane: powrót tablicy prefix policy do 35 / 40 po undo i restarcie nie został wtedy sprawdzony (sprawdzono tylko brak wartości w rejestrze i `NotApplied`). Po końcowym review dodano `CheckAfterUndo` (precedencja `::ffff:0:0/96` mniejsza niż `::/0`). W przebiegu 20261018-204534 (`reboot-net-ipv6-prefer-ipv4`, Home i Pro) `CheckAfterUndo` = **Passed**, tak samo jak `CheckAfterApply`: po undo i drugim restarcie precedencja `::ffff:0:0/96` jest znów mniejsza niż `::/0`.
 - **Nie sprawdzono:** faktycznej preferencji IPv4 w ruchu (VM bez sieci), zachowania na sprzęcie z działającym IPv6.
-
-## Reddit
-Do uzupełnienia w części E.

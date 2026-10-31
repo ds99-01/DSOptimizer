@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.spotlight-settings.md sha256: 2de5988fdca2161e92bd40958e4e2bcc81097df91a891e2a246b4c0bc3cf782d -->
+<!-- source: docs/tweaks/privacy.spotlight-settings.md sha256: 7b71c674cb2b487932f857abb9c8116e02a8551d86857f61d132e5465f37f9a6 -->
 
 # privacy.spotlight-settings – Spotlight in Settings (DisableWindowsSpotlightOnSettings)
 
@@ -28,6 +28,3 @@ Not applicable (not ported): the item isn't in the catalog, so there is no VM ca
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: writing the policy, checking Settings, restarting the VM. Result: **no effect**, also after restarting the VM.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

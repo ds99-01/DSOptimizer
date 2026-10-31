@@ -5,7 +5,7 @@ Portować: przełącznik zaleceń w Start zmienia się zapisem jednej wartości;
 
 ## Co zmienia
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced` (w silniku `HKU\<SID zalogowanego>`), wartość `Start_IrisRecommendations`, **DWord**, ustawiana na `0`; `scope=user`.
-- Ustawienia pokazują nowy stan od razu; widok menu Start (według obserwacji na VM po restarcie Eksploratora i zabiciu SearchHost oraz StartMenuExperienceHost) katalog opisuje jako widoczny po ponownym zalogowaniu. Apply nie restartuje niczego (R15); czy sam `tools.restart-explorer` wystarcza, nie sprawdzano (ostrzeżenie: „sam restart Eksploratora może nie wystarczyć”).
+- Ustawienia pokazują nowy stan od razu; widok menu Start (według obserwacji na VM po restarcie Eksploratora i zabiciu SearchHost oraz StartMenuExperienceHost) katalog opisuje jako widoczny po ponownym zalogowaniu. Apply nie restartuje niczego; czy sam `tools.restart-explorer` wystarcza, nie sprawdzano (ostrzeżenie: „sam restart Eksploratora może nie wystarczyć”).
 - Uwaga do testów UI: na Home po pierwszym restarcie z siecią włączyła się nowa wersja menu Start (w Ustawieniach `AutomationId` pola to `SystemSettings_Start_IrisRecommendations_CheckBox` zamiast `_ToggleSwitch`); wartość rejestru się nie zmienia.
 
 ## Źródła
@@ -22,7 +22,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: klucz `Explorer\Advanced` 
 - Klucz `Explorer\Advanced` istniał przed apply i zostaje.
 
 ## Ryzyka i ostrzeżenia
-- `risk=safe`, `suggested=true` (R12: zostaje sugerowana).
+- `risk=safe`, `suggested=true` (zostaje sugerowana).
 - Ostrzeżenie w katalogu: „Zmiana zadziała po ponownym zalogowaniu; sam restart Eksploratora może nie wystarczyć.”
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): skutku samego restartu Eksploratora (`tools.restart-explorer`) nie sprawdzano.
 
@@ -32,6 +32,3 @@ Przypadek `privacy-start-recommendations` (`Flow=Full`) w `tests/vm/cases.psd1` 
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: przełącznik zaleceń w Ustawieniach (Personalizacja > Start; UI Automation) po zapisie przez API i restarcie Eksploratora. Wynik: przełącznik „wyłączone”; w menu Start nie było treści tego typu, więc zmiany w menu nie widać. dowód: stan przełącznika w Ustawieniach, treści nie obserwowano.
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Ta sama metoda i ten sam wynik.
-
-## Reddit
-Do uzupełnienia w części E.

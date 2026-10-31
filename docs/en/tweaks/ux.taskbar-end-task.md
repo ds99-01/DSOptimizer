@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.taskbar-end-task.md sha256: 1f4eac33349c71ae7fdf1e00df7e6a64432546cfcd046e5dd32a22498fadd31b -->
+<!-- source: docs/tweaks/ux.taskbar-end-task.md sha256: 8956212dbf0c78c18038d1326ac2d0e441d0e0bff3403ee62ea8596fc47846d3 -->
 
 # ux.taskbar-end-task – Add "End task" to the taskbar menu
 
@@ -8,7 +8,7 @@ Port: a test on a 26H2 VM (Home and Pro) showed a real effect. MS source for the
 ## What it changes
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings`, value `TaskbarEndTask`, **DWord**, set to `1`; `scope=user` (the signed-in user's hive).
 - On a fresh 26H2 neither the value nor the `TaskbarDeveloperSettings` key exists (only the toggle in Settings creates it). Apply creates the key, undo deletes the value and the empty key created by apply.
-- Apply doesn't restart File Explorer (ruling R15). The entry appears in the menu after File Explorer restarts: use the `tools.restart-explorer` action or sign in again.
+- Apply doesn't restart File Explorer. The entry appears in the menu after File Explorer restarts: use the `tools.restart-explorer` action or sign in again.
 
 ## Sources
 - https://learn.microsoft.com/en-us/windows/advanced-settings/ – MS Learn "Advanced Windows Settings" (2026-01-22): the toggle "Enable end task in taskbar by right click" in System > Advanced (25H2 and later; previously For developers).
@@ -34,6 +34,3 @@ Case `ux-taskbar-end-task` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyAbsentAft
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: the menu of a program's button on the taskbar in the `dso` session after File Explorer restarted, reading the menu items. Result: with `TaskbarEndTask`=1 the button's menu has the entry "Zakończ zadanie" (End task); after undo and a File Explorer restart the entry isn't there.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

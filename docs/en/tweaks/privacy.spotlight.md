@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/privacy.spotlight.md sha256: d71e84effca7565e839a3ba067c608b216cf4d7df5af9a3a3c5b622a6e11bf29 -->
+<!-- source: docs/tweaks/privacy.spotlight.md sha256: 2220b9764dbafc0dbc745e14c22cc1379038491d23498cd518923ff544a5e361 -->
 
 # privacy.spotlight – Turn off Windows spotlight (pictures of the day)
 
 ## Verdict for 26H2
-Port as a **non-suggested** item with a warning (Dawid's decision 2026-10-21, question 1 after round 1). There is an effect: the desktop background stops being a picture of the day. Undo removes the policy, but doesn't bring back the "Windows spotlight" background (which is why the item was dropped in round 1, R9). The warning in the catalog says that the pictures of the day have to be chosen again in Settings > Personalization > Background.
+Port as a **non-suggested** item with a warning (the author's decision 2026-10-21, question 1 after round 1). There is an effect: the desktop background stops being a picture of the day. Undo removes the policy, but doesn't bring back the "Windows spotlight" background (which is why the item was dropped in round 1). The warning in the catalog says that the pictures of the day have to be chosen again in Settings > Personalization > Background.
 
 ## What it changes
 - `HKCU\Software\Policies\Microsoft\Windows\CloudContent` (in the engine `HKU\<SID of the signed-in user>`), value `DisableWindowsSpotlightFeatures`, **DWord**, set to `1`; `scope=user`.
@@ -34,6 +34,3 @@ Case `privacy-spotlight` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: screenshots of the desktop background and Settings before writing the policy, after writing it and after undo. Result: the background switches from "W centrum uwagi Windows" (Windows spotlight) to "Obraz" (Picture) (the "Dowiedz się więcej o tym zdjęciu" (Learn about this picture) icon disappears); **after undo the background stays "Obraz" (Picture)**. The lock screen couldn't be checked (Windows isn't activated, which blocks personalization).
 - **Pro** (`DSO-26H2-Pro`), 2026-10-21. Same method and same result.
-
-## Reddit
-To be added in part E.

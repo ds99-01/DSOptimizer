@@ -17,7 +17,7 @@ Instrukcja uruchomienia:
 Opis działania:
     Eksploracja partii 1 Etapu 4a (prywatność, AI, reklamy, menu PPM, Zakończ zadanie) według zasady dowodu z spec 2: liczy się
     zaobserwowany skutek (Ustawienia, element UI, proces, wynik w Start), nie sam zapis wartości. Wszystko dzieje się WYŁĄCZNIE w VM
-    DSO-26H2-Home/Pro; na hoście skrypt tylko podłącza/odłącza kartę sieciową VM (Default Switch, zgoda Dawida 2026-10-21) i zapisuje wyniki.
+    DSO-26H2-Home/Pro; na hoście skrypt tylko podłącza/odłącza kartę sieciową VM (Default Switch, zgoda autora 2026-10-21) i zapisuje wyniki.
     Każda grupa to osobny przebieg od checkpointu 'czysta-26H2': revert -> sieć -> start -> gotowość -> sondy -> kopia zrzutów ->
     ZAWSZE (finally) revert, odłączenie sieci i sprawdzenie stanu końcowego (VM Off, karta bez przełącznika) przed zapisem JSON;
     błąd albo naruszenie trafia do pola cleanup i error wyniku oraz kończy grupę błędem (nic nie jest wyciszane).
@@ -41,7 +41,7 @@ Opis działania:
       5. cofnięcie (stan sprzed: wartości usunięte, klucze utworzone przez sondę usunięte, typ startu usługi) i obserwacja.
     Ostatni bezpiecznik po stronie VM: Assert-E4A1InsideVm (nazwa komputera DSO-26H2-HOME/PRO i brak DSO_VM_TESTS_MOCK_ONLY) na początku
     każdej funkcji ze skutkiem. Błąd jednej pozycji trafia do wyniku i nie przerywa pozostałych. Pierwszy błąd uwierzytelnienia przerywa
-    cały skrypt (blokada konta). Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy Bruteforce_LTSC.
+    cały skrypt (blokada konta). Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy obcej VM.
     Wynik: <OutDirectory>\<VmName>\e4a1-<grupa>.json (UTF-8) i zrzuty <OutDirectory>\<VmName>\shots-<grupa>\*.png.
     Kod wyjścia: 0 gdy wszystkie wybrane grupy na wszystkich VM zebrane bez błędu przebiegu, 1 w przeciwnym razie.
 #>
