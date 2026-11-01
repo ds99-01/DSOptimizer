@@ -1,16 +1,15 @@
-<!-- source: docs/tweaks/privacy.copilot-policy.md sha256: 301d19bfdbddb0cbc41aaa943d0581558fef23c1c79af9ee92f38a72b209bd92 -->
+<!-- source: docs/tweaks/privacy.copilot-policy.md sha256: ec6b5fbc51aebee83fd4034100f27da97a77766427395c07b974cccddbb093ab -->
 
 # privacy.copilot-policy – TurnOffWindowsCopilot policy
 
 ## Verdict for 26H2
-Not ported: the `TurnOffWindowsCopilot` policy has no effect on 26H2 (no evidence). Removing the `Microsoft.Copilot` app is round 2 of Stage 4a (Apps), not this item.
+Not ported: the `TurnOffWindowsCopilot` policy has no effect on 26H2 (no evidence). Removing the `Microsoft.Copilot` app is a separate matter (the Apps category), not this item.
 
 ## What it changes
 The item isn't in the catalog and changes nothing. Entry considered: `HKCU\Software\Policies\Microsoft\Windows\WindowsCopilot`, value `TurnOffWindowsCopilot`, DWord, `1` (`scope=user`; on the VM `HKU\<SID>\...`).
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "1. Microsoft Copilot" and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 
 ## Defaults on a fresh 26H2
 Reading from the VMs, 2026-10-21: all `Software\Policies\...` values: none (Home and Pro). The `Microsoft.Copilot` app: on Home installed and pinned, on Pro not present.

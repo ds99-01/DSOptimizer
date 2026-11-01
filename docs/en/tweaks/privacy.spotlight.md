@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/privacy.spotlight.md sha256: 50381bb52df5f481c98f5fbdf8621a37a24903c2e00afeabe18af84ed11cdfea -->
+<!-- source: docs/tweaks/privacy.spotlight.md sha256: 526f9dec21f0d99cbdd732097e118c9810e46279aaf14c921b2f9d23ce5b8105 -->
 
 # privacy.spotlight – Turn off Windows spotlight (pictures of the day)
 
 ## Verdict for 26H2
-Port as a **non-suggested** item with a warning (the author's decision 2026-10-21, question 1 after round 1). There is an effect: the desktop background stops being a picture of the day. Undo removes the policy, but doesn't bring back the "Windows spotlight" background (which is why the item was dropped in round 1). The warning in the catalog says that the pictures of the day have to be chosen again in Settings > Personalization > Background.
+Port as a **non-suggested** item with a warning (decision of 2026-10-21). There is an effect: the desktop background stops being a picture of the day. Undo removes the policy, but doesn't bring back the "Windows spotlight" background (which is why the item was dropped earlier). The warning in the catalog says that the pictures of the day have to be chosen again in Settings > Personalization > Background.
 
 ## What it changes
 - `HKCU\Software\Policies\Microsoft\Windows\CloudContent` (in the engine `HKU\<SID of the signed-in user>`), value `DisableWindowsSpotlightFeatures`, **DWord**, set to `1`; `scope=user`.
@@ -11,8 +11,7 @@ Port as a **non-suggested** item with a warning (the author's decision 2026-10-2
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457, Windows not activated, local account): write through the registry API (.NET `RegistryKey`) and observation in Settings (UI Automation, screenshots).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), section "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1), row "Spotlight, wszystko" (Spotlight, everything).
-- Microsoft (ADMX/CSP `Experience/AllowWindowsSpotlight`) lists this policy as ❌ Pro, ✅ Enterprise/Education; on the 26H2 VM, however, the effect on the desktop was the same on Home and Pro, so the observation counts (Stage 4a rule).
+- Microsoft (ADMX/CSP `Experience/AllowWindowsSpotlight`) lists this policy as ❌ Pro, ✅ Enterprise/Education; on the 26H2 VM, however, the effect on the desktop was the same on Home and Pro, so the observation counts (evidence rule).
 
 ## Defaults on a fresh 26H2
 Reading from the VMs, 2026-10-21: neither the user's `...\Policies\Microsoft\Windows\CloudContent` key nor the value exists (Home and Pro); desktop background = "W centrum uwagi Windows" (Windows spotlight).

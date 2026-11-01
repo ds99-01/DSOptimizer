@@ -8,7 +8,6 @@ Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis: `DisableClickToDo`,
 
 ## Źródła
 - Test na VM 26H2 Home i Pro, 2026-10-21 (build 26300.9457).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md`, sekcje „2. Recall i Click to Do” i „Wyniki VM 26H2 (partia 1)”.
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM, 2026-10-21: wartości polityk `WindowsAI` brak (Home i Pro). Click to Do nie ma punktu wejścia, procesu ani strony w Ustawieniach.

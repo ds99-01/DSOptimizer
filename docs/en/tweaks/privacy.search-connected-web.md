@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.search-connected-web.md sha256: 466dc6e080d5886ca49f0546b737b3b27fef951a8c5e54972eb8445444e8a511 -->
+<!-- source: docs/tweaks/privacy.search-connected-web.md sha256: 622bc0797f8bdfec2767340d4f95f0feed9ca6a2934bd5a236d1c6c293d7bc58 -->
 
 # privacy.search-connected-web – ConnectedSearchUseWeb policy
 
@@ -10,7 +10,6 @@ The item isn't in the catalog and changes nothing. Entry considered: `HKLM\SOFTW
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "4. Bing / wyszukiwanie w sieci w menu Start" (Bing / web search in the Start menu) and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 
 ## Defaults on a fresh 26H2
 Reading from the VMs, 2026-10-21: value `ConnectedSearchUseWeb`: none (Home and Pro).

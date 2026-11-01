@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.search-highlights.md sha256: 833d5b2e85b99bedfecaef628112c8966abfb9f5c70a4be9179bbc247511feaf -->
+<!-- source: docs/tweaks/privacy.search-highlights.md sha256: 7838e41f3354081a1f7f9ee50478336114036cef976e19aacc4cab5b76c37b0a -->
 
 # privacy.search-highlights – search highlights (EnableDynamicContentInWSB)
 
@@ -10,7 +10,6 @@ The item isn't in the catalog and changes nothing. Entry considered: `HKLM\SOFTW
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "4. Bing / wyszukiwanie w sieci w menu Start" (Bing / web search in the Start menu) and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 
 ## Defaults on a fresh 26H2
 Reading from the VMs, 2026-10-21: value `EnableDynamicContentInWSB`: none (Home and Pro).

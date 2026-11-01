@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.spotlight-settings.md sha256: 7b71c674cb2b487932f857abb9c8116e02a8551d86857f61d132e5465f37f9a6 -->
+<!-- source: docs/tweaks/privacy.spotlight-settings.md sha256: 8eda18ca38692836bdc9a81c0030f8cbe8a73abacc7d1a84e68f17ae987e7bd6 -->
 
 # privacy.spotlight-settings – Spotlight in Settings (DisableWindowsSpotlightOnSettings)
 
@@ -10,7 +10,6 @@ The item isn't in the catalog and changes nothing. Entry considered: `HKCU\Softw
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457, Windows not activated, local account): write through the registry API (.NET `RegistryKey`) and observation in Settings (UI Automation, screenshots).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), section "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 - No Microsoft documentation for this value; evidence: VM test (observation below).
 
 ## Defaults on a fresh 26H2

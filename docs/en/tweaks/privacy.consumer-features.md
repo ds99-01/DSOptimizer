@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.consumer-features.md sha256: 665bacbc5223f247d33b9e41a23f8ec2265142bb99ce4ef47b6b5d0cb6916049 -->
+<!-- source: docs/tweaks/privacy.consumer-features.md sha256: aab00c665a2bf021d0cceb3424d4ee3b5427fb07384a2584873f11e7e46969d5 -->
 
 # privacy.consumer-features – Consumer experiences (DisableWindowsConsumerFeatures)
 
@@ -10,7 +10,6 @@ The item isn't in the catalog and changes nothing. Entry considered: `HKLM\SOFTW
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457, Windows not activated, local account): write through the registry API (.NET `RegistryKey`) and observation in Settings (UI Automation, screenshots).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), section "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 - No Microsoft documentation for this value; evidence: VM test (observation below).
 
 ## Defaults on a fresh 26H2

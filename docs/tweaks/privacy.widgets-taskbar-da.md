@@ -8,7 +8,6 @@ Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis: `HKCU\Software\Micr
 
 ## Źródła
 - Test na VM 26H2 Home i Pro, 2026-10-21 (build 26300.9457): zapis z `powershell.exe` i z osobnego exe o nazwie `DSOptimizer.exe`.
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md`, sekcja „Wyniki VM 26H2 (partia 1)”, uwaga o `TaskbarDa`.
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM, 2026-10-21: `Explorer\Advanced\TaskbarDa` brak wartości (przycisk widoczny), Home i Pro.

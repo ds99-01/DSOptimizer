@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.widgets-taskbar-da.md sha256: a19b76b42075ea8975eeaaeb4f24b04a9a923e3cd7f23dc5b2aec47cecb6a936 -->
+<!-- source: docs/tweaks/privacy.widgets-taskbar-da.md sha256: 31a913bdd343573406623005012cc9363182be22213a9b892eb97e5105ff4027 -->
 
 # privacy.widgets-taskbar-da – Widgets button through TaskbarDa (user)
 
@@ -10,7 +10,6 @@ The item isn't in the catalog and changes nothing. Entry considered: `HKCU\Softw
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457): write from `powershell.exe` and from a separate exe named `DSOptimizer.exe`.
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), section "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1), note on `TaskbarDa`.
 
 ## Defaults on a fresh 26H2
 Reading from the VMs, 2026-10-21: `Explorer\Advanced\TaskbarDa` no value (button visible), Home and Pro.

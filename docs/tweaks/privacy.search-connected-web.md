@@ -8,7 +8,6 @@ Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis: `HKLM\SOFTWARE\Poli
 
 ## Źródła
 - Test na VM 26H2 Home i Pro, 2026-10-21 (build 26300.9457).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md`, sekcje „4. Bing / wyszukiwanie w sieci w menu Start” i „Wyniki VM 26H2 (partia 1)”.
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM, 2026-10-21: wartość `ConnectedSearchUseWeb` brak (Home i Pro).

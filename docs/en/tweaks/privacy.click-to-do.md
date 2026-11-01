@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.click-to-do.md sha256: 2d807c5a88e9b7216c04204b04f546c13d5f51e7783066cd8d1916b78ad01958 -->
+<!-- source: docs/tweaks/privacy.click-to-do.md sha256: 80671cd9aec518848f5b14d2a9a3fbe09b3d31c4370f314d70e79d18672b3541 -->
 
 # privacy.click-to-do – DisableClickToDo policy
 
@@ -10,7 +10,6 @@ The item isn't in the catalog and changes nothing. Entry considered: `DisableCli
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "2. Recall i Click to Do" (Recall and Click to Do) and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 
 ## Defaults on a fresh 26H2
 Reading from the VMs, 2026-10-21: `WindowsAI` policy values: none (Home and Pro). Click to Do has no entry point, process or page in Settings.

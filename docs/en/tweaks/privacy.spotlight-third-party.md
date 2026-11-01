@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.spotlight-third-party.md sha256: 5ab224dfa5fe2dda3704e76d761a4932e24905411d816420f71c8d619a7aa1b5 -->
+<!-- source: docs/tweaks/privacy.spotlight-third-party.md sha256: be3242107e3ae5ace311d38691c4b2595c0ee71b2bc12ab1626f2579dc65545f -->
 
 # privacy.spotlight-third-party – Third-party Spotlight suggestions (DisableThirdPartySuggestions)
 
@@ -10,7 +10,6 @@ The item isn't in the catalog and changes nothing. Entry considered: `HKCU\Softw
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457, Windows not activated, local account): write through the registry API (.NET `RegistryKey`) and observation in Settings (UI Automation, screenshots).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), section "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 - No Microsoft documentation for this value; evidence: VM test (observation below).
 
 ## Defaults on a fresh 26H2

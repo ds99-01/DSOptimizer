@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.recommended-personalized-sites.md sha256: 89a82653eacab3512ee3c3c5b613800fd051d32c28927f7271979fce9d0a3bd5 -->
+<!-- source: docs/tweaks/privacy.recommended-personalized-sites.md sha256: 4b0383a3032bb9045aa907ebb552639f2415166bfc6f8610fea2afe4a7c0b27a -->
 
 # privacy.recommended-personalized-sites – Personalized websites in Recommended (HideRecommendedPersonalizedSites)
 
@@ -10,7 +10,6 @@ The item isn't in the catalog and changes nothing. Entry considered: `HKLM\SOFTW
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457, Windows not activated, local account): write through the registry API (.NET `RegistryKey`) and observation in Settings (UI Automation, screenshots).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), section "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 - No Microsoft documentation for this value; evidence: VM test (observation below).
 
 ## Defaults on a fresh 26H2

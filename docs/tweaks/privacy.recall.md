@@ -12,7 +12,6 @@ Gdyby pozycja kiedyś weszła (po teście na sprzęcie z NPU): `suggested=false`
 
 ## Źródła
 - Test na VM 26H2 Home i Pro, 2026-10-21 (build 26300.9457).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md`, sekcje „2. Recall i Click to Do” i „Wyniki VM 26H2 (partia 1)”.
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM, 2026-10-21: funkcja Windows `Recall` = `DisabledWithPayloadRemoved` (Home i Pro); wartości polityk `WindowsAI` brak.

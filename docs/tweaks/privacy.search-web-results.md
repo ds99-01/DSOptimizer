@@ -18,7 +18,6 @@ Nie działają (patrz osobne dokumenty): `ConnectedSearchUseWeb` (`privacy.searc
 
 ## Źródła
 - Test na VM 26H2 Home i Pro, 2026-10-21 (build 26300.9457): przełącznik w Ustawieniach, zapis przez API rejestru, wyniki wyszukiwania dla frazy „pogoda”.
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md`, sekcje „4. Bing / wyszukiwanie w sieci w menu Start” i „Wyniki VM 26H2 (partia 1)”.
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: klucz `SearchSettings` istnieje, `IsGlobalWebSearchProviderToggleEnabled` **brak wartości** (przełącznik włączony); `WebSearchProviders\Microsoft.BingSearch_8wekyb3d8bbwe!App` = 1.
@@ -33,7 +32,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: klucz `SearchSettings` ist
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): skutku samego restartu Eksploratora (`tools.restart-explorer`) nie sprawdzano; pozycja wyłącza wszystkich dostawców wyników z sieci.
 
 ## Test VM
-Przypadek `privacy-search-web-results` (`Flow=Full`) w `tests/vm/cases.psd1` (`NotWrittenTo` dla `HKCU` procesu Administratora, bo pozycja jest per użytkownik). Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`, Task 9 partii): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). HKCU Administratora bez zmian (`NotWrittenTo`), klucz `SearchSettings` został. Eksploracja z 2026-10-21 przeszła na Home i Pro.
+Przypadek `privacy-search-web-results` (`Flow=Full`) w `tests/vm/cases.psd1` (`NotWrittenTo` dla `HKCU` procesu Administratora, bo pozycja jest per użytkownik). Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). HKCU Administratora bez zmian (`NotWrittenTo`), klucz `SearchSettings` został. Eksploracja z 2026-10-21 przeszła na Home i Pro.
 
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: zrzuty ekranu wyników wyszukiwania (Win+S) dla frazy „pogoda” w sesji `dso`, po zapisie przez API rejestru i restarcie Eksploratora oraz SearchHost. Wynik: znika sekcja „Microsoft Bing sugestie internetowe” i karta „Microsoft Bing” w wynikach; po cofnięciu sekcja wraca.

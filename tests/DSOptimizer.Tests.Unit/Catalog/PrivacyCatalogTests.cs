@@ -72,7 +72,7 @@ public class PrivacyCatalogTests
     /// <summary>Kandydaci, którzy wypadli: id dokumentu z werdyktem „nie wchodzi” i fraza, która ma w nim być.</summary>
     public static readonly (string DocId, string Phrase)[] Dropped =
     {
-        ("privacy.copilot-policy", "partia 2"),
+        ("privacy.copilot-policy", "kategoria Aplikacje"),
         ("privacy.recall", "nie dowiedziono (VM bez NPU, funkcja niedostępna)"),
         ("privacy.click-to-do", "nie dowiedziono (VM bez NPU, funkcja niedostępna)"),
         ("privacy.widgets-taskbar-da", "UCPD"),
@@ -303,11 +303,11 @@ public class PrivacyCatalogTests
     }
 
     [Fact]
-    public void CopilotDoc_StatesAppRemovalIsPartTwo()
+    public void CopilotDoc_StatesAppRemovalIsSeparate()
     {
         var doc = Doc("privacy.copilot-policy");
         Assert.Contains("Microsoft.Copilot", doc, StringComparison.Ordinal);
-        Assert.Contains("partia 2", doc, StringComparison.Ordinal);
+        Assert.Contains("kategoria Aplikacje", doc, StringComparison.Ordinal);
     }
 
     [Fact]

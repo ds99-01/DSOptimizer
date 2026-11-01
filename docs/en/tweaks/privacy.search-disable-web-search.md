@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.search-disable-web-search.md sha256: aea20881291e765728b05c7b98c2c76290d19fe4a977dd2103eadf3f0d1c0ed6 -->
+<!-- source: docs/tweaks/privacy.search-disable-web-search.md sha256: 6353c08990277ad1a039c1d0f0f8607a6bb2fbbd83ffaaa0a68f17adfe1b5000 -->
 
 # privacy.search-disable-web-search – DisableWebSearch policy
 
@@ -10,7 +10,6 @@ The item isn't in the catalog and changes nothing. Entry considered: `HKLM\SOFTW
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "4. Bing / wyszukiwanie w sieci w menu Start" (Bing / web search in the Start menu) and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 
 ## Defaults on a fresh 26H2
 Reading from the VMs, 2026-10-21: value `DisableWebSearch`: none (Home and Pro).

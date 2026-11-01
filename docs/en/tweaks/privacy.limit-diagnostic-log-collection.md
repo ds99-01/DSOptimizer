@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.limit-diagnostic-log-collection.md sha256: a4a679d04787683e6ce5a3b1c4140911f3bcab13b1249ad13f70a3975807266c -->
+<!-- source: docs/tweaks/privacy.limit-diagnostic-log-collection.md sha256: b654814bf1f4f11088dfff2c35052e5253d6cf28604a7e0fc1e984cb7b38bf54 -->
 
 # privacy.limit-diagnostic-log-collection – LimitDiagnosticLogCollection
 
@@ -11,7 +11,6 @@ The item isn't in the catalog and changes nothing. Entry considered: `HKLM\SOFTW
 ## Sources
 - Microsoft documentation: the `System/LimitDiagnosticLogCollection` policy (Windows 11 21H2+, Pro). The registry value name in the `DataCollection` key was a hypothesis to be checked on the VM.
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457, Windows not activated, local account): write through the registry API (.NET `RegistryKey`) and observation in Settings (UI Automation, screenshots).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "2c. Limit Diagnostic Log / Dump collection" and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 
 ## Defaults on a fresh 26H2
 Reading from the VMs, 2026-10-21: value `LimitDiagnosticLogCollection`: none (Home and Pro).

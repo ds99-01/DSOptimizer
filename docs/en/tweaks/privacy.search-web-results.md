@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.search-web-results.md sha256: 4ad4bf6d2be6e54972289dd2f8e852f57853b228a8072bb1e260952db2b93228 -->
+<!-- source: docs/tweaks/privacy.search-web-results.md sha256: 4854b481b730250ac018657cd31c9897f4bd5b056100af4d7193467a778995a2 -->
 
 # privacy.search-web-results – Turn off web results in Windows search
 
@@ -20,7 +20,6 @@ Not working (see the separate documents): `ConnectedSearchUseWeb` (`privacy.sear
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457): the toggle in Settings, write through the registry API, search results for the phrase "pogoda" (weather).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "4. Bing / wyszukiwanie w sieci w menu Start" (Bing / web search in the Start menu) and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 
 ## Defaults on a fresh 26H2
 Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `SearchSettings` key exists, `IsGlobalWebSearchProviderToggleEnabled` **no value** (toggle on); `WebSearchProviders\Microsoft.BingSearch_8wekyb3d8bbwe!App` = 1.
@@ -35,7 +34,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `SearchSett
 - Beyond the notes in the program (in the technical details or only here): the effect of restarting File Explorer alone (`tools.restart-explorer`) wasn't checked; the item turns off all providers of web results.
 
 ## VM test
-Case `privacy-search-web-results` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user). VM run on 2026-10-21 (`Invoke-VmTests.ps1`, Task 9 of the round): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The Administrator's HKCU unchanged (`NotWrittenTo`), the `SearchSettings` key stayed. The exploration of 2026-10-21 passed on Home and Pro.
+Case `privacy-search-web-results` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The Administrator's HKCU unchanged (`NotWrittenTo`), the `SearchSettings` key stayed. The exploration of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: screenshots of the search results (Win+S) for the phrase "pogoda" (weather) in the `dso` session, after a write through the registry API and restarting File Explorer and SearchHost. Result: the "Microsoft Bing sugestie internetowe" (Microsoft Bing web suggestions) section and the "Microsoft Bing" card disappear from the results; after undo the section comes back.

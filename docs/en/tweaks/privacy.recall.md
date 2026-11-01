@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.recall.md sha256: c373ee943dfb14207ad73118634f015a17a9f4f3190a651913e3ff201fde8e12 -->
+<!-- source: docs/tweaks/privacy.recall.md sha256: e701eda0e90b47ef22b3cc9a8e5d29e9df70ce1bc4c301fe62df0d5d54586a38 -->
 
 # privacy.recall – Recall: AllowRecallEnablement and DisableAIDataAnalysis (snapshots)
 
@@ -14,7 +14,6 @@ If the item ever goes in (after a test on hardware with an NPU): `suggested=fals
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "2. Recall i Click to Do" (Recall and Click to Do) and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 
 ## Defaults on a fresh 26H2
 Reading from the VMs, 2026-10-21: Windows feature `Recall` = `DisabledWithPayloadRemoved` (Home and Pro); `WindowsAI` policy values: none.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.start-recommended-section.md sha256: b8af0a63a43a41122854d51a7c51ee87584249b5536b6fbbdf09c0c78542a6fa -->
+<!-- source: docs/tweaks/privacy.start-recommended-section.md sha256: d47a258f8bdbf315e7625a287c9f3c09769dd560ae9f3c9fe2eed57ef0774e2d -->
 
 # privacy.start-recommended-section – Hide the "Recommended" section in the Start menu
 
@@ -13,7 +13,6 @@ Port: the `HideRecommendedSection` policy hides the "Recommended" section in Sta
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457, Windows not activated, local account): write through the registry API (.NET `RegistryKey`) and observation in Settings (UI Automation, screenshots).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), section "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 - Documented by Microsoft in Policy CSP (Pro and higher, Home isn't listed); on Home the evidence is the VM test.
 
 ## Defaults on a fresh 26H2
@@ -21,7 +20,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: value `HideReco
 
 ## Detection and undo
 - Detection: `HideRecommendedSection` = DWORD 1 -> `Applied`; missing value or a different value -> `NotApplied`.
-- Undo restores the snapshot from before the change from the journal: the value and the `Explorer` key, which didn't exist before apply, again don't exist after undo (Review Focus 4); `original` = `<RemoveEntry>` is only a fallback.
+- Undo restores the snapshot from before the change from the journal: the value and the `Explorer` key, which didn't exist before apply, again don't exist after undo; `original` = `<RemoveEntry>` is only a fallback.
 
 ## Risks and warnings
 - `risk=safe`, `suggested=false`.
@@ -29,7 +28,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: value `HideReco
 - Beyond the notes in the program (in the technical details or only here): the effect of restarting File Explorer alone (`tools.restart-explorer`) wasn't checked.
 
 ## VM test
-Case `privacy-start-recommended-section` (`Flow=Full`) in `tests/vm/cases.psd1` (`KeyAbsentAfterUndo` for the user's `Policies\...\Explorer` key, `NotWrittenTo` for the `HKCU` of the Administrator process). VM run on 2026-10-21 (`Invoke-VmTests.ps1`, Task 9 of the round): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The user's `Policies\Microsoft\Windows\Explorer` key created by apply doesn't exist after undo (`KeyAbsentAfterUndo`), the Administrator's HKCU unchanged. The exploration of 2026-10-21 passed on Home and Pro.
+Case `privacy-start-recommended-section` (`Flow=Full`) in `tests/vm/cases.psd1` (`KeyAbsentAfterUndo` for the user's `Policies\...\Explorer` key, `NotWrittenTo` for the `HKCU` of the Administrator process). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The user's `Policies\Microsoft\Windows\Explorer` key created by apply doesn't exist after undo (`KeyAbsentAfterUndo`), the Administrator's HKCU unchanged. The exploration of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: screenshot of the Start menu before and after writing the policy and restarting File Explorer, and also after restarting the VM. Result: the "Proponowane" (Recommended) section disappears from Start (after restarting File Explorer and after restarting the VM); after undo it comes back.

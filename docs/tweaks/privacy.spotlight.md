@@ -1,7 +1,7 @@
 # privacy.spotlight – Wyłącz Windows Spotlight (zdjęcia dnia)
 
 ## Werdykt 26H2
-Portować jako pozycję **niesugerowaną** z ostrzeżeniem (decyzja autora 2026-10-21, pytanie 1 po partii 1). Skutek jest: tło pulpitu przestaje być zdjęciem dnia. Cofnięcie usuwa politykę, ale tła „W centrum uwagi Windows” nie przywraca (dlatego w partii 1 pozycja wypadła). Ostrzeżenie w katalogu mówi, że zdjęcia dnia trzeba wybrać ponownie w Ustawienia > Personalizacja > Tło.
+Portować jako pozycję **niesugerowaną** z ostrzeżeniem (decyzja z 2026-10-21). Skutek jest: tło pulpitu przestaje być zdjęciem dnia. Cofnięcie usuwa politykę, ale tła „W centrum uwagi Windows” nie przywraca (dlatego pozycja wcześniej wypadła). Ostrzeżenie w katalogu mówi, że zdjęcia dnia trzeba wybrać ponownie w Ustawienia > Personalizacja > Tło.
 
 ## Co zmienia
 - `HKCU\Software\Policies\Microsoft\Windows\CloudContent` (w silniku `HKU\<SID zalogowanego>`), wartość `DisableWindowsSpotlightFeatures`, **DWord**, ustawiana na `1`; `scope=user`.
@@ -9,8 +9,7 @@ Portować jako pozycję **niesugerowaną** z ostrzeżeniem (decyzja autora 2026-
 
 ## Źródła
 - Test na VM 26H2 Home i Pro, 2026-10-21 (build 26300.9457, nieaktywowany Windows, konto lokalne): zapis przez API rejestru (.NET `RegistryKey`) i obserwacja w Ustawieniach (UI Automation, zrzuty).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md`, sekcja „Wyniki VM 26H2 (partia 1)” (wiersz „Spotlight, wszystko”).
-- MS (ADMX/CSP `Experience/AllowWindowsSpotlight`) podaje tę politykę jako ❌ Pro, ✅ Enterprise/Education; na VM 26H2 skutek na pulpicie był jednak taki sam na Home i Pro, więc liczy się obserwacja (zasada Etapu 4a).
+- MS (ADMX/CSP `Experience/AllowWindowsSpotlight`) podaje tę politykę jako ❌ Pro, ✅ Enterprise/Education; na VM 26H2 skutek na pulpicie był jednak taki sam na Home i Pro, więc liczy się obserwacja (zasada dowodu).
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM, 2026-10-21: klucz `...\Policies\Microsoft\Windows\CloudContent` użytkownika i wartość brak (Home i Pro); tło pulpitu = „W centrum uwagi Windows”.

@@ -11,7 +11,6 @@ Portować: polityka `HideRecommendedSection` chowa sekcję „Proponowane” w S
 
 ## Źródła
 - Test na VM 26H2 Home i Pro, 2026-10-21 (build 26300.9457, nieaktywowany Windows, konto lokalne): zapis przez API rejestru (.NET `RegistryKey`) i obserwacja w Ustawieniach (UI Automation, zrzuty).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md`, sekcja „Wyniki VM 26H2 (partia 1)”.
 - Opisane przez Microsoft w Policy CSP (Pro i wyższe, bez Home); dla Home dowodem jest test na VM.
 
 ## Wartości domyślne na świeżym 26H2
@@ -19,7 +18,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: wartość `HideRecommended
 
 ## Detekcja i undo
 - Detekcja: `HideRecommendedSection` = DWORD 1 -> `Applied`; brak wartości lub inna wartość -> `NotApplied`.
-- Undo przywraca snapshot sprzed zmiany z journala: wartość i klucz `Explorer`, których nie było przed apply, po undo znów nie istnieją (Review Focus 4); `original` = `<RemoveEntry>` to tylko fallback.
+- Undo przywraca snapshot sprzed zmiany z journala: wartość i klucz `Explorer`, których nie było przed apply, po undo znów nie istnieją; `original` = `<RemoveEntry>` to tylko fallback.
 
 ## Ryzyka i ostrzeżenia
 - `risk=safe`, `suggested=false`.
@@ -27,7 +26,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: wartość `HideRecommended
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): skutku samego restartu Eksploratora (`tools.restart-explorer`) nie sprawdzano.
 
 ## Test VM
-Przypadek `privacy-start-recommended-section` (`Flow=Full`) w `tests/vm/cases.psd1` (`KeyAbsentAfterUndo` dla klucza `Policies\...\Explorer` użytkownika, `NotWrittenTo` dla `HKCU` procesu Administratora). Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`, Task 9 partii): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). Klucz `Policies\Microsoft\Windows\Explorer` użytkownika utworzony przez apply po undo nie istnieje (`KeyAbsentAfterUndo`), HKCU Administratora bez zmian. Eksploracja z 2026-10-21 przeszła na Home i Pro.
+Przypadek `privacy-start-recommended-section` (`Flow=Full`) w `tests/vm/cases.psd1` (`KeyAbsentAfterUndo` dla klucza `Policies\...\Explorer` użytkownika, `NotWrittenTo` dla `HKCU` procesu Administratora). Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). Klucz `Policies\Microsoft\Windows\Explorer` użytkownika utworzony przez apply po undo nie istnieje (`KeyAbsentAfterUndo`), HKCU Administratora bez zmian. Eksploracja z 2026-10-21 przeszła na Home i Pro.
 
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: zrzut menu Start przed i po zapisie polityki oraz restarcie Eksploratora, a także po restarcie VM. Wynik: sekcja „Proponowane” znika z Start (po restarcie Eksploratora i po restarcie VM); po cofnięciu wraca.

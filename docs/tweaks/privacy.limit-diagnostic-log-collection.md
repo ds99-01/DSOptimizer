@@ -9,7 +9,6 @@ Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis: `HKLM\SOFTWARE\Poli
 ## Źródła
 - Dokumentacja MS: polityka `System/LimitDiagnosticLogCollection` (Windows 11 21H2+, Pro). Nazwa wartości rejestru w kluczu `DataCollection` była hipotezą do sprawdzenia na VM.
 - Test na VM 26H2 Home i Pro, 2026-10-21 (build 26300.9457, nieaktywowany Windows, konto lokalne): zapis przez API rejestru (.NET `RegistryKey`) i obserwacja w Ustawieniach (UI Automation, zrzuty).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md`, sekcje „2c. Limit Diagnostic Log / Dump collection” i „Wyniki VM 26H2 (partia 1)”.
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM, 2026-10-21: wartość `LimitDiagnosticLogCollection` brak (Home i Pro).

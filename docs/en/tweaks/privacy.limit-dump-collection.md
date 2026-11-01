@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.limit-dump-collection.md sha256: 9e3f352ffc2a7c212022aa61df4a75b90442bdbc06f4fb06324d05e9f10e6179 -->
+<!-- source: docs/tweaks/privacy.limit-dump-collection.md sha256: a294081f5e5180caf870abe8f23e0faeecc1ceed2ad4b42ff787f591c0800cb0 -->
 
 # privacy.limit-dump-collection – LimitDumpCollection
 
@@ -11,7 +11,6 @@ The item isn't in the catalog and changes nothing. Entry considered: `HKLM\SOFTW
 ## Sources
 - Microsoft documentation: the `System/LimitDumpCollection` policy (Windows 11). The registry value name in the `DataCollection` key was a hypothesis to be checked on the VM.
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457, Windows not activated, local account): write through the registry API (.NET `RegistryKey`) and observation in Settings (UI Automation, screenshots).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), sections "2c. Limit Diagnostic Log / Dump collection" and "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 
 ## Defaults on a fresh 26H2
 Reading from the VMs, 2026-10-21: value `LimitDumpCollection`: none (Home and Pro).

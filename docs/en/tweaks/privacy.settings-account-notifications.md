@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.settings-account-notifications.md sha256: 5cfa9d825158513a6d82d6debaee04b2232965f29fff1afe1e63687bfd293b6f -->
+<!-- source: docs/tweaks/privacy.settings-account-notifications.md sha256: 10ab902167f048309bbe01736cb6bed61eb0ab4494493bd7f869edd96ab6aad9 -->
 
 # privacy.settings-account-notifications – Turn off account notifications in Settings
 
@@ -10,7 +10,6 @@ Port: the "Show notifications in Settings" toggle is changed by writing one valu
 
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457, Windows not activated, local account): write through the registry API (.NET `RegistryKey`) and observation in Settings (UI Automation, screenshots).
-- Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), section "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
 - No Microsoft documentation for this value; evidence: VM test (observation below).
 
 ## Defaults on a fresh 26H2
@@ -26,7 +25,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `AccountNot
 - No warnings in the catalog.
 
 ## VM test
-Case `privacy-settings-account-notifications` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`, Task 9 of the round): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The Administrator's HKCU unchanged, the `AccountNotifications` key stayed (`KeyPresentAfterUndo`). The exploration of 2026-10-21 passed on Home and Pro.
+Case `privacy-settings-account-notifications` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The Administrator's HKCU unchanged, the `AccountNotifications` key stayed (`KeyPresentAfterUndo`). The exploration of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: the "Pokaż powiadomienia w ustawieniach" (Show notifications in Settings) toggle in Settings (UI Automation) after a write through the API. Result: toggle "wyłączone" (Off); after undo "włączone" (On). Evidence: toggle state in Settings; the content itself wasn't observed.
