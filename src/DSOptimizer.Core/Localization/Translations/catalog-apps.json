@@ -183,8 +183,8 @@
       "en": ".NET 10 runtime needed by desktop programs written in .NET."
     },
     {
-      "pl": "Microsoft kończy wsparcie tej wersji 10 listopada 2026. Instaluj ją tylko, gdy wymaga jej konkretny program.",
-      "en": "Microsoft ends support for this version on November 10, 2026. Install it only if a specific program needs it."
+      "pl": "Wsparcie Microsoftu tylko do 10 listopada 2026. Instaluj tę wersję tylko, gdy wymaga jej konkretny program.",
+      "en": "Microsoft supports this version only until November 10, 2026. Install it only if a specific program needs it."
     }
   ]
 }

@@ -254,7 +254,7 @@ Surowe wyniki poza gitem (`releases.json`, `download.json`, `install.json`, `dif
   `AdobeAcrobatReaderCoreApp` (konto i obraz systemu), PowerToys → 5 pakietów AppX, WinRAR → `WinRAR.ShellExtension`,
   Notepad++ (instalator EXE) → `NotepadPlusPlus`, Foxit PDF Reader → usługa `FoxitReaderUpdateService` (start automatyczny).
 - **WinRAR:** „Program płatny po okresie próbnym.”
-- **Koniec wsparcia .NET 8 i 9:** „Microsoft kończy wsparcie tej wersji 10 listopada 2026. Instaluj ją tylko, gdy wymaga jej konkretny
+- **Koniec wsparcia .NET 8 i 9:** „Wsparcie Microsoftu tylko do 10 listopada 2026. Instaluj tę wersję tylko, gdy wymaga jej konkretny
   program.” Według `releases-index.json` Microsoftu (stan na 2026-11-01) .NET 8 i 9 mają koniec wsparcia 2026-11-10, a .NET 10 to LTS
   do 2028-11-14, więc 10 nie ma ostrzeżenia. Wersje 8 i 9 zostają na liście, bo runtime instaluje się dlatego, że wymaga go konkretny
   program, a takie programy bywają zbudowane na starszej wersji. Pozycja 10 (2026-11-01, VM Pro i Home, `--install-apps`, `Installed`,

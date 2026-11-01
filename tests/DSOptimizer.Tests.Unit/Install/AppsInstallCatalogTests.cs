@@ -520,7 +520,7 @@ public class AppsInstallCatalogTests
     [InlineData("install.dotnet-desktop-8")]
     [InlineData("install.dotnet-desktop-9")]
     public void DotNet8And9_WarnAboutEndOfSupport(string id)
-        => Assert.Equal("Microsoft kończy wsparcie tej wersji 10 listopada 2026. Instaluj ją tylko, gdy wymaga jej konkretny program.", BuiltIn().Entries.Single(e => e.Id == id).Warning);
+        => Assert.Equal("Wsparcie Microsoftu tylko do 10 listopada 2026. Instaluj tę wersję tylko, gdy wymaga jej konkretny program.", BuiltIn().Entries.Single(e => e.Id == id).Warning);
 
     [Fact]
     public void DotNet10_HasNoEndOfSupportWarning()

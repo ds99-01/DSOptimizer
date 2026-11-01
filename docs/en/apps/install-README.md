@@ -1,4 +1,4 @@
-<!-- source: docs/apps/install-README.md sha256: db9adb24d29b90a7a96f39079be9d7d21031b50036e523ed8d240e2c25859204 -->
+<!-- source: docs/apps/install-README.md sha256: 85f5f4d3d953cc00ef3f80c5fce4a2080016738477aa387a47f30cba8d762420 -->
 
 # App install – list `apps.json`
 
@@ -256,7 +256,7 @@ Raw results outside git (`releases.json`, `download.json`, `install.json`, `diff
   `AdobeAcrobatReaderCoreApp` (account and Windows image), PowerToys → 5 AppX packages, WinRAR → `WinRAR.ShellExtension`,
   Notepad++ (EXE installer) → `NotepadPlusPlus`, Foxit PDF Reader → `FoxitReaderUpdateService` service (automatic start).
 - **WinRAR:** "Paid after the trial period."
-- **.NET 8 and 9 end of support:** "Microsoft ends support for this version on November 10, 2026. Install it only if a specific program
+- **.NET 8 and 9 end of support:** "Microsoft supports this version only until November 10, 2026. Install it only if a specific program
   needs it." According to Microsoft's `releases-index.json` (as of 2026-11-01), .NET 8 and 9 end support on 2026-11-10, and .NET 10 is
   LTS until 2028-11-14, so 10 has no warning. Versions 8 and 9 stay on the list because a runtime is installed precisely when a specific
   program needs it, and such programs are often built on an older version. Entry 10 (2026-11-01, VM Pro and Home, `--install-apps`,
