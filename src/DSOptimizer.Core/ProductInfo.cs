@@ -11,6 +11,9 @@ public static class ProductInfo
 
     public const string RepositoryUrl = "https://github.com/ds99-01/DSOptimizer";
 
+    /// <summary>Strona wydań na GitHubie (otwierana z baneru nowej wersji); dokładnie ten adres przepuszcza <c>ExternalLinkPolicy</c>.</summary>
+    public const string ReleasesUrl = "https://github.com/ds99-01/DSOptimizer/releases";
+
     public const string RepositoryUrlText = "github.com/ds99-01/DSOptimizer";
 
     /// <summary>Licencja programu (pełny tekst w pliku LICENSE w katalogu głównym repo).</summary>

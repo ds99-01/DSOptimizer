@@ -740,6 +740,18 @@
     {
       "pl": "Pole language musi być tekstem: pl albo en.",
       "en": "The language field must be text: pl or en."
+    },
+    {
+      "pl": "Aktualizacje",
+      "en": "Updates"
+    },
+    {
+      "pl": "Nie udało się sprawdzić nowej wersji: {0}",
+      "en": "Couldn't check for a new version: {0}"
+    },
+    {
+      "pl": "bieżąca wersja programu nie jest poprawnym numerem",
+      "en": "the current program version is not a valid number"
     }
   ]
 }
