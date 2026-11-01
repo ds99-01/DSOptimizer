@@ -307,22 +307,65 @@ public class AppsBloatCatalogTests
     }
 
     [Theory]
-    [InlineData("McAfee LiveSafe")]
-    [InlineData("McAfee Total Protection")]
-    [InlineData("Norton 360 Deluxe")]
-    [InlineData("Norton Security")]
     [InlineData("HP Games by WildTangent")]
     [InlineData("WildTangent Games App")]
     [InlineData("Booking.com")]
-    [InlineData("McAfee Personal Security")]
-    [InlineData("McAfee WebAdvisor")]
-    [InlineData("McAfee Security Scan Plus")]
     public void ConsumerTrials_AreSuggested_InTrialGroup(string name)
     {
         var row = ClassifyOne(Program(name));
 
         Assert.Equal(AppGroup.Suggested, row.Group);
         Assert.Equal("trial", row.BloatGroup);
+    }
+
+    // Program nie odróżni próby od płatnej licencji, więc te pozycje nie są sugerowane.
+    [Theory]
+    [InlineData("McAfee LiveSafe")]
+    [InlineData("McAfee Total Protection")]
+    [InlineData("McAfee AntiVirus Plus")]
+    [InlineData("McAfee Internet Security")]
+    [InlineData("McAfee Personal Security")]
+    [InlineData("McAfee WebAdvisor")]
+    [InlineData("McAfee Security Scan Plus")]
+    [InlineData("Norton 360 Deluxe")]
+    [InlineData("Norton AntiVirus")]
+    [InlineData("Norton Internet Security")]
+    [InlineData("Norton Security")]
+    public void McAfeeAndNorton_GoToOther_WithWarning(string name)
+    {
+        var row = ClassifyOne(Program(name));
+
+        Assert.Equal(AppGroup.Other, row.Group);
+        Assert.False(string.IsNullOrWhiteSpace(row.Warning));
+    }
+
+    [Fact]
+    public void BuiltIn_HasFourteenSuggestedEntries() => Assert.Equal(14, Builtin().Entries.Count(e => e.Suggested));
+
+    [Theory]
+    [InlineData("trial.mcafee-livesafe", "Antywirus McAfee LiveSafe, często preinstalowany w wersji próbnej.")]
+    [InlineData("trial.mcafee-total-protection", "Antywirus McAfee Total Protection, często preinstalowany w wersji próbnej.")]
+    [InlineData("trial.mcafee-antivirus-plus", "Antywirus McAfee AntiVirus Plus, często preinstalowany w wersji próbnej.")]
+    [InlineData("trial.mcafee-internet-security", "Antywirus McAfee Internet Security, często preinstalowany w wersji próbnej.")]
+    [InlineData("trial.mcafee-personal-security", "Antywirus McAfee Personal Security, często preinstalowany w wersji próbnej.")]
+    [InlineData("trial.norton-360", "Antywirus Norton 360, często preinstalowany w wersji próbnej.")]
+    [InlineData("trial.norton-antivirus", "Antywirus Norton AntiVirus, często preinstalowany w wersji próbnej.")]
+    [InlineData("trial.norton-internet-security", "Antywirus Norton Internet Security, często preinstalowany w wersji próbnej.")]
+    [InlineData("trial.norton-security", "Antywirus Norton Security, często preinstalowany w wersji próbnej.")]
+    public void AntivirusEntries_DescribeTrialHonestly(string id, string summary)
+        => Assert.Equal(summary, Builtin().Entries.Single(e => e.Id == id).Summary);
+
+    [Fact]
+    public void WebAdvisorAndScanPlus_KeepTheirSummaries()
+    {
+        var entries = Builtin().Entries;
+
+        Assert.Equal(
+            "McAfee WebAdvisor: dodatek przeglądarki od McAfee, zwykle razem z wersją próbną antywirusa.",
+            entries.Single(e => e.Id == "trial.mcafee-webadvisor").Summary);
+        Assert.Equal(
+            "McAfee Security Scan Plus: darmowy skaner McAfee, zwykle dołączany do preinstalowanych programów.",
+            entries.Single(e => e.Id == "trial.mcafee-security-scan-plus").Summary);
     }
 
     [Theory]

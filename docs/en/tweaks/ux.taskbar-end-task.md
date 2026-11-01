@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/ux.taskbar-end-task.md sha256: 8956212dbf0c78c18038d1326ac2d0e441d0e0bff3403ee62ea8596fc47846d3 -->
+<!-- source: docs/tweaks/ux.taskbar-end-task.md sha256: 670b9fa341193ee1da76246e8819ce53cf299df72a2ecac8c6f267aa8be2b6f2 -->
 
 # ux.taskbar-end-task – Add "End task" to the taskbar menu
 
 ## Verdict for 26H2
-Port: a test on a 26H2 VM (Home and Pro) showed a real effect. MS source for the toggle: MS Learn "Advanced Windows Settings" (System > Advanced, item Taskbar – End Task); the page doesn't give the registry value name, which the VM test confirms. The item is manual: `suggested=false`, never selected automatically.
+Port: a test on a 26H2 VM (Home and Pro) showed a real effect. MS source for the toggle: MS Learn "Advanced Windows Settings" (System > Advanced, item Taskbar – End Task); the page doesn't give the registry value name, which the VM test confirms. The item is manual: `suggested=false`.
 
 ## What it changes
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings`, value `TaskbarEndTask`, **DWord**, set to `1`; `scope=user` (the signed-in user's hive).

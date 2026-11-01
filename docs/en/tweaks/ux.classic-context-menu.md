@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/ux.classic-context-menu.md sha256: 5d3da3c4f4156bbead608f0721330c2ae2d716736674cbe7a1c8d9dca05e503b -->
+<!-- source: docs/tweaks/ux.classic-context-menu.md sha256: 990424706d1273f9bc2d3fbd339acaebf76c26cc6b7abffd4000e512a1c78d27 -->
 
 # ux.classic-context-menu – Bring back the classic right-click menu
 
 ## Verdict for 26H2
-Port: a test on a 26H2 VM (Home and Pro) showed a real effect. There is no MS documentation for this key in our source; the evidence is the VM test (observation below). The item is manual: `suggested=false`, never selected automatically.
+Port: a test on a 26H2 VM (Home and Pro) showed a real effect. There is no MS documentation for this key in our source; the evidence is the VM test (observation below). The item is manual: `suggested=false`.
 
 ## What it changes
 - `HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32`, **default value** (empty name), **String** (REG_SZ), empty string; `scope=user` (the signed-in user's hive, not the Administrator account's).

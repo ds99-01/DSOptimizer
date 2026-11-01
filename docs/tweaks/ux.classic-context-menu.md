@@ -1,7 +1,7 @@
 # ux.classic-context-menu – Przywróć klasyczne menu prawego przycisku myszy
 
 ## Werdykt 26H2
-Portować: test na VM 26H2 (Home i Pro) pokazał realny skutek. Brak dokumentacji MS dla tego klucza w naszym źródle, dowód: test na VM (obserwacja niżej). Pozycja jest ręczna: `suggested=false`, nigdy nie zaznaczana automatycznie.
+Portować: test na VM 26H2 (Home i Pro) pokazał realny skutek. Brak dokumentacji MS dla tego klucza w naszym źródle, dowód: test na VM (obserwacja niżej). Pozycja jest ręczna: `suggested=false`.
 
 ## Co zmienia
 - `HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32`, **wartość domyślna** (pusta nazwa), **String** (REG_SZ), pusty ciąg; `scope=user` (hive zalogowanego użytkownika, nie konta Administratora).

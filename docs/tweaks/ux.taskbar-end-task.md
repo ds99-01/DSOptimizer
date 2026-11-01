@@ -1,7 +1,7 @@
 # ux.taskbar-end-task – Dodaj „Zakończ zadanie” do menu na pasku zadań
 
 ## Werdykt 26H2
-Portować: test na VM 26H2 (Home i Pro) pokazał realny skutek. Źródło MS dla przełącznika: MS Learn „Advanced Windows Settings” (System > Zaawansowane, pozycja Taskbar – End Task); nazwy wartości rejestru strona nie podaje, ją potwierdza test na VM. Pozycja jest ręczna: `suggested=false`, nigdy nie zaznaczana automatycznie.
+Portować: test na VM 26H2 (Home i Pro) pokazał realny skutek. Źródło MS dla przełącznika: MS Learn „Advanced Windows Settings” (System > Zaawansowane, pozycja Taskbar – End Task); nazwy wartości rejestru strona nie podaje, ją potwierdza test na VM. Pozycja jest ręczna: `suggested=false`.
 
 ## Co zmienia
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings`, wartość `TaskbarEndTask`, **DWord**, ustawiana na `1`; `scope=user` (hive zalogowanego użytkownika).

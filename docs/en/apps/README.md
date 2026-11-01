@@ -1,4 +1,4 @@
-<!-- source: docs/apps/README.md sha256: 219206ba1dbc4cc3b0fc4700cf81df53a21b18fa2c174de4dce8c377549b3637 -->
+<!-- source: docs/apps/README.md sha256: 2434df509152e5fde80d48e8fa344ed6047ec761982b4caef2759921fa2351f9 -->
 
 # Apps – classification file `apps-bloat.json`
 
@@ -21,7 +21,7 @@ makes sure the file on disk and the resource are the same.
   - `packageName` – only AppX packages (Store), from `Get-AppxPackage`, the `Name` field; doesn't combine with the others;
   - `displayName` and/or `publisher` – only Win32 programs (Uninstall entry); when both are given, both must match.
 - `group` – `microsoft`, `producent` or `trial`.
-- `suggested` – `true`: the row goes to the "Suggested for removal" group and selects itself; `false`: the "Other" group
+- `suggested` – `true`: the row goes to the "Suggested for removal" group, and only the "Select suggested" button selects it; `false`: the "Other" group
   (can be selected by hand), with `warning`, if there is one.
 - `summary` – ≤ 160 characters, in Polish, without registry key names and cmdlets.
 - `warning` – optional warning shown next to the row.
@@ -99,11 +99,11 @@ An error in the file gives `AppsCatalogException` with the entry id and the fiel
 | HP Support Assistant, Dell SupportAssist | **Other** (the draft had "suggested") | They may update drivers; no OEM hardware to check |
 | MyASUS, Armoury Crate, MyDell, Dell Optimizer | Other + warning about the battery and Fn | They control the battery and performance |
 | Dell Digital Delivery | Other + warning | May keep installers of purchased software |
-| McAfee WebAdvisor, Security Scan Plus | Suggested | No independent source; the author's decision 2026-10-21 after reading the list |
-| Consumer McAfee and Norton | Suggested + warning "If this is a paid antivirus you use, don't remove it" | Spec 6.2 says: trial suggested; the program can't tell a trial from a paid license |
+| McAfee WebAdvisor, Security Scan Plus | Other + warning | The program can't tell a trial from a paid license; no independent source; the author's decision 2026-10-21 after reading the list |
+| Consumer McAfee and Norton | Other + warning "If this is a paid antivirus you use, don't remove it" | The program can't tell a trial from a paid license |
 | McAfee Agent, Endpoint, Drive Encryption, DLP, Trellix | **Protected** | May be company software |
-| McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Suggested; official mcafee.com pages in `source` | Spec 6.2 (McAfee trial); the patterns are product names, not all of "McAfee*" |
-| McAfee Personal Security | Suggested + warning | No official McAfee page found for this name; suggested by the author's decision 2026-10-21 |
+| McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Other + warning; official mcafee.com pages in `source` | Spec 6.2 (McAfee trial); the patterns are product names, not all of "McAfee*" |
+| McAfee Personal Security | Other + warning | The program can't tell a trial from a paid license; no official McAfee page found for this name |
 | WildTangent, HP Games by WildTangent | Suggested; source "spec 6.2 (decyzja autora)" (the author's decision) | No official manufacturer page in the checked sources; patterns `WildTangent*` and `HP Games by WildTangent*` (no `*WildTangent*`) |
 | Booking.com | Suggested; source "spec 6.2 (decyzja autora)" (the author's decision) | No official page for the entry; name from Which? |
 | Microsoft 365 (Office Hub), Tips | Suggested; source MS Learn (address in `source`) | The names aren't on a fresh 26H2, only in an archived list from Windows 10 |

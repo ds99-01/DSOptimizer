@@ -251,8 +251,8 @@
       "id": "trial.mcafee-livesafe",
       "match": { "displayName": "McAfee LiveSafe*" },
       "group": "trial",
-      "suggested": true,
-      "summary": "Wersja próbna antywirusa McAfee LiveSafe, preinstalowana przez producenta komputera.",
+      "suggested": false,
+      "summary": "Antywirus McAfee LiveSafe, często preinstalowany w wersji próbnej.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
       "source": "Oficjalna strona produktu https://www.mcafee.com/en-us/antivirus/mcafee-livesafe.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez autora 2026-10-21 (pobranie strony: timeout, curl: 403)",
       "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
@@ -261,8 +261,8 @@
       "id": "trial.mcafee-total-protection",
       "match": { "displayName": "McAfee Total Protection*" },
       "group": "trial",
-      "suggested": true,
-      "summary": "Wersja próbna antywirusa McAfee Total Protection, preinstalowana przez producenta komputera.",
+      "suggested": false,
+      "summary": "Antywirus McAfee Total Protection, często preinstalowany w wersji próbnej.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
       "source": "Oficjalna strona produktu https://www.mcafee.com/en-us/antivirus/mcafee-total-protection.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez autora 2026-10-21 (pobranie strony: timeout, curl: 403)",
       "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
@@ -271,8 +271,8 @@
       "id": "trial.mcafee-antivirus-plus",
       "match": { "displayName": "McAfee AntiVirus Plus*" },
       "group": "trial",
-      "suggested": true,
-      "summary": "Wersja próbna antywirusa McAfee AntiVirus Plus, preinstalowana przez producenta komputera.",
+      "suggested": false,
+      "summary": "Antywirus McAfee AntiVirus Plus, często preinstalowany w wersji próbnej.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
       "source": "Oficjalna strona McAfee z wymaganiami systemowymi, lista produktów konsumenckich (w tym AntiVirus Plus): https://www.mcafee.com/en-in/consumer-support/help/system-requirement.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez autora 2026-10-21 (pobranie strony: timeout, curl: 403)",
       "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
@@ -281,8 +281,8 @@
       "id": "trial.mcafee-internet-security",
       "match": { "displayName": "McAfee Internet Security*" },
       "group": "trial",
-      "suggested": true,
-      "summary": "Wersja próbna pakietu McAfee Internet Security, preinstalowana przez producenta komputera.",
+      "suggested": false,
+      "summary": "Antywirus McAfee Internet Security, często preinstalowany w wersji próbnej.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
       "source": "Oficjalna strona McAfee z wymaganiami systemowymi, lista produktów konsumenckich (w tym Internet Security): https://www.mcafee.com/en-in/consumer-support/help/system-requirement.html (z wyszukiwania w domenie mcafee.com 2026-10-21); spec 6.2 (trial McAfee). Narzędzie usuwania McAfee: artykuł 000002766 na mcafee.com, adres podany i sprawdzony ręcznie przez autora 2026-10-21 (pobranie strony: timeout, curl: 403)",
       "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
@@ -291,36 +291,36 @@
       "id": "trial.mcafee-personal-security",
       "match": { "displayName": "McAfee Personal Security*" },
       "group": "trial",
-      "suggested": true,
-      "summary": "Wersja próbna McAfee Personal Security, preinstalowana przez producenta komputera.",
+      "suggested": false,
+      "summary": "Antywirus McAfee Personal Security, często preinstalowany w wersji próbnej.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
-      "source": "Which? https://www.which.co.uk/news/article/the-most-common-bloatware-we-found-on-laptops-aGeJX9U0NgXa (McAfee LiveSafe i Personal Security); oficjalnej strony McAfee dla tej nazwy nie znaleziono; sugerowany – spec 6.2 (decyzja autora) z 2026-10-21 po przeczytaniu listy. Narzędzie usuwania McAfee: adres podany i sprawdzony ręcznie przez autora 2026-10-21",
+      "source": "Which? https://www.which.co.uk/news/article/the-most-common-bloatware-we-found-on-laptops-aGeJX9U0NgXa (McAfee LiveSafe i Personal Security); oficjalnej strony McAfee dla tej nazwy nie znaleziono; wpis niesugerowany. Narzędzie usuwania McAfee: adres podany i sprawdzony ręcznie przez autora 2026-10-21",
       "cleanupUrl": "https://www.mcafee.com/support/s/article/000002766?language=pl"
     },
     {
       "id": "trial.mcafee-webadvisor",
       "match": { "displayName": "McAfee WebAdvisor*" },
       "group": "trial",
-      "suggested": true,
+      "suggested": false,
       "summary": "McAfee WebAdvisor: dodatek przeglądarki od McAfee, zwykle razem z wersją próbną antywirusa.",
       "warning": "Może być częścią antywirusa, którego używasz. Własny deinstalator potrafi zostawić resztki.",
-      "source": "Lista konsumenckich produktów McAfee (2026-10-21); brak niezależnego źródła; sugerowany – spec 6.2 (decyzja autora) z 2026-10-21 po przeczytaniu listy"
+      "source": "Lista konsumenckich produktów McAfee (2026-10-21); brak niezależnego źródła; wpis niesugerowany"
     },
     {
       "id": "trial.mcafee-security-scan-plus",
       "match": { "displayName": "McAfee Security Scan Plus*" },
       "group": "trial",
-      "suggested": true,
+      "suggested": false,
       "summary": "McAfee Security Scan Plus: darmowy skaner McAfee, zwykle dołączany do preinstalowanych programów.",
       "warning": "Własny deinstalator potrafi zostawić resztki.",
-      "source": "Lista konsumenckich produktów McAfee (2026-10-21); brak niezależnego źródła; sugerowany – spec 6.2 (decyzja autora) z 2026-10-21 po przeczytaniu listy"
+      "source": "Lista konsumenckich produktów McAfee (2026-10-21); brak niezależnego źródła; wpis niesugerowany"
     },
     {
       "id": "trial.norton-360",
       "match": { "displayName": "Norton 360*" },
       "group": "trial",
-      "suggested": true,
-      "summary": "Wersja próbna Norton 360, preinstalowana przez producenta komputera.",
+      "suggested": false,
+      "summary": "Antywirus Norton 360, często preinstalowany w wersji próbnej.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
       "source": "Oficjalna strona Norton „Download and run the Norton 360 Remover tool for Windows” https://support.norton.com/sp/en/us/home/current/solutions/v60392881 (sprawdzono pobraniem strony 2026-10-21); spec 6.2 (trial Norton); Norton Family i Utilities świadomie poza wzorcem",
       "cleanupUrl": "https://support.norton.com/sp/en/us/home/current/solutions/v60392881"
@@ -329,8 +329,8 @@
       "id": "trial.norton-antivirus",
       "match": { "displayName": "Norton AntiVirus*" },
       "group": "trial",
-      "suggested": true,
-      "summary": "Wersja próbna Norton AntiVirus, preinstalowana przez producenta komputera.",
+      "suggested": false,
+      "summary": "Antywirus Norton AntiVirus, często preinstalowany w wersji próbnej.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
       "source": "Oficjalna strona Norton „Download and run the Norton 360 Remover tool for Windows” https://support.norton.com/sp/en/us/home/current/solutions/v60392881 (sprawdzono pobraniem strony 2026-10-21); spec 6.2 (trial Norton); Norton Family i Utilities świadomie poza wzorcem",
       "cleanupUrl": "https://support.norton.com/sp/en/us/home/current/solutions/v60392881"
@@ -339,8 +339,8 @@
       "id": "trial.norton-internet-security",
       "match": { "displayName": "Norton Internet Security*" },
       "group": "trial",
-      "suggested": true,
-      "summary": "Wersja próbna Norton Internet Security, preinstalowana przez producenta komputera.",
+      "suggested": false,
+      "summary": "Antywirus Norton Internet Security, często preinstalowany w wersji próbnej.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
       "source": "Oficjalna strona Norton „Download and run the Norton 360 Remover tool for Windows” https://support.norton.com/sp/en/us/home/current/solutions/v60392881 (sprawdzono pobraniem strony 2026-10-21); spec 6.2 (trial Norton); Norton Family i Utilities świadomie poza wzorcem",
       "cleanupUrl": "https://support.norton.com/sp/en/us/home/current/solutions/v60392881"
@@ -349,8 +349,8 @@
       "id": "trial.norton-security",
       "match": { "displayName": "Norton Security*" },
       "group": "trial",
-      "suggested": true,
-      "summary": "Wersja próbna Norton Security, preinstalowana przez producenta komputera.",
+      "suggested": false,
+      "summary": "Antywirus Norton Security, często preinstalowany w wersji próbnej.",
       "warning": "Jeśli to płatny antywirus, którego używasz, nie usuwaj go. Własny deinstalator potrafi zostawić resztki.",
       "source": "Oficjalna strona Norton „Download and run the Norton 360 Remover tool for Windows” https://support.norton.com/sp/en/us/home/current/solutions/v60392881 (sprawdzono pobraniem strony 2026-10-21); spec 6.2 (trial Norton); Norton Family i Utilities świadomie poza wzorcem",
       "cleanupUrl": "https://support.norton.com/sp/en/us/home/current/solutions/v60392881"

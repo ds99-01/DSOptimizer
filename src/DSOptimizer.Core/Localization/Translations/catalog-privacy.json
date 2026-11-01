@@ -119,8 +119,8 @@
       "en": "The Start menu is shorter: the section with recommended content and recently opened files disappears."
     },
     {
-      "pl": "Polityka HideRecommendedSection = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer, dla zalogowanego użytkownika. Sekcja znika po ponownym zalogowaniu albo po restarcie komputera. Pozycja nie jest zaznaczana automatycznie, bo ukrywa też ostatnio otwierane pliki. Cofnięcie usuwa wartość, a także klucz Explorer, jeśli powstał przy zmianie.",
-      "en": "Policy HideRecommendedSection = 1 in HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer, for the signed-in user. The section disappears after you sign in again or restart the computer. The item isn't selected automatically, because it also hides recently opened files. Undo removes the value, and also the Explorer key if the change created it."
+      "pl": "Polityka HideRecommendedSection = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer, dla zalogowanego użytkownika. Sekcja znika po ponownym zalogowaniu albo po restarcie komputera. Pozycja nie jest sugerowana, bo ukrywa też ostatnio otwierane pliki. Cofnięcie usuwa wartość, a także klucz Explorer, jeśli powstał przy zmianie.",
+      "en": "Policy HideRecommendedSection = 1 in HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer, for the signed-in user. The section disappears after you sign in again or restart the computer. The item isn't suggested, because it also hides recently opened files. Undo removes the value, and also the Explorer key if the change created it."
     },
     {
       "pl": "Razem z sekcją znikają z menu Start ostatnio otwierane pliki.",
@@ -171,8 +171,8 @@
       "en": "The desktop gets a regular background instead of a daily picture from Microsoft, and the \"Learn about this picture\" icon disappears."
     },
     {
-      "pl": "Polityka DisableWindowsSpotlightFeatures = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, dla zalogowanego użytkownika. Tło pulpitu przełącza się z „W centrum uwagi Windows” na „Obraz” od razu, bez restartu. Nie wiadomo, czy zmiana obejmuje też ekran blokady. Pozycja nie jest zaznaczana automatycznie. Cofnięcie usuwa politykę i klucz CloudContent, ale tło zostaje „Obraz”.",
-      "en": "Policy DisableWindowsSpotlightFeatures = 1 in HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, for the signed-in user. The desktop background switches from \"Windows spotlight\" to \"Picture\" right away, without a restart. It isn't known whether the change also covers the lock screen. The item isn't selected automatically. Undo removes the policy and the CloudContent key, but the background stays \"Picture\"."
+      "pl": "Polityka DisableWindowsSpotlightFeatures = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, dla zalogowanego użytkownika. Tło pulpitu przełącza się z „W centrum uwagi Windows” na „Obraz” od razu, bez restartu. Nie wiadomo, czy zmiana obejmuje też ekran blokady. Pozycja nie jest sugerowana. Cofnięcie usuwa politykę i klucz CloudContent, ale tło zostaje „Obraz”.",
+      "en": "Policy DisableWindowsSpotlightFeatures = 1 in HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, for the signed-in user. The desktop background switches from \"Windows spotlight\" to \"Picture\" right away, without a restart. It isn't known whether the change also covers the lock screen. The item isn't suggested. Undo removes the policy and the CloudContent key, but the background stays \"Picture\"."
     },
     {
       "pl": "Cofnięcie nie przywraca zdjęć dnia: wybierz je ponownie w Ustawienia > Personalizacja > Tło.",

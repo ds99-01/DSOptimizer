@@ -19,7 +19,7 @@ pilnuje, że plik na dysku i zasób są tym samym.
   - `packageName` – tylko pakiety AppX (Sklep), z `Get-AppxPackage`, pole `Name`; nie łączy się z pozostałymi;
   - `displayName` i/lub `publisher` – tylko programy Win32 (wpis Uninstall); gdy podane oba, muszą pasować oba.
 - `group` – `microsoft`, `producent` albo `trial`.
-- `suggested` – `true`: wiersz trafia do grupy „Sugerowane do usunięcia” i sam się zaznacza; `false`: grupa „Pozostałe”
+- `suggested` – `true`: wiersz trafia do grupy „Sugerowane do usunięcia”, a zaznacza ją dopiero przycisk „Zaznacz sugerowane”; `false`: grupa „Pozostałe”
   (można zaznaczyć ręcznie), z `warning`, jeśli jest.
 - `summary` – ≤ 160 znaków, po polsku, bez nazw kluczy rejestru i cmdletów.
 - `warning` – opcjonalne ostrzeżenie pokazywane przy wierszu.
@@ -97,11 +97,11 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 | HP Support Assistant, Dell SupportAssist | **Pozostałe** (szkic miał „sugerowane”) | Mogą aktualizować sterowniki; brak sprzętu OEM do sprawdzenia |
 | MyASUS, Armoury Crate, MyDell, Dell Optimizer | Pozostałe + ostrzeżenie o baterii i Fn | Sterują baterią i wydajnością |
 | Dell Digital Delivery | Pozostałe + ostrzeżenie | Może trzymać instalatory kupionego oprogramowania |
-| McAfee WebAdvisor, Security Scan Plus | Sugerowane | Bez niezależnego źródła; decyzja autora 2026-10-21 po przeczytaniu listy |
-| Konsumenckie McAfee i Norton | Sugerowane + ostrzeżenie „jeśli to płatny antywirus, nie usuwaj” | Spec 6.2 mówi: trial sugerowany; program nie odróżni próby od płatnej licencji |
+| McAfee WebAdvisor, Security Scan Plus | Pozostałe + ostrzeżenie | Program nie odróżni próby od płatnej licencji; bez niezależnego źródła; decyzja autora 2026-10-21 po przeczytaniu listy |
+| Konsumenckie McAfee i Norton | Pozostałe + ostrzeżenie „jeśli to płatny antywirus, nie usuwaj” | Program nie odróżni próby od płatnej licencji |
 | McAfee Agent, Endpoint, Drive Encryption, DLP, Trellix | **Chronione** | Mogą być oprogramowaniem firmowym |
-| McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Sugerowane; w `source` oficjalne strony mcafee.com | Spec 6.2 (trial McAfee); wzorce to nazwy produktów, nie całe „McAfee*” |
-| McAfee Personal Security | Sugerowane + ostrzeżenie | Nie znaleziono oficjalnej strony McAfee dla tej nazwy; sugerowany decyzją autora 2026-10-21 |
+| McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Pozostałe + ostrzeżenie; w `source` oficjalne strony mcafee.com | Spec 6.2 (trial McAfee); wzorce to nazwy produktów, nie całe „McAfee*” |
+| McAfee Personal Security | Pozostałe + ostrzeżenie | Program nie odróżni próby od płatnej licencji; nie znaleziono oficjalnej strony McAfee dla tej nazwy |
 | WildTangent, HP Games by WildTangent | Sugerowane; źródło „spec 6.2 (decyzja autora)” | Brak oficjalnej strony producenta w sprawdzonych źródłach; wzorce `WildTangent*` i `HP Games by WildTangent*` (bez `*WildTangent*`) |
 | Booking.com | Sugerowane; źródło „spec 6.2 (decyzja autora)” | Brak oficjalnej strony wpisu; nazwa z Which? |
 | Microsoft 365 (Office Hub), Porady | Sugerowane; źródło MS Learn (adres w `source`) | Nazw nie ma na świeżym 26H2, tylko w archiwalnej liście z Windows 10 |
