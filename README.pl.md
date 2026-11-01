@@ -7,7 +7,7 @@ Strona: [dsoptimizer.com/pl](https://dsoptimizer.com/pl/)
 DSOptimizer to darmowy program do porządkowania i ustawiania Windows 11, najlepiej zaraz po instalacji systemu.
 Zbiera w jednym oknie rzeczy, które zwykle robi się ręcznie w wielu miejscach: wyłączanie zbędnych funkcji
 i reklam, usuwanie preinstalowanych aplikacji, instalację popularnych programów, proste naprawy systemu
-i sprawdzenie sterowników. Każda zmiana ustawień trafia do historii i można ją cofnąć.
+i sprawdzenie sterowników. Każda zmiana ustawień trafia do historii. Większość ustawień można cofnąć w programie; wyjątki są opisane niżej.
 
 ## Co jest w programie
 
@@ -87,9 +87,9 @@ Raport ze specyfikacją zawiera numery seryjne dysków – pamiętaj o tym, zani
 
 ## Co da się cofnąć, a co nie
 
-- **Ustawienia systemu** – każdą zmianę cofniesz przyciskiem „Cofnij” przy pozycji albo na stronie
+- **Ustawienia systemu** – większość zmian cofniesz przyciskiem „Cofnij” przy pozycji albo na stronie
   „Historia zmian”. Program zapamiętuje stan sprzed zmiany i do niego wraca. Nieliczne pozycje, których
-  nie da się cofnąć, mają o tym wyraźne ostrzeżenie. W Ustawieniach programu jest też opcja tworzenia punktu
+  nie da się cofnąć, mają o tym wyraźne ostrzeżenie (nie ma tam przycisku „Cofnij”). W Ustawieniach programu jest też opcja tworzenia punktu
   przywracania Windows przed zmianami.
 - **Usuwanie aplikacji** – usuniętej aplikacji program nie przywraca. Przed usunięciem programu (nie aplikacji
   ze Sklepu) tworzy punkt przywracania Windows, a gdy to się nie uda, pyta, czy kontynuować bez niego.

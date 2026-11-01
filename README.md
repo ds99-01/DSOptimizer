@@ -7,7 +7,7 @@ Website: [dsoptimizer.com](https://dsoptimizer.com/)
 DSOptimizer is a free tool for cleaning up and configuring Windows 11, best used right after installing the system.
 It brings together in one window the things you would usually do by hand in many different places: turning off
 unneeded features and ads, removing preinstalled apps, installing popular programs, simple system repairs
-and checking drivers. Every settings change is recorded in the history and can be undone.
+and checking drivers. Every settings change is recorded in the history. Most settings can be undone in the program; the exceptions are described below.
 
 ## Language
 
@@ -90,9 +90,9 @@ The specification report contains disk serial numbers, so keep that in mind befo
 
 ## What can and cannot be undone
 
-- **System settings** – you can undo every change with the "Undo" button next to the item or on the
+- **System settings** – you can undo most changes with the "Undo" button next to the item or on the
   "Change history" page. The program remembers the state before the change and returns to it.
-  The few items that cannot be undone carry a clear warning about it. The program's settings also have an option
+  The few items that cannot be undone carry a clear warning about it (the Undo button is missing there). The program's settings also have an option
   to create a Windows restore point before changes.
 - **Removing apps** – the program does not restore a removed app. Before removing a desktop program (not a Store
   app), it creates a Windows restore point, and if that fails, it asks whether to continue without one.
