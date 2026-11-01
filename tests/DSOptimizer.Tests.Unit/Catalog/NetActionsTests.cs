@@ -127,7 +127,7 @@ public class NetActionsTests
         Assert.Contains("learn.microsoft.com", doc, StringComparison.Ordinal);
         Assert.Contains("brak cofnięcia", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("odczyt zwrotny", doc, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("nie testowane na VM", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("nietestowane na VM", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("brak sieci", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Failed", doc, StringComparison.Ordinal);
     }

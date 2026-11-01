@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.smb-harden.md sha256: 37ec037856055c60dff4933cfda69d9d059a1816fc0f983c0b893b88bc84d45c -->
+<!-- source: docs/tweaks/net.smb-harden.md sha256: 982d2607f4e08f8d11f53f9b7cef1ec83b30d46bf5ec8d7b4c1ebeb798321ea4 -->
 
 # net.smb-harden – Turn off guest logons and require SMB signing
 

@@ -39,7 +39,7 @@ Reguły (w tej kolejności):
 **Niepewność (MS tego nie opisuje):** dokumentacja MS nie mówi, jak `SystemS4` zachowuje się po `powercfg /h off`, więc reguła 1 nie opiera się na `SystemS4`: stan „wyłączona” to jawne `HibernateEnabled` = 0 i brak pliku. Na jednej maszynie (host deweloperski, hibernacja wyłączona) `SystemS4` pozostaje TRUE, ale to jedna obserwacja, nie gwarancja. Wartość `HibernateEnabled` = 0 bez obsługi sprzętowej (jak na VM po `/h off`) jest raportowana jako `Applied` (hibernacja faktycznie jest wyłączona); dlatego apply najpierw wymaga stanu `NotApplied`. Testy jednostkowe sprawdzają całą macierz na mockach (`DiskCatalogTests`), nie na prawdziwym `powercfg`.
 
 ## Ryzyka i ostrzeżenia
-- `risk=experimental` (decyzja projektowa): nie sprawdzone na sprzęcie z obsługą hibernacji.
+- `risk=experimental` (decyzja projektowa): niesprawdzone na sprzęcie z obsługą hibernacji.
 - Ostrzeżenia w katalogu: „Znika hibernacja i Szybkie uruchamianie, a na laptopie rozładowanie baterii w uśpieniu grozi utratą niezapisanych danych.”
 - Podstawa (dokumentacja MS, **nie wynik testu na VM**): Szybkie uruchamianie korzysta z pliku hibernacji (zdanie „powercfg /h off wyłącza Fast Startup” dosłownie nie występuje w źródłach MS); bez hibernacji nie działa hybrydowy stan uśpienia (ostrzeżenie MS o utracie danych przy zaniku zasilania).
 - `HiberbootEnabled` = 1 na VM mimo „Fast Startup: Hibernation is not available”: ta wartość nie dowodzi, że Szybkie uruchamianie działa.

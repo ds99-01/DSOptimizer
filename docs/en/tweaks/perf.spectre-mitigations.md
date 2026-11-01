@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/perf.spectre-mitigations.md sha256: 95c9e863540e8ada97ebc47903089c1ac45810c18ebf0dfd1304051314991204 -->
+<!-- source: docs/tweaks/perf.spectre-mitigations.md sha256: a9989e314924d67124917d9b17c93d58f9a49e9aa573322cc951fe0f06077b19 -->
 
 # perf.spectre-mitigations – turning off Spectre/Meltdown mitigations (not ported)
 

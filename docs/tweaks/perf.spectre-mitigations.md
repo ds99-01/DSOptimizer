@@ -17,7 +17,7 @@ Powody odrzucenia:
 ## Źródła
 - https://support.microsoft.com/help/4073119 – MS (KB4073119, Windows client guidance for IT Pros), dostęp 2026-10-18: wartości wyłączające 3/3 i 1/3, restart, ostrzeżenia, Applies-to do Windows 11 23H2, change-log do 2024-04-16.
 - https://support.microsoft.com/en-us/topic/windows-server-guidance-to-protect-against-speculative-execution-side-channel-vulnerabilities-2f965763-00e2-8f98-b632-0d96f30c8c8e – MS (wersja serwerowa), dostęp 2026-10-18: sekcje „To disable…”, ostrzeżenia dla Hyper-V, RDS i niezaufanego kodu.
-- KB4074629 (wyjście `Get-SpeculationControlSettings`) – wskazane przez stronę MS, nie pobierane osobno.
+- KB4074629 (wyjście `Get-SpeculationControlSettings`) – wskazane przez stronę MS, niepobierane osobno.
 - Research: `docs/zrodla/2026-10-18-partia-c2-zrodla.md`, sekcja 3. Wartości 3/3 i 1/3 pochodzą z pobrań narzędziem streszczającym; przed ewentualnym portem trzeba je ręcznie porównać z oryginałem KB4073119.
 
 ## Wartości domyślne na świeżym 26H2

@@ -95,7 +95,7 @@ public class PerfVbsHvciTests
     public void Docs_StateTheCoexistenceDecisionAndTheVmLimitation()
     {
         var doc = File.ReadAllText(Path.Combine(RepoRoot.Combine("docs", "tweaks"), "perf.vbs-hvci.md"), Encoding.UTF8);
-        Assert.Contains("realny stan nie testowany na VM", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("realny stan nietestowany na VM", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("VirtualizationBasedSecurityStatus", doc, StringComparison.Ordinal);
         Assert.Contains("StateAggregator", doc, StringComparison.Ordinal);
         Assert.Contains("PendingReboot", doc, StringComparison.Ordinal);

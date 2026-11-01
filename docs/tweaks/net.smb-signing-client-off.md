@@ -45,4 +45,4 @@ Przypadek `net-smb-signing-client-off` (`Flow=Full`, `Catalog=BuiltIn`, bez rest
 - Sprawdzono: `detect-before` = `NotApplied` (wartości brak, cmdlet True), `apply` = `Applied` (`requiresReboot` = false; snapshot po apply: DWORD 0), `detect-after-apply` = `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`. Stan końcowy = stan przed: wartość nieobecna, klucz `Parameters` zostaje, `SnapshotDiff` pusty.
 - `CheckAfterApply` (`RequireSecuritySignature -eq $false`, zaraz po apply, bez restartu): **Passed**: zapis przez API rejestru jest widoczny w cmdlecie bez restartu (zmiana z True na False). `CheckAfterUndo` (`-eq $true`): **Passed**: po usunięciu wartości odczyt wraca do domyślnego True.
 - `net-smb-lan-effect`: **Skipped** („brak sieci i serwera SMB na VM”).
-- **Nie testowane na VM: brak sieci i serwera SMB.** Nie sprawdzono: połączenia z serwerem wymagającym lub niewspierającym podpisywania, zachowania pod polityką, trwałości po restarcie.
+- **Nietestowane na VM: brak sieci i serwera SMB.** Nie sprawdzono: połączenia z serwerem wymagającym lub niewspierającym podpisywania, zachowania pod polityką, trwałości po restarcie.

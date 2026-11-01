@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.menu-delay.md sha256: e1fbe78907eb4ce0c7d7d43f6f335572641fe015202d0367a5ffc2098947970b -->
+<!-- source: docs/tweaks/ux.menu-delay.md sha256: d0ddcaf1c18254018db16dc3c104babf395261e907dacdbf61520ee434aacff8 -->
 
 # ux.menu-delay – Open submenus faster
 

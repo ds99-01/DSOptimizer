@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.hibernation.md sha256: 9c1aa5fc654d755a624a92d460beea607579ea969191c736b4543a9c9d6fb2e1 -->
+<!-- source: docs/tweaks/disk.hibernation.md sha256: e96fb4eeafcad42fcaf7508658c81fb09e13375695f11f74b00ba6b6fd0d095d -->
 
 # disk.hibernation – Turn off hibernation
 

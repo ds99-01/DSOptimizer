@@ -113,7 +113,7 @@ public class PanelsCatalogTests
             var text = File.ReadAllText(path, Encoding.UTF8);
             Assert.Contains(d.Launch!.File, text, StringComparison.Ordinal);
             Assert.Contains("## Werdykt 26H2\nPortować jako `kind=panel`, `risk=safe`", text.Replace("\r\n", "\n"), StringComparison.Ordinal);
-            Assert.DoesNotContain("Nie portowane", text, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("nieportowane", text, StringComparison.OrdinalIgnoreCase);
         });
     }
 

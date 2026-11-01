@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.store.md sha256: e1ad953d140ccfdf3b9a2e61645869ad372a126e7bd8cb877cba19746e01af12 -->
+<!-- source: docs/tweaks/repair.store.md sha256: ce212e3b578befe0238bf70758510278a66c8e2229b83b4b933234997f020eeb -->
 
 # repair.store – Repair Microsoft Store on this account
 

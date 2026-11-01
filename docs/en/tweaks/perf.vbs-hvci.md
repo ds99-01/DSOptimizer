@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/perf.vbs-hvci.md sha256: f8fbe9cd0f1dba19c38a4b79c9bc7f9f45a6dc18a4cd08946574231a155855b2 -->
+<!-- source: docs/tweaks/perf.vbs-hvci.md sha256: e09f254ba531405163247fef7321d98756208ee33a6d54aff2658d29b8c7db1a -->
 
 # perf.vbs-hvci – Turn off memory integrity (HVCI)
 

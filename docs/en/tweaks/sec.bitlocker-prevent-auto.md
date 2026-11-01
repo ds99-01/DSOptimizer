@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.bitlocker-prevent-auto.md sha256: 824f5cd4044e716b9f5c013e28551706a296dd2af2fd30a06097b6efd5194d75 -->
+<!-- source: docs/tweaks/sec.bitlocker-prevent-auto.md sha256: 8ec6e802371332515e30238dcdfbd3ad537c65c9d91a56d3835c4ee4fdb5016f -->
 
 # sec.bitlocker-prevent-auto – Block automatic drive encryption (BitLocker)
 

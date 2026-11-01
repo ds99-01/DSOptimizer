@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.smb-guest-access.md sha256: 94a8663d842b1e95691b44ad13a705948de42fedf3863ee7e7091ddcd5b38577 -->
+<!-- source: docs/tweaks/net.smb-guest-access.md sha256: c8ec827e39a30cca5560e0646e02319803578602cb0b6b05b24d14eb53730baa -->
 
 # net.smb-guest-access – Allow guest logons to network shares
 

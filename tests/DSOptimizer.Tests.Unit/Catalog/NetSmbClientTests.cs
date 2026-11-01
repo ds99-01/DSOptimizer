@@ -140,7 +140,7 @@ public class NetSmbClientTests
         Assert.Contains("bez wpisu w historii zmian", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("wartość domyślna", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Partial", doc, StringComparison.Ordinal);
-        Assert.Contains("nie testowane na VM", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("nietestowane na VM", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("brak sieci", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("learn.microsoft.com", doc, StringComparison.Ordinal);
     }
