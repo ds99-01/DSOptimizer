@@ -27,8 +27,15 @@ Opis działania:
       start-on: co najmniej jedno połączenie TCP 443 do api.github.com, zapytania DNS drzewa wyłącznie o api.github.com, brak innych
                 połączeń (brak połączenia = nie przechodzi, bo sprawdzenie musiało się wykonać);
       start-off i cli: zero zapytań DNS i zero połączeń drzewa programu.
-    Ślad bez zdarzeń, bez procesu programu albo z utraconymi buforami nie przechodzi w żadnym scenariuszu.
-    Ograniczenie: pomiar mówi z kim i ile bajtów, nie co (patrz audyt sieci); ruch Windows poza drzewem programu nie jest liczony.
+    Werdykt jest fail-closed: nie przechodzi ślad bez pól eventCount i dsoTreeProcesses (albo z zerem zdarzeń lub procesów), bez ruchu
+    kontrolnego, z utraconymi buforami lub zdarzeniami (albo bez odczytu tych liczb) i z rozbieżnym drzewem procesów w audycie 4688.
+    Ruch kontrolny: tuż przed zatrzymaniem śladu osobny proces w VM (poza drzewem programu) robi zapytanie DNS i połączenie TCP 443 do
+    example.com; werdykt każdego scenariusza wymaga, żeby oba były widoczne w śladzie. Sieć jest podłączona w każdym scenariuszu, przed
+    uruchomieniem programu, i czekamy tylko na łączność (bez rozwiązywania nazw, żeby nie rozgrzewać pamięci podręcznej DNS).
+    Audyt 4688 (tworzenie procesów) jest włączany w VM; po scenariuszu drzewo DSOptimizer.exe z audytu jest porównywane z dsoTreeProcesses.
+    Zakres: wynik dotyczy drzewa procesów programu (DSOptimizer.exe i jego potomkowie), nie całego komputera. Ruch zlecony usługom
+    Windows (Windows Update, Delivery Optimization, BITS) nie jest liczony; ich usługi (wuauserv, UsoSvc, DoSvc, BITS) są zatrzymane
+    na czas pomiaru, jak w metodzie archiwalnej. Pomiar mówi z kim i ile bajtów, nie co (patrz audyt sieci).
     RISK: skrypt przywraca VM do checkpointu 'czysta-26H2' przed każdym scenariuszem i po nim (zmiany w VM przepadają) oraz na czas
     scenariusza podłącza kartę VM do Default Switch (ruch NAT na hoście); po pracy karta jest odłączona, a VM wyłączona. Nie usuwa VM.
     Wynik: <OutDirectory>\<VmName>\net.json (UTF-8), surowe pliki scenariusza (ślad sieci w JSON, wynik sondy, raporty --out)
@@ -60,6 +67,13 @@ function Get-NetPlan {
     return [ordered]@{
         AllowedHost         = 'api.github.com'
         AllowedPort         = 443
+        # Ruch kontrolny osobnego procesu przed zatrzymaniem śladu (dowód, że ślad łapie sieć); host inny niż dozwolony, żeby go nie mylić.
+        CanaryHost          = 'example.com'
+        CanaryPort          = 443
+        CanaryTimeoutSeconds = 30
+        # Podkategoria audytu 'Process Creation' (GUID, niezależny od języka).
+        AuditSubcategory    = '{0CCE922B-69AE-11D9-BED3-505054503030}'
+        Scope               = 'Drzewo procesów programu (DSOptimizer.exe i potomkowie). Ruch zlecony usługom Windows (Windows Update, Delivery Optimization, BITS) nie jest liczony; ich usługi zatrzymano na czas pomiaru.'
         NetworkName         = 'api.github.com'
         NetworkSwitch       = 'Default Switch'
         NetworkWaitSeconds  = 300
@@ -111,8 +125,36 @@ function Format-NetHost {
     return ([string]$Name).Trim().TrimEnd('.').ToLowerInvariant()
 }
 
+function Test-NetCanary {
+    # Dowód, że ślad w ogóle łapie sieć: kontrolny ruch (zapytanie DNS i połączenie TCP) osobnego procesu spoza drzewa programu musi
+    # być w śladzie (pola dns i connections z dsoTree = false). Brak = pomiar się nie liczy. Czysta funkcja.
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][AllowNull()]$Trace)
+    $Plan = Get-NetPlan
+    $CanaryHost = Format-NetHost $Plan.CanaryHost
+    $All = Get-NetTraceField -Trace $Trace -Name 'dns'
+    $Connections = Get-NetTraceField -Trace $Trace -Name 'connections'
+    if ($null -eq $All -or $null -eq $Connections) {
+        return [pscustomobject]@{ Seen = $false; Detail = 'Ślad bez pól dns albo connections: nie da się potwierdzić, że ślad łapie sieć.' }
+    }
+    $DnsSeen = @($All | Where-Object { (Format-NetHost (Get-NetItemValue -Item $_ -Name 'name')) -eq $CanaryHost -and (Get-NetItemValue -Item $_ -Name 'dsoTree') -ne $true }).Count -gt 0
+    $ConnectionSeen = @($Connections | Where-Object {
+            $Hosts = @(@(Get-NetItemValue -Item $_ -Name 'hosts') | Where-Object { $_ } | ForEach-Object { Format-NetHost $_ })
+            ((Get-NetItemValue -Item $_ -Name 'dsoTree') -ne $true) -and ([string](Get-NetItemValue -Item $_ -Name 'proto') -ceq 'TCP') -and
+            ([int](Get-NetItemValue -Item $_ -Name 'remotePort') -eq [int]$Plan.CanaryPort) -and ($Hosts -contains $CanaryHost)
+        }).Count -gt 0
+    if ($DnsSeen -and $ConnectionSeen) {
+        return [pscustomobject]@{ Seen = $true; Detail = "Ruch kontrolny ($CanaryHost) widoczny w śladzie." }
+    }
+    $Missing = @()
+    if (-not $DnsSeen) { $Missing += 'zapytania DNS' }
+    if (-not $ConnectionSeen) { $Missing += "połączenia TCP $($Plan.CanaryPort)" }
+    return [pscustomobject]@{ Seen = $false; Detail = "W śladzie brakuje kontrolnego ruchu ($CanaryHost) spoza drzewa programu: $($Missing -join ', '); ślad mógł nie łapać sieci." }
+}
+
 function Get-NetVerdict {
-    # Czysta funkcja werdyktu: Scenario + obiekt śladu (pola dsoTreeDns, dsoTreeConnections z Parse-NetTrace.ps1) -> { Passed; Detail }.
+    # Czysta funkcja werdyktu (fail-closed): Scenario + obiekt śladu (dsoTreeDns, dsoTreeConnections, dsoTreeProcesses, eventCount, dns,
+    # connections z Parse-NetTrace.ps1) -> { Passed; Detail }. Dotyczy drzewa procesów programu; ruch zlecony usługom Windows nie jest liczony.
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][ValidateSet('start-on', 'start-off', 'cli')][string]$Scenario,
@@ -124,11 +166,13 @@ function Get-NetVerdict {
     $Dns = Get-NetTraceField -Trace $Trace -Name 'dsoTreeDns'
     $Connections = Get-NetTraceField -Trace $Trace -Name 'dsoTreeConnections'
     if ($null -eq $Dns -or $null -eq $Connections) { return (& $Fail 'Ślad bez pól dsoTreeDns albo dsoTreeConnections: pomiar się nie liczy.') }
-    # Ślad pusty albo bez procesu programu nie dowodzi niczego (brak ruchu mógłby znaczyć, że ślad nic nie łapał).
+    # Ślad bez zdarzeń albo bez procesu programu nie dowodzi niczego; brak tych pól to też porażka.
     $EventCount = $Trace.PSObject.Properties['eventCount']
-    if ($null -ne $EventCount -and [int64]$EventCount.Value -le 0) { return (& $Fail 'Ślad nie zawiera żadnych zdarzeń: pomiar się nie liczy.') }
+    if ($null -eq $EventCount -or $null -eq $EventCount.Value -or [int64]$EventCount.Value -le 0) { return (& $Fail 'Ślad bez pola eventCount albo bez zdarzeń: pomiar się nie liczy.') }
     $Processes = Get-NetTraceField -Trace $Trace -Name 'dsoTreeProcesses'
-    if ($null -ne $Processes -and $Processes.Count -eq 0) { return (& $Fail 'W śladzie nie ma procesu DSOptimizer.exe: pomiar się nie liczy.') }
+    if ($null -eq $Processes -or $Processes.Count -eq 0) { return (& $Fail 'Ślad bez pola dsoTreeProcesses albo bez procesu DSOptimizer.exe: pomiar się nie liczy.') }
+    $Canary = Test-NetCanary -Trace $Trace
+    if (-not $Canary.Seen) { return (& $Fail $Canary.Detail) }
 
     $DnsNames = @($Dns | ForEach-Object { Format-NetHost (Get-NetItemValue -Item $_ -Name 'name') } | Where-Object { $_ } | Sort-Object -Unique)
     $Describe = {
@@ -139,21 +183,23 @@ function Get-NetVerdict {
     }
 
     if ($Scenario -ne 'start-on') {
-        if ($Dns.Count -eq 0 -and $Connections.Count -eq 0) { return [pscustomobject]@{ Passed = $true; Detail = 'Zero zapytań DNS i zero połączeń w drzewie programu.' } }
+        if ($Dns.Count -eq 0 -and $Connections.Count -eq 0) { return [pscustomobject]@{ Passed = $true; Detail = 'Zero zapytań DNS i zero połączeń w drzewie procesów programu (ruch kontrolny widoczny w śladzie).' } }
         $Parts = @()
         if ($Dns.Count -gt 0) { $Parts += "zapytania DNS: $($DnsNames -join ', ')" }
         if ($Connections.Count -gt 0) { $Parts += "połączenia: $((@($Connections | ForEach-Object { & $Describe $_ }) | Sort-Object -Unique) -join '; ')" }
-        return (& $Fail "Program nie powinien łączyć się z siecią w scenariuszu '$Scenario', a w śladzie jest: $($Parts -join ' | ').")
+        return (& $Fail "Drzewo procesów programu nie powinno łączyć się z siecią w scenariuszu '$Scenario', a w śladzie jest: $($Parts -join ' | ').")
     }
 
     if ($Connections.Count -eq 0) {
-        return (& $Fail "Brak jakiegokolwiek połączenia programu: sprawdzenie aktualizacji ($Allowed) nie wykonało się albo ślad go nie złapał.")
+        return (& $Fail "Brak jakiegokolwiek połączenia w drzewie procesów programu: sprawdzenie aktualizacji ($Allowed) nie wykonało się albo ślad go nie złapał.")
     }
     $Extra = @()
     $Good = 0
     foreach ($Connection in $Connections) {
         $Hosts = @(@(Get-NetItemValue -Item $Connection -Name 'hosts') | Where-Object { $_ } | ForEach-Object { Format-NetHost $_ })
-        $IsGood = ([string](Get-NetItemValue -Item $Connection -Name 'proto') -ceq 'TCP') -and ([int](Get-NetItemValue -Item $Connection -Name 'remotePort') -eq [int]$Plan.AllowedPort) -and ($Hosts -contains $Allowed)
+        # Wszystkie nazwy hosta połączenia muszą być równe dozwolonej; inne (adres współdzielony z inną nazwą) = porażka.
+        $OnlyAllowed = ($Hosts.Count -gt 0) -and (@($Hosts | Where-Object { $_ -ne $Allowed }).Count -eq 0)
+        $IsGood = ([string](Get-NetItemValue -Item $Connection -Name 'proto') -ceq 'TCP') -and ([int](Get-NetItemValue -Item $Connection -Name 'remotePort') -eq [int]$Plan.AllowedPort) -and $OnlyAllowed
         if ($IsGood) { $Good++ } else { $Extra += (& $Describe $Connection) }
     }
     $OtherDns = @($DnsNames | Where-Object { $_ -ne $Allowed })
@@ -161,10 +207,72 @@ function Get-NetVerdict {
         $Parts = @()
         if ($Extra.Count -gt 0) { $Parts += "dodatkowe połączenia: $((@($Extra) | Sort-Object -Unique) -join '; ')" }
         if ($OtherDns.Count -gt 0) { $Parts += "dodatkowe zapytania DNS: $($OtherDns -join ', ')" }
-        return (& $Fail "Dozwolone jest wyłącznie $Allowed na porcie $($Plan.AllowedPort), a w śladzie są: $($Parts -join ' | ').")
+        return (& $Fail "Dozwolone jest wyłącznie $Allowed na porcie $($Plan.AllowedPort), a w śladzie drzewa procesów programu są: $($Parts -join ' | ').")
     }
     if ($Good -eq 0) { return (& $Fail "Brak połączenia TCP $($Plan.AllowedPort) do $Allowed.") }
-    return [pscustomobject]@{ Passed = $true; Detail = "Wyłącznie $Allowed na porcie $($Plan.AllowedPort) ($Good połączeń w drzewie programu)." }
+    return [pscustomobject]@{ Passed = $true; Detail = "Drzewo procesów programu: wyłącznie $Allowed na porcie $($Plan.AllowedPort) ($Good połączeń); ruch kontrolny widoczny w śladzie." }
+}
+
+function Get-NetCliProblem {
+    # Wynik jednego polecenia CLI (z Invoke-DsoCli) -> opis problemu albo $null. Plik --out musi istnieć i nie być pusty.
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Command, [AllowNull()]$Result)
+    if ($null -eq $Result) { return "polecenie ${Command}: brak wyniku." }
+    if ($Result.TimedOut -eq $true) { return "polecenie ${Command}: przekroczony czas." }
+    if ([int]$Result.ExitCode -ne 0) { return "polecenie ${Command}: kod wyjścia $($Result.ExitCode)." }
+    if ([string]::IsNullOrWhiteSpace([string]$Result.Json)) { return "polecenie ${Command}: plik --out nie istnieje albo jest pusty." }
+    return $null
+}
+
+function Get-NetLossProblem {
+    # Odczyt utraconych buforów i zdarzeń sesji ETW (z bloku zatrzymania śladu) -> lista problemów; brak odczytu też jest problemem.
+    [CmdletBinding()]
+    param([AllowNull()]$Loss)
+    if ($null -eq $Loss) { return @('brak odczytu utraconych buforów i zdarzeń śladu') }
+    $Problems = @()
+    $ReadError = Get-NetItemValue -Item $Loss -Name 'Error'
+    if ($ReadError) { $Problems += "brak odczytu utraconych buforów i zdarzeń śladu: $ReadError" }
+    $Fields = [ordered]@{ BuffersLost = 'buforów'; EventsLost = 'zdarzeń'; RealTimeBuffersLost = 'buforów czasu rzeczywistego' }
+    foreach ($Name in $Fields.Keys) {
+        $Value = Get-NetItemValue -Item $Loss -Name $Name
+        if ($null -eq $Value) { if (-not $ReadError) { $Problems += "brak odczytu utraconych $($Fields[$Name]) ($Name)" }; continue }
+        if ([int64]$Value -gt 0) { $Problems += "ślad utracił $Value $($Fields[$Name]): pomiar niekompletny" }
+    }
+    return $Problems
+}
+
+function Compare-NetProcessAudit {
+    # Kontrola krzyżowa: drzewo procesów z audytu 4688 (korzeń = DSOptimizer.exe, potomkowie po PID rodzica, w kolejności zdarzeń)
+    # kontra dsoTreeProcesses ze śladu ETW. Rozbieżność w którąkolwiek stronę = Match false. Czysta funkcja.
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowNull()]$Audit,
+        [Parameter(Mandatory)][AllowNull()]$TreeProcesses,
+        [string]$RootImage = 'DSOptimizer.exe'
+    )
+    $Events = @(@($Audit) | Where-Object { $null -ne $_ })
+    $Tree = @(@($TreeProcesses) | Where-Object { $null -ne $_ })
+    if ($Events.Count -eq 0) { return [pscustomobject]@{ Match = $false; Detail = 'Audyt 4688 bez zdarzeń: nie da się porównać drzewa procesów.'; OnlyInAudit = @(); OnlyInTrace = @() } }
+    if (@($Events | Where-Object { $null -eq $_.PSObject.Properties['newPid'] -or $null -eq $_.PSObject.Properties['parentPid'] }).Count -gt 0) {
+        return [pscustomobject]@{ Match = $false; Detail = 'Audyt 4688 zawiera uszkodzone wpisy (brak newPid lub parentPid).'; OnlyInAudit = @(); OnlyInTrace = @() }
+    }
+    $Members = New-Object 'System.Collections.Generic.HashSet[int]'
+    foreach ($Event in $Events) {
+        $Leaf = [System.IO.Path]::GetFileName([string](Get-NetItemValue -Item $Event -Name 'image'))
+        if ($Leaf -ieq $RootImage -or $Members.Contains([int]$Event.parentPid)) { [void]$Members.Add([int]$Event.newPid) }
+    }
+    $TracePids = New-Object 'System.Collections.Generic.HashSet[int]'
+    foreach ($Process in $Tree) { [void]$TracePids.Add([int](Get-NetItemValue -Item $Process -Name 'pid')) }
+    $OnlyAudit = @($Members | Where-Object { -not $TracePids.Contains($_) } | Sort-Object)
+    $OnlyTrace = @($TracePids | Where-Object { -not $Members.Contains($_) } | Sort-Object)
+    if ($Members.Count -eq 0 -and $TracePids.Count -eq 0) { return [pscustomobject]@{ Match = $false; Detail = 'Ani audyt 4688, ani ślad nie zawierają procesu DSOptimizer.exe.'; OnlyInAudit = @(); OnlyInTrace = @() } }
+    if ($OnlyAudit.Count -eq 0 -and $OnlyTrace.Count -eq 0) {
+        return [pscustomobject]@{ Match = $true; Detail = "Drzewo procesów zgodne w audycie 4688 i w śladzie ($($Members.Count) procesów)."; OnlyInAudit = @(); OnlyInTrace = @() }
+    }
+    $Parts = @()
+    if ($OnlyAudit.Count -gt 0) { $Parts += "tylko w audycie 4688: PID $($OnlyAudit -join ', ')" }
+    if ($OnlyTrace.Count -gt 0) { $Parts += "tylko w śladzie: PID $($OnlyTrace -join ', ')" }
+    return [pscustomobject]@{ Match = $false; Detail = "Rozbieżność drzewa procesów: $($Parts -join ' | ')."; OnlyInAudit = $OnlyAudit; OnlyInTrace = $OnlyTrace }
 }
 
 function Resolve-NetArtifact {
@@ -219,7 +327,7 @@ function Get-NetRunArguments {
 # ---------------------------------------------------------------------------------------------------------------------
 
 $script:NetPrepareBlock = {
-    param([string]$WorkDirectory, [string]$ResultDirectory, [string[]]$Providers, [string[]]$Services)
+    param([string]$WorkDirectory, [string]$ResultDirectory, [string[]]$Providers, [string[]]$Services, [string]$AuditSubcategory)
     $ErrorActionPreference = 'Stop'
     $null = New-Item -ItemType Directory -Path $WorkDirectory -Force
     $null = New-Item -ItemType Directory -Path $ResultDirectory -Force
@@ -233,6 +341,14 @@ $script:NetPrepareBlock = {
         }
         catch { $Report += "$Service BLAD: $($_.Exception.Message)" }
     }
+    # Audyt tworzenia procesów (4688) z linią poleceń: kontrola krzyżowa drzewa procesów (tylko w VM; revert checkpointu to cofa).
+    # Podkategoria po GUID, więc niezależnie od języka systemu.
+    $null = auditpol /set /subcategory:"$AuditSubcategory" /success:enable
+    if ($LASTEXITCODE -ne 0) { throw "auditpol zakończył się kodem ${LASTEXITCODE}: audyt 4688 nie został włączony." }
+    $AuditKey = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\Audit'
+    $null = New-Item -Path $AuditKey -Force
+    Set-ItemProperty -Path $AuditKey -Name ProcessCreationIncludeCmdLine_Enabled -Value 1 -Type DWord
+    $Report += 'audyt 4688 włączony'
     return $Report
 }
 
@@ -280,18 +396,34 @@ $script:NetSettingsBlock = {
 }
 
 $script:NetWaitNetworkBlock = {
-    param([string]$Name, [int]$WaitSeconds)
+    # Czeka na samą łączność (adres IPv4 spoza 169.254 na interfejsie trasy domyślnej, a gdy trasa ma bramę - odpowiedź bramy na ping).
+    # Celowo bez rozwiązywania nazw: rozgrzany cache DNS ukryłby zapytania programu i dał fałszywe "host nieustalony" w start-on.
+    param([int]$WaitSeconds)
     $Watch = [System.Diagnostics.Stopwatch]::StartNew()
-    $LastError = $null
+    $LastError = 'brak trasy domyślnej'
     while ($Watch.Elapsed.TotalSeconds -lt $WaitSeconds) {
         try {
-            $Addresses = @([System.Net.Dns]::GetHostAddresses($Name))
-            if ($Addresses.Count -gt 0) { return [pscustomobject]@{ Resolved = $true; Seconds = [int]$Watch.Elapsed.TotalSeconds; Addresses = @($Addresses | ForEach-Object { $_.ToString() }); Error = $null } }
+            $Route = @(Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction Stop | Sort-Object RouteMetric | Select-Object -First 1)
+            if ($Route.Count -gt 0) {
+                $Address = @(Get-NetIPAddress -AddressFamily IPv4 -InterfaceIndex $Route[0].InterfaceIndex -ErrorAction Stop | Where-Object { $_.IPAddress -notlike '169.254.*' })
+                if ($Address.Count -eq 0) { $LastError = 'interfejs trasy domyślnej bez adresu IPv4' }
+                else {
+                    $Gateway = [string]$Route[0].NextHop
+                    $Pinged = $true
+                    if ($Gateway -and $Gateway -ne '0.0.0.0') {
+                        $Pinged = $false
+                        $Ping = New-Object System.Net.NetworkInformation.Ping
+                        try { $Pinged = ($Ping.Send($Gateway, 2000).Status -eq 'Success') } finally { $Ping.Dispose() }
+                        if (-not $Pinged) { $LastError = "brama $Gateway nie odpowiada" }
+                    }
+                    if ($Pinged) { return [pscustomobject]@{ Ready = $true; Seconds = [int]$Watch.Elapsed.TotalSeconds; Gateway = $Gateway; Address = [string]$Address[0].IPAddress; Error = $null } }
+                }
+            }
         }
         catch { $LastError = $_.Exception.Message }
         Start-Sleep -Seconds 3
     }
-    return [pscustomobject]@{ Resolved = $false; Seconds = [int]$Watch.Elapsed.TotalSeconds; Addresses = @(); Error = $LastError }
+    return [pscustomobject]@{ Ready = $false; Seconds = [int]$Watch.Elapsed.TotalSeconds; Gateway = $null; Address = $null; Error = $LastError }
 }
 
 $script:NetStartTraceBlock = {
@@ -308,19 +440,91 @@ $script:NetStartTraceBlock = {
     return [pscustomobject]@{ Since = $Since; Logman = $Text }
 }
 
+$script:NetCanaryBlock = {
+    # Kontrolny ruch osobnego procesu (rodzic: sesja PowerShell Direct, poza drzewem programu): zapytanie DNS i połączenie TCP do znanego
+    # hosta. Werdykt wymaga, żeby ten ruch był widoczny w śladzie; inaczej ślad mógł nic nie łapać.
+    param([string]$HostName, [int]$Port, [int]$TimeoutSeconds)
+    $ErrorActionPreference = 'Stop'
+    $Code = "try { `$null = [System.Net.Dns]::GetHostAddresses('$HostName'); `$Client = New-Object System.Net.Sockets.TcpClient; `$Client.Connect('$HostName', $Port); `$Client.Close(); exit 0 } catch { exit 1 }"
+    $Encoded = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Code))
+    $PowerShellPath = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $Process = Start-Process -FilePath $PowerShellPath -ArgumentList @('-NoProfile', '-NonInteractive', '-EncodedCommand', $Encoded) -PassThru -WindowStyle Hidden
+    $null = $Process.Handle
+    $Done = $Process.WaitForExit($TimeoutSeconds * 1000)
+    if (-not $Done) { try { $Process.Kill() } catch { $null = $_ } }
+    # Chwila na zapis zdarzeń do bufora śladu przed zatrzymaniem.
+    Start-Sleep -Seconds 3
+    return [pscustomobject]@{ Pid = $Process.Id; TimedOut = (-not $Done); ExitCode = $(if ($Done) { $Process.ExitCode } else { -1 }) }
+}
+
 $script:NetStopTraceBlock = {
-    param([string]$Name, [string]$WorkDirectory, [string]$ResultDirectory, [string]$ParseScript)
+    param([string]$Name, [string]$WorkDirectory, [string]$ResultDirectory, [string]$ParseScript, [string]$Since)
     $ErrorActionPreference = 'Stop'
     $Session = "DsoNet-$Name"
+    # Surowy opis sesji do dokumentacji; liczby utrat NIE są z niego parsowane (etykiety zależą od języka logman).
     $Query = logman query $Session -ets | Out-String
     Set-Content -LiteralPath (Join-Path $ResultDirectory "$Name-logman.txt") -Value $Query -Encoding UTF8
-    $BuffersLost = $null
-    if ($Query -match 'Buffers Lost:\s+(\d+)') { $BuffersLost = [int]$Matches[1] }
+    # Utracone bufory i zdarzenia: EVENT_TRACE_PROPERTIES z ControlTraceW(EVENT_TRACE_CONTROL_QUERY) - liczby, bez etykiet. Get-EtwTraceSession
+    # nie wystawia tych liczników. Offsety x64: EventsLost 88, LogBuffersLost 96, RealTimeBuffersLost 100.
+    $Loss = [ordered]@{ BuffersLost = $null; EventsLost = $null; RealTimeBuffersLost = $null; Error = $null }
+    try {
+        if ([IntPtr]::Size -ne 8) { throw 'Odczyt utrat zakłada 64-bitowy proces.' }
+        if (-not ('DsoEtwQuery' -as [type])) {
+            Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class DsoEtwQuery
+{
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode)]
+    private static extern uint ControlTraceW(ulong traceId, string instanceName, IntPtr properties, uint controlCode);
+
+    public static uint[] Query(string name)
+    {
+        const int Header = 120;
+        int total = Header + 2 * 1024 * 2;
+        IntPtr buffer = Marshal.AllocHGlobal(total);
+        try
+        {
+            Marshal.Copy(new byte[total], 0, buffer, total);
+            Marshal.WriteInt32(buffer, 0, total);
+            Marshal.WriteInt32(buffer, 44, 0x00020000);
+            Marshal.WriteInt32(buffer, 112, Header + 2 * 1024);
+            Marshal.WriteInt32(buffer, 116, Header);
+            uint status = ControlTraceW(0UL, name, buffer, 0);
+            return new uint[] { status, (uint)Marshal.ReadInt32(buffer, 88), (uint)Marshal.ReadInt32(buffer, 96), (uint)Marshal.ReadInt32(buffer, 100) };
+        }
+        finally { Marshal.FreeHGlobal(buffer); }
+    }
+}
+'@
+        }
+        $Result = [DsoEtwQuery]::Query($Session)
+        if ($Result[0] -ne 0) { throw "ControlTraceW(QUERY) zwróciło kod $($Result[0])." }
+        $Loss.EventsLost = [int64]$Result[1]
+        $Loss.BuffersLost = [int64]$Result[2]
+        $Loss.RealTimeBuffersLost = [int64]$Result[3]
+    }
+    catch { $Loss.Error = $_.Exception.Message }
     $StopText = logman stop $Session -ets | Out-String
     Get-CimInstance Win32_Process | Select-Object ProcessId, ParentProcessId, Name, CommandLine | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath (Join-Path $WorkDirectory "$Name-procs-end.json") -Encoding UTF8
+    # Audyt 4688 od startu śladu (indeksy pól jak w metodzie archiwalnej: 4 = NewProcessId, 5 = NewProcessName, 7 = ProcessId rodzica, 8 = linia poleceń).
+    $AuditError = $null
+    $Audit = @()
+    try {
+        $Raw = @(Get-WinEvent -FilterHashtable @{ LogName = 'Security'; Id = 4688; StartTime = [datetime]$Since } -ErrorAction Stop | Sort-Object TimeCreated)
+        $Audit = @(foreach ($Event in $Raw) {
+                $P = $Event.Properties
+                [ordered]@{ time = $Event.TimeCreated.ToUniversalTime().ToString('o'); newPid = [Convert]::ToInt64([string]$P[4].Value, 10); image = [string]$P[5].Value
+                    parentPid = [Convert]::ToInt64([string]$P[7].Value, 10); commandLine = [string]$P[8].Value }
+            })
+    }
+    catch {
+        if ([string]$_.FullyQualifiedErrorId -notlike 'NoMatchingEventsFound*') { $AuditError = $_.Exception.Message }
+    }
+    ConvertTo-Json -InputObject @($Audit) -Depth 4 | Set-Content -LiteralPath (Join-Path $ResultDirectory "$Name-4688.json") -Encoding UTF8
     Set-ExecutionPolicy -Scope Process Bypass -Force
     $Parse = & $ParseScript -EtlPath (Join-Path $WorkDirectory "$Name.etl") -SnapshotPath (Join-Path $WorkDirectory "$Name-procs-start.json") -OutPath (Join-Path $ResultDirectory "$Name.json")
-    return [pscustomobject]@{ Stop = $StopText; Parse = ($Parse | Out-String).Trim(); BuffersLost = $BuffersLost }
+    return [pscustomobject]@{ Stop = $StopText; Parse = ($Parse | Out-String).Trim(); Loss = [pscustomobject]$Loss; AuditCount = @($Audit).Count; AuditError = $AuditError }
 }
 
 $script:NetStopGuiBlock = {
@@ -341,7 +545,8 @@ function Read-NetJsonFile {
 }
 
 function Invoke-NetScenario {
-    # Jeden scenariusz na już uruchomionej VM (sesja Administratora); sieć podłączana tu i odłączana w finally. Zwraca rekord z werdyktem.
+    # Jeden scenariusz na już uruchomionej VM (sesja Administratora); sieć podłączana tu (PRZED uruchomieniem programu) i odłączana w finally.
+    # Zwraca rekord z werdyktem. Zakres: drzewo procesów programu.
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$Scenario,
@@ -355,7 +560,7 @@ function Invoke-NetScenario {
     $Name = $Scenario -replace '[^A-Za-z0-9]', ''
     $Record.name = $Name
 
-    $Record.services = @(Invoke-Command -Session $Session -ScriptBlock $script:NetPrepareBlock -ArgumentList @($Plan.WorkDirectory, $Plan.ResultDirectory, @($Plan.Providers), @($Plan.StoppedServices)))
+    $Record.services = @(Invoke-Command -Session $Session -ScriptBlock $script:NetPrepareBlock -ArgumentList @($Plan.WorkDirectory, $Plan.ResultDirectory, @($Plan.Providers), @($Plan.StoppedServices), $Plan.AuditSubcategory))
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'net\Parse-NetTrace.ps1') -Destination (Join-Path $Plan.WorkDirectory 'Parse-NetTrace.ps1') -ToSession $Session -Force
     $RemoteZip = Join-Path $Plan.WorkDirectory $Context.Artifact.Name
     Copy-Item -LiteralPath $Context.Artifact.Path -Destination $RemoteZip -ToSession $Session -Force
@@ -364,12 +569,12 @@ function Invoke-NetScenario {
     $SettingsJson = if ($Scenario -eq 'start-off') { $Plan.SettingsOff } else { $Plan.SettingsOn }
     $Record.settings = Invoke-Command -Session $Session -ScriptBlock $script:NetSettingsBlock -ArgumentList @($Plan.SettingsDirectory, $SettingsJson)
 
-    # Sieć dopiero po przygotowaniu VM: brak ruchu nie może wynikać z braku sieci.
+    # Sieć w KAŻDYM scenariuszu i przed uruchomieniem programu: brak ruchu nie może wynikać z braku sieci, a ruch kontrolny wymaga sieci.
     Connect-VMNetworkAdapter -VMName $VmName -SwitchName $Plan.NetworkSwitch -ErrorAction Stop
     $Context.Timeline += "$(Get-Date -Format 'HH:mm:ss') $Scenario sieć podłączona"
     try {
-        $Record.network = Invoke-Command -Session $Session -ScriptBlock $script:NetWaitNetworkBlock -ArgumentList @($Plan.NetworkName, [int]$Plan.NetworkWaitSeconds)
-        if (-not $Record.network.Resolved) { throw "Brak sieci w VM: '$($Plan.NetworkName)' nie rozwiązuje się po $($Record.network.Seconds) s ($($Record.network.Error))." }
+        $Record.network = Invoke-Command -Session $Session -ScriptBlock $script:NetWaitNetworkBlock -ArgumentList @([int]$Plan.NetworkWaitSeconds)
+        if (-not $Record.network.Ready) { throw "Brak łączności w VM po $($Record.network.Seconds) s ($($Record.network.Error))." }
 
         $Trace = Invoke-Command -Session $Session -ScriptBlock $script:NetStartTraceBlock -ArgumentList @($Name, $Plan.WorkDirectory)
         $Record.traceSince = $Trace.Since
@@ -381,8 +586,9 @@ function Invoke-NetScenario {
                 foreach ($Command in $Plan.CliCommands) {
                     $OutPath = Join-Path $Plan.CliDirectory (($Command -replace '^-+', '') + '.json')
                     $Cli = Invoke-DsoCli -Session $Session -ExePath $Layout.Exe -Arguments @($Command, '--out', $OutPath) -OutPath $OutPath -TimeoutSeconds ([int]$Plan.CliTimeoutSeconds) -RunAsUser $Plan.UserName
-                    $Runs += [ordered]@{ command = $Command; exitCode = $Cli.ExitCode; timedOut = $Cli.TimedOut }
-                    if ($Cli.TimedOut -or $Cli.ExitCode -ne 0) { $Record.problems += "polecenie $Command : kod $($Cli.ExitCode), przekroczony czas: $($Cli.TimedOut)" }
+                    $Runs += [ordered]@{ command = $Command; exitCode = $Cli.ExitCode; timedOut = $Cli.TimedOut; reportBytes = ([string]$Cli.Json).Length }
+                    $CliProblem = Get-NetCliProblem -Command $Command -Result $Cli
+                    if ($CliProblem) { $Record.problems += $CliProblem }
                 }
                 $Record.cli = $Runs
             }
@@ -394,13 +600,19 @@ function Invoke-NetScenario {
                 if ($null -eq $Record.nav -or $Record.nav.Ok -ne $true) { $Record.problems += "sonda nawigacji nie przeszła wszystkich stron: $(if ($Record.nav) { $Record.nav.Error } else { 'brak wyniku' })" }
             }
             Start-Sleep -Seconds ([int]$Plan.SettleBeforeStopSeconds)
+            # Ruch kontrolny tuż przed zatrzymaniem śladu (osobny proces spoza drzewa programu).
+            $Record.canary = Invoke-Command -Session $Session -ScriptBlock $script:NetCanaryBlock -ArgumentList @([string]$Plan.CanaryHost, [int]$Plan.CanaryPort, [int]$Plan.CanaryTimeoutSeconds)
+            if ($Record.canary.TimedOut -or $Record.canary.ExitCode -ne 0) { $Record.problems += "ruch kontrolny ($($Plan.CanaryHost)) nie powiódł się: kod $($Record.canary.ExitCode), przekroczony czas: $($Record.canary.TimedOut)" }
         }
         finally {
             try {
-                $Stop = Invoke-Command -Session $Session -ScriptBlock $script:NetStopTraceBlock -ArgumentList @($Name, $Plan.WorkDirectory, $Plan.ResultDirectory, (Join-Path $Plan.WorkDirectory 'Parse-NetTrace.ps1'))
+                $Stop = Invoke-Command -Session $Session -ScriptBlock $script:NetStopTraceBlock -ArgumentList @($Name, $Plan.WorkDirectory, $Plan.ResultDirectory, (Join-Path $Plan.WorkDirectory 'Parse-NetTrace.ps1'), $Trace.Since)
                 $TraceStopped = $true
                 $Record.parse = $Stop.Parse
-                $Record.buffersLost = $Stop.BuffersLost
+                $Record.loss = $Stop.Loss
+                $Record.auditCount = $Stop.AuditCount
+                if ($Stop.AuditError) { $Record.problems += "odczyt audytu 4688: $($Stop.AuditError)" }
+                foreach ($LossProblem in @(Get-NetLossProblem -Loss $Stop.Loss)) { if ($LossProblem) { $Record.problems += $LossProblem } }
             }
             catch { $Record.problems += "zatrzymanie śladu: $($_.Exception.Message)" }
             if ($Scenario -ne 'cli') {
@@ -415,7 +627,7 @@ function Invoke-NetScenario {
         catch { $Record.problems += "odłączenie sieci: $($_.Exception.Message)" }
     }
 
-    # Surowe pliki (JSON śladu, wynik sondy, raporty --out); sam ETL zostaje w VM i przepada z revertem.
+    # Surowe pliki (JSON śladu, audyt 4688, wynik sondy, raporty --out); sam ETL zostaje w VM i przepada z revertem.
     $RawDirectory = Join-Path $Context.VmDirectory "raw-$Scenario"
     $Raw = @(Copy-ExploreRawFiles -Session $Session -Destination $RawDirectory -Source ([string]$Plan.ResultDirectory))
     $Record.rawFiles = @($Raw | ForEach-Object { Split-Path -Leaf $_ })
@@ -426,10 +638,11 @@ function Invoke-NetScenario {
     $Record.detail = [string]$Verdict.Detail
     $Record.dsoTreeDns = @($TraceObject.dsoTreeDns | ForEach-Object { $_.name } | Sort-Object -Unique)
     $Record.dsoTreeConnections = @($TraceObject.dsoTreeConnections | ForEach-Object { '{0} {1}:{2} {3}' -f $_.proto, $_.remote, $_.remotePort, (@($_.hosts) -join '/') } | Sort-Object -Unique)
-    if ($null -ne $Record.buffersLost -and $Record.buffersLost -gt 0) {
-        $Record.passed = $false
-        $Record.problems += "ślad utracił bufory ($($Record.buffersLost)): pomiar niekompletny"
-    }
+    # Kontrola krzyżowa: drzewo procesów z audytu 4688 kontra ślad; rozbieżność w którąkolwiek stronę = porażka.
+    $AuditObject = Read-NetJsonFile -Path (Join-Path $RawDirectory "$Name-4688.json")
+    $Cross = Compare-NetProcessAudit -Audit $AuditObject -TreeProcesses $TraceObject.dsoTreeProcesses
+    $Record.processAudit = $Cross
+    if (-not $Cross.Match) { $Record.passed = $false; $Record.problems += "kontrola krzyżowa 4688: $($Cross.Detail)" }
 }
 
 function Invoke-NetVmRun {
@@ -488,14 +701,17 @@ function Invoke-NetVmRun {
                 $Record.problems += "sprzątanie VM: $(@($Cleanup.Problems) -join ' | ')"
             }
         }
+        # Jakikolwiek problem (także odczytu utrat, audytu, ruchu kontrolnego, CLI) odbiera zaliczenie.
+        if (@($Record.problems | Where-Object { $_ }).Count -gt 0 -or $Record.error) { $Record.passed = $false }
         if ($Record.error) { $Errors += "${Scenario}: $($Record.error)" }
         foreach ($Problem in @($Record.problems)) { if ($Problem) { $Errors += "${Scenario}: $Problem" } }
+        Write-Host ("{0}: {1} - {2}" -f $Scenario, $(if ($Record.passed) { 'PASS' } else { 'FAIL' }), $Record.detail)
         # Błąd uwierzytelnienia przerywa całość (blokada konta Administrator w VM).
         if ($null -ne $AuthFailure) { break }
     }
     $Failed = @($Results.Values | Where-Object { -not $_.passed } | ForEach-Object { $_.scenario })
     $Result = [ordered]@{ schema = 1; vmName = $VmName; checkpoint = $CheckpointName; startedAt = $StartedAt.ToString('o'); finishedAt = (Get-Date).ToString('o')
-        artifact = $Artifact; allPassed = ($Failed.Count -eq 0 -and $Errors.Count -eq 0 -and $Results.Count -eq $Scenarios.Count); errors = $Errors; timeline = $Timeline; scenarios = $Results }
+        scope = [string]$Plan.Scope; artifact = $Artifact; allPassed = ($Failed.Count -eq 0 -and $Errors.Count -eq 0 -and $Results.Count -eq $Scenarios.Count); errors = $Errors; timeline = $Timeline; scenarios = $Results }
     $Saved = Save-ExploreResult -Result $Result -OutDirectory $OutDirectory -VmName $VmName -FileName 'net.json'
     if ($null -ne $AuthFailure) { throw $AuthFailure }
     if (-not $Result.allPassed) {
@@ -534,6 +750,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         }
         Write-Host "Wyniki: $OutDirectory"
         Write-Host "Wydanie: $($RunArguments.Artifact.Path) (SHA256 $($RunArguments.Artifact.Sha256))"
+        Write-Host "Zakres: $($RunArguments.Plan.Scope)"
         Write-Host "VM: $VmName; scenariusze: $(@($RunArguments.Scenarios) -join ', ')"
         $Saved = Invoke-NetVmRun -VmName $VmName -OutDirectory $OutDirectory -Scenarios @($RunArguments.Scenarios) -Artifact $RunArguments.Artifact `
             -CheckpointName $CheckpointName -ReadyTimeoutSeconds $ReadyTimeoutSeconds
