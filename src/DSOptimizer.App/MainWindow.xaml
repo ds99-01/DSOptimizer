@@ -335,7 +335,7 @@
     <!-- Nagłówek grupy („Ustawienia” / „Akcje” albo kategoria w wynikach wyszukiwania) + cienka linia.
          Odstęp 16 nad każdym nagłówkiem poza pierwszą widoczną grupą (GroupStyle.AlternationCount numeruje grupy od 0). -->
     <DataTemplate x:Key="SectionHeaderTemplate">
-      <StackPanel>
+      <StackPanel x:Name="HeaderRoot">
         <TextBlock x:Name="Header" Style="{StaticResource SectionHeaderText}" Margin="0,16,0,4" Text="{Binding Name}" />
         <Border Height="1" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
       </StackPanel>
@@ -343,6 +343,15 @@
         <DataTrigger Binding="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=GroupItem}}" Value="0">
           <Setter TargetName="Header" Property="Margin" Value="0,0,0,4" />
         </DataTrigger>
+        <!-- Pierwszy nagłówek „Ustawienia” przejmuje stały wiersz nad listą (z „Zaznacz sugerowane”): zwinięty, bez dubla -->
+        <MultiDataTrigger>
+          <MultiDataTrigger.Conditions>
+            <Condition Binding="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=GroupItem}}" Value="0" />
+            <Condition Binding="{Binding DataContext.IsSelectSuggestedVisible, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="True" />
+            <Condition Binding="{Binding DataContext.IsSearching, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="False" />
+          </MultiDataTrigger.Conditions>
+          <Setter TargetName="HeaderRoot" Property="Visibility" Value="Collapsed" />
+        </MultiDataTrigger>
       </DataTemplate.Triggers>
     </DataTemplate>
 
@@ -562,12 +571,11 @@
         <ColumnDefinition x:Name="DetailColumn" Width="246" />
       </Grid.ColumnDefinitions>
 
-      <!-- Tab: szukaj → filtr ryzyka → „Zaznacz sugerowane” → „Odśwież stan” → lista (TabIndex lokalnie w tym panelu; w drzewie przyciski są pierwsze) -->
+      <!-- Tab: szukaj → filtr ryzyka → „Odśwież stan” → „Zaznacz sugerowane” → lista (TabIndex lokalnie w tym panelu; w drzewie przyciski są pierwsze) -->
       <DockPanel Margin="0,0,20,0" KeyboardNavigation.TabNavigation="Local">
         <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
           <StackPanel>
@@ -575,10 +583,7 @@
             <TextBlock Style="{StaticResource SubText}" Text="{Binding PageSubtitle}" ToolTip="{Binding PageSubtitle}" />
           </StackPanel>
           <Button Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
-                  Content="{l:T 'Zaznacz sugerowane'}" Command="{Binding SelectSuggestedCommand}" KeyboardNavigation.TabIndex="3"
-                  Visibility="{Binding IsSelectSuggestedVisible, Converter={StaticResource BoolToVisibility}}" />
-          <Button Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
-                  Content="{l:T 'Odśwież stan'}" Tag="Refresh" Command="{Binding RefreshCommand}" KeyboardNavigation.TabIndex="4" />
+                  Content="{l:T 'Odśwież stan'}" Tag="Refresh" Command="{Binding RefreshCommand}" KeyboardNavigation.TabIndex="3" />
         </Grid>
 
         <!-- Wyszukiwarka (wszystkie kategorie, Esc czyści) i filtr ryzyka -->
@@ -599,6 +604,55 @@
           <TextBlock Grid.Column="1" Style="{StaticResource SubText}" Margin="14,0,8,0" VerticalAlignment="Center" Text="{l:T 'Ryzyko'}" />
           <ComboBox Grid.Column="2" Style="{StaticResource BrandComboBox}" AutomationProperties.Name="{l:T 'Ryzyko'}" KeyboardNavigation.TabIndex="2"
                     ItemsSource="{Binding RiskFilterOptions}" SelectedValuePath="Value" SelectedValue="{Binding RiskFilter}" />
+        </Grid>
+
+        <!-- Stały wiersz nagłówka listy z „Zaznacz sugerowane” po prawej (nie przewija się z listą). Na stronie kategorii niesie nagłówek
+             „Ustawienia” (jego własny w liście jest wtedy zwinięty, patrz SectionHeaderTemplate), bo sugerowane są wyłącznie ustawienia, a ustawienia
+             idą w liście pierwsze; w wynikach wyszukiwania (nagłówki to kategorie) jest sam przycisk. Widoczny tylko przy IsSelectSuggestedVisible. -->
+        <Grid DockPanel.Dock="Top" Visibility="{Binding IsSelectSuggestedVisible, Converter={StaticResource BoolToVisibility}}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <Grid.Style>
+            <Style TargetType="Grid">
+              <Setter Property="Margin" Value="0,0,0,4" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                  <Setter Property="Margin" Value="0,0,0,8" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Grid.Style>
+          <TextBlock VerticalAlignment="Center" Margin="0,0,12,4" Text="{x:Static vm:ItemViewModel.SettingsSection}">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock" BasedOn="{StaticResource SectionHeaderText}">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
+          <Button Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
+                  Content="{l:T 'Zaznacz sugerowane'}" Command="{Binding SelectSuggestedCommand}" KeyboardNavigation.TabIndex="4" />
+          <Border Grid.Row="1" Grid.ColumnSpan="2" Height="1">
+            <Border.Style>
+              <Style TargetType="Border">
+                <Setter Property="Background" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Border.Style>
+          </Border>
         </Grid>
 
         <!-- Lista (kategoria z sekcjami albo wyniki z nagłówkami kategorii), pod nią „Ukryte przez filtr” -->

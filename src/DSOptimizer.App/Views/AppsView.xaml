@@ -108,7 +108,8 @@
         <ColumnDefinition x:Name="DetailColumn" Width="246" />
       </Grid.ColumnDefinitions>
 
-      <!-- Tab: szukaj → „Odśwież listę” → grupy → lista (TabIndex lokalnie) -->
+      <!-- Tab: szukaj → „Zaznacz sugerowane” → „Odśwież listę” (oba w wierszu tytułu, TabIndex 2 = kolejność w drzewie) → grupy → lista (TabIndex lokalnie).
+           Przycisk zostaje w wierszu tytułu: przełącznik grup zajmuje już prawie całą kolumnę listy przy 800 px. -->
       <DockPanel Margin="0,0,20,0" KeyboardNavigation.TabNavigation="Local">
         <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
           <Grid.ColumnDefinitions>
