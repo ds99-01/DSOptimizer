@@ -179,3 +179,7 @@ Dawid Świeboda – [github.com/ds99-01](https://github.com/ds99-01)
 
 - Questions and feedback: [contact@dsoptimizer.com](mailto:contact@dsoptimizer.com)
 - Security issues: [security@dsoptimizer.com](mailto:security@dsoptimizer.com)
+
+## Support the project
+
+DSOptimizer is free. If it helped you, you can support its upkeep and development on [GitHub Sponsors](https://github.com/sponsors/ds99-01) or [buycoffee.to](https://buycoffee.to/dsoptimizer). Support is voluntary and does not unlock any features.
