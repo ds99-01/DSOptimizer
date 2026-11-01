@@ -24,8 +24,8 @@ BeforeAll {
         EntryNames = @('Szybsze otwieranie podmenu, Explorer i wygoda, Aktywna, 20.10.2026 21:00'); HitTestError = $null
         FilterRiskOpened = $true; FilterRiskSelected = $true; FilterHistoryOpened = $true; FilterHistorySelected = $true; FilterError = $null
         RowClickPreview = $true; RowDoubleClickToggles = $true; RunIconRuns = $true; RunIconDoubleClickOnce = $true; RowError = $null
-        PrivacyButtonFound = $true; PrivacyApplyCount = 2; PrivacyApplyText = 'Zastosuj (2)'; PrivacyError = $null
-        AppsListRead = $true; AppsButtonFound = $true; AppsRemoveCount = 1; AppsRemoveText = 'Usuń (1)'; AppsError = $null
+        PrivacyButtonFound = $true; PrivacyApplyCountOnEntry = 0; PrivacyApplyCount = 2; PrivacyApplyText = 'Zastosuj (2)'; PrivacyError = $null
+        AppsListRead = $true; AppsButtonFound = $true; AppsRemoveCountOnEntry = 0; AppsRemoveCount = 1; AppsRemoveText = 'Usuń (1)'; AppsError = $null
         PrepMenuFound = $true; PrepLoaded = $true; PrepWindowsUpdateButton = $true; PrepWindowsUpdateNote = $false; PrepError = $null
         PrepTitles = @('Komputer', 'Windows Update', 'Opcjonalne aktualizacje sterowników', 'Sterowniki chipsetu', 'Grafika', 'Wsparcie producenta', 'Urządzenia bez sterownika')
         PrepGraphicsLines = @('Zasoby wideo funkcji Microsoft Hyper-V', 'sterownik 10.0.26100.1150, 21.06.2006, Microsoft')

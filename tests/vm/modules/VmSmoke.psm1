@@ -11,9 +11,9 @@ Opis działania:
     Po starcie sonda UI (VmSmokeUi, też w sesji dso) sprawdza stronę „Historia zmian” po zastosowaniu jednej bezpiecznej pozycji
     przez UI Automation (ux.menu-delay: „Zastosuj (1)” bez okna potwierdzenia) i mierzy WM_NCHITTEST paska marki (stan normalny i po maksymalizacji);
     drugi zrzut pokazuje okno po tej sondzie. Sonda klika też prawdziwą myszą: filtry, wiersze listy i znacznik uruchomienia panelu (patrz VmSmokeUi).
-    Na końcu sonda wchodzi na „Prywatność i AI” i czyta N z „Zastosuj (N)”; oczekiwane N liczy host z raportów CLI --detect sugerowanych
+    Na końcu sonda wchodzi na „Prywatność i AI”, czyta N z „Zastosuj (N)” przy wejściu (ma być 0), klika „Zaznacz sugerowane” i czyta N końcowe; oczekiwane N liczy host z raportów CLI --detect sugerowanych
     pozycji tego przebiegu (NotApplied/Partial, Get-DsoPrivacyDetection + Get-GuiPrivacyExpectedCount), uruchomionych przed sondą UI. Funkcje przywracania, gotowości i kopiowania pochodzą z VmHost.
-    Potem sonda wchodzi na „Aplikacje” i czyta N z „Usuń (N)”; oczekiwane N = sugerowane usuwalne wiersze z CLI --list-apps tego
+    Potem sonda wchodzi na „Aplikacje”, czyta N z „Usuń (N)” przy wejściu (ma być 0), klika „Zaznacz sugerowane” i czyta N końcowe; oczekiwane N = sugerowane usuwalne wiersze z CLI --list-apps tego
     przebiegu (Get-DsoAppsListing + Get-GuiAppsExpectedCount), uruchomionego przed sondą UI jako 'dso' - to samo konto co okno.
     Na czystym checkpoincie (brak settings.json) pierwsze okno to wybór języka: Confirm-DsoLanguageChoice (UIA w sesji dso) czeka
     do 30 s na okno LanguageChoiceWindow i klika kafelek wybranego języka (-Language pl|en); sprawdzenie LanguageChoice jest zielone

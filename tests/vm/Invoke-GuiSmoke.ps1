@@ -20,11 +20,12 @@ Opis działania:
     jego dolną krawędzią, a HTCLIENT 2 px pod nim (CaptionHitTest); prawdziwa mysz rozwija filtry „Ryzyko” i „Filtr” i zmienia ich wartość
     (FilterRiskOpened/Selected, FilterHistoryOpened/Selected); klik w tytuł wiersza tweaka tylko go wybiera, dwuklik przełącza pole wyboru i drugi wraca,
     klik i dwuklik w znacznik uruchomienia panelu „Zarządzanie komputerem” otwierają dokładnie jedno okno mmc.exe (RowClickPreview, RowDoubleClickToggles,
-    RunIconRuns, RunIconDoubleClickOnce). Na końcu sonda wchodzi na „Prywatność i AI” (dopiero po tamtych krokach, bo pierwsze wejście
-    zaznacza sugestie do serii) i sprawdza „Zastosuj (N)”, gdzie N = sugerowane pozycje NotApplied/Partial z raportów CLI --detect tego
-    przebiegu, uruchomionych przed sondą (PrivacySuggestedApply). Potem sonda wchodzi na „Aplikacje” i po zakończonym odczycie listy
-    sprawdza „Usuń (N)”, gdzie N = wiersze grupy Suggested z Removability=Removable z CLI --list-apps tego przebiegu, uruchomionego przed sondą
-    jako 'dso' - to samo konto co okno (AppsSuggestedRemove); niczego nie usuwa ani nie klika. Potem sonda wchodzi na „Przygotowanie”
+    RunIconRuns, RunIconDoubleClickOnce). Na końcu sonda wchodzi na „Prywatność i AI”, sprawdza że „Zastosuj (N)” przy wejściu ma N = 0 (program nic nie zaznacza sam;
+    PrivacyApplyCountOnEntry), klika „Zaznacz sugerowane” i sprawdza „Zastosuj (N)”, gdzie N = sugerowane pozycje NotApplied/Partial z raportów
+    CLI --detect tego przebiegu, uruchomionych przed sondą (PrivacySuggestedApply). Potem sonda wchodzi na „Aplikacje”, po zakończonym odczycie listy
+    sprawdza „Usuń (N)” przy wejściu = 0 (AppsRemoveCountOnEntry), klika „Zaznacz sugerowane” i sprawdza „Usuń (N)”, gdzie N = wiersze grupy
+    Suggested z Removability=Removable z CLI --list-apps tego przebiegu, uruchomionego przed sondą jako 'dso' - to samo konto co okno
+    (AppsSuggestedRemove); niczego nie usuwa ani nie stosuje. Potem sonda wchodzi na „Przygotowanie”
     i po zakończonym odczycie (najwyżej 60 s, bez „Wczytywanie…”) sprawdza 7 tytułów kroków, przycisk „Otwórz Windows Update” (albo notatkę
     zastępczą, gdy PrepLinks.SettingsOpenable = false) i linię karty w kroku „Grafika” (PrepPage); żadnego linku nie klika. Jako ostatnie sonda wchodzi na „Instalacja” (kategorie i tytuły
     z apps.json, „Zainstaluj (0)” nieaktywne – InstallPage); niczego nie zaznacza ani nie instaluje.

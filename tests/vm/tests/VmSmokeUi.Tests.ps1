@@ -32,8 +32,8 @@
             EntryNames = @('Szybsze otwieranie podmenu, Explorer i wygoda, Aktywna, 20.10.2026 21:00'); HitTestError = $null
             FilterRiskOpened = $true; FilterRiskSelected = $true; FilterHistoryOpened = $true; FilterHistorySelected = $true; FilterError = $null
             RowClickPreview = $true; RowDoubleClickToggles = $true; RunIconRuns = $true; RunIconDoubleClickOnce = $true; RowError = $null
-            PrivacyButtonFound = $true; PrivacyApplyCount = 2; PrivacyApplyText = 'Zastosuj (2)'; PrivacyError = $null
-            AppsListRead = $true; AppsButtonFound = $true; AppsRemoveCount = 8; AppsRemoveText = 'Usuń (8)'; AppsError = $null
+            PrivacyButtonFound = $true; PrivacyApplyCountOnEntry = 0; PrivacyApplyCount = 2; PrivacyApplyText = 'Zastosuj (2)'; PrivacyError = $null
+            AppsListRead = $true; AppsButtonFound = $true; AppsRemoveCountOnEntry = 0; AppsRemoveCount = 8; AppsRemoveText = 'Usuń (8)'; AppsError = $null
             PrepMenuFound = $true; PrepLoaded = $true; PrepWindowsUpdateButton = $true; PrepWindowsUpdateNote = $false; PrepError = $null
             PrepTitles = @('Komputer', 'Windows Update', 'Opcjonalne aktualizacje sterowników', 'Sterowniki chipsetu', 'Grafika', 'Wsparcie producenta', 'Urządzenia bez sterownika')
             PrepGraphicsLines = @('Microsoft Hyper-V Video', '10.0.26100.1')
@@ -177,7 +177,7 @@ Describe 'Sonda: sugestie „Prywatność i AI” (krok 7)' {
     It 'nazwa kategorii z pliku tekstów występuje w skrypcie dokładnie raz' {
         ([regex]::Matches($script:ProbeText, [regex]::Escape($script:PrivacyName))).Count | Should -Be 1
     }
-    It 'sonda wchodzi do „Prywatność i AI” dopiero po ścieżce ux.menu-delay („Zastosuj (1)”) i po sprzątaniu kroku 6 (Review Focus 1)' {
+Prywatność„Prywatność i AI” dopiero po ścieżce ux.menu-delay („Zastosuj (1)”) i po sprzątaniu kroku 6 (Review Focus 1)' {
         $Privacy = $script:ProbeText.IndexOf($script:PrivacyName)
         $Privacy | Should -BeGreaterThan $script:ProbeText.IndexOf('$T.ApplyOne')
         $Privacy | Should -BeGreaterThan $script:ProbeText.IndexOf('$Out.RowDoubleClickToggles =')
@@ -188,10 +188,22 @@ Describe 'Sonda: sugestie „Prywatność i AI” (krok 7)' {
     It 'sonda czyta N z przycisku „Zastosuj (N)” i czeka na stałą wartość przy bezczynnej aplikacji' {
         $script:ProbeText | Should -Match ([regex]::Escape('$ApplyPattern = $T.ApplyPattern'))
         foreach ($Field in 'PrivacyApplyCount', 'PrivacyApplyText', 'PrivacyButtonFound', 'PrivacyError') { $script:ProbeText | Should -Match $Field }
-        $Step = $script:ProbeText.Substring($script:ProbeText.IndexOf('# 7.'))
+        $Step = $script:ProbeText.Substring($script:ProbeText.IndexOf('# 7.'), $script:ProbeText.IndexOf('# 8.') - $script:ProbeText.IndexOf('# 7.'))
         $Step | Should -Match 'Wait-AppIdle'
-        $Step | Should -Not -Match 'Invoke\(\)'
         $Step | Should -Not -Match 'Toggle\(\)'
+    }
+    It 'krok 7 czyta N przy wejściu, potem klika tylko „Zaznacz sugerowane” (InvokePattern, jedno Invoke) i czyta N końcowe' {
+        $Step = $script:ProbeText.Substring($script:ProbeText.IndexOf('# 7.'), $script:ProbeText.IndexOf('# 8.') - $script:ProbeText.IndexOf('# 7.'))
+        $Step | Should -Match 'PrivacyApplyCountOnEntry'
+        $Step | Should -Match ([regex]::Escape('$T.SelectSuggested'))
+        $Step | Should -Match 'InvokePattern'
+        ([regex]::Matches($Step, 'Invoke\(\)')).Count | Should -Be 1
+        $Step.IndexOf('PrivacyApplyCountOnEntry') | Should -BeLessThan $Step.IndexOf('InvokePattern')
+        $Step.IndexOf('InvokePattern') | Should -BeLessThan $Step.IndexOf('$Out.PrivacyApplyCount = ')
+    }
+    It 'sonda i moduł nie odwołują się do usuniętego samego zaznaczania (SuggestedSelection, AppSuggestionTracker)' {
+        $script:ProbeText | Should -Not -Match 'SuggestedSelection|AppSuggestionTracker|pierwsze wejscie|pierwsze wejście'
+        [System.IO.File]::ReadAllText($script:ModulePath, [System.Text.Encoding]::UTF8) | Should -Not -Match 'SuggestedSelection|AppSuggestionTracker'
     }
     It 'krok 7 ma własny try/catch (błąd nie gubi wyniku wcześniejszych kroków)' {
         $script:ProbeText | Should -Match ([regex]::Escape('catch { $Out.PrivacyError = $_.Exception.Message'))
@@ -306,6 +318,22 @@ Describe 'Get-GuiUiCheck: PrivacySuggestedApply' {
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*brak przycisku*'
     }
+    It 'PrivacySuggestedApply: N przy wejściu większe od 0 = niezaliczone' {
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ PrivacyApplyCountOnEntry = 1 }) -PrivacyExpected $script:PrivacyOk) 'PrivacySuggestedApply'
+        $Check.Passed | Should -BeFalse
+        $Check.Detail | Should -BeLike '*przy wejściu 1*'
+    }
+    It 'PrivacySuggestedApply: brak pola N przy wejściu (stara sonda) = niezaliczone' {
+        $Probe = New-UiProbe @{}
+        $Without = [pscustomobject]@{}
+        foreach ($P in $Probe.PSObject.Properties | Where-Object { $_.Name -ne 'PrivacyApplyCountOnEntry' }) { $Without | Add-Member -NotePropertyName $P.Name -NotePropertyValue $P.Value }
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Without -PrivacyExpected $script:PrivacyOk) 'PrivacySuggestedApply').Passed | Should -BeFalse
+    }
+    It 'oczekiwane N = 0 przechodzi bez kliknięcia przycisku (brak przycisku „Zaznacz sugerowane”, N przy wejściu 0)' {
+        $Zero = [pscustomobject]@{ Count = 0; Detail = 'det' }
+        $Probe = New-UiProbe @{ PrivacyButtonFound = $false; PrivacyApplyCountOnEntry = 0; PrivacyApplyCount = $null; PrivacyApplyText = $null }
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe -PrivacyExpected $Zero) 'PrivacySuggestedApply').Passed | Should -BeTrue
+    }
     It 'N = 0: przechodzi przy „Zastosuj (0)” albo przy braku przycisku bez błędu (pasek serii ukryty)' {
         $Zero = [pscustomobject]@{ Count = 0; Detail = 'det' }
         (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ PrivacyApplyCount = 0; PrivacyApplyText = 'Zastosuj (0)' }) -PrivacyExpected $Zero) 'PrivacySuggestedApply').Passed | Should -BeTrue
@@ -335,8 +363,12 @@ Describe 'Sonda: „Aplikacje” i „Usuń (N)” (krok 8)' {
         $script:Step8 | Should -Match 'IsEnabled'
         $script:Step8 | Should -Match 'TotalSeconds -ge 3'
     }
-    It 'niczego nie klika ani nie przełącza (bez „Usuń”, bez pól wyboru, bez myszy)' {
-        $script:Step8 | Should -Not -Match 'Invoke\(\)'
+    It 'czyta N przy wejściu i klika tylko „Zaznacz sugerowane” (jedno Invoke, bez „Usuń”, bez pól wyboru, bez myszy)' {
+        $script:Step8 | Should -Match 'AppsRemoveCountOnEntry'
+        $script:Step8 | Should -Match ([regex]::Escape('$T.SelectSuggested'))
+        $script:Step8 | Should -Match 'InvokePattern'
+        ([regex]::Matches($script:Step8, 'Invoke\(\)')).Count | Should -Be 1
+        $script:Step8.IndexOf('AppsRemoveCountOnEntry') | Should -BeLessThan $script:Step8.IndexOf('InvokePattern')
         $script:Step8 | Should -Not -Match 'Toggle\(\)'
         $script:Step8 | Should -Not -Match 'DsoUser32\]::(Click|DoubleClick|PressKey)'
     }
@@ -419,6 +451,14 @@ Describe 'Get-GuiUiCheck: AppsSuggestedRemove' {
         $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $NoButton -AppsExpected $Zero) 'AppsSuggestedRemove'
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike '*brak przycisku*'
+    }
+    It 'AppsSuggestedRemove: N przy wejściu większe od 0 = niezaliczone' {
+        $Check = Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ AppsRemoveCountOnEntry = 2 }) -AppsExpected $script:AppsOk) 'AppsSuggestedRemove'
+        $Check.Passed | Should -BeFalse
+        $Check.Detail | Should -BeLike '*przy wejściu 2*'
+    }
+    It 'AppsSuggestedRemove: brak N przy wejściu (null) = niezaliczone' {
+        (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ AppsRemoveCountOnEntry = $null }) -AppsExpected $script:AppsOk) 'AppsSuggestedRemove').Passed | Should -BeFalse
     }
     It 'N = 0: przechodzi przy „Usuń (0)”' {
         $Zero = [pscustomobject]@{ Count = 0; Detail = 'lista' }
@@ -1107,6 +1147,8 @@ Describe 'Get-GuiProbeTexts (słownik tekstów sondy)' {
         @{ Key = 'Minimize'; File = 'src\DSOptimizer.App\MainWindow.xaml' }
         @{ Key = 'Menu'; File = 'src\DSOptimizer.App\MainWindow.xaml' }
         @{ Key = 'Items'; File = 'src\DSOptimizer.App\MainWindow.xaml' }
+        @{ Key = 'SelectSuggested'; File = 'src\DSOptimizer.App\MainWindow.xaml' }
+        @{ Key = 'SelectSuggested'; File = 'src\DSOptimizer.App\Views\AppsView.xaml' }
         @{ Key = 'AppsPage'; File = 'src\DSOptimizer.Core\Apps\AppsPageText.cs' }
         @{ Key = 'AppsRefresh'; File = 'src\DSOptimizer.Core\Apps\AppsPageText.cs' }
         @{ Key = 'AppsReading'; File = 'src\DSOptimizer.Core\Apps\AppsPageText.cs' }

@@ -19,13 +19,15 @@ Opis działania:
           6. wiersze listy prawdziwą myszą: tweak - klik w tytuł tylko wybiera wiersz (RowClickPreview), dwuklik przełącza pole wyboru, drugi
          wraca (RowDoubleClickToggles); panel „Zarządzanie komputerem” - klik w znacznik uruchomienia otwiera dokładnie jedno nowe okno
          mmc.exe (RunIconRuns), dwuklik w niego też dokładnie jedno (RunIconDoubleClickOnce); okna mmc.exe sonda zamyka.
-      7. DOPIERO TERAZ wchodzi na „Prywatność i AI” (pierwsze wejście zaznacza sugestie do globalnej serii, więc wcześniej zepsułoby
-         „Zastosuj (1)” z kroku 2) i czyta N z „Zastosuj (N)” przy bezczynnej aplikacji, po 3 s stałej wartości; nic nie stosuje.
-         Host porównuje N z liczbą sugerowanych pozycji NotApplied/Partial z raportów CLI --detect tego przebiegu (PrivacySuggestedApply).
-      8. Na samym końcu wchodzi na „Aplikacje” (pierwsze wejście czyta listę i zaznacza sugerowane aplikacje do osobnej serii „Usuń (N)”)
-         i czyta N po zakończonym odczycie listy („Odśwież listę” aktywne, podtytuł bez „Odczyt listy w toku”), po 3 s stałej wartości;
-         niczego nie klika. Host porównuje N z liczbą wierszy grupy Suggested z Removability=Removable (AppRow.CanRemove) z CLI
-         --list-apps tego przebiegu uruchomionego jako to samo konto co okno (AppsSuggestedRemove).
+      7. Wchodzi na „Prywatność i AI” i czyta N z „Zastosuj (N)” przy bezczynnej aplikacji, po 3 s stałej wartości (PrivacyApplyCountOnEntry;
+         program nic nie zaznacza sam, więc ma być 0). Potem klika przycisk „Zaznacz sugerowane” (InvokePattern; brak albo nieaktywny =
+         bez kliknięcia) i czyta N końcowe tą samą pętlą stabilności; nic nie stosuje. Host wymaga N przy wejściu = 0 oraz N końcowego
+         równego liczbie sugerowanych pozycji NotApplied/Partial z raportów CLI --detect tego przebiegu (PrivacySuggestedApply).
+      8. Na samym końcu wchodzi na „Aplikacje”, czyta N z „Usuń (N)” po zakończonym odczycie listy („Odśwież listę” aktywne, podtytuł
+         bez „Odczyt listy w toku”), po 3 s stałej wartości (AppsRemoveCountOnEntry, ma być 0). Potem klika „Zaznacz sugerowane”
+         (InvokePattern) i czyta N końcowe; niczego nie usuwa. Host wymaga N przy wejściu = 0 oraz N końcowego równego liczbie wierszy
+         grupy Suggested z Removability=Removable (AppRow.CanRemove) z CLI --list-apps tego przebiegu uruchomionego jako to samo
+         konto co okno (AppsSuggestedRemove).
       9. Po „Aplikacjach” wchodzi na „Przygotowanie” (Etap 4a partia 3) i czeka najwyżej 60 s, aż zniknie „Wczytywanie…” i będzie widać
          7 tytułów kroków; sprawdza przycisk „Otwórz Windows Update” (albo notatkę zastępczą, gdy PrepLinks.SettingsOpenable = false)
          i co najmniej jedną linię karty w kroku „Grafika” (PrepPage). Niczego nie klika – linki otwiera się ręcznie.
@@ -65,6 +67,7 @@ $script:ProbeTextsPolish = [ordered]@{
     Minimize = 'Minimalizuj'                          # MainWindow.xaml: przycisk paska marki
     Menu = 'Menu'                                     # MainWindow.xaml: lista menu
     Items = 'Pozycje'                                 # MainWindow.xaml: lista pozycji kategorii
+    SelectSuggested = 'Zaznacz sugerowane'            # MainWindow.xaml i Views\AppsView.xaml: przycisk zaznaczający sugerowane pozycje
     AppsPage = 'Aplikacje'                            # AppsPageText.PageTitle
     AppsRefresh = 'Odśwież listę'                     # AppsPageText.RefreshButton
     AppsReading = 'Odczyt listy w toku'               # AppsPageText.Reading
@@ -264,7 +267,7 @@ function Get-GuiUiProbeScript {
     return @'
 param([Parameter(Mandatory)][string]$ResultFile, [Parameter(Mandatory)][string]$TextsFile)
 $ErrorActionPreference = 'Stop'
-$RequiredTexts = @('AppsNotRead', 'AppsPage', 'AppsReading', 'AppsRefresh', 'ApplyOne', 'ApplyPattern', 'HistoryFilter', 'HistoryOptions', 'HistoryPage', 'InstallAppList', 'InstallCategoryList', 'InstallPage', 'InstallPattern', 'InstallRefresh', 'InstallSourceProbePrefix', 'Items', 'Menu', 'Minimize', 'PanelTitle', 'PanelsCategory', 'PrepGraphicsTitle', 'PrepLoading', 'PrepOpenWindowsUpdate', 'PrepPage', 'PrepTitles', 'PrepWindowsUpdateNote', 'PrivacyCategory', 'ProbeCategory', 'RefreshState', 'RemovePattern', 'RepairCategory', 'RiskCombo', 'RiskOptions', 'TweakTitle')
+$RequiredTexts = @('AppsNotRead', 'AppsPage', 'AppsReading', 'AppsRefresh', 'ApplyOne', 'ApplyPattern', 'HistoryFilter', 'HistoryOptions', 'HistoryPage', 'InstallAppList', 'InstallCategoryList', 'InstallPage', 'InstallPattern', 'InstallRefresh', 'InstallSourceProbePrefix', 'Items', 'Menu', 'Minimize', 'PanelTitle', 'PanelsCategory', 'PrepGraphicsTitle', 'PrepLoading', 'PrepOpenWindowsUpdate', 'PrepPage', 'PrepTitles', 'PrepWindowsUpdateNote', 'PrivacyCategory', 'ProbeCategory', 'RefreshState', 'RemovePattern', 'RepairCategory', 'RiskCombo', 'RiskOptions', 'SelectSuggested', 'TweakTitle')
 $Out = [ordered]@{
     Ok = $false; Error = $null; Steps = @(); Dpi = $null
     HistoryMenuFound = $false; ApplyInvoked = $false; ApplyBusySeen = $false; ApplySeconds = $null; ApplyError = $null
@@ -272,8 +275,8 @@ $Out = [ordered]@{
     HitTest = @(); HitTestError = $null
     FilterRiskOpened = $false; FilterRiskSelected = $false; FilterHistoryOpened = $false; FilterHistorySelected = $false; FilterError = $null
     RowClickPreview = $false; RowDoubleClickToggles = $false; RunIconRuns = $false; RunIconDoubleClickOnce = $false; RowError = $null
-    PrivacyButtonFound = $false; PrivacyApplyCount = $null; PrivacyApplyText = $null; PrivacyError = $null
-    AppsListRead = $false; AppsButtonFound = $false; AppsRemoveCount = $null; AppsRemoveText = $null; AppsError = $null
+    PrivacyButtonFound = $false; PrivacyApplyCountOnEntry = $null; PrivacyApplyCount = $null; PrivacyApplyText = $null; PrivacyError = $null
+    AppsListRead = $false; AppsButtonFound = $false; AppsRemoveCountOnEntry = $null; AppsRemoveCount = $null; AppsRemoveText = $null; AppsError = $null
     PrepMenuFound = $false; PrepLoaded = $false; PrepTitles = @(); PrepWindowsUpdateButton = $false; PrepWindowsUpdateNote = $false; PrepGraphicsLines = @(); PrepError = $null
     RepairMenuFound = $false; RepairListFound = $false; RepairTexts = @(); RepairError = $null
     InstallMenuFound = $false; InstallLoaded = $false; InstallSubtitle = $null; InstallCategories = @(); InstallTexts = @()
@@ -698,10 +701,10 @@ public static class DsoUser32 {
     catch { $RowErrors += "panel: $($_.Exception.Message)"; Add-Step "panel: BLAD $($_.Exception.Message)" }
     finally { try { Close-NewMmc $BaseMmc; Wait-AppIdle 90 } catch { Add-Step "panel: sprzatanie BLAD $($_.Exception.Message)" } }
     if ($RowErrors.Count -gt 0) { $Out.RowError = $RowErrors -join '; ' }
-    # 7. Kategoria "Prywatnosc i AI" - DOPIERO po sciezce ux.menu-delay (krok 2) i po sprzataniu kroku 6: pierwsze wejscie na kategorie
-    #    zaznacza jej sugerowane pozycje do globalnej serii, wiec wczesniejsze wejscie zepsuloby oczekiwanie kroku 2 (Review Focus 1).
-    #    Nic nie jest stosowane ani przelaczane: sonda czyta tylko N z przycisku serii. Sugestie zaznaczaja sie raz, gdy wszystkie sugerowane
-    #    pozycje maja znany stan, wiec N czytamy przy bezczynnej aplikacji i po 3 s tej samej wartosci (najdluzej 60 s).
+    # 7. Kategoria "Prywatnosc i AI": program niczego nie zaznacza sam, wiec przy wejsciu "Zastosuj (N)" ma N = 0 (albo pasek serii jest
+    #    ukryty = 0); sonda zapisuje to jako PrivacyApplyCountOnEntry. Potem klika JEDEN przycisk "Zaznacz sugerowane" (InvokePattern;
+    #    gdy go nie ma albo jest nieaktywny, nic nie klika) i czyta N koncowe. Nic nie jest stosowane ani przelaczane. N czytamy przy
+    #    bezczynnej aplikacji i po 3 s tej samej wartosci (najdluzej 60 s).
     try {
         $PrivacyName = [string]$T.PrivacyCategory
         $PrivacyNav = Find-Element $Root $PrivacyName $ListItem
@@ -711,29 +714,48 @@ public static class DsoUser32 {
         Wait-AppIdle 120
         $ApplyPattern = $T.ApplyPattern
         $ByButton = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)
-        $Last = $null
-        $StableSince = $null
-        $Limit = (Get-Date).AddSeconds(60)
-        do {
-            $Seen = $null
-            foreach ($Button in $Root.FindAll($Scope, $ByButton)) {
-                $Name = [string]$Button.Current.Name
-                if ($Name -match $ApplyPattern) { $Seen = $Name; break }
-            }
-            if ($null -eq $StableSince -or $Seen -ne $Last) { $Last = $Seen; $StableSince = Get-Date }
-            elseif (((Get-Date) - $StableSince).TotalSeconds -ge 3) { break }
-            Start-Sleep -Milliseconds 250
-        } while ((Get-Date) -lt $Limit)
+        function Read-StableApply {
+            $Last = $null
+            $StableSince = $null
+            $Limit = (Get-Date).AddSeconds(60)
+            do {
+                $Seen = $null
+                foreach ($Button in $Root.FindAll($Scope, $ByButton)) {
+                    $Name = [string]$Button.Current.Name
+                    if ($Name -match $ApplyPattern) { $Seen = $Name; break }
+                }
+                if ($null -eq $StableSince -or $Seen -ne $Last) { $Last = $Seen; $StableSince = Get-Date }
+                elseif (((Get-Date) - $StableSince).TotalSeconds -ge 3) { break }
+                Start-Sleep -Milliseconds 250
+            } while ((Get-Date) -lt $Limit)
+            return $Last
+        }
+        $Entry = Read-StableApply
+        $Out.PrivacyApplyCountOnEntry = 0
+        if ($null -ne $Entry -and $Entry -match $ApplyPattern) { $Out.PrivacyApplyCountOnEntry = [int]$Matches[1] }
+        Add-Step "prywatnosc: przy wejsciu '$Entry'"
+        $Pick = $null
+        foreach ($Button in $Root.FindAll($Scope, $ByButton)) {
+            if ([string]$Button.Current.Name -eq [string]$T.SelectSuggested -and $Button.Current.IsEnabled -and -not $Button.Current.IsOffscreen) { $Pick = $Button; break }
+        }
+        if ($null -ne $Pick) {
+            $Pick.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+            Start-Sleep -Milliseconds 1000
+            Wait-AppIdle 120
+            Add-Step 'prywatnosc: klik Zaznacz sugerowane'
+        }
+        else { Add-Step 'prywatnosc: brak aktywnego przycisku Zaznacz sugerowane, bez klikniecia' }
+        $Last = Read-StableApply
         $Out.PrivacyButtonFound = ($null -ne $Last)
         $Out.PrivacyApplyText = $Last
         if ($null -ne $Last -and $Last -match $ApplyPattern) { $Out.PrivacyApplyCount = [int]$Matches[1] }
         Add-Step "prywatnosc: przycisk serii '$Last'"
     }
     catch { $Out.PrivacyError = $_.Exception.Message; Add-Step "prywatnosc: BLAD $($Out.PrivacyError)" }
-    # 8. Strona "Aplikacje" - na samym koncu: pierwsze wejscie czyta liste i zaznacza sugerowane aplikacje do osobnej serii "Usun (N)"
-    #    (nie miesza sie z "Zastosuj (N)"). Nic nie jest usuwane ani klikane: sonda czyta N z przycisku dopiero po zakonczonym odczycie
-    #    listy ("Odswiez liste" aktywne, podtytul bez "Odczyt listy w toku" i "Lista nie zostala jeszcze odczytana") i po 3 s tej samej
-    #    wartosci (najdluzej 180 s - odczyt AppX idzie przez PowerShell).
+    # 8. Strona "Aplikacje": wejscie czyta liste, ale niczego nie zaznacza ("Usun (N)" ma N = 0, zapisane jako AppsRemoveCountOnEntry).
+    #    Sonda czeka na zakonczony odczyt listy ("Odswiez liste" aktywne, podtytul bez "Odczyt listy w toku" i "Lista nie zostala jeszcze
+    #    odczytana") i po 3 s tej samej wartosci (najdluzej 180 s - odczyt AppX idzie przez PowerShell), klika JEDEN przycisk
+    #    "Zaznacz sugerowane" (InvokePattern; brak albo nieaktywny = bez klikniecia) i czyta N koncowe. Niczego nie usuwa.
     try {
         $AppsNav = Find-Element $Root $T.AppsPage $ListItem
         if ($null -eq $AppsNav) { throw "Brak pozycji menu '$($T.AppsPage)'." }
@@ -746,24 +768,46 @@ public static class DsoUser32 {
         $NotReadName = [string]$T.AppsNotRead
         $RemovePattern = $T.RemovePattern
         $ByButton = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)
-        $Last = $null
-        $StableSince = $null
-        $Limit = (Get-Date).AddSeconds(180)
-        do {
-            $Read = $AppsRefresh.Current.IsEnabled -and $null -eq (Find-Element $Root $ReadingName $TextType) -and $null -eq (Find-Element $Root $NotReadName $TextType)
-            $Seen = $null
-            if ($Read) {
-                foreach ($Button in $Root.FindAll($Scope, $ByButton)) {
-                    $Name = [string]$Button.Current.Name
-                    if ($Name -match $RemovePattern) { $Seen = $Name; break }
+        function Read-StableRemove {
+            # Zwraca @{ Read = <czy odczyt skonczony i N stabilne>; Text = <tekst przycisku albo $null> }.
+            $Last = $null
+            $StableSince = $null
+            $Limit = (Get-Date).AddSeconds(180)
+            do {
+                $Read = $AppsRefresh.Current.IsEnabled -and $null -eq (Find-Element $Root $ReadingName $TextType) -and $null -eq (Find-Element $Root $NotReadName $TextType)
+                $Seen = $null
+                if ($Read) {
+                    foreach ($Button in $Root.FindAll($Scope, $ByButton)) {
+                        $Name = [string]$Button.Current.Name
+                        if ($Name -match $RemovePattern) { $Seen = $Name; break }
+                    }
                 }
-            }
-            if (-not $Read) { $Last = $null; $StableSince = $null }
-            elseif ($null -eq $StableSince -or $Seen -ne $Last) { $Last = $Seen; $StableSince = Get-Date }
-            elseif (((Get-Date) - $StableSince).TotalSeconds -ge 3) { $Out.AppsListRead = $true; break }
-            Start-Sleep -Milliseconds 250
-        } while ((Get-Date) -lt $Limit)
-        if (-not $Out.AppsListRead) { throw 'Odczyt listy aplikacji nie skonczyl sie (albo N sie zmienialo) w 180 s.' }
+                if (-not $Read) { $Last = $null; $StableSince = $null }
+                elseif ($null -eq $StableSince -or $Seen -ne $Last) { $Last = $Seen; $StableSince = Get-Date }
+                elseif (((Get-Date) - $StableSince).TotalSeconds -ge 3) { return @{ Read = $true; Text = $Last } }
+                Start-Sleep -Milliseconds 250
+            } while ((Get-Date) -lt $Limit)
+            return @{ Read = $false; Text = $Last }
+        }
+        $Entry = Read-StableRemove
+        if (-not $Entry.Read) { throw 'Odczyt listy aplikacji nie skonczyl sie (albo N sie zmienialo) w 180 s.' }
+        $Out.AppsRemoveCountOnEntry = 0
+        if ($null -ne $Entry.Text -and $Entry.Text -match $RemovePattern) { $Out.AppsRemoveCountOnEntry = [int]$Matches[1] }
+        Add-Step "aplikacje: przy wejsciu '$($Entry.Text)'"
+        $Pick = $null
+        foreach ($Button in $Root.FindAll($Scope, $ByButton)) {
+            if ([string]$Button.Current.Name -eq [string]$T.SelectSuggested -and $Button.Current.IsEnabled -and -not $Button.Current.IsOffscreen) { $Pick = $Button; break }
+        }
+        if ($null -ne $Pick) {
+            $Pick.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+            Start-Sleep -Milliseconds 1000
+            Add-Step 'aplikacje: klik Zaznacz sugerowane'
+        }
+        else { Add-Step 'aplikacje: brak aktywnego przycisku Zaznacz sugerowane, bez klikniecia' }
+        $Final = Read-StableRemove
+        $Out.AppsListRead = $Final.Read
+        if (-not $Out.AppsListRead) { throw 'Odczyt listy aplikacji po zaznaczeniu nie ustabilizowal sie w 180 s.' }
+        $Last = $Final.Text
         $Out.AppsButtonFound = ($null -ne $Last)
         $Out.AppsRemoveText = $Last
         if ($null -ne $Last -and $Last -match $RemovePattern) { $Out.AppsRemoveCount = [int]$Matches[1] }
@@ -1022,8 +1066,8 @@ function Get-GuiInstallTitle {
 }
 
 function Get-GuiPrivacyExpectedCount {
-    # Oczekiwane N w „Zastosuj (N)” po pierwszym wejściu na „Prywatność i AI”: sugerowane pozycje w stanie NotApplied albo Partial
-    # (ta sama reguła co SuggestedSelection w Core) według raportów CLI --detect z tego przebiegu. Count = $null, gdy którejś pozycji brakuje
+    # Oczekiwane N w „Zastosuj (N)” po kliknięciu „Zaznacz sugerowane” na „Prywatność i AI”: sugerowane pozycje w stanie NotApplied albo Partial
+    # (ta sama reguła co SuggestedPick.Settings w Core) według raportów CLI --detect z tego przebiegu. Count = $null, gdy którejś pozycji brakuje
     # raportu albo stanu, stan jest spoza Applied/NotApplied/Partial, albo CLI nie było pewne użytkownika (HKCU czytane z innego konta).
     [CmdletBinding()]
     param(
@@ -1050,8 +1094,8 @@ function Get-GuiPrivacyExpectedCount {
 }
 
 function Get-GuiAppsExpectedCount {
-    # Oczekiwane N w „Usuń (N)” po pierwszym wejściu na „Aplikacje”: wiersze grupy Suggested z Removability=Removable (ta sama reguła co
-    # AppRow.CanRemove + AppSuggestionTracker w Core) z raportu CLI --list-apps tego przebiegu (wynik VmRun\Invoke-DsoCli).
+    # Oczekiwane N w „Usuń (N)” po kliknięciu „Zaznacz sugerowane” na „Aplikacje”: wiersze grupy Suggested z Removability=Removable (ta sama
+    # reguła co SuggestedPick.Apps: grupa Suggested i AppRow.CanRemove w Core) z raportu CLI --list-apps tego przebiegu (wynik VmRun\Invoke-DsoCli).
     # Count = $null, gdy CLI nie zwróciło wyniku, przekroczyło limit czasu, skończyło się kodem różnym od 0 albo raport nie ma listy.
     [CmdletBinding()]
     param([AllowNull()]$Listing)
@@ -1175,7 +1219,8 @@ function Get-GuiUiCheck {
         $Checks += New-GuiUiCheck -Name $Spec.Name -Passed $Value -Detail ($Detail + $RowSuffix)
     }
 
-    # „Prywatność i AI” (krok 7 sondy): N z przycisku serii = N z detekcji CLI. N = 0 przechodzi także bez przycisku (pasek serii ukryty), o ile sonda nie zgłosiła błędu.
+    # „Prywatność i AI” (krok 7 sondy): N przy wejściu = 0 (program nic nie zaznacza sam), a po „Zaznacz sugerowane” N z przycisku serii = N z detekcji CLI.
+    # N = 0 przechodzi także bez przycisku (pasek serii ukryty), o ile sonda nie zgłosiła błędu.
     $ExpectedCount = $null
     $ExpectedDetail = 'brak oczekiwanego N (detekcja nie zwróciła wyniku)'
     if ($null -ne $PrivacyExpected) { $ExpectedCount = $PrivacyExpected.Count; $ExpectedDetail = [string]$PrivacyExpected.Detail }
@@ -1184,17 +1229,19 @@ function Get-GuiUiCheck {
     $Shown = & $Get 'PrivacyApplyCount' $null
     $ShownText = & $Get 'PrivacyApplyText' $null
     $PrivacyError = & $Get 'PrivacyError' $null
+    $PrivacyEntry = & $Get 'PrivacyApplyCountOnEntry' $null
     $PrivacyPassed = $false
     if ($HasField -and $null -ne $ExpectedCount) {
         if ($Found -and $null -ne $Shown) { $PrivacyPassed = ([int]$Shown -eq [int]$ExpectedCount) }
         elseif (-not $Found -and -not $PrivacyError) { $PrivacyPassed = ([int]$ExpectedCount -eq 0) }
     }
+    if ($null -eq $PrivacyEntry -or [int]$PrivacyEntry -ne 0) { $PrivacyPassed = $false }
     $ShownDetail = if (-not $HasField) { 'brak pola PrivacyButtonFound w wyniku sondy' } elseif ($Found) { "przycisk '$ShownText'" } else { 'brak przycisku serii' }
-    $PrivacyDetail = "$ShownDetail; oczekiwano $(if ($null -ne $ExpectedCount) { $ExpectedCount } else { '?' }) ($ExpectedDetail)"
+    $PrivacyDetail = "przy wejściu $(if ($null -ne $PrivacyEntry) { $PrivacyEntry } else { '?' }) (ma być 0); po zaznaczeniu $ShownDetail; oczekiwano $(if ($null -ne $ExpectedCount) { $ExpectedCount } else { '?' }) ($ExpectedDetail)"
     if ($PrivacyError) { $PrivacyDetail += "; sonda: $PrivacyError" }
     $Checks += New-GuiUiCheck -Name 'PrivacySuggestedApply' -Passed $PrivacyPassed -Detail $PrivacyDetail
 
-    # „Aplikacje” (krok 8 sondy): N z „Usuń (N)” po zakończonym odczycie listy = N z --list-apps. Pasek serii Aplikacji jest zawsze
+    # „Aplikacje” (krok 8 sondy): N przy wejściu = 0, a po „Zaznacz sugerowane” N z „Usuń (N)” po zakończonym odczycie listy = N z --list-apps. Pasek serii Aplikacji jest zawsze
     # widoczny, więc brak przycisku nie przechodzi także przy N = 0.
     $AppsCount = $null
     $AppsExpectedDetail = 'brak oczekiwanego N (--list-apps nie zwróciło wyniku)'
@@ -1205,10 +1252,11 @@ function Get-GuiUiCheck {
     $AppsShown = & $Get 'AppsRemoveCount' $null
     $AppsText = & $Get 'AppsRemoveText' $null
     $AppsError = & $Get 'AppsError' $null
-    $AppsPassed = $HasApps -and $AppsRead -and $AppsFound -and $null -ne $AppsShown -and $null -ne $AppsCount -and ([int]$AppsShown -eq [int]$AppsCount)
+    $AppsEntry = & $Get 'AppsRemoveCountOnEntry' $null
+    $AppsPassed = $HasApps -and $AppsRead -and $AppsFound -and $null -ne $AppsShown -and $null -ne $AppsCount -and ([int]$AppsShown -eq [int]$AppsCount) -and $null -ne $AppsEntry -and ([int]$AppsEntry -eq 0)
     $AppsShownDetail = if (-not $HasApps) { 'brak pola AppsButtonFound w wyniku sondy' } elseif ($AppsFound) { "przycisk '$AppsText'" } else { 'brak przycisku serii' }
     if ($HasApps -and -not $AppsRead) { $AppsShownDetail += ' (lista nieodczytana do końca)' }
-    $AppsDetail = "$AppsShownDetail; oczekiwano $(if ($null -ne $AppsCount) { $AppsCount } else { '?' }) ($AppsExpectedDetail)"
+    $AppsDetail = "przy wejściu $(if ($null -ne $AppsEntry) { $AppsEntry } else { '?' }) (ma być 0); po zaznaczeniu $AppsShownDetail; oczekiwano $(if ($null -ne $AppsCount) { $AppsCount } else { '?' }) ($AppsExpectedDetail)"
     if ($AppsError) { $AppsDetail += "; sonda: $AppsError" }
     $Checks += New-GuiUiCheck -Name 'AppsSuggestedRemove' -Passed $AppsPassed -Detail $AppsDetail
 
