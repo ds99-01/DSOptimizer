@@ -176,6 +176,14 @@
     {
       "pl": "Nie udało się sprawdzić",
       "en": "Couldn't check"
+    },
+    {
+      "pl": "Wesprzyj projekt",
+      "en": "Support the project"
+    },
+    {
+      "pl": "Nie udało się otworzyć strony wsparcia.",
+      "en": "Could not open the support page."
     }
   ]
 }

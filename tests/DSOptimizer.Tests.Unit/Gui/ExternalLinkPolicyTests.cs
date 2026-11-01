@@ -51,6 +51,11 @@ public class ExternalLinkPolicyTests
     [InlineData("ms-windows-store://navigatetopage/?Id=9NBLGGH4NNS1", false)]
     [InlineData("https://apps.microsoft.com/detail/9NBLGGH4NNS1", false)]
     [InlineData("http://pdp/?ProductId=9NBLGGH4NNS1", false)]
+    [InlineData("https://buycoffee.to/dsoptimizer", true)]
+    [InlineData("https://buycoffee.to/dsoptimizer/", false)]
+    [InlineData("https://buycoffee.to/", false)]
+    [InlineData("https://github.com/sponsors/ds99-01", true)]
+    [InlineData("https://github.com/sponsors/ds99-01/", false)]
     public void IsAllowed_Table(string? url, bool expected)
         => Assert.Equal(expected, ExternalLinkPolicy.IsAllowed(url));
 

@@ -16,6 +16,16 @@ public static class ProductInfo
 
     public const string RepositoryUrlText = "github.com/ds99-01/DSOptimizer";
 
+    /// <summary>Strona wsparcia dla polskiego interfejsu; dokładnie ten adres przepuszcza <c>ExternalLinkPolicy</c>.</summary>
+    public const string PolishSupportUrl = "https://buycoffee.to/dsoptimizer";
+
+    /// <summary>Strona wsparcia dla angielskiego interfejsu; dokładnie ten adres przepuszcza <c>ExternalLinkPolicy</c>.</summary>
+    public const string EnglishSupportUrl = "https://github.com/sponsors/ds99-01";
+
+    /// <summary>Adres „Wesprzyj projekt” w języku, w którym działa program.</summary>
+    public static string SupportUrl(UiLanguage language)
+        => language == UiLanguage.Polish ? PolishSupportUrl : EnglishSupportUrl;
+
     /// <summary>Licencja programu (pełny tekst w pliku LICENSE w katalogu głównym repo).</summary>
     public const string LicenseName = "Mozilla Public License 2.0";
 

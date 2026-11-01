@@ -89,6 +89,7 @@ How to read the tables:
 | Kategorie | Categories | Menu heading |
 | Wyniki wyszukiwania | Search results | Page title during search |
 | Licencje komponentów | Component licenses | Window title |
+| Wesprzyj projekt | Support the project | Settings link (opens the support page for the running language) |
 | Wygląd i język | Appearance and language | Settings section |
 | Zmiany w systemie | System changes | Settings section |
 | Motyw | Theme | Settings |

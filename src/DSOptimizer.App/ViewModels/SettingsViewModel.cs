@@ -73,6 +73,7 @@ public sealed class SettingsViewModel : ObservableObject
 
         // Kilka klików w link w trakcie sprawdzania powłoki ignoruje ShellActions; przycisk nie przygasa na 1–3 s.
         OpenRepositoryPageCommand = new AsyncRelayCommand(OpenRepositoryPageAsync, AsyncRelayCommandOptions.AllowConcurrentExecutions);
+        OpenSupportPageCommand = new AsyncRelayCommand(OpenSupportPageAsync, AsyncRelayCommandOptions.AllowConcurrentExecutions);
         ShowLicensesCommand = new RelayCommand(ShowLicenses);
         RelaunchCommand = new RelayCommand(Relaunch, CanRelaunch);
     }
@@ -176,6 +177,9 @@ public sealed class SettingsViewModel : ObservableObject
 
     public IAsyncRelayCommand OpenRepositoryPageCommand { get; }
 
+    /// <summary>„Wesprzyj projekt”: adres zależy od języka, w którym działa program; jedyne miejsce tego linku.</summary>
+    public IAsyncRelayCommand OpenSupportPageCommand { get; }
+
     public IRelayCommand ShowLicensesCommand { get; }
 
     /// <summary>„Uruchom ponownie teraz”: aktywne tylko poza operacją, gdy wybrany język ≠ bieżący i start nie trwa.</summary>
@@ -220,6 +224,19 @@ public sealed class SettingsViewModel : ObservableObject
         catch (Exception ex)
         {
             _log.Fail("Gui", L.T("Nie udało się otworzyć strony repozytorium."), ex);
+        }
+    }
+
+    // Jak OpenRepositoryPageAsync: ShellActions.OpenUrlAsync nie rzuca, a try/catch nie wypuszcza wyjątku na wątek UI.
+    private async Task OpenSupportPageAsync()
+    {
+        try
+        {
+            await _shell.OpenUrlAsync(ProductInfo.SupportUrl(_running)).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            _log.Fail("Gui", L.T("Nie udało się otworzyć strony wsparcia."), ex);
         }
     }
 

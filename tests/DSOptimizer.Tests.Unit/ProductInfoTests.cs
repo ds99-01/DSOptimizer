@@ -1,4 +1,5 @@
 using DSOptimizer.Core;
+using DSOptimizer.Core.Localization;
 using Xunit;
 
 namespace DSOptimizer.Tests.Unit;
@@ -16,6 +17,14 @@ public class ProductInfoTests
         Assert.Equal("https://github.com/ds99-01/DSOptimizer", ProductInfo.RepositoryUrl);
         Assert.Equal("github.com/ds99-01/DSOptimizer", ProductInfo.RepositoryUrlText);
     }
+
+    [Fact]
+    public void SupportUrl_Polish_IsBuyCoffee()
+        => Assert.Equal("https://buycoffee.to/dsoptimizer", ProductInfo.SupportUrl(UiLanguage.Polish));
+
+    [Fact]
+    public void SupportUrl_English_IsGitHubSponsors()
+        => Assert.Equal("https://github.com/sponsors/ds99-01", ProductInfo.SupportUrl(UiLanguage.English));
 
     [Fact]
     public void License_Constants()

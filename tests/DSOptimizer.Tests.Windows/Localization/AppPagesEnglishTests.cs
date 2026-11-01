@@ -265,6 +265,7 @@ public class AppPagesEnglishTests
                 ["Licencja"] = "License",
                 ["Otwórz github.com/ds99-01/DSOptimizer"] = "Open github.com/ds99-01/DSOptimizer",
                 ["Licencje komponentów"] = "Component licenses",
+                ["Wesprzyj projekt"] = "Support the project",
             });
         }
     }

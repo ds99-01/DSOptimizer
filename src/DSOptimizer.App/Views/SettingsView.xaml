@@ -208,6 +208,8 @@
         </StackPanel>
         <Button Style="{StaticResource TextLinkButton}" Margin="0,6,0,0" HorizontalAlignment="Left" Content="{l:T 'Licencje komponentów'}"
                 Command="{Binding ShowLicensesCommand}" />
+        <Button Style="{StaticResource TextLinkButton}" Margin="0,6,0,0" HorizontalAlignment="Left" Content="{l:T 'Wesprzyj projekt'}"
+                Command="{Binding OpenSupportPageCommand}" />
         <!-- Zawsze aktywne (także przy wyłączonym „Sprawdzaj przy starcie” i w trakcie operacji): jedno żądanie na kliknięcie -->
         <Button Style="{StaticResource SecondaryButton}" Margin="0,14,0,0" HorizontalAlignment="Left" Content="{l:T 'Sprawdź aktualizacje'}"
                 Command="{Binding Updates.CheckNowCommand}" />
