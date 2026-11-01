@@ -156,7 +156,9 @@ internal static class Program
         var specification = CreateSpecification(composition, sink, shell);
         var prep = CreatePrep(composition, sink, shell);
         // Sprawdzanie wersji tylko na ścieżce okna; tryb wiersza poleceń niczego nie sprawdza.
-        var updates = new UpdatesViewModel(new UpdateChecker(composition.GitHub.Web, ProductInfo.Version, log), shell);
+        // Własny downloader z połączeniem bezpośrednim: bez proxy systemowego i poświadczeń Windows (start na obcym komputerze nie pyta WPAD ani proxy).
+        var updateWeb = new WebDownloader(RustDeskSource.UserAgent, directConnection: true);
+        var updates = new UpdatesViewModel(new UpdateChecker(updateWeb, ProductInfo.Version, log), shell);
         // „Uruchom ponownie teraz” (zmiana języka): najpierw nowa instancja, zamknięcie tej dopiero po udanym starcie.
         var settingsPage = new SettingsViewModel(
             new SettingsLoadResult(language.Settings, settings.Warning),

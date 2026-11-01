@@ -488,7 +488,7 @@ public class WebDownloaderTests
     {
         var url = new Uri("https://github.com/rustdesk/rustdesk/releases/download/1.5.0/rustdesk-1.5.0-x86_64.msi");
 
-        var request = WebDownloader.CreateRequest(url, "application/octet-stream", "DSOptimizer", TimeSpan.FromSeconds(3));
+        var request = WebDownloader.CreateRequest(url, "application/octet-stream", "DSOptimizer", TimeSpan.FromSeconds(3), directConnection: false);
 
         // Warunek z review Tasku 1: żądanie niesie dokładnie ten obiekt Uri, który ocenił predykat.
         Assert.Same(url, request.RequestUri);
@@ -503,6 +503,32 @@ public class WebDownloaderTests
         Assert.Equal(DecompressionMethods.None, request.AutomaticDecompression);
         Assert.Equal(3000, request.Timeout);
         Assert.Equal(3000, request.ReadWriteTimeout);
+    }
+
+    [Fact]
+    public void CreateRequest_DirectConnection_NoProxyAndNoCredentials()
+    {
+        var url = new Uri("https://api.github.com/repos/ds99-01/DSOptimizer/releases/latest");
+
+        var request = WebDownloader.CreateRequest(url, "application/json", "DSOptimizer", TimeSpan.FromSeconds(3), directConnection: true);
+
+        // Bez proxy systemowego nie ma pobrania skryptu WPAD ani odpowiedzi NTLM do obcego proxy.
+        Assert.Null(request.Proxy);
+        Assert.Null(request.Credentials);
+        Assert.False(request.UseDefaultCredentials);
+        Assert.False(request.AllowAutoRedirect);
+    }
+
+    [Fact]
+    public void DirectConnection_GetText_ReadsFromServer()
+    {
+        using var server = new LoopbackHttpServer((c, _) => LoopbackHttpServer.Respond(c, 200, Encoding.UTF8.GetBytes("{\"ok\":true}")));
+
+        var result = new WebDownloader("DSOptimizer", directConnection: true).GetText(server.Url("/api"), Json, Generous);
+
+        Assert.Equal(WebFailure.None, result.Failure);
+        Assert.Equal(200, result.StatusCode);
+        Assert.Equal("{\"ok\":true}", result.Body);
     }
 
     [Theory]

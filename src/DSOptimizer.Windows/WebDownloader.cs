@@ -34,6 +34,7 @@ public sealed class WebDownloader : IWebDownloader
     private const string FileAccept = "application/octet-stream";
 
     private readonly string _userAgent;
+    private readonly bool _directConnection;
 
     static WebDownloader()
     {
@@ -52,7 +53,12 @@ public sealed class WebDownloader : IWebDownloader
         }
     }
 
-    public WebDownloader(string userAgent)
+    /// <param name="userAgent">Nagłówek User-Agent.</param>
+    /// <param name="directConnection">
+    /// <c>true</c> = połączenie bezpośrednie: bez proxy systemowego (więc bez pobierania skryptu PAC/WPAD) i bez poświadczeń Windows.
+    /// Używa go sprawdzanie wersji, które rusza przy starcie na dowolnym komputerze; <c>false</c> (domyślnie) = proxy systemowe z poświadczeniami domyślnymi.
+    /// </param>
+    public WebDownloader(string userAgent, bool directConnection = false)
     {
         if (string.IsNullOrWhiteSpace(userAgent))
         {
@@ -60,6 +66,7 @@ public sealed class WebDownloader : IWebDownloader
         }
 
         _userAgent = userAgent;
+        _directConnection = directConnection;
     }
 
     public WebText GetText(Uri url, string accept, TimeSpan timeout)
@@ -184,16 +191,25 @@ public sealed class WebDownloader : IWebDownloader
     /// Żądanie GET bez automatycznych przekierowań. <paramref name="url"/> trafia do żądania jako ten sam obiekt
     /// (<see cref="HttpWebRequest.RequestUri"/>), bez ponownego parsowania.
     /// </summary>
-    internal static HttpWebRequest CreateRequest(Uri url, string accept, string userAgent, TimeSpan timeout)
+    internal static HttpWebRequest CreateRequest(Uri url, string accept, string userAgent, TimeSpan timeout, bool directConnection)
     {
         var request = WebRequest.CreateHttp(url);
         request.Method = "GET";
         request.AllowAutoRedirect = false;
         request.UserAgent = userAgent;
         request.Accept = accept;
-        var proxy = WebRequest.GetSystemWebProxy();
-        proxy.Credentials = CredentialCache.DefaultCredentials;
-        request.Proxy = proxy;
+        if (directConnection)
+        {
+            // Proxy = null wyłącza proxy i odczyt WPAD; poświadczeń Windows nie ustawiamy nigdzie.
+            request.Proxy = null;
+        }
+        else
+        {
+            var proxy = WebRequest.GetSystemWebProxy();
+            proxy.Credentials = CredentialCache.DefaultCredentials;
+            request.Proxy = proxy;
+        }
+
         request.AutomaticDecompression = DecompressionMethods.None;
         var milliseconds = Milliseconds(timeout);
         request.Timeout = milliseconds;
@@ -209,7 +225,7 @@ public sealed class WebDownloader : IWebDownloader
             return Exchange.Failed(WebFailure.TimedOut, L.T("Przekroczono limit czasu."));
         }
 
-        var request = CreateRequest(url, accept, _userAgent, remaining);
+        var request = CreateRequest(url, accept, _userAgent, remaining, _directConnection);
         try
         {
             return new Exchange(request, (HttpWebResponse)request.GetResponse(), null);
