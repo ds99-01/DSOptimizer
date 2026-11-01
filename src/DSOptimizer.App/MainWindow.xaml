@@ -463,8 +463,7 @@
       </DockPanel>
     </Border>
     <!-- Baner „Dostępna nowa wersja”: pod banerem restartu, ten sam styl; spokojny komunikat bez okna modalnego i bez zabierania fokusu.
-         Program niczego nie pobiera: „Otwórz stronę wydań” otwiera tylko stronę w przeglądarce, „Ukryj” chowa baner do końca uruchomienia.
-         Miejsce (nad treścią, pod paskiem marki) to wariant domyślny do decyzji na renderach. -->
+         Program niczego nie pobiera: „Otwórz stronę wydań” otwiera tylko stronę w przeglądarce, „Ukryj” chowa baner do końca uruchomienia. -->
     <Border x:Name="UpdateBanner" Padding="16,8" BorderThickness="0,0,0,1"
             Background="{DynamicResource SubtleFillColorSecondaryBrush}" BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
             DataContext="{Binding Settings.Updates}"
@@ -563,7 +562,7 @@
         <ColumnDefinition x:Name="DetailColumn" Width="246" />
       </Grid.ColumnDefinitions>
 
-      <!-- Tab: szukaj → filtr ryzyka → „Odśwież stan” → lista (TabIndex lokalnie w tym panelu; w drzewie przycisk jest pierwszy) -->
+      <!-- Tab: szukaj → filtr ryzyka → „Zaznacz sugerowane” → „Odśwież stan” → lista (TabIndex lokalnie w tym panelu; w drzewie przyciski są pierwsze) -->
       <DockPanel Margin="0,0,20,0" KeyboardNavigation.TabNavigation="Local">
         <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
           <Grid.ColumnDefinitions>
@@ -576,10 +575,10 @@
             <TextBlock Style="{StaticResource SubText}" Text="{Binding PageSubtitle}" ToolTip="{Binding PageSubtitle}" />
           </StackPanel>
           <Button Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
-                  Content="{l:T 'Zaznacz sugerowane'}" Command="{Binding SelectSuggestedCommand}" KeyboardNavigation.TabIndex="4"
+                  Content="{l:T 'Zaznacz sugerowane'}" Command="{Binding SelectSuggestedCommand}" KeyboardNavigation.TabIndex="3"
                   Visibility="{Binding IsSelectSuggestedVisible, Converter={StaticResource BoolToVisibility}}" />
           <Button Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
-                  Content="{l:T 'Odśwież stan'}" Tag="Refresh" Command="{Binding RefreshCommand}" KeyboardNavigation.TabIndex="3" />
+                  Content="{l:T 'Odśwież stan'}" Tag="Refresh" Command="{Binding RefreshCommand}" KeyboardNavigation.TabIndex="4" />
         </Grid>
 
         <!-- Wyszukiwarka (wszystkie kategorie, Esc czyści) i filtr ryzyka -->
