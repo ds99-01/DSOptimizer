@@ -158,6 +158,16 @@
               </StackPanel>
             </StackPanel>
           </Grid>
+
+          <TextBlock Style="{StaticResource SectionHeaderText}" Margin="0,26,0,0" Text="{l:T 'Aktualizacje'}" />
+          <Border Style="{StaticResource SettingSectionLine}" />
+          <CheckBox Style="{StaticResource SettingCheckBox}" IsChecked="{Binding CheckUpdatesAtStart, Mode=TwoWay}"
+                    AutomationProperties.Name="{l:T 'Sprawdzaj przy starcie'}">
+            <TextBlock TextWrapping="Wrap" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                       Text="{l:T 'Sprawdzaj przy starcie'}" />
+          </CheckBox>
+          <TextBlock Style="{StaticResource SettingHint}" Margin="30,4,0,0"
+                     Text="{l:T 'Przy starcie okna program pyta GitHuba o numer najnowszej wersji. GitHub widzi przy tym adres IP komputera. Program niczego sam nie pobiera ani nie instaluje.'}" />
         </StackPanel>
       </StackPanel>
     </ScrollViewer>
@@ -198,6 +208,23 @@
         </StackPanel>
         <Button Style="{StaticResource TextLinkButton}" Margin="0,6,0,0" HorizontalAlignment="Left" Content="{l:T 'Licencje komponentów'}"
                 Command="{Binding ShowLicensesCommand}" />
+        <!-- Zawsze aktywne (także przy wyłączonym „Sprawdzaj przy starcie” i w trakcie operacji): jedno żądanie na kliknięcie -->
+        <Button Style="{StaticResource SecondaryButton}" Margin="0,14,0,0" HorizontalAlignment="Left" Content="{l:T 'Sprawdź aktualizacje'}"
+                Command="{Binding Updates.CheckNowCommand}" />
+        <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" TextTrimming="None" Text="{Binding Updates.CheckResultText}">
+          <TextBlock.Style>
+            <Style TargetType="TextBlock" BasedOn="{StaticResource SubText}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding Updates.CheckResultText}" Value="{x:Null}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
+        <Button Style="{StaticResource TextLinkButton}" Margin="0,6,0,0" HorizontalAlignment="Left" Content="{l:T 'Otwórz stronę wydań'}"
+                Command="{Binding Updates.OpenReleasesCommand}"
+                Visibility="{Binding Updates.HasNewerFromCheck, Converter={StaticResource SettingsBoolToVisibility}}" />
       </StackPanel>
     </ScrollViewer>
   </Grid>

@@ -443,8 +443,10 @@
     <!-- Baner „Wymagany restart” (makieta 4-baner): pod paskiem marki na całą szerokość, liczony z journala i czasu startu systemu,
          więc zostaje także po ponownym otwarciu programu – do restartu. Tekst zawija się w wąskim oknie, przyciski zostają po prawej.
          „Pokaż które” otwiera stronę „Historia zmian” z filtrem „Czekające na restart”.
-         „Uruchom ponownie” zawsze najpierw pyta (ConfirmRestartAsync), w trakcie operacji nieaktywny. -->
-    <Border x:Name="RebootBanner" Grid.Row="1" Grid.ColumnSpan="2" Padding="16,8" BorderThickness="0,0,0,1"
+         „Uruchom ponownie” zawsze najpierw pyta (ConfirmRestartAsync), w trakcie operacji nieaktywny.
+         Oba banery (restart i nowa wersja) leżą w jednym StackPanel „TopBanners” w wierszu 1: widoczne jeden pod drugim. -->
+    <StackPanel x:Name="TopBanners" Grid.Row="1" Grid.ColumnSpan="2">
+    <Border x:Name="RebootBanner" Padding="16,8" BorderThickness="0,0,0,1"
             Background="{DynamicResource SubtleFillColorSecondaryBrush}" BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
             Visibility="{Binding IsRebootBannerVisible, Converter={StaticResource BoolToVisibility}}">
       <DockPanel>
@@ -460,6 +462,29 @@
         </TextBlock>
       </DockPanel>
     </Border>
+    <!-- Baner „Dostępna nowa wersja”: pod banerem restartu, ten sam styl; spokojny komunikat bez okna modalnego i bez zabierania fokusu.
+         Program niczego nie pobiera: „Otwórz stronę wydań” otwiera tylko stronę w przeglądarce, „Ukryj” chowa baner do końca uruchomienia.
+         Miejsce (nad treścią, pod paskiem marki) to wariant domyślny do decyzji na renderach. -->
+    <Border x:Name="UpdateBanner" Padding="16,8" BorderThickness="0,0,0,1"
+            Background="{DynamicResource SubtleFillColorSecondaryBrush}" BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+            DataContext="{Binding Settings.Updates}"
+            Visibility="{Binding IsNoticeVisible, Converter={StaticResource BoolToVisibility}}">
+      <DockPanel>
+        <views:BrandIcon Kind="Info" Size="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"
+                         Margin="0,0,10,0" />
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+          <Button Content="{l:T 'Otwórz stronę wydań'}" Style="{StaticResource SecondaryButton}" Margin="0,0,14,0" Command="{Binding OpenReleasesCommand}" />
+          <Button Content="{l:T 'Ukryj'}" Style="{StaticResource TextLinkButton}" Command="{Binding HideNoticeCommand}"
+                  AutomationProperties.HelpText="{l:T 'Ukryj do następnego uruchomienia'}">
+            <Button.ToolTip>
+              <ToolTip Style="{StaticResource BrandToolTip}" Content="{l:T 'Ukryj do następnego uruchomienia'}" />
+            </Button.ToolTip>
+          </Button>
+        </StackPanel>
+        <TextBlock Style="{StaticResource BodyText}" VerticalAlignment="Center" Text="{Binding NoticeText}" />
+      </DockPanel>
+    </Border>
+    </StackPanel>
     <!-- Lewa kolumna: Specyfikacja, potem kategorie w kolejności GuiSession.Categories z licznikiem pozycji (szablony wg typu);
          na dole, za linią, „Ustawienia” (druga lista z jedną pozycją). Każda lista wiąże własne zaznaczenie (SelectedNavItem,
          SelectedPinnedItem): strona z drugiej listy = null w tej liście, więc podświetlona jest jedna pozycja w obu listach,

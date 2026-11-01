@@ -77,8 +77,10 @@ check are in the antivirus reports for [version 4.0](docs/zrodla/2026-10-26-etap
 
 ## Privacy
 
-The program has no telemetry and does not update itself. It connects to the network on its own only when you ask
-it to: it downloads WinUtil and RustDesk from their authors' GitHub, and installing and searching for apps goes
+The program has no telemetry and does not update itself: it doesn't download or install anything on its own. When its
+window opens, it asks GitHub (api.github.com) for the latest version number, and GitHub sees your IP address. You can
+turn this off in Settings; command-line mode never checks. Apart from that, it connects to the network only when you
+ask it to: it downloads WinUtil and RustDesk from their authors' GitHub, and installing and searching for apps goes
 through winget from the Microsoft source. The "Preparation" page opens manufacturers' pages and
 Google in your browser, but sends nothing by itself.
 

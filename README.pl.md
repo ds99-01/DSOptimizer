@@ -75,7 +75,9 @@ i [wersji 4.0.1](docs/zrodla/2026-10-30-v4-0-1-raport-antywirus.md).
 
 ## Prywatność
 
-Program nie ma telemetrii i nie aktualizuje się sam. Sam łączy się z siecią tylko na Twoje żądanie: WinUtil
+Program nie ma telemetrii i nie aktualizuje się sam: niczego sam nie pobiera ani nie instaluje. Przy otwarciu okna
+pyta GitHuba (api.github.com) o numer najnowszej wersji, a GitHub widzi przy tym Twój adres IP. Możesz to wyłączyć
+w Ustawieniach; tryb wiersza poleceń nigdy tego nie sprawdza. Poza tym łączy się z siecią tylko na Twoje żądanie: WinUtil
 i RustDesk pobiera z GitHuba ich autorów, a instalacja i wyszukiwanie aplikacji idą przez winget ze źródła
 Microsoftu. Strona „Przygotowanie” otwiera w przeglądarce strony producentów i Google, ale sama niczego nie wysyła.
 

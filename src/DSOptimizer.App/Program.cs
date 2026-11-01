@@ -10,6 +10,7 @@ using DSOptimizer.App.Gui;
 using DSOptimizer.App.ViewModels;
 using DSOptimizer.App.Views;
 using DSOptimizer.Catalog;
+using DSOptimizer.Core;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Catalog;
@@ -20,6 +21,7 @@ using DSOptimizer.Core.Install;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Prep;
 using DSOptimizer.Core.Settings;
+using DSOptimizer.Core.Updates;
 using DSOptimizer.Windows;
 using DSOptimizer.Windows.Apps;
 using DSOptimizer.Windows.Hardware;
@@ -153,6 +155,8 @@ internal static class Program
         var shell = new ShellActions(revealer, new ShellUrlOpener(new WindowsExplorerProcessQuery()), log);
         var specification = CreateSpecification(composition, sink, shell);
         var prep = CreatePrep(composition, sink, shell);
+        // Sprawdzanie wersji tylko na ścieżce okna; tryb wiersza poleceń niczego nie sprawdza.
+        var updates = new UpdatesViewModel(new UpdateChecker(composition.GitHub.Web, ProductInfo.Version, log), shell);
         // „Uruchom ponownie teraz” (zmiana języka): najpierw nowa instancja, zamknięcie tej dopiero po udanym starcie.
         var settingsPage = new SettingsViewModel(
             new SettingsLoadResult(language.Settings, settings.Warning),
@@ -163,7 +167,8 @@ internal static class Program
             log,
             language.Language,
             new ProgramRelauncher(log),
-            () => Application.Current.Shutdown());
+            () => Application.Current.Shutdown(),
+            updates);
         var seriesDialogs = new SeriesDialogs(log, sink.Add, composition.Services.Clock);
         // Baner restartu: czas startu systemu z CIM (tylko odczyt); restart przez shutdown.exe – wyłącznie po potwierdzeniu w oknie,
         // ze śladem w pliku logu (zlecenie i przyczyna błędu).

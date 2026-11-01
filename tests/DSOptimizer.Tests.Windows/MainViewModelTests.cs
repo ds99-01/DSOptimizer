@@ -15,6 +15,7 @@ using DSOptimizer.Core.Install;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Prep;
 using DSOptimizer.Core.Settings;
+using DSOptimizer.Core.Updates;
 using DSOptimizer.Tests.Windows.Support;
 using DSOptimizer.Windows;
 using DSOptimizer.Windows.Apps;
@@ -120,7 +121,8 @@ public class MainViewModelTests
             new PrepLoader(new WindowsHardwareReader(), new WindowsPrepReader(), log, PrepLoader.DefaultTimeout), shell, "C:", (level, text) => sink.Add(level, text));
         var settingsStore = new JsonFileSettingsStore(temp.AppRoot, services.Clock);
         var settings = new SettingsViewModel(
-            new SettingsLoadResult(AppSettings.Default, null), settingsStore, session, new ThemeController(log), shell, log, UiLanguage.Polish, new NoRelaunch(), () => { });
+            new SettingsLoadResult(AppSettings.Default, null), settingsStore, session, new ThemeController(log), shell, log, UiLanguage.Polish, new NoRelaunch(), () => { },
+            new UpdatesViewModel(new UpdateChecker(composition.GitHub.Web, "4.0.2", log), shell));
         return new MainViewModel(
             session,
             sink,

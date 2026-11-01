@@ -14,6 +14,7 @@ using DSOptimizer.Core.Install;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Prep;
 using DSOptimizer.Core.Settings;
+using DSOptimizer.Core.Updates;
 using DSOptimizer.Tests.Windows.Support;
 using DSOptimizer.Windows;
 using Xunit;
@@ -269,6 +270,51 @@ public class AppPagesEnglishTests
     }
 
     [Fact]
+    public void Updates_English()
+    {
+        MainViewModelTests.RunOnSta(() =>
+        {
+            using var temp = new TempDirectory();
+            using (L.Use(UiLanguage.English))
+            {
+                AssertXamlTexts("SettingsView.xaml", new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["Aktualizacje"] = "Updates",
+                    ["Sprawdzaj przy starcie"] = "Check at startup",
+                    ["Przy starcie okna program pyta GitHuba o numer najnowszej wersji. GitHub widzi przy tym adres IP komputera. Program niczego sam nie pobiera ani nie instaluje."] =
+                        "When the window opens, the program asks GitHub for the latest version number. GitHub sees the computer's IP address. The program doesn't download or install anything on its own.",
+                    ["Sprawdź aktualizacje"] = "Check for updates",
+                    ["Otwórz stronę wydań"] = "Open releases page",
+                });
+                AssertXamlTexts("MainWindow.xaml", new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["Otwórz stronę wydań"] = "Open releases page",
+                    ["Ukryj"] = "Hide",
+                    ["Ukryj do następnego uruchomienia"] = "Hide until the next start",
+                });
+
+                var shell = new ShellActions(
+                    new ShellFileRevealer(new WindowsExplorerProcessQuery(), temp.AppRoot.FullPath),
+                    new ShellUrlOpener(new WindowsExplorerProcessQuery()),
+                    new CapturingLog());
+                var newer = new UpdatesViewModel(new UpdateChecker(new StubWebDownloader(StubWebDownloader.Release("v4.0.9")), "4.0.2", new CapturingLog()), shell);
+                var current = new UpdatesViewModel(new UpdateChecker(new StubWebDownloader(StubWebDownloader.Release("v4.0.2")), "4.0.2", new CapturingLog()), shell);
+                var failed = new UpdatesViewModel(
+                    new UpdateChecker(new StubWebDownloader(new WebText(WebFailure.Network, null, null, "offline")), "4.0.2", new CapturingLog()), shell);
+
+                Assert.True(Task.Run(newer.CheckAtStartAsync).Wait(TimeSpan.FromSeconds(10)));
+                Assert.Equal("A new version is available: 4.0.9.", newer.NoticeText);
+                Assert.True(Task.Run(() => newer.CheckNowCommand.ExecuteAsync(null)).Wait(TimeSpan.FromSeconds(10)));
+                Assert.Equal("Version 4.0.9 is available", newer.CheckResultText);
+                Assert.True(Task.Run(() => current.CheckNowCommand.ExecuteAsync(null)).Wait(TimeSpan.FromSeconds(10)));
+                Assert.Equal("You have the latest version", current.CheckResultText);
+                Assert.True(Task.Run(() => failed.CheckNowCommand.ExecuteAsync(null)).Wait(TimeSpan.FromSeconds(10)));
+                Assert.Equal("Couldn't check", failed.CheckResultText);
+            }
+        });
+    }
+
+    [Fact]
     public void Settings_SaveFailed_English()
     {
         MainViewModelTests.RunOnSta(() =>
@@ -333,7 +379,8 @@ public class AppPagesEnglishTests
             new ShellUrlOpener(new WindowsExplorerProcessQuery()),
             log);
         return new SettingsViewModel(
-            new SettingsLoadResult(AppSettings.Default, null), store, session, new ThemeController(log), shell, log, UiLanguage.English, new NoRelauncher(), () => { });
+            new SettingsLoadResult(AppSettings.Default, null), store, session, new ThemeController(log), shell, log, UiLanguage.English, new NoRelauncher(), () => { },
+            new UpdatesViewModel(new UpdateChecker(composition.GitHub.Web, "4.0.2", log), shell));
     }
 
     /// <summary>Każdy klucz stoi w widoku jako <c>{l:T '…'}</c> (albo Name/Text strony), a po angielsku daje dokładny tekst.</summary>
@@ -356,7 +403,9 @@ public class AppPagesEnglishTests
         }
 
         Assert.NotNull(directory);
-        return File.ReadAllText(Path.Combine(directory!.FullName, "src", "DSOptimizer.App", "Views", name));
+        var app = Path.Combine(directory!.FullName, "src", "DSOptimizer.App");
+        // Okno główne leży w katalogu aplikacji, widoki stron w Views.
+        return File.ReadAllText(name == "MainWindow.xaml" ? Path.Combine(app, name) : Path.Combine(app, "Views", name));
     }
 
     private sealed class FakeInstallSession : IInstallPageSession

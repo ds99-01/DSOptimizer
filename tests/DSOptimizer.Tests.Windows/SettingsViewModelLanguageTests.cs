@@ -13,6 +13,7 @@ using DSOptimizer.Core.Errors;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Settings;
+using DSOptimizer.Core.Updates;
 using DSOptimizer.Tests.Windows.Support;
 using DSOptimizer.Windows;
 using Xunit;
@@ -261,7 +262,8 @@ public class SettingsViewModelLanguageTests
             fixture.Log);
         var loaded = new SettingsLoadResult(AppSettings.Default with { Language = running }, null);
         return new SettingsViewModel(
-            loaded, fixture.Store, session, new ThemeController(fixture.Log), shell, fixture.Log, running, fixture.Relauncher, () => fixture.Shutdowns++);
+            loaded, fixture.Store, session, new ThemeController(fixture.Log), shell, fixture.Log, running, fixture.Relauncher, () => fixture.Shutdowns++,
+            new UpdatesViewModel(new UpdateChecker(composition.GitHub.Web, "4.0.2", fixture.Log), shell));
     }
 
     private static void RunOnSta(Action<TempDirectory> body)

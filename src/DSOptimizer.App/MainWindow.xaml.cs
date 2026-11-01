@@ -264,12 +264,16 @@ public partial class MainWindow
         // Po Loaded: Watch na załadowanym oknie nie woła ApplySystemTheme (to włączyłoby Mica na MainWindow).
         _theme.Attach(this);
 
+        // Sprawdzenie wersji nie czeka na sieć (Task.Run) i nigdy nie rzuca; wynik tylko pokazuje baner.
+        var updates = _viewModel.Settings.CheckUpdatesAtStartAsync();
+
         // Odczyt specyfikacji równolegle z detekcją; LoadAsync tworzy Progress na wątku UI i nigdy nie rzuca.
         var specification = _viewModel.Specification.LoadAsync();
         var userName = _viewModel.LoadUserNameAsync();
         await _viewModel.InitializeAsync();
         await userName;
         await specification;
+        await updates;
     }
 
     private void OnClosing(object? sender, CancelEventArgs e)

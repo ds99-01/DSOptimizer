@@ -136,6 +136,46 @@
     {
       "pl": "Nie zapisano raportu: {0}",
       "en": "Couldn't save the report: {0}"
+    },
+    {
+      "pl": "Dostępna jest nowa wersja: {0}.",
+      "en": "A new version is available: {0}."
+    },
+    {
+      "pl": "Otwórz stronę wydań",
+      "en": "Open releases page"
+    },
+    {
+      "pl": "Ukryj",
+      "en": "Hide"
+    },
+    {
+      "pl": "Ukryj do następnego uruchomienia",
+      "en": "Hide until the next start"
+    },
+    {
+      "pl": "Sprawdzaj przy starcie",
+      "en": "Check at startup"
+    },
+    {
+      "pl": "Przy starcie okna program pyta GitHuba o numer najnowszej wersji. GitHub widzi przy tym adres IP komputera. Program niczego sam nie pobiera ani nie instaluje.",
+      "en": "When the window opens, the program asks GitHub for the latest version number. GitHub sees the computer's IP address. The program doesn't download or install anything on its own."
+    },
+    {
+      "pl": "Sprawdź aktualizacje",
+      "en": "Check for updates"
+    },
+    {
+      "pl": "Masz najnowszą wersję",
+      "en": "You have the latest version"
+    },
+    {
+      "pl": "Dostępna wersja {0}",
+      "en": "Version {0} is available"
+    },
+    {
+      "pl": "Nie udało się sprawdzić",
+      "en": "Couldn't check"
     }
   ]
 }

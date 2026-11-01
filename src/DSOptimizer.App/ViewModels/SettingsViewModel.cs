@@ -39,6 +39,7 @@ public sealed class SettingsViewModel : ObservableObject
 
     /// <param name="running">Język, w którym działa bieżąca instancja programu.</param>
     /// <param name="shutdown">Zamknięcie programu po udanym starcie nowej instancji.</param>
+    /// <param name="updates">Komunikat o nowej wersji i ręczne sprawdzanie.</param>
     public SettingsViewModel(
         SettingsLoadResult loaded,
         ISettingsStore store,
@@ -48,7 +49,8 @@ public sealed class SettingsViewModel : ObservableObject
         ILog log,
         UiLanguage running,
         IProgramRelauncher relauncher,
-        Action shutdown)
+        Action shutdown,
+        UpdatesViewModel updates)
     {
         if (loaded is null)
         {
@@ -62,6 +64,7 @@ public sealed class SettingsViewModel : ObservableObject
         _log = log ?? throw new ArgumentNullException(nameof(log));
         _relauncher = relauncher ?? throw new ArgumentNullException(nameof(relauncher));
         _shutdown = shutdown ?? throw new ArgumentNullException(nameof(shutdown));
+        Updates = updates ?? throw new ArgumentNullException(nameof(updates));
         _running = running;
         _selectedLanguage = running;
         _settings = loaded.Settings ?? AppSettings.Default;
@@ -90,6 +93,28 @@ public sealed class SettingsViewModel : ObservableObject
             OnPropertyChanged();
         }
     }
+
+    /// <summary>„Sprawdzaj przy starcie” (domyślnie tak): przy otwarciu okna program pyta GitHuba o numer najnowszej wersji.</summary>
+    public bool CheckUpdatesAtStart
+    {
+        get => _settings.CheckUpdatesAtStart;
+        set
+        {
+            if (value == _settings.CheckUpdatesAtStart)
+            {
+                return;
+            }
+
+            Save(_settings with { CheckUpdatesAtStart = value });
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>Baner o nowej wersji i ręczne „Sprawdź aktualizacje”.</summary>
+    public UpdatesViewModel Updates { get; }
+
+    /// <summary>Sprawdzenie wersji przy starcie okna: bez żądania, gdy wyłączone w Ustawieniach; nigdy nie rzuca.</summary>
+    public Task CheckUpdatesAtStartAsync() => CheckUpdatesAtStart ? Updates.CheckAtStartAsync() : Task.CompletedTask;
 
     public bool IsSystemTheme
     {
