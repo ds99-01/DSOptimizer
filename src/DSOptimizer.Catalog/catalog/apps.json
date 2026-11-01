@@ -319,6 +319,7 @@
       "summary": "Środowisko .NET 8 potrzebne programom okienkowym napisanym w .NET.",
       "category": "runtimes",
       "match": { "displayName": "Microsoft Windows Desktop Runtime - 8.* (x64)", "publisher": "Microsoft Corporation" },
+      "warning": "Microsoft kończy wsparcie tej wersji 10 listopada 2026. Instaluj ją tylko, gdy wymaga jej konkretny program.",
       "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/8"
     },
     {
@@ -328,7 +329,17 @@
       "summary": "Środowisko .NET 9 potrzebne programom okienkowym napisanym w .NET.",
       "category": "runtimes",
       "match": { "displayName": "Microsoft Windows Desktop Runtime - 9.* (x64)", "publisher": "Microsoft Corporation" },
+      "warning": "Microsoft kończy wsparcie tej wersji 10 listopada 2026. Instaluj ją tylko, gdy wymaga jej konkretny program.",
       "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/9"
+    },
+    {
+      "id": "install.dotnet-desktop-10",
+      "wingetId": "Microsoft.DotNet.DesktopRuntime.10",
+      "title": ".NET Desktop Runtime 10",
+      "summary": "Środowisko .NET 10 potrzebne programom okienkowym napisanym w .NET.",
+      "category": "runtimes",
+      "match": { "displayName": "Microsoft Windows Desktop Runtime 10.* (x64)", "publisher": "Microsoft Corporation" },
+      "source": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/10"
     }
   ]
 }

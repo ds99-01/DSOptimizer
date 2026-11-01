@@ -1,4 +1,4 @@
-<!-- source: docs/apps/install-README.md sha256: 031da64c715a7386aa626df508baba1349252249cfcf8e3a2e25c9fc6d4d9eec -->
+<!-- source: docs/apps/install-README.md sha256: c6b1f46a972896cd0e4b3fe2aef7eb71dd6697914df1e9ecb68df9b64e8fc5cc -->
 
 # App install – list `apps.json`
 
@@ -83,7 +83,7 @@ exception is thrown for a duplicate `id` or `wingetId` and an unknown category.
   editor of the same publisher (`Foxit PDF Editor`, winget `Foxit.PhantomPDF`; negative test on a synthetic name). The test `AppsInstallCatalogTests.BuiltIn_MatchFromMeasuredUninstallEntry` checks this on entries
   from the measurement.
 
-## List – entries with evidence (35)
+## List – entries with evidence (36)
 
 Evidence: VM measurement 2026-10-24 (`docs/zrodla/2026-10-24-etap4c-pomiary.md` (in Polish), raw results outside git). `show` = 0 on Home and Pro for every item (installer type in brackets
 from `show`). "Pro"/"Home" = code and time of the attempt without `--locale` (the program's command); `0x8A150061` = already installed
@@ -132,6 +132,7 @@ with network (RustDesk plan, Task 7 – paragraph "RustDesk: CLI run with networ
 | `install.vcredist-x86` | `Microsoft.VCRedist.2015+.x86` | runtimes | 0 (burn) | computer (HKLM32) | 0 (9 s) | – | Pro: `Installed` (8 s) | `Microsoft Visual C++ v14 Redistributable (x86) - 14.51.36247` / `Microsoft Corporation` (+ 2 × `SystemComponent=1`) | `displayName: "Microsoft Visual C++ *Redistributable (x86) - 14.*"`, `publisher: "Microsoft Corporation"` (also catches `… 2015-2022 Redistributable (x86) - 14.51.36231` from T11 Home) | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/VCRedist/2015+/x86 |
 | `install.dotnet-desktop-8` | `Microsoft.DotNet.DesktopRuntime.8` | runtimes | 0 (burn) | computer (HKLM32) | 0 (13 s) | – | Pro: `Installed` (12 s); Home: `Installed` (17 s) | `Microsoft Windows Desktop Runtime - 8.0.32 (x64)` / `Microsoft Corporation` (+ 4 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Windows Desktop Runtime - 8.* (x64)"`, `publisher: "Microsoft Corporation"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/8 |
 | `install.dotnet-desktop-9` | `Microsoft.DotNet.DesktopRuntime.9` | runtimes | 0 (burn) | computer (HKLM32) | 0 (11 s) | – | Pro: `Installed` (13 s) | `Microsoft Windows Desktop Runtime - 9.0.21 (x64)` / `Microsoft Corporation` (+ 4 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Windows Desktop Runtime - 9.* (x64)"`, `publisher: "Microsoft Corporation"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/9 |
+| `install.dotnet-desktop-10` | `Microsoft.DotNet.DesktopRuntime.10` | runtimes | – | computer (HKLM32) | – | – | Pro: `Installed` (15 s); Home: `Installed` (16 s) | `Microsoft Windows Desktop Runtime 10.0.14 (x64)` / `Microsoft Corporation` (no hyphen after "Runtime", unlike 8 and 9; + 4 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Windows Desktop Runtime 10.* (x64)"`, `publisher: "Microsoft Corporation"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/10 |
 
 Evidence rule (spec 2): every winget item has `show` = 0, and each one went through a full installation with a reading of the Uninstall entry on Pro
 (Discord – entry with a delay, below). VC++ x64 gave only `0x8A150061` in the main measurement, because winget had installed it earlier
@@ -255,6 +256,11 @@ Raw results outside git (`releases.json`, `download.json`, `install.json`, `diff
   `AdobeAcrobatReaderCoreApp` (account and Windows image), PowerToys → 5 AppX packages, WinRAR → `WinRAR.ShellExtension`,
   Notepad++ (EXE installer) → `NotepadPlusPlus`, Foxit PDF Reader → `FoxitReaderUpdateService` service (automatic start).
 - **WinRAR:** "Paid after the trial period." (spec point 4).
+- **.NET 8 and 9 end of support:** "Microsoft ends support for this version on November 10, 2026. Install it only if a specific program
+  needs it." According to Microsoft's `releases-index.json` (as of 2026-11-01), .NET 8 and 9 end support on 2026-11-10, and .NET 10 is
+  LTS until 2028-11-14, so 10 has no warning. Versions 8 and 9 stay on the list because a runtime is installed precisely when a specific
+  program needs it, and such programs are often built on an older version. Entry 10 (2026-11-01, VM Pro and Home, `--install-apps`,
+  `Installed`, `--list-install` `installed=true`) has a visible entry without a hyphen, so its `match` rule differs from 8 and 9.
 
 ### Rule limitations (deliberate)
 

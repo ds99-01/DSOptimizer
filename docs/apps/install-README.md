@@ -81,7 +81,7 @@ wyjątek dostaje duplikat `id` albo `wingetId` i nieznana kategoria.
   edytora tego samego wydawcy (`Foxit PDF Editor`, winget `Foxit.PhantomPDF`; test negatywny na nazwie syntetycznej). Pilnuje tego test `AppsInstallCatalogTests.BuiltIn_MatchFromMeasuredUninstallEntry` na wpisach
   z pomiaru.
 
-## Lista – pozycje z dowodem (35)
+## Lista – pozycje z dowodem (36)
 
 Dowód: pomiar VM 2026-10-24 (`docs/zrodla/2026-10-24-etap4c-pomiary.md`, surowe wyniki poza gitem). `show` = 0 na Home i Pro dla każdej pozycji (w nawiasie typ instalatora
 z `show`). „Pro”/„Home” = kod i czas próby bez `--locale` (polecenie programu); `0x8A150061` = już zainstalowane
@@ -130,6 +130,7 @@ z siecią (plan RustDesk, Task 7 – akapit „RustDesk: przebieg CLI z siecią�
 | `install.vcredist-x86` | `Microsoft.VCRedist.2015+.x86` | runtimes | 0 (burn) | komputer (HKLM32) | 0 (9 s) | – | Pro: `Installed` (8 s) | `Microsoft Visual C++ v14 Redistributable (x86) - 14.51.36247` / `Microsoft Corporation` (+ 2 × `SystemComponent=1`) | `displayName: "Microsoft Visual C++ *Redistributable (x86) - 14.*"`, `publisher: "Microsoft Corporation"` (łapie też `… 2015-2022 Redistributable (x86) - 14.51.36231` z T11 Home) | wchodzi | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/VCRedist/2015+/x86 |
 | `install.dotnet-desktop-8` | `Microsoft.DotNet.DesktopRuntime.8` | runtimes | 0 (burn) | komputer (HKLM32) | 0 (13 s) | – | Pro: `Installed` (12 s); Home: `Installed` (17 s) | `Microsoft Windows Desktop Runtime - 8.0.32 (x64)` / `Microsoft Corporation` (+ 4 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Windows Desktop Runtime - 8.* (x64)"`, `publisher: "Microsoft Corporation"` | wchodzi | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/8 |
 | `install.dotnet-desktop-9` | `Microsoft.DotNet.DesktopRuntime.9` | runtimes | 0 (burn) | komputer (HKLM32) | 0 (11 s) | – | Pro: `Installed` (13 s) | `Microsoft Windows Desktop Runtime - 9.0.21 (x64)` / `Microsoft Corporation` (+ 4 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Windows Desktop Runtime - 9.* (x64)"`, `publisher: "Microsoft Corporation"` | wchodzi | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/9 |
+| `install.dotnet-desktop-10` | `Microsoft.DotNet.DesktopRuntime.10` | runtimes | – | komputer (HKLM32) | – | – | Pro: `Installed` (15 s); Home: `Installed` (16 s) | `Microsoft Windows Desktop Runtime 10.0.14 (x64)` / `Microsoft Corporation` (bez myślnika po „Runtime”, inaczej niż 8 i 9; + 4 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Windows Desktop Runtime 10.* (x64)"`, `publisher: "Microsoft Corporation"` | wchodzi | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/10 |
 
 Zasada dowodu (spec 2): każda pozycja winget ma `show` = 0, a każda przeszła pełną instalację z odczytem wpisu Uninstall na Pro
 (Discord – wpis z opóźnieniem, niżej). VC++ x64 w głównym pomiarze dał tylko `0x8A150061`, bo winget doinstalował go wcześniej
@@ -253,6 +254,11 @@ Surowe wyniki poza gitem (`releases.json`, `download.json`, `install.json`, `dif
   `AdobeAcrobatReaderCoreApp` (konto i obraz systemu), PowerToys → 5 pakietów AppX, WinRAR → `WinRAR.ShellExtension`,
   Notepad++ (instalator EXE) → `NotepadPlusPlus`, Foxit PDF Reader → usługa `FoxitReaderUpdateService` (start automatyczny).
 - **WinRAR:** „Program płatny po okresie próbnym.” (spec pkt 4).
+- **Koniec wsparcia .NET 8 i 9:** „Microsoft kończy wsparcie tej wersji 10 listopada 2026. Instaluj ją tylko, gdy wymaga jej konkretny
+  program.” Według `releases-index.json` Microsoftu (stan na 2026-11-01) .NET 8 i 9 mają koniec wsparcia 2026-11-10, a .NET 10 to LTS
+  do 2028-11-14, więc 10 nie ma ostrzeżenia. Wersje 8 i 9 zostają na liście, bo runtime instaluje się dlatego, że wymaga go konkretny
+  program, a takie programy bywają zbudowane na starszej wersji. Pozycja 10 (2026-11-01, VM Pro i Home, `--install-apps`, `Installed`,
+  `--list-install` `installed=true`) ma wpis bez myślnika, więc reguła `match` różni się od 8 i 9.
 
 ### Ograniczenia reguł (świadome)
 

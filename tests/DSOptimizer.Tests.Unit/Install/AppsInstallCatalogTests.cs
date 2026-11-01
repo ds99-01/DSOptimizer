@@ -366,7 +366,7 @@ public class AppsInstallCatalogTests
         "CPUID.CPU-Z", "CPUID.HWMonitor", "TechPowerUp.GPU-Z", "REALiX.HWiNFO",
         "github:rustdesk/rustdesk", "AnyDesk.AnyDesk", "TeamViewer.TeamViewer",
         "Valve.Steam", "EpicGames.EpicGamesLauncher", "GOG.Galaxy",
-        "Microsoft.VCRedist.2015+.x64", "Microsoft.VCRedist.2015+.x86", "Microsoft.DotNet.DesktopRuntime.8", "Microsoft.DotNet.DesktopRuntime.9",
+        "Microsoft.VCRedist.2015+.x64", "Microsoft.VCRedist.2015+.x86", "Microsoft.DotNet.DesktopRuntime.8", "Microsoft.DotNet.DesktopRuntime.9", "Microsoft.DotNet.DesktopRuntime.10",
     };
 
     /// <summary>Pozycje z wpisem Uninstall w gałęzi HKU (instalacja per użytkownik, pomiar Pro/Home 2026-10-24).</summary>
@@ -418,7 +418,7 @@ public class AppsInstallCatalogTests
             .Split('\n').Where(l => l.StartsWith("| `install.", StringComparison.Ordinal)).ToList();
         var entries = BuiltIn().Entries;
 
-        Assert.Equal(35, entries.Count);
+        Assert.Equal(36, entries.Count);
         Assert.Equal(entries.Count, table.Count);
         Assert.Contains("(" + entries.Count + ")", section.Split('\n')[1], StringComparison.Ordinal);
         foreach (var entry in entries)
@@ -462,7 +462,7 @@ public class AppsInstallCatalogTests
     public void BuiltIn_RuntimesCategoryHasVcRedistAndDotNet()
     {
         Assert.Equal(
-            new[] { "Microsoft.VCRedist.2015+.x64", "Microsoft.VCRedist.2015+.x86", "Microsoft.DotNet.DesktopRuntime.8", "Microsoft.DotNet.DesktopRuntime.9" },
+            new[] { "Microsoft.VCRedist.2015+.x64", "Microsoft.VCRedist.2015+.x86", "Microsoft.DotNet.DesktopRuntime.8", "Microsoft.DotNet.DesktopRuntime.9", "Microsoft.DotNet.DesktopRuntime.10" },
             BuiltIn().Entries.Where(e => e.Category == InstallCategory.Runtimes).Select(e => e.WingetId));
     }
 
@@ -515,6 +515,16 @@ public class AppsInstallCatalogTests
         Assert.Equal(InstallCategory.RemoteHelp, gitHub.Category);
         Assert.Equal(new AppMatch(null, "RustDesk", "Purslane Tech*"), gitHub.Match);
     }
+
+    [Theory]
+    [InlineData("install.dotnet-desktop-8")]
+    [InlineData("install.dotnet-desktop-9")]
+    public void DotNet8And9_WarnAboutEndOfSupport(string id)
+        => Assert.Equal("Microsoft kończy wsparcie tej wersji 10 listopada 2026. Instaluj ją tylko, gdy wymaga jej konkretny program.", BuiltIn().Entries.Single(e => e.Id == id).Warning);
+
+    [Fact]
+    public void DotNet10_HasNoEndOfSupportWarning()
+        => Assert.Null(BuiltIn().Entries.Single(e => e.Id == "install.dotnet-desktop-10").Warning);
 
     [Fact]
     public void BuiltIn_WarningsFromMeasurement()
@@ -609,6 +619,8 @@ public class AppsInstallCatalogTests
         yield return new object?[] { "Microsoft Windows Desktop Runtime - 8.0.32 (x64)", "Microsoft Corporation", false, "install.dotnet-desktop-8" };
         yield return new object?[] { "Microsoft Windows Desktop Runtime - 8.0.32 (x64)", "Microsoft Corporation", true, "install.dotnet-desktop-8" };
         yield return new object?[] { "Microsoft Windows Desktop Runtime - 9.0.21 (x64)", "Microsoft Corporation", false, "install.dotnet-desktop-9" };
+        // Pomiar VM Pro 2026-11-01: 10.0.14 ma w HKLM32 widoczny wpis bez myślnika (inaczej niż 8 i 9).
+        yield return new object?[] { "Microsoft Windows Desktop Runtime 10.0.14 (x64)", "Microsoft Corporation", false, "install.dotnet-desktop-10" };
 
         // Świeży 26H2 (baseline Home i Pro) i składniki doinstalowane obok: żadna reguła nie pasuje.
         yield return new object?[] { "Microsoft Edge", "Microsoft Corporation", false, null };

@@ -33,10 +33,10 @@ BeforeAll {
 }
 
 Describe 'Plan pomiaru (plan Tasku 2 Etapu 4c, spec pkt 4 i 8)' {
-    It 'lista startowa = spec pkt 4: 33 pozycje w 8 kategoriach, identyfikatory dosłownie' {
+    It 'lista startowa = spec pkt 4: 34 pozycje w 8 kategoriach, identyfikatory dosłownie' {
         $Plan = Get-E4CPlan
         $Ids = @($Plan.Apps | ForEach-Object { $_.WingetId })
-        $Ids.Count | Should -Be 33
+        $Ids.Count | Should -Be 34
         $Ids | Should -Be @(
             'Google.Chrome', 'Mozilla.Firefox', 'Brave.Brave', 'Opera.Opera',
             'Discord.Discord', 'Telegram.TelegramDesktop', 'OpenWhisperSystems.Signal', 'Zoom.Zoom', 'Microsoft.Teams',
@@ -45,7 +45,7 @@ Describe 'Plan pomiaru (plan Tasku 2 Etapu 4c, spec pkt 4 i 8)' {
             '7zip.7zip', 'Notepad++.Notepad++', 'voidtools.Everything', 'Microsoft.PowerToys', 'RARLab.WinRAR', 'ShareX.ShareX', 'CPUID.CPU-Z', 'CPUID.HWMonitor', 'TechPowerUp.GPU-Z',
             'AnyDesk.AnyDesk', 'TeamViewer.TeamViewer',
             'Valve.Steam', 'EpicGames.EpicGamesLauncher', 'GOG.Galaxy',
-            'Microsoft.VCRedist.2015+.x64', 'Microsoft.VCRedist.2015+.x86', 'Microsoft.DotNet.DesktopRuntime.8', 'Microsoft.DotNet.DesktopRuntime.9')
+            'Microsoft.VCRedist.2015+.x64', 'Microsoft.VCRedist.2015+.x86', 'Microsoft.DotNet.DesktopRuntime.8', 'Microsoft.DotNet.DesktopRuntime.9', 'Microsoft.DotNet.DesktopRuntime.10')
         @($Plan.Apps | ForEach-Object { $_.Category } | Select-Object -Unique) | Should -Be @('browsers', 'messengers', 'multimedia', 'documents', 'tools', 'remote-help', 'games', 'runtimes')
         foreach ($Id in $Ids) { Test-E4CWingetId -Id $Id | Should -BeTrue -Because $Id }
     }
@@ -74,9 +74,9 @@ Describe 'Plan pomiaru (plan Tasku 2 Etapu 4c, spec pkt 4 i 8)' {
     It 'Get-E4CInstallIds: Pro = cała lista (środowiska uruchomieniowe najpierw), Home = po jednej z każdej kategorii, w tym Discord (per user)' {
         $Plan = Get-E4CPlan
         $Pro = @(Get-E4CInstallIds -VmName 'DSO-26H2-Pro' -Plan $Plan)
-        $Pro.Count | Should -Be 33
-        $Pro[0..3] | Should -Be @('Microsoft.VCRedist.2015+.x64', 'Microsoft.VCRedist.2015+.x86', 'Microsoft.DotNet.DesktopRuntime.8', 'Microsoft.DotNet.DesktopRuntime.9')
-        $Pro[4] | Should -Be 'Google.Chrome'
+        $Pro.Count | Should -Be 34
+        $Pro[0..4] | Should -Be @('Microsoft.VCRedist.2015+.x64', 'Microsoft.VCRedist.2015+.x86', 'Microsoft.DotNet.DesktopRuntime.8', 'Microsoft.DotNet.DesktopRuntime.9', 'Microsoft.DotNet.DesktopRuntime.10')
+        $Pro[5] | Should -Be 'Google.Chrome'
         $Home1 = @(Get-E4CInstallIds -VmName 'DSO-26H2-Home' -Plan $Plan)
         $Home1 | Should -Contain 'Discord.Discord'
         $Categories = @($Home1 | ForEach-Object { $Id = $_; @($Plan.Apps | Where-Object { $_.WingetId -eq $Id })[0].Category } | Select-Object -Unique)
@@ -102,7 +102,7 @@ Describe 'Faza cli-install (Task 11: seria --install-apps przez CLI z siecią)' 
         $Plan = Get-E4CPlan
         $Pro = @(Get-E4CCliInstallIds -VmName 'DSO-26H2-Pro' -Plan $Plan -AppsCatalogPath $script:AppsCatalog)
         $Pro | Should -Be @($script:AppsEntries | ForEach-Object { [string]$_.id })
-        $Pro.Count | Should -Be 35
+        $Pro.Count | Should -Be 36
         $Pro | Should -Contain 'install.rustdesk'
         $HomeIds = @(Get-E4CCliInstallIds -VmName 'DSO-26H2-Home' -Plan $Plan -AppsCatalogPath $script:AppsCatalog)
         $HomeIds[-1] | Should -BeExactly "winget:$($Plan.SearchCandidate.WingetId)"
@@ -845,7 +845,7 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
         @($script:Calls) | Should -Be @('revert DSO-26H2-Pro', 'start DSO-26H2-Pro', 'ready', 'copy build C:\b C:\c.json C:\dso\app\DSOptimizer.exe', 'phase baseline',
             'connect DSO-26H2-Pro Default Switch', 'phase cli-install', 'disconnect DSO-26H2-Pro',
             'copy raw', 'revert DSO-26H2-Pro', 'disconnect DSO-26H2-Pro', 'save e4c.json')
-        @(($script:PlanJsons[0] | ConvertFrom-Json).CliIds).Count | Should -Be 35
+        @(($script:PlanJsons[0] | ConvertFrom-Json).CliIds).Count | Should -Be 36
         ($script:PlanJsons[0] | ConvertFrom-Json).CliRepeat | Should -BeFalse
         $script:SavedResult.cleanup.Ok | Should -BeTrue
         $script:SavedResult.error | Should -BeNullOrEmpty

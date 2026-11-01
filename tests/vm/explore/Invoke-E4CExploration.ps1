@@ -81,7 +81,7 @@ function Get-E4CPlan {
         @('tools', 'CPUID.CPU-Z'), @('tools', 'CPUID.HWMonitor'), @('tools', 'TechPowerUp.GPU-Z'),
         @('remote-help', 'AnyDesk.AnyDesk'), @('remote-help', 'TeamViewer.TeamViewer'),
         @('games', 'Valve.Steam'), @('games', 'EpicGames.EpicGamesLauncher'), @('games', 'GOG.Galaxy'),
-        @('runtimes', 'Microsoft.VCRedist.2015+.x64'), @('runtimes', 'Microsoft.VCRedist.2015+.x86'), @('runtimes', 'Microsoft.DotNet.DesktopRuntime.8'), @('runtimes', 'Microsoft.DotNet.DesktopRuntime.9')
+        @('runtimes', 'Microsoft.VCRedist.2015+.x64'), @('runtimes', 'Microsoft.VCRedist.2015+.x86'), @('runtimes', 'Microsoft.DotNet.DesktopRuntime.8'), @('runtimes', 'Microsoft.DotNet.DesktopRuntime.9'), @('runtimes', 'Microsoft.DotNet.DesktopRuntime.10')
     ) | ForEach-Object { [ordered]@{ WingetId = $_[1]; Category = $_[0] } }
     return [ordered]@{
         Apps                  = @($Apps)
