@@ -1,0 +1,33 @@
+# Wyjątki strażnika wewnętrznych notatek (DocsInternalNotesTests): fragmenty, które celowo zostają w publicznych dokumentach.
+# Format: ścieżka względem repo<TAB>fragment linii dokładnie jak w pliku<TAB>powód. Nieaktualny wpis jest błędem testu.
+# Dopisuj tylko sprawdzony wyjątek z powodem (przypięty hash cudzego źródła, autor cudzego programu); jeden wpis w wierszu.
+docs/en/tweaks/panels.computer-management.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.control-panel.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.date-time.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.devices-printers.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.firewall.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.mouse.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.network-connections.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.power-options.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.programs-features.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.region.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.security-maintenance.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.sound.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.system-properties.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/panels.system-restore.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/en/tweaks/ux.game-dvr.md	whether the author is an MS employee	autor cudzej odpowiedzi na Microsoft Q&A, nie osoba tworząca program
+docs/tweaks/panels.computer-management.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.control-panel.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.date-time.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.devices-printers.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.firewall.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.mouse.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.network-connections.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.power-options.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.programs-features.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.region.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.security-maintenance.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.sound.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.system-properties.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/panels.system-restore.md	WinUtil `config/feature.json` @ `144d516`	przypięty hash cudzego źródła (WinUtil, MIT)
+docs/tweaks/ux.game-dvr.md	czy autor jest pracownikiem MS	autor cudzej odpowiedzi na Microsoft Q&A, nie osoba tworząca program
