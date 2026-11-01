@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.dns-flush.md sha256: 7c3d83ac21852039afc70ca1df4469a9924492482c96ec1250175f1be3fe3e16 -->
+<!-- source: docs/tweaks/repair.dns-flush.md sha256: e9dcd08594f12584d5708d2340ac5d849b92c1d7744b0182fc38e612f37a9af3 -->
 
 # repair.dns-flush – Clear the DNS cache
 
@@ -14,14 +14,14 @@ Clears the DNS client cache (the `Dnscache` service). Doesn't change DNS setting
 
 Success criterion (decision from the measurement): every entry that stays in the cache after clearing is for a name from the `hosts` file (the words after the address, without `#` comments, without a trailing dot, case-insensitive) or for its reverse name (`*.in-addr.arpa`, `*.ip6.arpa`), of any type and status. An empty cache is also a success. Any other entry = `Failed` "The DNS cache wasn't cleared: N entries remain." Success: "Cleared the DNS cache (entries before: N, after: M – only entries from the hosts file)."
 
-We don't count the drop in the number of entries: `Get-DnsClientCache` doesn't show public names resolved by `Resolve-DnsName` or by apps (measurement N1), so "before" is sometimes smaller than it seems, and a drop proves nothing.
+We don't count the drop in the number of entries: `Get-DnsClientCache` doesn't show public names resolved by `Resolve-DnsName` or by apps (measurement on Pro with a network), so "before" is sometimes smaller than it seems, and a drop proves nothing.
 
 ## Sources
 - Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: `ipconfig /flushdns` (code 0) and `Clear-DnsClientCache` give the same cache state.
 - No MS documentation checked in this task (the cmdlet pages for `Clear-DnsClientCache`/`Get-DnsClientCache` weren't fetched); evidence: the VM test described above. The behavior "entries from `hosts` stay" comes only from the measurement.
 
 ## Defaults on a fresh 26H2
-DNS cache on a fresh VM after clearing: Home 2 entries (A for the name from `hosts` and PTR `67.45.123.10.in-addr.arpa`, TTL about 604,700 s), Pro the same (reading 2026-10-22). With a network (N1, Pro): 3 entries, all from `hosts` (A, PTR and a negative AAAA with status 9501); `wpad` and the negative name disappear.
+DNS cache on a fresh VM after clearing: Home 2 entries (A for the name from `hosts` and PTR `67.45.123.10.in-addr.arpa`, TTL about 604,700 s), Pro the same (reading 2026-10-22). With a network (Pro): 3 entries, all from `hosts` (A, PTR and a negative AAAA with status 9501); `wpad` and the negative name disappear.
 
 ## Detection and undo
 Not applicable: `kind=action` has no detection or undo (no journal). The evidence of the effect is the verification in the script: code 0 without it isn't enough. The cache rebuilds itself with the next queries.

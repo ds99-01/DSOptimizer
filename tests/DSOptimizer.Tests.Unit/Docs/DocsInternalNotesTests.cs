@@ -53,7 +53,8 @@ public class DocsInternalNotesTests
     {
         @"\b(?:[Mm]ock|[Ff]ake)\w*",
         @"\bspecu\b|\bfrom the spec\b",
-        @"\bsond[ayąęo]\b|\bprobe\b S?\d",
+        @"\bsond\w*|\bprobe\b S?\d",
+        @"\b(?:pomiar\w*|measurement) [HPAN]\d\b|\([HPAN]\d[:,]|; [HPAN]\d:",
         @"\b(?:decyzj\w*|decision) [DS]\d+\b",
         // oznaczenia przebiegów, reguł i sond tylko w zwrotach, które naprawdę wystąpiły (nie S0-S5 stanów uśpienia ani nazw sprzętu)
         @"\b(?:przebieg\w*|runs?|reguł\w*|rules?|mechanizm\w*|mechanisms?|przypadkach|sonda|probe|from|z) [CDTAHPN]\d+\b|\b[CDTAHPN]\d+ (?:run|cases)\b|\(S\d+,|\([CDTAHPN]\d+\)|\bA[1-4] (?:plik|file|folder)\b|; A[1-4] ",
@@ -115,6 +116,12 @@ public class DocsInternalNotesTests
     [InlineData("not in this batch")]
     [InlineData("Skips from earlier rounds")]
     [InlineData("Eksploracja w sesji użytkownika")]
+    [InlineData("(H1: brak okna w 71 s; P1: otwiera się Eksplorator)")]
+    [InlineData("Z siecią (N1, Pro): 3 wpisy")]
+    [InlineData("jak Home (P1, N1); nowy")]
+    [InlineData("(pomiar N1), więc")]
+    [InlineData("(measurement N1), so")]
+    [InlineData("w głównej sondzie bez okna")]
     [InlineData("The exploration of 2026-10-21 passed")]
     public void FindNotes_FindsInternalNote(string line) => Assert.NotEmpty(FindNotes(line));
 
@@ -133,6 +140,8 @@ public class DocsInternalNotesTests
     [InlineData("klucz `C5` w spanie kodu i `decyzja D2` też")]
     [InlineData("testy jednostkowe, bez prawdziwego polecenia")]
     [InlineData("Test na VM, zebrane na VM")]
+    [InlineData("Pomiar na VM (Home: brak okna; Pro: Dokumenty)")]
+    [InlineData("pomiar na Pro z siecią, measurement on Pro")]
     public void FindNotes_LeavesOrdinaryText(string line) => Assert.Empty(FindNotes(line));
 
     /// <summary>Linia bez fragmentów dozwolonych dla pliku: wyjątek zwalnia tylko ten fragment, nie całą linię.</summary>

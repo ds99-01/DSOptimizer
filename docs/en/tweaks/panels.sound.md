@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/panels.sound.md sha256: 8513d90ae4799431ec350afeb09fd55fb8510523f911c8848f133d70b55f22ea -->
+<!-- source: docs/tweaks/panels.sound.md sha256: 4e945d4f84bac5865ccb2aa969951694197066ebac1277c735e33908dc31e6b6 -->
 
 # panels.sound – Sound
 
@@ -23,7 +23,7 @@ Rejected variants (not separate items; VM data in the "Sources" section):
 Not applicable: the item doesn't read or write any settings. The only system state after running it is the window's process (VM reading, 2026-10-19, above).
 
 ## Detection and undo
-Not applicable: `kind=panel` has no detection and no undo. `Executed` only means that the process started; whether the window appeared is judged by the VM test in the `dso` user session (elevated task; smoke test with the real DSOptimizer.exe in the dso session – not checked manually in the app).
+Not applicable: `kind=panel` has no detection and no undo. `Executed` only means that the process started; whether the window appeared is judged by the VM measurement in the `dso` user session (elevated task; smoke test with the real DSOptimizer.exe in the dso session – not checked manually in the app).
 
 ## Risks and warnings
 - `risk=safe`: the item changes nothing in the system; you close the window yourself (DSOptimizer doesn't wait for it and doesn't close it).
@@ -33,6 +33,6 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 ## VM test
 VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in each of the panel cases.
 - `panels-sound` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: `rundll32.exe` with a command line containing `mmsys.cpl` is running; `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (the Administrator account over PowerShell Direct, session 0), not that the window appeared for the user.**
-- VM test in the `dso` user session (elevated task, `Limited` token): the "Dźwięk" (Sound) window (`#32770`, in an elevated `rundll32.exe`). Home = Pro.
+- VM measurement in the `dso` user session (elevated task, `Limited` token): the "Dźwięk" (Sound) window (`#32770`, in an elevated `rundll32.exe`). Home = Pro.
 - The manual click (Pro VM, `dso` session, Win+R, 2026-10-19): `mmsys.cpl` got no response - this item was skipped. So the "Dźwięk" (Sound) window is confirmed only by the VM reading in the `dso` user session (elevated task); the manual click neither confirms nor disproves this item. To be confirmed on first use from DSOptimizer.
 - **Smoke test with the real `DSOptimizer.exe` in the `dso` session: not checked manually in the app**. Not done; the item goes into `main` with this caveat. A mismatch between "the process is running" (Check) and a window visible to the user will show up only on first use from the app.

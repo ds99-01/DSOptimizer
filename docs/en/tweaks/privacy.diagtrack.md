@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.diagtrack.md sha256: 8ac9d0489ed9f7e8da267250da6d83041a4f31d9c736bb29748dbec2ef34fcf9 -->
+<!-- source: docs/tweaks/privacy.diagtrack.md sha256: ecb609e38419c9ab7b9ce483b0e2bcd1e9ff3cf39d47ce1fc96f5fdd16a47e26 -->
 
 # privacy.diagtrack – Turn off the DiagTrack telemetry service
 
@@ -30,7 +30,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `DiagTrack` sta
 - The performance gain wasn't measured (previously in the program: "The performance gain wasn't measured"; since 2026-10-26 the description says only what changes).
 
 ## VM test
-Case `privacy-diagtrack` (`Flow=Full`) in `tests/vm/cases.psd1`: a non-empty `Snapshot` of the `DiagTrack` service (state before = state after undo), after apply `Disabled` + `Stopped`, after undo `Automatic` + `Running`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). After apply the service is `Disabled` + `Stopped` (`Start`=4), after undo the startup type from the snapshot: `Auto` + `Running` (`Start`=2), as before apply. The VM test of 2026-10-21 passed on Home and Pro.
+Case `privacy-diagtrack` (`Flow=Full`) in `tests/vm/cases.psd1`: a non-empty `Snapshot` of the `DiagTrack` service (state before = state after undo), after apply `Disabled` + `Stopped`, after undo `Automatic` + `Running`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). After apply the service is `Disabled` + `Stopped` (`Start`=4), after undo the startup type from the snapshot: `Auto` + `Running` (`Start`=2), as before apply. A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: service state (startup type, running) after the change and after a VM restart; Windows Update Agent `Search("IsInstalled=0 and Type='Software'")` after the restart. Result: the service is stopped and doesn't start after the restart; search: ResultCode=2 (success), 4 updates, no error. After undo: Automatic and Running.

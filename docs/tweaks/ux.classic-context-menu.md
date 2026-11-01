@@ -17,7 +17,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: `HKU\<SID>\Software\Classe
 ## Detekcja i undo
 - Detekcja: wartość domyślna `InprocServer32` = pusty REG_SZ -> `Applied`; brak klucza lub inna wartość -> `NotApplied`.
 - Undo przywraca snapshot sprzed zmiany z journala (brak wartości = usunięcie wartości, a potem obu kluczy utworzonych przez apply); `original` = `<RemoveEntry>` to tylko fallback.
-- Obserwacja z ręcznego testu na VM: po cofnięciu oba klucze zostały usunięte, a po restarcie Eksploratora wróciło menu Windows 11. Usunięcie obu kluczy przez silnik potwierdził przypadek VM 2026-10-21 na Home i Pro (sekcja „Test VM”).
+- Obserwacja z pomiaru skryptem na VM: po cofnięciu oba klucze zostały usunięte, a po restarcie Eksploratora wróciło menu Windows 11. Usunięcie obu kluczy przez silnik potwierdził przypadek VM 2026-10-21 na Home i Pro (sekcja „Test VM”).
 
 ## Ryzyka i ostrzeżenia
 - `risk=caution`, `suggested=false`.

@@ -2,7 +2,7 @@
 
 ## Werdykt 26H2
 Portować jako `kind=action`, `risk=caution` (kategoria „Naprawy”, długa naprawa z oknem postępu). Mechanizm
-zmierzony na VM 26H2 Home i Pro (pomiary 5, 5f i 6): program obsługi
+zmierzony na VM 26H2 Home i Pro (pomiary na VM): program obsługi
 „Previous Installations” Oczyszczania dysku (`cleanmgr /sagerun`) rozpoznaje przygotowany folder `C:\Windows.old` i go usuwa.
 Tylko mechanizm A – bez przejmowania własności i zmiany ACL w C# (przyjęta decyzja). Przygotowany folder to zwykłe
 pliki z właścicielem `BUILTIN\Administratorzy`; prawdziwy `Windows.old` po aktualizacji funkcji ma pliki z ACL `TrustedInstaller` i
@@ -21,7 +21,7 @@ Handler C# `windows-old` (`WindowsOldHandler`), bez skryptu katalogu:
    `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches` (`IRegistry.SubKeyNames`, widok 64-bit) i odczyt wartości
    `StateFlags7351` pod każdym. Istniejąca wartość (cudze `cleanmgr /sageset:7351` albo przerwany wcześniej przebieg), błąd odczytu
    albo brak klucza `VolumeCaches\Previous Installations` = `Failed` „… – nic nie zmieniono.”; niczego nie zapisujemy i nie
-   uruchamiamy. Numer `WindowsOldHandler.SageRunId = 7351` z pomiaru 5f (na świeżej 26H2 brak jakiejkolwiek wartości `StateFlags*`
+   uruchamiamy. Numer `WindowsOldHandler.SageRunId = 7351` z pomiaru na VM (na świeżej 26H2 brak jakiejkolwiek wartości `StateFlags*`
    pod 31 programami obsługi; `cleanmgr` przyjmuje 0–9999).
 4. Po potwierdzeniu przebiegu nie da się przerwać: oba zdarzenia postępu mają `ActionProgress.Stoppable = false`, więc
    `ActionRun.CanStop` jest `false` przez cały przebieg i okno nie oferuje „Zatrzymaj” (test `GuiModel_CanStopFalseThroughoutRun`).
@@ -49,7 +49,7 @@ Handler niczego sam nie usuwa, nie przejmuje własności i nie zmienia ACL (test
 
 ## Źródła
 - Test na VM 26H2 Home i Pro (build 26300.9457, pl-PL), 2026-10-22:
-  pomiary 5, 5f i 6 (skrypt `tests/vm/explore/Invoke-E4B2Exploration.ps1`, `Invoke-E4B2WindowsOldProbe`).
+  pomiary na VM (skrypt `tests/vm/explore/Invoke-E4B2Exploration.ps1`, `Invoke-E4B2WindowsOldProbe`).
 - `cleanmgr` (`/sageset:n`, `/sagerun:n`, n = 0–9999): https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/cleanmgr
   (MS Learn, za pomiarem z 2026-10-22).
 - `StateFlagsNNNN` pod `VolumeCaches\<program obsługi>` (0 = niezaznaczone, 2 = zaznaczone):
@@ -83,8 +83,8 @@ zakończeniu cleanmgr i wolne miejsce przed/po. Usuniętej poprzedniej instalacj
 Przypadki w `tests/vm/cases.psd1`, `Flow='Execute'`, wbudowany katalog, bez sieci:
 - `repair-windows-old-absent` (bez `RunAs`): świeża VM bez `Windows.old` → `NotSupported`, kod 1, komunikat „nie ma czego usuwać”;
   `Check`: folderu nie ma, żadnej wartości `StateFlags7351` pod `VolumeCaches`, cleanmgr nie działa.
-- `repair-windows-old` (`RunAs='dso'`, CLI z zadania Harmonogramu konta `dso` – z PS Direct cleanmgr się nie kończy, pomiar 5), `CliTimeoutSeconds = 3000` (powyżej limitu handlera 2700 s, żeby wynik `NotConfirmed` też dotarł do raportu).
-  `Setup`: zwykły folder `C:\Windows.old` jak w pomiarze 5 (pliki testowe w `Windows\System32`, `Windows\SysWOW64`,
+- `repair-windows-old` (`RunAs='dso'`, CLI z zadania Harmonogramu konta `dso` – z PS Direct cleanmgr się nie kończy, pomiar na VM), `CliTimeoutSeconds = 3000` (powyżej limitu handlera 2700 s, żeby wynik `NotConfirmed` też dotarł do raportu).
+  `Setup`: zwykły folder `C:\Windows.old` jak w pomiarze na VM (pliki testowe w `Windows\System32`, `Windows\SysWOW64`,
   `Users\Public\Documents`, `Program Files\DsoTest`, `ProgramData\DsoTest`, właściciel Administratorzy, bez zmiany ACL).
   `Check`: `C:\Windows.old` nie istnieje, brak `StateFlags7351` pod wszystkimi `VolumeCaches\*`, cleanmgr nie działa.
   `Expect`: `Executed`, kod 0, komunikat „Usunięto poprzednią instalację Windows.”.

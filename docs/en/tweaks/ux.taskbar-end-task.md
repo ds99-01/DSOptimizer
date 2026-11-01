@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.taskbar-end-task.md sha256: 26b7704566c140d305f1522806981e208ce3b45a075fa83e6b16a649fe4f32ad -->
+<!-- source: docs/tweaks/ux.taskbar-end-task.md sha256: 32edf03c78e7d5cd01d0efdfdd6cdff623419526e6cf7c49d3b5aecfcb79c182 -->
 
 # ux.taskbar-end-task – Add "End task" to the taskbar menu
 
@@ -20,7 +20,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `TaskbarEndTask
 ## Detection and undo
 - Detection: `TaskbarEndTask` = DWORD 1 -> `Applied`; missing value or another value -> `NotApplied`.
 - Undo restores the snapshot from before the change from the journal (missing value = deleting the value and the `TaskbarDeveloperSettings` key, if it was created at apply); `original` = `<RemoveEntry>` is only the fallback.
-- Observation from the manual VM test: after undo and a File Explorer restart, the entry disappears from the button's menu. In the test the key had been created earlier by the Settings toggle, so the deletion of the key itself by undo wasn't observed; the VM case of 2026-10-21 on Home and Pro proved it (section "VM test").
+- Observation from a scripted VM measurement: after undo and a File Explorer restart, the entry disappears from the button's menu. In the test the key had been created earlier by the Settings toggle, so the deletion of the key itself by undo wasn't observed; the VM case of 2026-10-21 on Home and Pro proved it (section "VM test").
 
 ## Risks and warnings
 - `risk=safe`, `suggested=false`.

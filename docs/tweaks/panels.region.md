@@ -31,7 +31,7 @@ Nie dotyczy: `kind=panel` nie ma detekcji ani cofnięcia. `Executed` oznacza tyl
 ## Test VM
 Przebieg VM `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Raporty lokalne poza gitem. Przebieg łącznie: Home 401 zaliczonych / 0 błędów / 29 pominiętych, Pro 401 / 0 / 29 (`main` 313/0/29 + przebiegi Reboot); w każdym z przypadków paneli `CleanupError` puste.
 - `panels-region` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** na Home i Pro (`ExecuteExit=0`, `Executed`). `Check` odpytuje w pętli: żyje `rundll32.exe` z linią poleceń zawierającą `intl.cpl`; `Cleanup` zamyka tylko procesy pasujące do `Check`. **Check dowodzi, że proces z polecenia żyje (konto Administrator przez PowerShell Direct, sesja 0), nie że okno pojawiło się u użytkownika.**
-- Test na VM w sesji użytkownika `dso` (zadanie podniesione, token `Limited`): okno „Region”. Home = Pro.
+- Pomiar na VM w sesji użytkownika `dso` (zadanie podniesione, token `Limited`): okno „Region”. Home = Pro.
 - Klik ręczny (VM Pro, sesja `dso`, Win+R, 2026-10-19): `intl.cpl` otwiera klasyczne okno.
-- Kliknięte polecenie (`intl.cpl`) nie jest tym samym co `launch` pozycji (`control.exe /name Microsoft.RegionAndLanguage`): klik potwierdza panel, a `launch` pozycji potwierdza dopiero test na VM w sesji użytkownika `dso` (zadanie podniesione).
+- Kliknięte polecenie (`intl.cpl`) nie jest tym samym co `launch` pozycji (`control.exe /name Microsoft.RegionAndLanguage`): klik potwierdza panel, a `launch` pozycji potwierdza dopiero pomiar na VM w sesji użytkownika `dso` (zadanie podniesione).
 - **Smoke z prawdziwym `DSOptimizer.exe` w sesji `dso`: nie sprawdzono ręcznie w programie**. Niewykonany; pozycja wchodzi do `main` z tym zastrzeżeniem. Rozbieżność między „proces żyje” (Check) a oknem widocznym dla użytkownika wyjdzie dopiero przy pierwszym użyciu z aplikacji.

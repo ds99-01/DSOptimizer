@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.network-reset.md sha256: 47f257616d25609930e9e40f7b1650838c88f181786c128d44c5b26aa8277618 -->
+<!-- source: docs/tweaks/repair.network-reset.md sha256: dda41bac54c45bfbd9c5265addabf206c54e371ef769c61b011b60a4f3a160d8 -->
 
 # repair.network-reset – Reset network settings
 
@@ -45,4 +45,4 @@ VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Ho
 ## Observed effect
 Method: exit codes and the full `netsh` output, reading the registry `HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\{GUID}` (`IPAddress`, `SubnetMask`, `DefaultGateway`, `NameServer`) before the reset, right after it and after a VM restart; a manual IP set with `netsh interface ipv4 set address … source=static` and `Set-DnsClientServerAddress`.
 - **Home** (`DSO-26H2-Home`, 26300.9457, no network), 2026-10-22: `winsock reset` code 0; `int ip reset` code 1 (one access denial, the rest OK). The `IPAddress`, `SubnetMask`, `DefaultGateway` values disappear from the registry right away; the manual address works until the restart, and after the restart the adapter is on DHCP (APIPA, because there's no network). The manual DNS servers (`NameServer`) survived the reset and the restart.
-- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22 (two runs): the same result as Home. The network results of one of those runs are invalid (after the reset the adapter didn't get an address from DHCP); the result is based on the other.
+- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22 (two runs: the first with all measurement phases and a repeat after script fixes, without a network): the same result as Home. The network results of the first run are invalid (after the reset the adapter didn't get an address from DHCP); the result is based on the repeat.

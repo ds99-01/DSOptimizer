@@ -12,12 +12,12 @@ Handler C# `system-files` (`SystemFilesHandler`), bez skryptu:
 5. Krok 2 z 2 „SFC”: `%SystemRoot%\System32\sfc.exe /scannow` tak samo (wyjście UTF-16LE bez BOM, procent przez samo `\r`). Odczyt klucza `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending` przed i po SFC.
 6. Werdykt SFC (`SfcOutcome`) ze znaczników `[SR]` segmentu `CBS.log` z tego przebiegu: `Cannot repair member file` → nie wszystko naprawiono; `Repairing corrupted file … from store` / `Repaired file … by copying from backup` → naprawiono; ślad naprawy (te znaczniki albo `[SR] Repairing N components` z N > 0) razem z kluczem `RebootPending`, którego nie było przed SFC → naprawa po restarcie; `[SR] Verify complete` bez śladu naprawy i kod 0 → brak naruszeń; reszta (brak segmentu, brak `[SR]`, kod ≠ 0) → niejednoznaczne.
 7. Wynik zbiorczy: `Executed` tylko, gdy DISM ∈ {zdrowy, naprawiony, zdrowy albo naprawiony, restart} i SFC ∈ {brak naruszeń, naprawiono, naprawa po restarcie}. DISM brak źródła / błąd albo SFC „nie wszystko” → `Failed`. SFC niejednoznaczne → `NotConfirmed` ze ścieżką `CBS.log`. `RequiresReboot` przy DISM 3010 albo SFC „naprawa po restarcie”. Komunikat: linia DISM, linia SFC i „Logi: %SystemRoot%\Logs\DISM\dism.log, %SystemRoot%\Logs\CBS\CBS.log.”.
-8. Limit czasu: DISM po 45 min → `NotConfirmed` „DISM nadal działa w tle po 45 min – program przestał czekać. Wynik sprawdzisz w %SystemRoot%\Logs\DISM\dism.log.”, SFC nie startuje (i tak czekałby na koniec DISM – pomiar 3c). SFC po 45 min → `NotConfirmed` „SFC nadal działa w tle po 45 min – …” ze ścieżką `CBS.log`. Narzędzie pracuje dalej, okno postępu przechodzi do wyniku, a kolejna długa naprawa dostaje `Refused`.
+8. Limit czasu: DISM po 45 min → `NotConfirmed` „DISM nadal działa w tle po 45 min – program przestał czekać. Wynik sprawdzisz w %SystemRoot%\Logs\DISM\dism.log.”, SFC nie startuje (i tak czekałby na koniec DISM – zmierzone na VM). SFC po 45 min → `NotConfirmed` „SFC nadal działa w tle po 45 min – …” ze ścieżką `CBS.log`. Narzędzie pracuje dalej, okno postępu przechodzi do wyniku, a kolejna długa naprawa dostaje `Refused`.
 
 Pełne zdania narzędzi (bez linii pasków postępu) trafiają do logu programu, a wszystkie linie do wyjścia akcji.
 
 ## Źródła
-- Test na VM 26H2 Home i Pro (build 26300.9457, pl-PL), 2026-10-22: pomiary 1, 1z, 1b, 1n, 2, 2r, 2k, 3, 3c, 6; próbki wyjścia i segmentów `CBS.log` w `tests/DSOptimizer.Tests.Unit/Repair/Samples/`.
+- Test na VM 26H2 Home i Pro (build 26300.9457, pl-PL), 2026-10-22: pomiary na VM; próbki wyjścia i segmentów `CBS.log` w `tests/DSOptimizer.Tests.Unit/Repair/Samples/`.
 - DISM, kolejność DISM → SFC i komunikaty SFC: https://support.microsoft.com/en-us/topic/use-the-system-file-checker-tool-to-repair-missing-or-corrupted-system-files-79aa86cb-ca52-166a-92a3-966e85d4094e (dostęp 2026-10-22, MS Support).
 - Blok podsumowania `CBS.log` i kody braku źródła: https://learn.microsoft.com/en-us/troubleshoot/windows-server/installing-updates-features-roles/fix-windows-update-errors (KB 947821), https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/configure-a-windows-repair-source (dostęp 2026-10-22, MS Learn).
 - Znaczniki `[SR]`: https://learn.microsoft.com/en-us/troubleshoot/windows-client/deployment/analyze-sfc-program-log-file-entries (KB 928228, dostęp 2026-10-22, MS Learn).
@@ -33,7 +33,7 @@ Nie dotyczy: `kind=action` bez detekcji i cofnięcia. Odczytem zwrotnym skutku s
 - Czas: zwykle 2–3 min na VM, z aktywnym Windows Update DISM ok. 10 min, z realnym uszkodzeniem dłużej (niezmierzone). Limit czekania 45 min na narzędzie; po nim narzędzie pracuje dalej w tle.
 - „Zatrzymaj” działa tylko między krokami.
 - Bez internetu DISM może zgłosić brak plików źródłowych (niezmierzone – zdrowy magazyn nie sięga po źródło).
-- Znane ograniczenie strażnika: nie wykrywa instalacji aktualizacji przez Windows Update (`TiWorker` wykluczony – fałszywe alarmy); drugie narzędzie serwisowania w takiej sytuacji czeka na koniec pierwszego (pomiar 3c), więc naprawa trwa dłużej, ale nie psuje się.
+- Znane ograniczenie strażnika: nie wykrywa instalacji aktualizacji przez Windows Update (`TiWorker` wykluczony – fałszywe alarmy); drugie narzędzie serwisowania w takiej sytuacji czeka na koniec pierwszego (zmierzone na VM), więc naprawa trwa dłużej, ale nie psuje się.
 - Zamknięcie programu po limicie czasu nie przerywa DISM ani SFC (zmierzone – sekcja „Test VM”); niezmierzone: uruchomienie DSOptimizera przez cudzy program w Job Objekcie z `KILL_ON_JOB_CLOSE`.
 
 ## Test VM

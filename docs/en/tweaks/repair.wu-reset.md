@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.wu-reset.md sha256: a069164e16f3e8019b6ee9dd73d47cd0e435cd4f5286692e435b70123a8d0f44 -->
+<!-- source: docs/tweaks/repair.wu-reset.md sha256: 893115ec11eac8eac3fe8362095d7931f0a21dc106ea50f2991fe9da02280f52 -->
 
 # repair.wu-reset – Reset Windows Update
 
@@ -18,7 +18,7 @@ C# handler (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`), without a Powe
 Services protected by the system: `msiserver`, `WaaSMedicSvc`, `DoSvc` are never changed; the result mentions one of them only when it's disabled (`Disabled`).
 
 ## Sources
-- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22, three runs; measurements 3a, 3b, 3h.
+- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22, three runs (Home without a network, Pro with a network, Pro with all measurement phases): stopping services and moving folders, `catroot2` together with dependent services, the update history after a reset (with a network on Pro only).
 - No MS documentation checked in this task (the pages about resetting Windows Update components weren't fetched); evidence: the VM test described below.
 
 ## Defaults on a fresh 26H2

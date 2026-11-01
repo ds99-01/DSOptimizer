@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.feedback-notifications.md sha256: 948fb6db14fec014bd4de51df8d8aac0816f499d01021f138481e44bdc942791 -->
+<!-- source: docs/tweaks/privacy.feedback-notifications.md sha256: b1ff403f41aa4d91036badc6f71eda7306a6f536342c3bbf5aab96d1f3204d8d -->
 
 # privacy.feedback-notifications – Turn off feedback notifications
 
@@ -26,7 +26,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `DataCollec
 - Warning in the catalog: "Settings will show a message that some settings are managed by your organization." Evidence: page state in Settings; the notifications themselves weren't observed.
 
 ## VM test
-Case `privacy-feedback-notifications` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyPresentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `DataCollection` key survived undo (`KeyPresentAfterUndo`), `DoNotShowFeedbackNotifications` doesn't exist after undo. The VM test of 2026-10-21 passed on Home and Pro.
+Case `privacy-feedback-notifications` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyPresentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `DataCollection` key survived undo (`KeyPresentAfterUndo`), `DoNotShowFeedbackNotifications` doesn't exist after undo. A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: UI Automation of Settings (Diagnostics & feedback) and screenshots after a write through the registry API. Result: the "zarządza organizacja" (managed by your organization) banner, the "Częstotliwość opinii" (Feedback frequency) list disappears from the page; the notifications themselves weren't observed. After undo the list comes back and the banner disappears.

@@ -1,4 +1,4 @@
-<!-- source: docs/apps/README.md sha256: 2d3e1ee0ddd25520a003ea64c2d757e1f7ad593ae3e7725783708a804cb4cfcd -->
+<!-- source: docs/apps/README.md sha256: c501caae301bf457d8e3554525ebb9ccccb7bbc9b01a03751f73f0c58d77fe2a -->
 
 # Apps – classification file `apps-bloat.json`
 
@@ -46,7 +46,7 @@ An error in the file gives `AppsCatalogException` with the entry id and the fiel
 
 ## Identification sources
 
-- Protected list and starting point of the suggestions: the program's accepted rule for app cleanup (debloat).
+- Protected list and starting point of the suggestions: the app cleanup (debloat) assumptions.
 - **Microsoft packages:** reading from a fresh 26H2 VM (Home and Pro, build 26300.9457, 2026-10-21). All names from the VM are confirmed by reading `Get-AppxPackage`.
   Outside the VM only `Microsoft.MicrosoftOfficeHub` and `Microsoft.Getstarted` remained (names from MS Learn, forum archive
   "Which AppXPackage can be removed without causing system problems?"; not on a fresh 26H2).
@@ -84,8 +84,8 @@ An error in the file gives `AppsCatalogException` with the entry id and the fiel
 
 | Item | Decision | Why |
 |---|---|---|
-| Get Help (`Microsoft.GetHelp`) | Other (not suggested) | An app for contacting support; it isn't advertising, although as the equivalent of Tips it could have been "suggested" |
-| Microsoft Bing (`Microsoft.BingSearch`) | Other | Not among the suggested ones; ambiguous |
+| Get Help (`Microsoft.GetHelp`) | Other (not suggested) | An app for contacting support; it isn't advertising, although the initial research proposed "suggested" as the equivalent of Tips |
+| Microsoft Bing (`Microsoft.BingSearch`) | Other | Not among the list assumptions; ambiguous |
 | Dev Home (`Microsoft.Windows.DevHome`) | Other | A tool for developers, may be in use |
 | Family (`MicrosoftCorporationII.MicrosoftFamily`) | Other | Parental controls, may be in use |
 | Sticky Notes (`Microsoft.MicrosoftStickyNotes`) | **Protected** | A utility app (design decision) |
@@ -101,7 +101,7 @@ An error in the file gives `AppsCatalogException` with the entry id and the fiel
 | McAfee WebAdvisor, Security Scan Plus | Other + warning | The program can't tell a trial from a paid license; no independent source; decision of 2026-10-21 after reading the list |
 | Consumer McAfee and Norton | Other + warning "If this is a paid antivirus you use, don't remove it" | The program can't tell a trial from a paid license |
 | McAfee Agent, Endpoint, Drive Encryption, DLP, Trellix | **Protected** | May be company software |
-| McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Other + warning; official mcafee.com pages in `source` | Usually a preinstalled trial; the program can't tell a trial from a paid license; the patterns are product names, not all of "McAfee*" |
+| McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Other + warning; official mcafee.com pages in `source` | Often a preinstalled trial; the program can't tell a trial from a paid license; the patterns are product names, not all of "McAfee*" |
 | McAfee Personal Security | Other + warning | The program can't tell a trial from a paid license; no official McAfee page found for this name |
 | WildTangent, HP Games by WildTangent | Suggested; source: design decision, no address | No official manufacturer page in the checked sources; patterns `WildTangent*` and `HP Games by WildTangent*` (no `*WildTangent*`) |
 | Booking.com | Suggested; source: design decision, no address | No official page for the entry; name from Which? |

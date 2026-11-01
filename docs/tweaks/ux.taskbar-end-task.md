@@ -18,7 +18,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: `TaskbarEndTask` **brak wa
 ## Detekcja i undo
 - Detekcja: `TaskbarEndTask` = DWORD 1 -> `Applied`; brak wartości lub inna wartość -> `NotApplied`.
 - Undo przywraca snapshot sprzed zmiany z journala (brak wartości = usunięcie wartości i klucza `TaskbarDeveloperSettings`, jeśli powstał przy apply); `original` = `<RemoveEntry>` to tylko fallback.
-- Obserwacja z ręcznego testu na VM: po cofnięciu i restarcie Eksploratora pozycja znika z menu przycisku. W teście klucz założył wcześniej przełącznik Ustawień, więc usunięcia samego klucza przez cofnięcie nie obserwowano; dowiódł tego przypadek VM 2026-10-21 na Home i Pro (sekcja „Test VM”).
+- Obserwacja z pomiaru skryptem na VM: po cofnięciu i restarcie Eksploratora pozycja znika z menu przycisku. W teście klucz założył wcześniej przełącznik Ustawień, więc usunięcia samego klucza przez cofnięcie nie obserwowano; dowiódł tego przypadek VM 2026-10-21 na Home i Pro (sekcja „Test VM”).
 
 ## Ryzyka i ostrzeżenia
 - `risk=safe`, `suggested=false`.

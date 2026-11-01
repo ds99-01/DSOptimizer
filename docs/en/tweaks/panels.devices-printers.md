@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/panels.devices-printers.md sha256: c3f3c6feda36f85574b990da1ca0ad97e4f36ae6bd25063c21c2a6e0d51216ca -->
+<!-- source: docs/tweaks/panels.devices-printers.md sha256: c5400bfb77208ca41c766b362b0802a1e7a25290fce44ee43d30a2d5315b0702 -->
 
 # panels.devices-printers – Devices and Printers
 
@@ -24,7 +24,7 @@ Rejected variants (not separate items; VM data in the "Sources" section):
 Not applicable: the item doesn't read or write any settings. The only system state after running it is the window's process (VM reading, 2026-10-19, above).
 
 ## Detection and undo
-Not applicable: `kind=panel` has no detection and no undo. `Executed` only means that the process started; whether the window appeared is judged by the VM test in the `dso` user session (elevated task; smoke test with the real DSOptimizer.exe in the dso session – not checked manually in the app).
+Not applicable: `kind=panel` has no detection and no undo. `Executed` only means that the process started; whether the window appeared is judged by the VM measurement in the `dso` user session (elevated task; smoke test with the real DSOptimizer.exe in the dso session – not checked manually in the app).
 
 ## Risks and warnings
 - `risk=safe`: the item changes nothing in the system; you close the window yourself (DSOptimizer doesn't wait for it and doesn't close it).
@@ -36,9 +36,9 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 ## VM test
 VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in each of the panel cases.
 - `panels-devices-printers-no-shell` (`Flow=Execute`, `ExecuteExit=1`, expected `Failed`, `MessageContains` "Brak Eksploratora tego konta"): **Passed** on Home and Pro. Execution result: `OperationFailed` / `Failed`, message "Brak Eksploratora tego konta w bieżącej sesji – nie uruchamiam podniesionego Eksploratora." (in the English program: "File Explorer for this account isn't running in the current session – not starting an elevated File Explorer.") Guard refuses because PS Direct as Administrator (session 0) has no shell of this account. `Check` waits 3 s and requires that there is no `explorer.exe` with `shell:::{A8A91A66` in the command line (nothing started); `Cleanup` closes only such a process. The case **isn't `Skip`**, but it also **doesn't check the window**: it checks only the refusal without a shell.
-- VM test in the `dso` user session (elevated task, `Limited` token): the "Urządzenia i drukarki — Eksplorator plików" (Devices and Printers — File Explorer) window (`CabinetWClass`), which belongs to the account's `explorer.exe /factory,{…} -Embedding` process. Home = Pro.
+- VM measurement in the `dso` user session (elevated task, `Limited` token): the "Urządzenia i drukarki — Eksplorator plików" (Devices and Printers — File Explorer) window (`CabinetWClass`), which belongs to the account's `explorer.exe /factory,{…} -Embedding` process. Home = Pro.
 - The manual click (Pro VM, `dso` session, Win+R, 2026-10-19): `shell:::{A8A91A66-…}` opens the classic "Urządzenia i drukarki" (Devices and Printers) window.
-- The `control.exe /name Microsoft.DevicesAndPrinters` variant was rejected based on the VM test (sessions: the Administrator account over PowerShell Direct and the `dso` user session, not the manual click): it redirects to Settings (`SystemSettings.exe`). The `control.exe /name Microsoft.System` variant concerns `panels.system-properties` (VM test: no window), not this item.
-- `shell:::{A8A91A66-…}` clicked from Win+R goes through the shell, while the item's `launch` goes through CreateProcess `explorer.exe shell:::{GUID}` (behind the guard), so it isn't the same path: the click confirms the panel, while the item's `launch` is confirmed only by the VM test in the `dso` user session (elevated task).
+- The `control.exe /name Microsoft.DevicesAndPrinters` variant was rejected based on the VM measurement (sessions: the Administrator account over PowerShell Direct and the `dso` user session, not the manual click): it redirects to Settings (`SystemSettings.exe`). The `control.exe /name Microsoft.System` variant concerns `panels.system-properties` (VM measurement: no window), not this item.
+- `shell:::{A8A91A66-…}` clicked from Win+R goes through the shell, while the item's `launch` goes through CreateProcess `explorer.exe shell:::{GUID}` (behind the guard), so it isn't the same path: the click confirms the panel, while the item's `launch` is confirmed only by the VM measurement in the `dso` user session (elevated task).
 - **Smoke test with the real `DSOptimizer.exe` in the `dso` session: not checked manually in the app**. Not done; the item goes into `main` with this caveat. A mismatch between "the process is running" (Check) and a window visible to the user will show up only on first use from the app.
 - The positive path (a window with the account's shell running) has no case in the runner (the runner is Administrator in session 0); only the smoke test in the `dso` session checks it.

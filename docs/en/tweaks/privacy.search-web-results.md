@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.search-web-results.md sha256: 3f8cfdd4caaa6d098e2760b508182dc9568bb67d605c1acaa630d85fc77735cf -->
+<!-- source: docs/tweaks/privacy.search-web-results.md sha256: 6e2d1f50a4dea3f7889e61f40b73f05bf8263c88c071d8b45073de3cd7604845 -->
 
 # privacy.search-web-results – Turn off web results in Windows search
 
@@ -34,7 +34,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `SearchSett
 - Beyond the notes in the program (in the technical details or only here): the effect of restarting File Explorer alone (`tools.restart-explorer`) wasn't checked; the item turns off all providers of web results.
 
 ## VM test
-Case `privacy-search-web-results` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The Administrator's HKCU unchanged (`NotWrittenTo`), the `SearchSettings` key stayed. The VM test of 2026-10-21 passed on Home and Pro.
+Case `privacy-search-web-results` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The Administrator's HKCU unchanged (`NotWrittenTo`), the `SearchSettings` key stayed. A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: screenshots of the search results (Win+S) for the phrase "pogoda" (weather) in the `dso` session, after a write through the registry API and restarting File Explorer and SearchHost. Result: the "Microsoft Bing sugestie internetowe" (Microsoft Bing web suggestions) section and the "Microsoft Bing" card disappear from the results; after undo the section comes back.

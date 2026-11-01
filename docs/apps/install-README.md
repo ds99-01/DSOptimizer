@@ -133,7 +133,7 @@ z siecią (akapit „RustDesk: przebieg CLI z siecią” niżej; czas `msiexec` 
 | `install.dotnet-desktop-10` | `Microsoft.DotNet.DesktopRuntime.10` | runtimes | – | komputer (HKLM32) | – | – | Pro: `Installed` (15 s); Home: `Installed` (16 s) | `Microsoft Windows Desktop Runtime 10.0.14 (x64)` / `Microsoft Corporation` (bez myślnika po „Runtime”, inaczej niż 8 i 9; + 4 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Windows Desktop Runtime 10.* (x64)"`, `publisher: "Microsoft Corporation"` | wchodzi | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/10 |
 
 Zasada dowodu: każda pozycja winget ma `show` = 0, a każda przeszła pełną instalację z odczytem wpisu Uninstall na Pro
-(Discord – wpis z opóźnieniem, niżej). VC++ x64 w pomiarze na Pro dał tylko `0x8A150061`, bo winget doinstalował go wcześniej
+(Discord – wpis z opóźnieniem, niżej). VC++ x64 w głównym pomiarze (Pro i Home) dał tylko `0x8A150061`, bo winget doinstalował go wcześniej
 jako zależność LibreOffice; własne `install` z odczytem zwrotnym przeszło w spike'u Pro (0, 7 s) i w serii CLI
 (Pro `Installed`, 11 s; Home – ponowienie – `Installed`, 11 s). Na Home przeszło po jednej pozycji z każdej kategorii: Chrome
 i Firefox, Discord, VLC, SumatraPDF i LibreOffice, Notepad++ i 7-Zip, AnyDesk, Steam (VC++ x64 tylko jako zależność
@@ -163,7 +163,7 @@ Harmonogramu (`tests/vm/explore/Invoke-E4CExploration.ps1 -Phase cli-install`, s
   program jest widoczny na liście zainstalowanych; sprawdź log winget” (`NotConfirmed`, kod CLI 4 zamiast 1): po nieznanym kodzie
   pozycja listy dostaje jeden świeży odczyt, a widoczny program nigdy nie jest „Zainstalowano”, bo kod może też oznaczać
   instalację przerwaną w połowie. Wynik nie był mierzony ponownie na VM (wymaga powtórzenia samoaktualizacji App Installera).
-- **Home (po jednej pozycji z kategorii, inne niż w pomiarze na Pro) + `winget:PuTTY.PuTTY`:** 9/9 `Installed`, kod CLI 0,
+- **Home (po jednej pozycji z kategorii, inne niż w głównym pomiarze na Home) + `winget:PuTTY.PuTTY`:** 9/9 `Installed`, kod CLI 0,
   3 min 34 s; PuTTY potwierdzony przez `winget list --id --exact` (`Installed`, nie `InstalledUnverified`). `--list-install`:
   8 pozycji listy z tej serii = `installed = true`. Winget bez aktualizacji (v1.11.510).
 - **Discord:** wpis HKU pojawił się po wyjściu winget – „Zainstalowano i sprawdzono.” ok. 14 s (Home) i 20 s (Pro) po linii
@@ -263,7 +263,7 @@ Surowe wyniki poza gitem (`releases.json`, `download.json`, `install.json`, `dif
 ### Ograniczenia reguł (świadome)
 
 - Visual C++ x64/x86: reguła `Microsoft Visual C++ *Redistributable (x64) - 14.*` (analogicznie `(x86)`) łapie obie zmierzone
-  nazwy rodziny 14.x: `… v14 Redistributable (x64) - 14.51.36247` i `… 2015-2022 Redistributable (x64) - 14.51.36231`
+  nazwy rodziny 14.x: `… v14 Redistributable (x64) - 14.51.36247` (pomiar winget, Pro) i `… 2015-2022 Redistributable (x64) - 14.51.36231`
   (seria CLI, Home), obie dają „Zainstalowana”. Nie łapie 2013 (` - 12.`), 2012 (` - 11.`), 2010 (`… 2010  x64 Redistributable - 10.`)
   ani składników `… X64 Minimum/Additional Runtime - 14.…` (testy negatywne na nazwach syntetycznych). Inne wydanie 14.x
   z jeszcze inną nazwą wpisu nie dostanie statusu; wtedy winget albo zwróci „Już zainstalowane”, albo – jak na Home w serii CLI –

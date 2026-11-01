@@ -44,7 +44,7 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 
 ## Źródła rozpoznania
 
-- Lista chroniona i punkt wyjścia sugestii: przyjęta w programie zasada czyszczenia aplikacji (debloat).
+- Lista chroniona i punkt wyjścia sugestii: założenia czyszczenia aplikacji (debloat).
 - **Pakiety Microsoftu:** odczyt świeżej VM 26H2 (Home i Pro, build 26300.9457, 2026-10-21). Wszystkie nazwy z VM są potwierdzone odczytem `Get-AppxPackage`.
   Poza VM zostały tylko `Microsoft.MicrosoftOfficeHub` i `Microsoft.Getstarted` (nazwy z MS Learn, archiwum forum
   „Which AppXPackage can be removed without causing system problems?”; brak na świeżym 26H2).
@@ -82,8 +82,8 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 
 | Pozycja | Decyzja | Dlaczego |
 |---|---|---|
-| Uzyskaj pomoc (`Microsoft.GetHelp`) | Pozostałe (niesugerowane) | Aplikacja kontaktu z pomocą; nie jest reklamą, choć jako odpowiednik Porad mogłaby być „sugerowana” |
-| Microsoft Bing (`Microsoft.BingSearch`) | Pozostałe | Nie ma go wśród sugerowanych; niejednoznaczny |
+| Uzyskaj pomoc (`Microsoft.GetHelp`) | Pozostałe (niesugerowane) | Aplikacja kontaktu z pomocą; nie jest reklamą, choć wstępne rozpoznanie proponowało „sugerowany” jako odpowiednik Porad |
+| Microsoft Bing (`Microsoft.BingSearch`) | Pozostałe | Brak w założeniach listy; niejednoznaczny |
 | Dev Home (`Microsoft.Windows.DevHome`) | Pozostałe | Narzędzie dla programistów, może być używane |
 | Family (`MicrosoftCorporationII.MicrosoftFamily`) | Pozostałe | Kontrola rodzicielska, może być w użyciu |
 | Sticky Notes (`Microsoft.MicrosoftStickyNotes`) | **Chronione** | Aplikacja użytkowa (decyzja projektowa) |
@@ -99,7 +99,7 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 | McAfee WebAdvisor, Security Scan Plus | Pozostałe + ostrzeżenie | Program nie odróżni próby od płatnej licencji; bez niezależnego źródła; decyzja z 2026-10-21 po przeczytaniu listy |
 | Konsumenckie McAfee i Norton | Pozostałe + ostrzeżenie „jeśli to płatny antywirus, nie usuwaj” | Program nie odróżni próby od płatnej licencji |
 | McAfee Agent, Endpoint, Drive Encryption, DLP, Trellix | **Chronione** | Mogą być oprogramowaniem firmowym |
-| McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Pozostałe + ostrzeżenie; w `source` oficjalne strony mcafee.com | Zwykle preinstalowana wersja próbna; program nie odróżni próby od płatnej licencji; wzorce to nazwy produktów, nie całe „McAfee*” |
+| McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Pozostałe + ostrzeżenie; w `source` oficjalne strony mcafee.com | Często preinstalowana wersja próbna; program nie odróżni próby od płatnej licencji; wzorce to nazwy produktów, nie całe „McAfee*” |
 | McAfee Personal Security | Pozostałe + ostrzeżenie | Program nie odróżni próby od płatnej licencji; nie znaleziono oficjalnej strony McAfee dla tej nazwy |
 | WildTangent, HP Games by WildTangent | Sugerowane; źródło: decyzja projektowa, bez adresu | Brak oficjalnej strony producenta w sprawdzonych źródłach; wzorce `WildTangent*` i `HP Games by WildTangent*` (bez `*WildTangent*`) |
 | Booking.com | Sugerowane; źródło: decyzja projektowa, bez adresu | Brak oficjalnej strony wpisu; nazwa z Which? |

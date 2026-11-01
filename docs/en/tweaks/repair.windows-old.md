@@ -1,10 +1,10 @@
-<!-- source: docs/tweaks/repair.windows-old.md sha256: 083009ce854b3ef84f92e3a3bf2766daf6a2e6b8ab228d6457d8793701791666 -->
+<!-- source: docs/tweaks/repair.windows-old.md sha256: 5421c7fadf18c8d1636367aebde23dd3375007a110fafa437255c3ce9fe737ec -->
 
 # repair.windows-old – Remove the previous Windows installation
 
 ## Verdict for 26H2
 Port as `kind=action`, `risk=caution` ("Repairs" category, a long repair with a progress window). Mechanism
-measured on 26H2 Home and Pro VMs (measurements 5, 5f and 6): the
+measured on 26H2 Home and Pro VMs (VM measurements): the
 "Previous Installations" handler of Disk Cleanup (`cleanmgr /sagerun`) recognizes a prepared `C:\Windows.old` folder and deletes it.
 Only mechanism A – no taking ownership and no ACL changes in C# (an adopted decision). The prepared folder is ordinary
 files owned by `BUILTIN\Administratorzy` (BUILTIN\Administrators on English Windows); a real `Windows.old` after a feature update has files with a `TrustedInstaller` ACL and
@@ -23,7 +23,7 @@ C# handler `windows-old` (`WindowsOldHandler`), without a catalog script:
    `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches` (`IRegistry.SubKeyNames`, 64-bit view) and reading the
    `StateFlags7351` value under each one. An existing value (someone else's `cleanmgr /sageset:7351` or an earlier interrupted run), a read error
    or a missing `VolumeCaches\Previous Installations` key = `Failed` "… – nothing was changed."; we don't write or start
-   anything. The number `WindowsOldHandler.SageRunId = 7351` comes from measurement 5f (on a fresh 26H2 there's no `StateFlags*` value at all
+   anything. The number `WindowsOldHandler.SageRunId = 7351` comes from a VM measurement (on a fresh 26H2 there's no `StateFlags*` value at all
    under the 31 handlers; `cleanmgr` accepts 0–9999).
 4. Once confirmed, the run can't be stopped: both progress events have `ActionProgress.Stoppable = false`, so
    `ActionRun.CanStop` is `false` during the whole run and the window doesn't offer "Stop" (test `GuiModel_CanStopFalseThroughoutRun`).
@@ -51,7 +51,7 @@ The handler doesn't delete anything itself, doesn't take ownership and doesn't c
 
 ## Sources
 - Test on 26H2 Home and Pro VMs (build 26300.9457, pl-PL), 2026-10-22:
-  measurements 5, 5f and 6 (script `tests/vm/explore/Invoke-E4B2Exploration.ps1`, `Invoke-E4B2WindowsOldProbe`).
+  VM measurements (script `tests/vm/explore/Invoke-E4B2Exploration.ps1`, `Invoke-E4B2WindowsOldProbe`).
 - `cleanmgr` (`/sageset:n`, `/sagerun:n`, n = 0–9999): https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/cleanmgr
   (MS Learn, as cited in the measurement of 2026-10-22).
 - `StateFlagsNNNN` under `VolumeCaches\<handler>` (0 = not selected, 2 = selected):
@@ -85,8 +85,8 @@ cleanmgr finishes, and the free space before/after. A deleted previous installat
 Cases in `tests/vm/cases.psd1`, `Flow='Execute'`, built-in catalog, no network:
 - `repair-windows-old-absent` (without `RunAs`): a fresh VM without `Windows.old` → `NotSupported`, code 1, message "nie ma czego usuwać" (nothing to remove);
   `Check`: the folder doesn't exist, no `StateFlags7351` value under `VolumeCaches`, cleanmgr isn't running.
-- `repair-windows-old` (`RunAs='dso'`, CLI from a Task Scheduler task of the `dso` account – from PS Direct cleanmgr doesn't finish, measurement 5), `CliTimeoutSeconds = 3000` (above the handler limit of 2,700 s, so that a `NotConfirmed` result also reaches the report).
-  `Setup`: an ordinary `C:\Windows.old` folder as in measurement 5 (test files in `Windows\System32`, `Windows\SysWOW64`,
+- `repair-windows-old` (`RunAs='dso'`, CLI from a Task Scheduler task of the `dso` account – from PS Direct cleanmgr doesn't finish, VM measurement), `CliTimeoutSeconds = 3000` (above the handler limit of 2,700 s, so that a `NotConfirmed` result also reaches the report).
+  `Setup`: an ordinary `C:\Windows.old` folder as in a VM measurement (test files in `Windows\System32`, `Windows\SysWOW64`,
   `Users\Public\Documents`, `Program Files\DsoTest`, `ProgramData\DsoTest`, owner Administratorzy (Administrators), no ACL change).
   `Check`: `C:\Windows.old` doesn't exist, no `StateFlags7351` under any `VolumeCaches\*`, cleanmgr isn't running.
   `Expect`: `Executed`, code 0, message "Usunięto poprzednią instalację Windows." (Removed the previous Windows installation.).

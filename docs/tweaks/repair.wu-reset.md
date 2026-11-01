@@ -16,7 +16,7 @@ Handler C# (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`), bez skryptu Po
 Usługi chronione przez system: `msiserver`, `WaaSMedicSvc`, `DoSvc` nigdy nie są zmieniane; wynik wspomina o którejś tylko, gdy jest wyłączona (`Disabled`).
 
 ## Źródła
-- Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22, trzy przebiegi; pomiary 3a, 3b, 3h.
+- Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22, trzy przebiegi (Home bez sieci, Pro z siecią, Pro ze wszystkimi fazami pomiaru): zatrzymanie usług i przeniesienie folderów, `catroot2` razem z usługami zależnymi, historia aktualizacji po resecie (z siecią tylko Pro).
 - Brak dokumentacji MS sprawdzonej w tym zadaniu (strony o resecie składników Windows Update nie były pobierane); dowód: test na VM opisany niżej.
 
 ## Wartości domyślne na świeżym 26H2

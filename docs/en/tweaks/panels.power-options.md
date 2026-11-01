@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/panels.power-options.md sha256: f04a7ca895e5d4ad063603bba5f5d3023224f39794d786aec3d78261f4405def -->
+<!-- source: docs/tweaks/panels.power-options.md sha256: 2639dbaf693e298240cb18297691137ae2674d7cd015cfaebedfc7d11619d1b5 -->
 
 # panels.power-options – Power Options
 
@@ -24,7 +24,7 @@ Rejected variants (not separate items; VM data in the "Sources" section):
 Not applicable: the item doesn't read or write any settings. The only system state after running it is the window's process (VM reading, 2026-10-19, above).
 
 ## Detection and undo
-Not applicable: `kind=panel` has no detection and no undo. `Executed` only means that the process started; whether the window appeared is judged by the VM test in the `dso` user session (elevated task; smoke test with the real DSOptimizer.exe in the dso session – not checked manually in the app).
+Not applicable: `kind=panel` has no detection and no undo. `Executed` only means that the process started; whether the window appeared is judged by the VM measurement in the `dso` user session (elevated task; smoke test with the real DSOptimizer.exe in the dso session – not checked manually in the app).
 
 ## Risks and warnings
 - `risk=safe`: the item changes nothing in the system; you close the window yourself (DSOptimizer doesn't wait for it and doesn't close it).
@@ -35,7 +35,7 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 ## VM test
 VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in each of the panel cases.
 - `panels-power-options` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: `control.exe` with a command line containing `Microsoft.PowerOptions` is running; `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (the Administrator account over PowerShell Direct, session 0), not that the window appeared for the user.**
-- VM test in the `dso` user session (elevated task, `Limited` token): the "Opcje zasilania" (Power Options) window (in `explorer.exe`; `control.exe` exits with code 1, so Check looks at the process from the Administrator account over PowerShell Direct (session 0), not at the window). Home = Pro.
+- VM measurement in the `dso` user session (elevated task, `Limited` token): the "Opcje zasilania" (Power Options) window (in `explorer.exe`; `control.exe` exits with code 1, so Check looks at the process from the Administrator account over PowerShell Direct (session 0), not at the window). Home = Pro.
 - The manual click (Pro VM, `dso` session, Win+R, 2026-10-19): `powercfg.cpl` and `control.exe /name Microsoft.PowerOptions` open the classic window.
-- The clicked commands (`powercfg.cpl`, `control.exe /name Microsoft.PowerOptions`) only partly match the item's `launch` (`control.exe /name Microsoft.PowerOptions`; `powercfg.cpl` alone is a different command): the click confirms the panel, while the item's `launch` is confirmed only by the VM test in the `dso` user session (elevated task).
+- The clicked commands (`powercfg.cpl`, `control.exe /name Microsoft.PowerOptions`) only partly match the item's `launch` (`control.exe /name Microsoft.PowerOptions`; `powercfg.cpl` alone is a different command): the click confirms the panel, while the item's `launch` is confirmed only by the VM measurement in the `dso` user session (elevated task).
 - **Smoke test with the real `DSOptimizer.exe` in the `dso` session: not checked manually in the app**. Not done; the item goes into `main` with this caveat. A mismatch between "the process is running" (Check) and a window visible to the user will show up only on first use from the app.
