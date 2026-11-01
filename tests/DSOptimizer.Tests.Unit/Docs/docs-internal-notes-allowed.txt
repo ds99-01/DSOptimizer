@@ -36,3 +36,5 @@ docs/en/tweaks/net.throttling-index.md	would be a fake tweak	zwykłe zdanie (poz
 docs/en/tweaks/perf.vbs-hvci.md	`apply` is a no-op	opis skryptu (apply niczego nie robi), nie znacznik testowy
 docs/en/tweaks/net.smb-guest-access.md	a fake server on the network	zwykły tekst: dosłowny cytat ostrzeżenia z katalogu programu ('fake server' = fałszywy serwer)
 docs/en/tweaks/net.throttling-index.md	would be a fake tweak	zwykły tekst: 'fake tweak' = pozycja pozorna, nie notatka procesu
+docs/apps/install-README.md	sha256:624fe792…77580495	skrót sha256 pobranego pliku (wartość z API GitHuba), nie hash commita
+docs/en/apps/install-README.md	sha256:624fe792…77580495	skrót sha256 pobranego pliku (wartość z API GitHuba), nie hash commita

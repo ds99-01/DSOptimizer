@@ -1,6 +1,6 @@
 # Przygotowanie – sprawdzone adresy producentów
 
-Strona „Przygotowanie” (Etap 4a, partia 3) pokazuje linki tekstowe do oficjalnych stron producentów. Ten plik jest jedynym źródłem
+Strona „Przygotowanie” pokazuje linki tekstowe do oficjalnych stron producentów. Ten plik jest jedynym źródłem
 listy adresów w `PrepLinks` (Core). Test `LinksMatchDocsPrepReadme` czyta obie tabele niżej i sprawdza, że kod ma dokładnie te same
 wpisy z tą samą datą sprawdzenia.
 
@@ -108,7 +108,6 @@ Skrypt `tests/vm/explore/Invoke-E4A3Exploration.ps1`, surowe wyniki poza gitem. 
 - **Intel grafika – strona sterownika Arc**: strona „Intel® Arc™ Graphics – Windows” (`/download/785597/...`) obejmuje
   dziś tylko Arc i Core Ultra (pobrana strona 2026-10-21), nie Iris Xe i starsze, więc nie nadaje się jako jeden adres dla każdej karty Intel.
 - **Intel Driver & Support Assistant (odrzucone)**: `https://www.intel.com/content/www/us/en/support/detect.html` istnieje (pobrana strona
-  2026-10-21), ale prowadzi do instalowanego narzędzia aktualizującego sterowniki, a spec 7.2/8 zabrania podsuwania takich narzędzi
- . Zastąpione stroną „Support for Intel® Graphics”.
+  2026-10-21), ale prowadzi do instalowanego narzędzia aktualizującego sterowniki, a założenia projektu zabraniają podsuwania takich narzędzi. Zastąpione stroną „Support for Intel® Graphics”.
 - **Nazwy WMI spoza tabeli**: `ASUS` (podciąg w `asus-nb-wmi.c`, bez dokładnego dopasowania), `MICRO-STAR INT…` (stare MSI,
   tylko podciąg w `msi-laptop.c`). Bez dokładnego napisu nie wchodzą; taki laptop dostanie „Szukaj strony wsparcia”.

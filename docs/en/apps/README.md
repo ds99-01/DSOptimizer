@@ -1,4 +1,4 @@
-<!-- source: docs/apps/README.md sha256: 8068b779a5e3ba8da6777d838bdf29e533622a5003ecbcdc599e1e4547b4a37c -->
+<!-- source: docs/apps/README.md sha256: f9687cd365548f3c0a7771eba6b5e1164a755d0780d00df0a9ecdcde2d613ba4 -->
 
 # Apps – classification file `apps-bloat.json`
 
@@ -25,8 +25,8 @@ makes sure the file on disk and the resource are the same.
   (can be selected by hand), with `warning`, if there is one.
 - `summary` – ≤ 160 characters, in Polish, without registry key names and cmdlets.
 - `warning` – optional warning shown next to the row.
-- `source` – how we know it's junk (MS documentation, VM reading, spec, manufacturer). A suggested entry must have a source
-  with an `https://` address, the marker "spec 6.2 (decyzja autora)" (the author's decision) or a VM reading; the test `SuggestedEntries_HaveVerifiableSource` checks this.
+- `source` – how we know it's junk (MS documentation, VM reading, project assumptions, manufacturer). A suggested entry must have a source
+  with an `https://` address, a VM reading or a recorded design decision in the field (WildTangent and Booking.com have this); the test `SuggestedEntries_HaveVerifiableSource` checks this.
 - `cleanupUrl` – optional `https` address of the manufacturer's official leftover cleanup tool. The program doesn't download anything from it,
   it only shows it as text. Only an address checked by downloading the page may go in (table below); the test `VerifiedCleanupUrls` makes sure
   there's no other one in the file.
@@ -46,9 +46,8 @@ An error in the file gives `AppsCatalogException` with the entry id and the fiel
 
 ## Identification sources
 
-- Protected list and starting point of the suggestions: Stage 4a design (debloat), point 6.2.
-- **Microsoft packages:** reading from a fresh 26H2 VM (Home and Pro, build 26300.9457, 2026-10-21), section "Wyniki VM 26H2 (partia 2)" (26H2 VM results, round 2)
-  in `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish). All names from the VM are confirmed by reading `Get-AppxPackage`.
+- Protected list and starting point of the suggestions: the app cleanup (debloat) assumptions.
+- **Microsoft packages:** reading from a fresh 26H2 VM (Home and Pro, build 26300.9457, 2026-10-21). All names from the VM are confirmed by reading `Get-AppxPackage`.
   Outside the VM only `Microsoft.MicrosoftOfficeHub` and `Microsoft.Getstarted` remained (names from MS Learn, forum archive
   "Which AppXPackage can be removed without causing system problems?"; not on a fresh 26H2).
 - **Manufacturers (Lenovo, ASUS, Acer, HP, Dell):** there was no OEM hardware, so the names come from manufacturer pages and forums (addresses in the
@@ -71,7 +70,7 @@ An error in the file gives `AppsCatalogException` with the entry id and the fiel
 | Address | Checked | Result |
 |---|---|---|
 | `https://support.norton.com/sp/en/us/home/current/solutions/v60392881` | 2026-10-21 | works; title "Download and run the Norton 360 Remover tool for Windows", description: removes, or removes and reinstalls, the Norton device security app |
-| `https://www.mcafee.com/support/s/article/000002766?language=pl` | 2026-10-21 | McAfee article about the removal tool (MCPR); page download: timeout, curl: 403 (bot blocking) – the address was given and checked by hand by the author. Assigned to LiveSafe, Total Protection, AntiVirus Plus, Internet Security and Personal Security |
+| `https://www.mcafee.com/support/s/article/000002766?language=pl` | 2026-10-21 | McAfee article about the removal tool (MCPR); page download: timeout, curl: 403 (bot blocking) – the address was checked by hand. Assigned to LiveSafe, Total Protection, AntiVirus Plus, Internet Security and Personal Security |
 
 ### Not added, because they couldn't be confirmed
 
@@ -86,26 +85,26 @@ An error in the file gives `AppsCatalogException` with the entry id and the fiel
 | Item | Decision | Why |
 |---|---|---|
 | Get Help (`Microsoft.GetHelp`) | Other (not suggested) | An app for contacting support; it isn't advertising, and the research proposed "suggested" as the equivalent of Tips |
-| Microsoft Bing (`Microsoft.BingSearch`) | Other | Not in the spec; ambiguous |
+| Microsoft Bing (`Microsoft.BingSearch`) | Other | Not among the list assumptions; ambiguous |
 | Dev Home (`Microsoft.Windows.DevHome`) | Other | A tool for developers, may be in use |
 | Family (`MicrosoftCorporationII.MicrosoftFamily`) | Other | Parental controls, may be in use |
 | Sticky Notes (`Microsoft.MicrosoftStickyNotes`) | **Protected** | A utility app (design decision) |
 | Xbox TCUI, Xbox Identity Provider, Game Speech Window | Other | Xbox dependencies, may be needed by games and Game Bar (design decision) |
-| Game Bar (`Microsoft.XboxGamingOverlay`) | Other, explicit entry | The author's decision 2026-10-21 |
-| Phone Link, Mobile devices, Windows Web Experience Pack | Other | No entry; Widgets are handled by round 1 |
-| Windows Application Compatibility Enhancements, AVC/MPEG-2/VP9/RAW/WebMedia codecs, Store Experience Host (Microsoft Store purchases) | Protected | System components and codecs, like the other codecs from the spec |
+| Game Bar (`Microsoft.XboxGamingOverlay`) | Other, explicit entry | Decision of 2026-10-21 |
+| Phone Link, Mobile devices, Windows Web Experience Pack | Other | No entry; Widgets are turned off by the `privacy.widgets` tweak |
+| Windows Application Compatibility Enhancements, AVC/MPEG-2/VP9/RAW/WebMedia codecs, Store Experience Host (Microsoft Store purchases) | Protected | System components and codecs, like the other protected codecs |
 | Edge as a package (`Microsoft.MicrosoftEdge.Stable`) | Protected | On the VM the package exists as a separate item next to the Win32 Edge entry |
 | Remote Desktop Connection | Protected (in Polish and in English) | The `mstsc` Uninstall entry has its name only in `DisplayName_Localized`; the pattern depends on the system language |
 | HP Support Assistant, Dell SupportAssist | **Other** (the draft had "suggested") | They may update drivers; no OEM hardware to check |
 | MyASUS, Armoury Crate, MyDell, Dell Optimizer | Other + warning about the battery and Fn | They control the battery and performance |
 | Dell Digital Delivery | Other + warning | May keep installers of purchased software |
-| McAfee WebAdvisor, Security Scan Plus | Other + warning | The program can't tell a trial from a paid license; no independent source; the author's decision 2026-10-21 after reading the list |
+| McAfee WebAdvisor, Security Scan Plus | Other + warning | The program can't tell a trial from a paid license; no independent source; decision of 2026-10-21 after reading the list |
 | Consumer McAfee and Norton | Other + warning "If this is a paid antivirus you use, don't remove it" | The program can't tell a trial from a paid license |
 | McAfee Agent, Endpoint, Drive Encryption, DLP, Trellix | **Protected** | May be company software |
-| McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Other + warning; official mcafee.com pages in `source` | Spec 6.2 (McAfee trial); the patterns are product names, not all of "McAfee*" |
+| McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Other + warning; official mcafee.com pages in `source` | The program can't tell a trial from a paid license; the patterns are product names, not all of "McAfee*" |
 | McAfee Personal Security | Other + warning | The program can't tell a trial from a paid license; no official McAfee page found for this name |
-| WildTangent, HP Games by WildTangent | Suggested; source "spec 6.2 (decyzja autora)" (the author's decision) | No official manufacturer page in the checked sources; patterns `WildTangent*` and `HP Games by WildTangent*` (no `*WildTangent*`) |
-| Booking.com | Suggested; source "spec 6.2 (decyzja autora)" (the author's decision) | No official page for the entry; name from Which? |
+| WildTangent, HP Games by WildTangent | Suggested; source: design decision, no address | No official manufacturer page in the checked sources; patterns `WildTangent*` and `HP Games by WildTangent*` (no `*WildTangent*`) |
+| Booking.com | Suggested; source: design decision, no address | No official page for the entry; name from Which? |
 | Microsoft 365 (Office Hub), Tips | Suggested; source MS Learn (address in `source`) | The names aren't on a fresh 26H2, only in an archived list from Windows 10 |
 | Microsoft Visual C++ Redistributable (`Microsoft Visual C++ * Redistributable*`) | **Protected** | Many programs and games need them; after removal they stop starting |
 | .NET Runtime, Windows Desktop Runtime (`Microsoft .NET*Runtime*`, `Microsoft Windows Desktop Runtime*`) | **Protected** | Without them, .NET programs won't start |

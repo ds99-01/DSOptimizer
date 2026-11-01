@@ -552,7 +552,7 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | Etap N / część E / partia X | Stage N / part E / round X | Project stages in the documents: "Stage 4a", "round 1", "Task 9 of the round", "Round C4 research". "Batch" is only the program's series (Key decisions). |
 | klasa B (research) | class B | Evidence class of a research source |
 | Portować / `Portować jako <x>` / Portować z ograniczeniem | Port / `Port as <x>` / Port with a restriction | Verdict; as in the template ("port / don't port / placebo") |
-| nie wchodzi / Nie portowane | Not ported | Verdict; capitalized at the start of the verdict ("Not ported:") |
+| nie wchodzi / Nieportowane | Not ported | Verdict; capitalized at the start of the verdict ("Not ported:") |
 | Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis: | The item isn't in the catalog and changes nothing. Entry considered: | Verdict of an item that didn't make it into the catalog |
 | Nie dotyczy: / Nie dotyczy (pozycja nie jest w katalogu). | Not applicable: / Not applicable (the item isn't in the catalog). | Start of "Detection and undo" for actions and for items outside the catalog |
 | Odrzucone warianty / Działająca alternatywa (opisana, bez własnej pozycji katalogu) | Rejected variants / Working alternative (described, without its own catalog item) | Recurring headings and lines |
@@ -582,7 +582,7 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | HKCU procesu Administratora | the `HKCU` of the Administrator process | Per-user items tested as Administrator |
 | podniesiona sesja / zadanie interaktywne podniesione | elevated session / elevated interactive task | |
 | zadanie Harmonogramu | Task Scheduler task | |
-| Nie testowane na VM | Not tested on the VM | Next to "Checked:" / "Not checked:" |
+| Nietestowane na VM | Not tested on the VM | Next to "Checked:" / "Not checked:" |
 | niezmierzone / do potwierdzenia na sprzęcie | not measured / to be confirmed on hardware | Caveats; bold kept where Polish has it |
 | pomiar / za pomiarem | measurement / as cited in the measurement | "za pomiarem" = the address comes from the measurement record |
 | oględziny | visual check | |

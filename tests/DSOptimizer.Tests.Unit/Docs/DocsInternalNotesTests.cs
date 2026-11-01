@@ -124,6 +124,12 @@ public class DocsInternalNotesTests
     [InlineData("docs/en/tweaks/disk.")]
     [InlineData("docs/tweaks/tools.")]
     [InlineData("docs/en/tweaks/tools.")]
+    [InlineData("docs/apps/")]
+    [InlineData("docs/en/apps/")]
+    [InlineData("docs/prep/")]
+    [InlineData("docs/en/prep/")]
+    [InlineData("docs/tweaks/README.md")]
+    [InlineData("docs/en/tweaks/README.md")]
     public void Batch_HasNoInternalNotes(string batch)
     {
         // batch = prefiks ścieżki względem repo (z ukośnikami /), np. "docs/tweaks/disk." albo "docs/en/apps/"; "none" = kontrola, nic nie filtruje.

@@ -1,8 +1,8 @@
-<!-- source: docs/prep/README.md sha256: 82281541f779c72a4ca999c88ebb58c5038773e7c7b902fcff80699222dd41e8 -->
+<!-- source: docs/prep/README.md sha256: b024e465fd28acfb57b8ba418d3ec7c6fb4ed08e5928ff7c7e00656182885dd6 -->
 
 # Preparation – verified manufacturer addresses
 
-The "Preparation" page (Stage 4a, round 3) shows text links to official manufacturer pages. This file is the only source of
+The "Preparation" page shows text links to official manufacturer pages. This file is the only source of
 the address list in `PrepLinks` (Core). The test `LinksMatchDocsPrepReadme` reads both tables below and checks that the code has exactly the same
 entries with the same check date.
 
@@ -110,7 +110,6 @@ Script `tests/vm/explore/Invoke-E4A3Exploration.ps1`, raw results outside git. C
 - **Intel graphics – Arc driver page**: the "Intel® Arc™ Graphics – Windows" page (`/download/785597/...`) today covers
   only Arc and Core Ultra (downloaded page 2026-10-21), not Iris Xe and older ones, so it isn't suitable as one address for every Intel card.
 - **Intel Driver & Support Assistant (rejected)**: `https://www.intel.com/content/www/us/en/support/detect.html` exists (downloaded page
-  2026-10-21), but it leads to an installed tool that updates drivers, and spec 7.2/8 forbids suggesting such tools
- . Replaced by the "Support for Intel® Graphics" page.
+  2026-10-21), but it leads to an installed tool that updates drivers, and the project assumptions forbid suggesting such tools. Replaced by the "Support for Intel® Graphics" page.
 - **WMI names outside the table**: `ASUS` (substring in `asus-nb-wmi.c`, no exact match), `MICRO-STAR INT…` (old MSI,
   only a substring in `msi-laptop.c`). Without an exact string they don't go in; such a laptop gets "Search for a support page".

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/README.md sha256: 10ac3740a45662883c679c85e2071d50cf3f84580f4fd1f43e72829e4a2e3cc5 -->
+<!-- source: docs/tweaks/README.md sha256: e7984d8b492a95277e79db5865c26001baf6e3aad1b4a5388445d83f12dd26da -->
 
 # Catalog item documentation
 
@@ -12,7 +12,7 @@ One sentence: whether the item makes sense on Windows 11 26H2 (port / don't port
 
 ## What it changes
 List exactly what is touched: registry keys (path, name, type, value), services, commands and scripts.
-A panel or launcher with a `launch` field: the file and arguments verbatim (file rules: spec, section 4, A6).
+A panel or launcher with a `launch` field: the file and arguments verbatim.
 
 ## Sources
 URLs with the access date and the source type (MS Learn, manufacturer documentation, test on a 26H2 VM, WinUtil code).
@@ -30,6 +30,6 @@ Risk level, side effects and warnings shown to the user (consistent with the `ri
 Result of the VM run: date, version (Home/Pro), `Passed` or `Skipped` with the reason.
 
 ## Observed effect
-Evidence of a real effect (Stage 4a rule): Home and Pro separately, each with the observation method (screenshot, UIA, process, Settings),
+Evidence of a real effect: Home and Pro separately, each with the observation method (screenshot, UIA, process, Settings),
 result and date. Writing the value alone is not evidence. An item without an observed effect on a given edition gets `editions`
 (`NotSupported` on the others); without any evidence it is dropped from the catalog.

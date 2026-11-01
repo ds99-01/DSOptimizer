@@ -1,8 +1,8 @@
-<!-- source: docs/apps/install-README.md sha256: c6b1f46a972896cd0e4b3fe2aef7eb71dd6697914df1e9ecb68df9b64e8fc5cc -->
+<!-- source: docs/apps/install-README.md sha256: 362071cbfc75978a956087801bc512fcb351ef5c8c156f3bda69e89f2bcc0e3a -->
 
 # App install – list `apps.json`
 
-The file `src/DSOptimizer.Catalog/catalog/apps.json` is the app list of the "Install" page (Stage 4c). It's loaded by
+The file `src/DSOptimizer.Catalog/catalog/apps.json` is the app list of the "Install" page. It's loaded by
 `AppsInstallCatalog.Load` (Core). It's embedded as a separate resource `BuiltInCatalog.AppsInstallSource`
 (`DSOptimizer.AppsInstall.apps.json`) and, like `apps-bloat.json`, isn't part of `BuiltInCatalog.Sources` (the tweak catalog).
 The program itself doesn't download anything. winget installs, only from the `winget` source (`--source winget`), with verification of the installer hash
@@ -52,7 +52,7 @@ from `ChrisTitusTech/winutil`, rules in `WinUtilSource`.
 - `source`: absolute `https` address (manufacturer's page or the manifest in `microsoft/winget-pkgs`; a `github` item – the releases page
   of the repository, `https://github.com/rustdesk/rustdesk/releases`).
 
-There's no selection field and no presets (the author's decision 2026-10-15: nothing selects itself). The test
+There's no selection field and no presets (decision of 2026-10-15: nothing selects itself). The test
 `AppsInstallCatalogTests.BuiltIn_NoEntryPreselected` makes sure the built-in file has no other fields than the ones above.
 
 An error in the file = `InstallCatalogException(entryId, field, message)` with the message `apps: <id>, field <field>: <text>`. The same
@@ -74,7 +74,7 @@ exception is thrown for a duplicate `id` or `wingetId` and an unknown category.
 - Architecture in the name. The runtimes have `(x64)`/`(x86)` in the rule, so an x86 runtime doesn't mark the x64 item
   as installed (`Microsoft Windows Desktop Runtime - 8.* (x64)`, `Microsoft Visual C++ *Redistributable (x64) - 14.*`).
   .NET 8 and 9 leave the same visible entry in HKLM32 and a `SystemComponent=1` entry in HKLM 64; both match the rule.
-- The branch (HKLM 64/32, HKU) isn't part of the rule. The list reader from 4a reads all three.
+- The branch (HKLM 64/32, HKU) isn't part of the rule. The installed-programs list reader reads all three.
 - The rules are Win32 only. AppX packages installed alongside (NotepadPlusPlus, WinRAR.ShellExtension, AdobeAcrobatReaderCoreApp,
   PowerToys packages) don't give a status.
 - No rule matches the entries of a fresh 26H2 (Microsoft Edge, Edge Update, Edge WebView2 Runtime) or the components
@@ -85,15 +85,15 @@ exception is thrown for a duplicate `id` or `wingetId` and an unknown category.
 
 ## List – entries with evidence (36)
 
-Evidence: VM measurement 2026-10-24 (`docs/zrodla/2026-10-24-etap4c-pomiary.md` (in Polish), raw results outside git). `show` = 0 on Home and Pro for every item (installer type in brackets
+Evidence: VM measurement 2026-10-24 (raw results outside git). `show` = 0 on Home and Pro for every item (installer type in brackets
 from `show`). "Pro"/"Home" = code and time of the attempt without `--locale` (the program's command); `0x8A150061` = already installed
 in the `network` phase or as a dependency. "Scope" = branch of the measured Uninstall entry (`winget show` v1.11 doesn't print the installer
 scope): HKU = signed-in account only, HKLM/HKLM32 = whole computer. "Entry" = visible Uninstall entry (`DisplayName` /
 `Publisher`) after installation. `source` = manifest folder in `microsoft/winget-pkgs` (existence checked through the GitHub API
-on 2026-10-24 for every item). Foxit PDF Reader was added later the same day (the author's request): winget measurement (Pro only) and CLI run, raw results outside git.
+on 2026-10-24 for every item). Foxit PDF Reader was added later the same day: winget measurement (Pro only) and CLI run, raw results outside git.
 RustDesk (`install.rustdesk`) has no winget package: the `wingetId` column holds the `github` repository, `show` doesn't apply, and the evidence
 is the Home VM spike (section "RustDesk from GitHub (spike 2026-10-24)"); the Pro, Home and "CLI run" columns come from the CLI run
-with network (RustDesk plan, Task 7 – paragraph "RustDesk: CLI run with network" below; `msiexec` time from the MSI log `/l*v`).
+with network (paragraph "RustDesk: CLI run with network" below; `msiexec` time from the MSI log `/l*v`).
 
 | `id` | `wingetId` | category | `show` | scope | Pro | Home | CLI run | entry | `match` | verdict | `source` |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -121,7 +121,7 @@ with network (RustDesk plan, Task 7 – paragraph "RustDesk: CLI run with networ
 | `install.cpu-z` | `CPUID.CPU-Z` | tools | 0 (inno) | computer (HKLM) | 0 (5 s) | – | Pro: `Installed` (7 s) | `CPUID CPU-Z 3.01` / `CPUID, Inc.` | `displayName: "CPUID CPU-Z*"`, `publisher: "CPUID, Inc."` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/CPUID/CPU-Z |
 | `install.hwmonitor` | `CPUID.HWMonitor` | tools | 0 (inno) | computer (HKLM) | 0 (5 s) | – | Pro: `Failed` `0x80004004` (winget "Cancelling operation", program installed – `--list-install` = `true`; after the fix = `NotConfirmed`); Home (retry): `Installed` (8 s) | `CPUID HWMonitor 1.68` / `CPUID, Inc.` | `displayName: "CPUID HWMonitor*"`, `publisher: "CPUID, Inc."` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/CPUID/HWMonitor |
 | `install.gpu-z` | `TechPowerUp.GPU-Z` | tools | 0 (exe) | computer (HKLM32) | 0 (23 s) | – | Pro: `Installed` (19 s) | `TechPowerUp GPU-Z` / `TechPowerUp` | `displayName: "TechPowerUp GPU-Z"`, `publisher: "TechPowerUp"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/TechPowerUp/GPU-Z |
-| `install.hwinfo` | `REALiX.HWiNFO` | tools | 0 (inno – entry `…_is1`; license "Proprietary", free version) | computer (HKLM) | 0 (10 s; the installer starts HWiNFO64 by itself after installation) | – | Pro: CLI run – to be added | `HWiNFO® 64` (character U+00AE) / `Martin Malik, REALiX s.r.o.` | `displayName: "HWiNFO* 64"`, `publisher: "Martin Malik, REALiX s.r.o."` | in (added 2026-10-26 at the author's request) | https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/REALiX/HWiNFO |
+| `install.hwinfo` | `REALiX.HWiNFO` | tools | 0 (inno – entry `…_is1`; license "Proprietary", free version) | computer (HKLM) | 0 (10 s; the installer starts HWiNFO64 by itself after installation) | – | Pro: CLI run – to be added | `HWiNFO® 64` (character U+00AE) / `Martin Malik, REALiX s.r.o.` | `displayName: "HWiNFO* 64"`, `publisher: "Martin Malik, REALiX s.r.o."` | in (added 2026-10-26) | https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/REALiX/HWiNFO |
 | `install.rustdesk` | `github`: `rustdesk/rustdesk` | remote-help | – (not in winget; GitHub API `releases/latest`: `1.5.0`, MSI) | computer (HKLM) | 0 (`msiexec` 3.7 s, CLI run) | 0 (`msiexec` 3.5 s, CLI run; spike 7.5 s) | Pro (with 7-Zip): `Installed` (7.6 s), second time `AlreadyInstalled`; Home: `Installed` (7.2 s), second time `AlreadyInstalled` | `RustDesk` / `Purslane Tech Pte. Ltd.` 1.5.0.29846474 (HKLM 64, MSI `{9D5F8A39-0D7B-4BC4-851D-DA8501D03DE7}`, `MsiExec.exe /X{…}`) | `displayName: "RustDesk"`, `publisher: "Purslane Tech*"` (doesn't catch `RustDesk Client`) | in (Home spike: `msiexec` code 0 in 7.5 s; installs the `RustDesk` service, 2 firewall rules, desktop/Start/Startup shortcuts for all accounts) | https://github.com/rustdesk/rustdesk/releases |
 | `install.anydesk` | `AnyDesk.AnyDesk` | remote-help | 0 (exe) | computer (HKLM32) | 0 (12 s) | 0 (65 s) | Pro: `Installed` (13 s) | `AnyDesk` / `AnyDesk Software GmbH` | `displayName: "AnyDesk"`, `publisher: "AnyDesk Software GmbH"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/AnyDesk/AnyDesk |
 | `install.teamviewer` | `TeamViewer.TeamViewer` | remote-help | 0 (wix in zip) | computer (HKLM) | 0 (21 s) | – | Pro: `Installed` (23 s); Home: `Installed` (18 s) | `TeamViewer` / `TeamViewer` | `displayName: "TeamViewer"`, `publisher: "TeamViewer"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/TeamViewer/TeamViewer |
@@ -134,9 +134,9 @@ with network (RustDesk plan, Task 7 – paragraph "RustDesk: CLI run with networ
 | `install.dotnet-desktop-9` | `Microsoft.DotNet.DesktopRuntime.9` | runtimes | 0 (burn) | computer (HKLM32) | 0 (11 s) | – | Pro: `Installed` (13 s) | `Microsoft Windows Desktop Runtime - 9.0.21 (x64)` / `Microsoft Corporation` (+ 4 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Windows Desktop Runtime - 9.* (x64)"`, `publisher: "Microsoft Corporation"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/9 |
 | `install.dotnet-desktop-10` | `Microsoft.DotNet.DesktopRuntime.10` | runtimes | – | computer (HKLM32) | – | – | Pro: `Installed` (15 s); Home: `Installed` (16 s) | `Microsoft Windows Desktop Runtime 10.0.14 (x64)` / `Microsoft Corporation` (no hyphen after "Runtime", unlike 8 and 9; + 4 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Windows Desktop Runtime 10.* (x64)"`, `publisher: "Microsoft Corporation"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/10 |
 
-Evidence rule (spec 2): every winget item has `show` = 0, and each one went through a full installation with a reading of the Uninstall entry on Pro
+Evidence rule: every winget item has `show` = 0, and each one went through a full installation with a reading of the Uninstall entry on Pro
 (Discord – entry with a delay, below). VC++ x64 gave only `0x8A150061` in the main measurement, because winget had installed it earlier
-as a LibreOffice dependency; its own `install` with verification passed in the Pro spike (0, 7 s) and in the Task 11 CLI batch
+as a LibreOffice dependency; its own `install` with verification passed in the Pro spike (0, 7 s) and in the CLI batch
 (Pro `Installed`, 11 s; Home – retry – `Installed`, 11 s). On Home, one item from each category passed: Chrome
 and Firefox, Discord, VLC, SumatraPDF and LibreOffice, Notepad++ and 7-Zip, AnyDesk, Steam (VC++ x64 only as a LibreOffice
 dependency), plus PuTTY from outside the list. No item stays on the list only because of a "same installer family" rule.
@@ -148,7 +148,7 @@ verification waits up to 60 s, so the item stays.
 Longest installation: VLC on Home, 230 s (EXE). The limit `InstallTimeouts.PerApp` = 30 min stays (a change would only be needed
 for an installation longer than 7 min).
 
-### CLI run with network (Task 11, 2026-10-24)
+### CLI run with network (2026-10-24)
 
 The "CLI run" column = the item's result in the batch `DSOptimizer.exe --install-apps … --out …` run as `dso` from a
 Task Scheduler task (`tests/vm/explore/Invoke-E4CExploration.ps1 -Phase cli-install`, network `Default Switch` only for the duration of the phase), time
@@ -161,22 +161,22 @@ Task Scheduler task (`tests/vm/explore/Invoke-E4CExploration.ps1 -Phase cli-inst
   `0x80004004` (E_ABORT), while the Inno installer reached "Installation process succeeded" in the `--log` log and wrote the Uninstall entry.
   Most likely cause: winget was interrupted by the App Installer update at the same time (not measured directly).
   Retry on Home (VC++ x64 + HWMonitor, winget v1.11.510): both `Installed`, code 0. The item stays.
-  After the fix (the wave after the final review), the same run would give "Not confirmed – winget ended with code 0x80004004, but the
+  After a later fix, the same run would give "Not confirmed – winget ended with code 0x80004004, but the
   program is on the list of installed apps; check the winget log" (`NotConfirmed`, CLI code 4 instead of 1): after an unknown code
   the list item gets one fresh reading, and a visible program is never "Installed", because the code can also mean
   an installation interrupted halfway. The result wasn't measured again on a VM (it needs the App Installer self-update to be repeated).
-- **Home (one item from each category, different from the Task 2 measurement) + `winget:PuTTY.PuTTY`:** 9/9 `Installed`, CLI code 0,
+- **Home (one item from each category, different from the main measurement) + `winget:PuTTY.PuTTY`:** 9/9 `Installed`, CLI code 0,
   3 min 34 s; PuTTY confirmed by `winget list --id --exact` (`Installed`, not `InstalledUnverified`). `--list-install`:
   8 list items from this batch = `installed = true`. winget without an update (v1.11.510).
 - **Discord:** the HKU entry appeared after winget exited – "Zainstalowano i sprawdzono." (Installed and verified.) about 14 s (Home) and 20 s (Pro) after the line
   "Successfully installed", so within the 60 s window. Only Adobe Acrobat Reader waited longer (about 30 s, Pro).
 - **VC++ as a component of another installer:** on Home one of the batch installers (with no winget dependency in the output; the logs can't tell which one) installed
-  `Microsoft Visual C++ 2015-2022 Redistributable (x64)` and `(x86)` – 14.51.36231 (older entry name). The rule from T11 didn't
+  `Microsoft Visual C++ 2015-2022 Redistributable (x64)` and `(x86)` – 14.51.36231 (older entry name). The earlier rule didn't
   recognize it (`installed = false`); a retry of `install.vcredist-x64` on Home gave `Installed` (code 0), so winget installed
-  the v14 version next to the older one. Since the wave of fixes after the final review (M4), the rule ` - 14.*` catches both name variants, so such an item
+  the v14 version next to the older one. Since a later fix, the rule ` - 14.*` catches both name variants, so such an item
   gets the "Installed" status and doesn't start.
 
-- **Foxit PDF Reader (2026-10-24, after Task 11 was closed, Pro only):** `--install-apps install.foxit-reader` as `dso` from a Task
+- **Foxit PDF Reader (2026-10-24, after the CLI batch was closed, Pro only):** `--install-apps install.foxit-reader` as `dso` from a Task
   Scheduler task (a one-off script on the `Invoke-E4CExploration.ps1` helpers: the `cli-install` phase with the list limited to this item):
   `Installed` ("Zainstalowano i sprawdzono." (Installed and verified.), version 2026.2.1.39815), CLI code 0, 80 s from `Started` to the result (whole CLI process 90 s),
   winget v1.11.510 without an update. `--list-install`: `install.foxit-reader` = `installed = true`, the other 32 = `false`. Journal: one
@@ -185,7 +185,7 @@ Task Scheduler task (`tests/vm/explore/Invoke-E4CExploration.ps1 -Phase cli-inst
   (apart from the `Microsoft.Winget.Source` source downloaded by winget) and no `Run` entries (HKLM 64/32, the account's HKU). Language: multilingual package (`packagelang` = `ml`, folders `Lang\<culture>` including `pl-PL`),
   the app description in the registry (`Capabilities\ApplicationDescription`) in Polish; the window language wasn't checked (the program wasn't started).
 
-### RustDesk: CLI run with network (RustDesk plan, Task 7, 2026-10-24)
+### RustDesk: CLI run with network (2026-10-24)
 
 `tests/vm/explore/Invoke-E4CExploration.ps1 -Phase cli-install -CliIds … -CliRepeat` on clean VMs (`czysta-26H2`, winget v1.11.510
 without an update), `DSOptimizer.exe --install-apps … --out …` as `dso` from a Task Scheduler task (Interactive + Highest), network
@@ -243,7 +243,7 @@ Raw results outside git (`releases.json`, `download.json`, `install.json`, `diff
 - **Extras:** `RustDesk` service ("RustDesk Service", automatic, running); 2 firewall rules "RustDesk Service" (inbound
   and outbound, allow); shortcuts: public desktop (`C:\Users\Public\Desktop\RustDesk.lnk`), Start menu (`RustDesk\RustDesk.lnk`,
   `Uninstall RustDesk.lnk`) and the Startup folder of all accounts (`…\Start Menu\Programs\Startup\RustDesk Tray.lnk`); after 20 s, `RustDesk` processes
-  as SYSTEM (session 0 and 1) and as `dso`. Hence the item's warning (spec 4, verbatim in `apps.json`).
+  as SYSTEM (session 0 and 1) and as `dso`. Hence the item's warning (verbatim in `apps.json`).
 - **`match` rule:** `displayName: "RustDesk"` (exact), `publisher: "Purslane Tech*"`; doesn't catch a similar name of the same
   publisher (`RustDesk Client`, negative test on a synthetic name).
 
@@ -255,7 +255,7 @@ Raw results outside git (`releases.json`, `download.json`, `install.json`, `diff
   Redistributable (x64) (winget dependency), Epic Games Launcher → Microsoft GameInput, Adobe Acrobat Reader → AppX package
   `AdobeAcrobatReaderCoreApp` (account and Windows image), PowerToys → 5 AppX packages, WinRAR → `WinRAR.ShellExtension`,
   Notepad++ (EXE installer) → `NotepadPlusPlus`, Foxit PDF Reader → `FoxitReaderUpdateService` service (automatic start).
-- **WinRAR:** "Paid after the trial period." (spec point 4).
+- **WinRAR:** "Paid after the trial period."
 - **.NET 8 and 9 end of support:** "Microsoft ends support for this version on November 10, 2026. Install it only if a specific program
   needs it." According to Microsoft's `releases-index.json` (as of 2026-11-01), .NET 8 and 9 end support on 2026-11-10, and .NET 10 is
   LTS until 2028-11-14, so 10 has no warning. Versions 8 and 9 stay on the list because a runtime is installed precisely when a specific
@@ -266,9 +266,9 @@ Raw results outside git (`releases.json`, `download.json`, `install.json`, `diff
 
 - Visual C++ x64/x86: the rule `Microsoft Visual C++ *Redistributable (x64) - 14.*` (and likewise `(x86)`) catches both measured
   names of the 14.x family: `… v14 Redistributable (x64) - 14.51.36247` (T2) and `… 2015-2022 Redistributable (x64) - 14.51.36231`
-  (T11 Home), both give "Installed". It doesn't catch 2013 (` - 12.`), 2012 (` - 11.`), 2010 (`… 2010  x64 Redistributable - 10.`)
+  (CLI batch, Home), both give "Installed". It doesn't catch 2013 (` - 12.`), 2012 (` - 11.`), 2010 (`… 2010  x64 Redistributable - 10.`)
   or the components `… X64 Minimum/Additional Runtime - 14.…` (negative tests on synthetic names). Another 14.x release
-  with yet another entry name won't get the status; then winget either returns "Already installed" or – as on Home in T11 –
+  with yet another entry name won't get the status; then winget either returns "Already installed" or – as on Home in the CLI batch –
   installs the v14 version next to the older one (code 0, `Installed`), so nothing breaks.
 - Adobe: `Adobe Acrobat*` / `Adobe` also matches the paid Acrobat. Since the 64-bit version, Reader and Acrobat are one installer
   with the same entry (`Adobe Acrobat (64-bit)`), so the "Installed" status is true then.
@@ -281,15 +281,15 @@ Raw results outside git (`releases.json`, `download.json`, `install.json`, `diff
 |---|---|---|
 | `Spotify.Spotify` | the installer doesn't work from an administrator account: `0x8A150056` "The installer cannot be run from an administrator context." | spike 2026-10-24 (Pro); `show` = 0 (the package is in the source) |
 | `RustDesk.RustDesk` | not in the `winget` source; use `install.rustdesk` from GitHub instead | `show` = `0x8A150014` on Home and Pro; GitHub API: no `manifests/r/RustDesk/RustDesk` (404, 2026-10-24) |
-| `Microsoft.DirectX` | spec: no Uninstall entry. Measurement: the installer is an **MSIX** package today (`UAPSignedBinary_Microsoft.DirectX.x64.appx`) and wasn't installed, so the status and verification are unconfirmed | `show` = 0, `Installer Type: msix` |
-| `Microsoft.Teams` | it's already on a fresh 26H2 (AppX `MSTeams`, 4a research). winget returns `0x8A150061`, and an MSIX installation through winget wasn't confirmed. The "Apps" page (4a) suggests Teams for removal, so an item on the install list would be misleading | `show` = 0, `install` = `0x8A150061` (Pro) |
+| `Microsoft.DirectX` | assumption: no Uninstall entry. Measurement: the installer is an **MSIX** package today (`UAPSignedBinary_Microsoft.DirectX.x64.appx`) and wasn't installed, so the status and verification are unconfirmed | `show` = 0, `Installer Type: msix` |
+| `Microsoft.Teams` | it's already on a fresh 26H2 (AppX `MSTeams`). winget returns `0x8A150061`, and an MSIX installation through winget wasn't confirmed. The "Apps" page suggests Teams for removal, so an item on the install list would be misleading | `show` = 0, `install` = `0x8A150061` (Pro) |
 
-Deliberately outside the list (spec point 4): graphics card drivers, Microsoft Edge, Store packages (`msstore`).
+Deliberately outside the list: graphics card drivers, Microsoft Edge, Store packages (`msstore`).
 
 ## Search: a candidate from outside the list
 
 `winget:PuTTY.PuTTY` (`search --query putty`, first row). Installation measured on Home and Pro: code 0, HKLM entry
-`PuTTY release 0.85 (64-bit)` / `Simon Tatham`, `list --id --exact` = 0. In the CLI run on Home (Task 11)
+`PuTTY release 0.85 (64-bit)` / `Simon Tatham`, `list --id --exact` = 0. In the CLI run on Home
 `--install-apps winget:PuTTY.PuTTY` = `Installed` (verification `winget list --id --exact`), HKLM entry as above.
 
 ## The "Install" page (UI after the fixes of 2026-10-25)

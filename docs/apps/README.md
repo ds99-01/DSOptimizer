@@ -23,8 +23,8 @@ pilnuje, że plik na dysku i zasób są tym samym.
   (można zaznaczyć ręcznie), z `warning`, jeśli jest.
 - `summary` – ≤ 160 znaków, po polsku, bez nazw kluczy rejestru i cmdletów.
 - `warning` – opcjonalne ostrzeżenie pokazywane przy wierszu.
-- `source` – skąd wiemy, że to śmieć (dokumentacja MS, odczyt VM, spec, producent). Wpis sugerowany musi mieć źródło
-  z adresem `https://`, znacznikiem „spec 6.2 (decyzja autora)” albo odczytem VM; pilnuje tego test `SuggestedEntries_HaveVerifiableSource`.
+- `source` – skąd wiemy, że to śmieć (dokumentacja MS, odczyt VM, założenia projektu, producent). Wpis sugerowany musi mieć źródło
+  z adresem `https://`, odczytem VM albo zapisem decyzji projektowej w polu (tak mają WildTangent i Booking.com); pilnuje tego test `SuggestedEntries_HaveVerifiableSource`.
 - `cleanupUrl` – opcjonalny adres `https` oficjalnego narzędzia producenta do czyszczenia resztek. Program niczego z niego nie pobiera,
   pokazuje go tylko jako tekst. Wolno wpisać wyłącznie adres sprawdzony pobraniem strony (tabela niżej); test `VerifiedCleanupUrls` pilnuje,
   że w pliku nie ma żadnego innego.
@@ -44,9 +44,8 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 
 ## Źródła rozpoznania
 
-- Lista chroniona i punkt wyjścia sugestii: projekt Etapu 4a (debloat), pkt 6.2.
-- **Pakiety Microsoftu:** odczyt świeżej VM 26H2 (Home i Pro, build 26300.9457, 2026-10-21), sekcja „Wyniki VM 26H2 (partia 2)”
-  w `docs/zrodla/2026-10-20-etap4a-zrodla.md`. Wszystkie nazwy z VM są potwierdzone odczytem `Get-AppxPackage`.
+- Lista chroniona i punkt wyjścia sugestii: założenia czyszczenia aplikacji (debloat).
+- **Pakiety Microsoftu:** odczyt świeżej VM 26H2 (Home i Pro, build 26300.9457, 2026-10-21). Wszystkie nazwy z VM są potwierdzone odczytem `Get-AppxPackage`.
   Poza VM zostały tylko `Microsoft.MicrosoftOfficeHub` i `Microsoft.Getstarted` (nazwy z MS Learn, archiwum forum
   „Which AppXPackage can be removed without causing system problems?”; brak na świeżym 26H2).
 - **Producenci (Lenovo, ASUS, Acer, HP, Dell):** nie było sprzętu OEM, więc nazwy pochodzą ze stron producentów i forów (adresy w polu
@@ -69,7 +68,7 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 | Adres | Sprawdzono | Wynik |
 |---|---|---|
 | `https://support.norton.com/sp/en/us/home/current/solutions/v60392881` | 2026-10-21 | działa; tytuł „Download and run the Norton 360 Remover tool for Windows”, opis: usuwa lub usuwa i instaluje ponownie aplikację Norton device security |
-| `https://www.mcafee.com/support/s/article/000002766?language=pl` | 2026-10-21 | artykuł McAfee o narzędziu usuwania (MCPR); pobranie strony: timeout, curl: 403 (blokada botów) – adres podał i sprawdził ręcznie autor. Przypisany do LiveSafe, Total Protection, AntiVirus Plus, Internet Security i Personal Security |
+| `https://www.mcafee.com/support/s/article/000002766?language=pl` | 2026-10-21 | artykuł McAfee o narzędziu usuwania (MCPR); pobranie strony: timeout, curl: 403 (blokada botów) – adres sprawdzony ręcznie. Przypisany do LiveSafe, Total Protection, AntiVirus Plus, Internet Security i Personal Security |
 
 ### Niedopisane, bo nie dało się potwierdzić
 
@@ -84,26 +83,26 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 | Pozycja | Decyzja | Dlaczego |
 |---|---|---|
 | Uzyskaj pomoc (`Microsoft.GetHelp`) | Pozostałe (niesugerowane) | Aplikacja kontaktu z pomocą; nie jest reklamą, a research proponował „sugerowany” jako odpowiednik Porad |
-| Microsoft Bing (`Microsoft.BingSearch`) | Pozostałe | Brak w specu; niejednoznaczny |
+| Microsoft Bing (`Microsoft.BingSearch`) | Pozostałe | Brak w założeniach listy; niejednoznaczny |
 | Dev Home (`Microsoft.Windows.DevHome`) | Pozostałe | Narzędzie dla programistów, może być używane |
 | Family (`MicrosoftCorporationII.MicrosoftFamily`) | Pozostałe | Kontrola rodzicielska, może być w użyciu |
 | Sticky Notes (`Microsoft.MicrosoftStickyNotes`) | **Chronione** | Aplikacja użytkowa (decyzja projektowa) |
 | Xbox TCUI, Xbox Identity Provider, Game Speech Window | Pozostałe | Zależności Xbox, mogą być potrzebne grom i Game Bar (decyzja projektowa) |
-| Game Bar (`Microsoft.XboxGamingOverlay`) | Pozostałe, jawny wpis | Decyzja autora 2026-10-21 |
-| Łącze z telefonem, Urządzenia przenośne, Windows Web Experience Pack | Pozostałe | Bez wpisu; Widżety obsługuje partia 1 |
-| Ulepszenia zgodności, kodeki AVC/MPEG-2/VP9/RAW/WebMedia, Zakupy w Sklepie | Chronione | Składniki systemu i kodeki, jak reszta kodeków ze specu |
+| Game Bar (`Microsoft.XboxGamingOverlay`) | Pozostałe, jawny wpis | Decyzja z 2026-10-21 |
+| Łącze z telefonem, Urządzenia przenośne, Windows Web Experience Pack | Pozostałe | Bez wpisu; Widżety wyłącza poprawka `privacy.widgets` |
+| Ulepszenia zgodności, kodeki AVC/MPEG-2/VP9/RAW/WebMedia, Zakupy w Sklepie | Chronione | Składniki systemu i kodeki, jak reszta chronionych kodeków |
 | Edge jako pakiet (`Microsoft.MicrosoftEdge.Stable`) | Chronione | Na VM pakiet istnieje jako osobna pozycja obok wpisu Win32 Edge |
 | Podłączanie pulpitu zdalnego | Chronione (po polsku i po angielsku) | Wpis Uninstall `mstsc` ma nazwę tylko w `DisplayName_Localized`; wzorzec zależy od języka systemu |
 | HP Support Assistant, Dell SupportAssist | **Pozostałe** (szkic miał „sugerowane”) | Mogą aktualizować sterowniki; brak sprzętu OEM do sprawdzenia |
 | MyASUS, Armoury Crate, MyDell, Dell Optimizer | Pozostałe + ostrzeżenie o baterii i Fn | Sterują baterią i wydajnością |
 | Dell Digital Delivery | Pozostałe + ostrzeżenie | Może trzymać instalatory kupionego oprogramowania |
-| McAfee WebAdvisor, Security Scan Plus | Pozostałe + ostrzeżenie | Program nie odróżni próby od płatnej licencji; bez niezależnego źródła; decyzja autora 2026-10-21 po przeczytaniu listy |
+| McAfee WebAdvisor, Security Scan Plus | Pozostałe + ostrzeżenie | Program nie odróżni próby od płatnej licencji; bez niezależnego źródła; decyzja z 2026-10-21 po przeczytaniu listy |
 | Konsumenckie McAfee i Norton | Pozostałe + ostrzeżenie „jeśli to płatny antywirus, nie usuwaj” | Program nie odróżni próby od płatnej licencji |
 | McAfee Agent, Endpoint, Drive Encryption, DLP, Trellix | **Chronione** | Mogą być oprogramowaniem firmowym |
-| McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Pozostałe + ostrzeżenie; w `source` oficjalne strony mcafee.com | Spec 6.2 (trial McAfee); wzorce to nazwy produktów, nie całe „McAfee*” |
+| McAfee LiveSafe, Total Protection, AntiVirus Plus, Internet Security | Pozostałe + ostrzeżenie; w `source` oficjalne strony mcafee.com | Program nie odróżni próby od płatnej licencji; wzorce to nazwy produktów, nie całe „McAfee*” |
 | McAfee Personal Security | Pozostałe + ostrzeżenie | Program nie odróżni próby od płatnej licencji; nie znaleziono oficjalnej strony McAfee dla tej nazwy |
-| WildTangent, HP Games by WildTangent | Sugerowane; źródło „spec 6.2 (decyzja autora)” | Brak oficjalnej strony producenta w sprawdzonych źródłach; wzorce `WildTangent*` i `HP Games by WildTangent*` (bez `*WildTangent*`) |
-| Booking.com | Sugerowane; źródło „spec 6.2 (decyzja autora)” | Brak oficjalnej strony wpisu; nazwa z Which? |
+| WildTangent, HP Games by WildTangent | Sugerowane; źródło: decyzja projektowa, bez adresu | Brak oficjalnej strony producenta w sprawdzonych źródłach; wzorce `WildTangent*` i `HP Games by WildTangent*` (bez `*WildTangent*`) |
+| Booking.com | Sugerowane; źródło: decyzja projektowa, bez adresu | Brak oficjalnej strony wpisu; nazwa z Which? |
 | Microsoft 365 (Office Hub), Porady | Sugerowane; źródło MS Learn (adres w `source`) | Nazw nie ma na świeżym 26H2, tylko w archiwalnej liście z Windows 10 |
 | Microsoft Visual C++ Redistributable (`Microsoft Visual C++ * Redistributable*`) | **Chronione** | Wiele programów i gier ich wymaga; po usunięciu przestaną się uruchamiać |
 | .NET Runtime, Windows Desktop Runtime (`Microsoft .NET*Runtime*`, `Microsoft Windows Desktop Runtime*`) | **Chronione** | Bez nich programy .NET się nie uruchomią |
