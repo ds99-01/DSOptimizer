@@ -43,9 +43,18 @@ public sealed class UpdateChecker
         {
             return CheckCore();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Porażka nigdy nie wpływa na program, także gdy zawiódł sam log.
+            // Porażka nigdy nie wpływa na program, także gdy zawiódł sam log; w logu tylko nazwa typu wyjątku, bez jego komunikatu.
+            try
+            {
+                _log.Info(L.T("Aktualizacje"), L.F("Nie udało się sprawdzić nowej wersji: {0}", ex.GetType().Name));
+            }
+            catch (Exception)
+            {
+                // Log też zawiódł – nic więcej nie da się zrobić.
+            }
+
             return FailedResult;
         }
     }
@@ -54,7 +63,7 @@ public sealed class UpdateChecker
     {
         if (!Version.TryParse(_currentVersion, out var current))
         {
-            return Fail(L.T("bieżąca wersja programu nie jest poprawnym numerem"));
+            return Fail("InvalidCurrentVersion");
         }
 
         var response = _web.GetText(UpdateSource.ReleasesLatestUrl, RustDeskSource.ApiAccept, UpdateSource.ApiTimeout);

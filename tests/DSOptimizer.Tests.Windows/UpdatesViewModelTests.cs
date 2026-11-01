@@ -293,11 +293,16 @@ public class UpdatesViewModelTests
         var files = Directory.GetFiles(Path.Combine(root, "src", "DSOptimizer.Core", "Cli"), "*.cs")
             .Append(Path.Combine(root, "src", "DSOptimizer.Windows", "CliHost.cs"))
             .ToList();
+        var forbidden = new[] { "UpdateChecker", "UpdateSource", "UpdatesViewModel" };
 
         Assert.NotEmpty(files);
         foreach (var file in files)
         {
-            Assert.DoesNotContain("UpdateChecker", File.ReadAllText(file), StringComparison.Ordinal);
+            var text = File.ReadAllText(file);
+            foreach (var word in forbidden)
+            {
+                Assert.DoesNotContain(word, text, StringComparison.Ordinal);
+            }
         }
     }
 

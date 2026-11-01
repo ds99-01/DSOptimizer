@@ -748,10 +748,6 @@
     {
       "pl": "Nie udało się sprawdzić nowej wersji: {0}",
       "en": "Couldn't check for a new version: {0}"
-    },
-    {
-      "pl": "bieżąca wersja programu nie jest poprawnym numerem",
-      "en": "the current program version is not a valid number"
     }
   ]
 }

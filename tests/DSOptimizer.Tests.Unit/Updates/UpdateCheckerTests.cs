@@ -55,6 +55,7 @@ public class UpdateCheckerTests
 
         var call = Assert.Single(web.TextCalls);
         Assert.Equal((UpdateSource.ReleasesLatestUrl, RustDeskSource.ApiAccept, TimeSpan.FromSeconds(15)), call);
+        Assert.Equal("https://api.github.com/repos/ds99-01/DSOptimizer/releases/latest", call.Url.AbsoluteUri);
     }
 
     public static TheoryData<WebText> Failures => new()
@@ -105,6 +106,9 @@ public class UpdateCheckerTests
         var result = new UpdateChecker(web, "4.0.9", log).Check();
 
         Assert.Equal(UpdateCheckOutcome.Failed, result.Outcome);
+        var line = Assert.Single(log.Lines);
+        Assert.Contains("InvalidOperationException", line);
+        Assert.DoesNotContain("boom", line);
     }
 
     [Fact]
@@ -120,8 +124,10 @@ public class UpdateCheckerTests
     [Fact]
     public void Check_UnparsableCurrentVersion_IsFailed()
     {
-        var (result, _, _) = Run(FakeWebDownloader.Ok(Json("v4.0.9")), current: "abc");
+        var (result, web, log) = Run(FakeWebDownloader.Ok(Json("v4.0.9")), current: "abc");
 
         Assert.Equal(UpdateCheckOutcome.Failed, result.Outcome);
+        Assert.Empty(web.TextCalls);
+        Assert.Contains(log.Lines, l => l.Contains("InvalidCurrentVersion"));
     }
 }
