@@ -256,10 +256,13 @@ function Compare-NetProcessAudit {
     if (@($Events | Where-Object { $null -eq $_.PSObject.Properties['newPid'] -or $null -eq $_.PSObject.Properties['parentPid'] }).Count -gt 0) {
         return [pscustomobject]@{ Match = $false; Detail = 'Audyt 4688 zawiera uszkodzone wpisy (brak newPid lub parentPid).'; OnlyInAudit = @(); OnlyInTrace = @() }
     }
+    $Current = New-Object 'System.Collections.Generic.HashSet[int]'
     $Members = New-Object 'System.Collections.Generic.HashSet[int]'
     foreach ($Event in $Events) {
         $Leaf = [System.IO.Path]::GetFileName([string](Get-NetItemValue -Item $Event -Name 'image'))
-        if ($Leaf -ieq $RootImage -or $Members.Contains([int]$Event.parentPid)) { [void]$Members.Add([int]$Event.newPid) }
+        # Numery PID są ponownie używane po zakończeniu procesu (audyt 4688 nie ma wpisów o zakończeniu). Każde zdarzenie tworzenia ustala od nowa, czy jego PID jest teraz w drzewie (zbiór bieżący, z niego bierze się rodzic): proces spoza drzewa, który dostał stary PID członka, nie jest potomkiem. Porównanie ze śladem używa wszystkich PID, które kiedykolwiek były w drzewie.
+      if ($Leaf -ieq $RootImage -or $Current.Contains([int]$Event.parentPid)) { [void]$Current.Add([int]$Event.newPid); [void]$Members.Add([int]$Event.newPid) }
+      else { [void]$Current.Remove([int]$Event.newPid) }
     }
     $TracePids = New-Object 'System.Collections.Generic.HashSet[int]'
     foreach ($Process in $Tree) { [void]$TracePids.Add([int](Get-NetItemValue -Item $Process -Name 'pid')) }

@@ -274,6 +274,17 @@ Describe 'Kontrola krzyżowa 4688' {
         (Compare-NetProcessAudit -Audit @([pscustomobject]@{ error = 'x' }) -TreeProcesses $script:Tree).Match | Should -BeFalse
         (Compare-NetProcessAudit -Audit @((New-AuditEvent -NewPid 300 -ParentPid 50 -Image 'notepad.exe')) -TreeProcesses @()).Match | Should -BeFalse
     }
+    It 'PID zwolniony przez proces drzewa i użyty ponownie przez obcy proces nie robi z jego dzieci potomków (rozbieżność z pomiaru VM)' {
+        $Events = @(
+            (New-AuditEvent -NewPid 100 -ParentPid 50 -Image 'C:\dso\app\DSOptimizer.exe')
+            (New-AuditEvent -NewPid 101 -ParentPid 100 -Image 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe')
+            (New-AuditEvent -NewPid 101 -ParentPid 900 -Image 'C:\Windows\System32\UIEOrchestrator.exe')
+            (New-AuditEvent -NewPid 700 -ParentPid 101 -Image 'C:\Windows\System32\conhost.exe')
+        )
+        $Result = Compare-NetProcessAudit -Audit $Events -TreeProcesses @($script:Tree[0], $script:Tree[1])
+        $Result.Match | Should -BeTrue
+        $Result.OnlyInAudit | Should -HaveCount 0
+    }
     It 'audyt po przejściu przez JSON (jeden wpis nie jest tablicą) też działa' {
         $One = @((New-AuditEvent -NewPid 100 -ParentPid 50 -Image 'C:\x\DSOptimizer.exe')) | ConvertTo-Json -Depth 3 | ConvertFrom-Json
         (Compare-NetProcessAudit -Audit $One -TreeProcesses @($script:Tree[0])).Match | Should -BeTrue
