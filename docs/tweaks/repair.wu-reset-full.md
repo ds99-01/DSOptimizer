@@ -1,7 +1,7 @@
 # repair.wu-reset-full – Zresetuj Windows Update i usuń blokady
 
 ## Werdykt 26H2
-Portować jako `kind=action`, `risk=experimental` (kategoria „Naprawy”, Etap 4b partia 1, handler C# `wu-reset-full`): wszystko z `repair.wu-reset` plus eksport i usunięcie polityk Windows Update oraz przywrócenie typów startu usług WU do wartości świeżej 26H2. Na Pro komplet polityk testowych daje w Ustawieniach „Ustawieniami usługi Windows Update zarządza Twoja organizacja.” i nieaktywny przycisk, a po usunięciu klucza komunikat znika.
+Portować jako `kind=action`, `risk=experimental` (kategoria „Naprawy”, handler C# `wu-reset-full`): wszystko z `repair.wu-reset` plus eksport i usunięcie polityk Windows Update oraz przywrócenie typów startu usług WU do wartości świeżej 26H2. Na Pro komplet polityk testowych daje w Ustawieniach „Ustawieniami usługi Windows Update zarządza Twoja organizacja.” i nieaktywny przycisk, a po usunięciu klucza komunikat znika.
 
 ## Co zmienia
 Handler C# (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`, wariant `full`). Kroki ponad `repair.wu-reset`:
@@ -28,7 +28,7 @@ Tabela typów startu (ta sama na Home i Pro):
 `msiserver`, `WaaSMedicSvc` i `DoSvc` nigdy nie są zmieniane: zapis typu startu kończy się odmową 5 także dla Administratora (pomiar), a `DoSvc` ma różne wartości na Home i Pro. Wynik wspomina o którejś tylko, gdy jest wyłączona (`Disabled`). Bez rejestracji DLL (`regsvr32`), bez modułów spoza systemu, bez ruszania `WaaSMedicSvc`.
 
 ## Źródła
-- Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22: `docs/zrodla/2026-10-22-etap4b-1-pomiary.md`, tabela decyzji pkt 3, 3h i 4, sekcje 3 i 4 (polityki: zapis testowy, widok Ustawień razem i osobno, `reg export`/`delete`/`import`).
+- Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22: pomiary 3, 3h i 4 (polityki: zapis testowy, widok Ustawień razem i osobno, `reg export`/`delete`/`import`).
 - Brak dokumentacji MS sprawdzonej w tym zadaniu (strony polityk Windows Update nie były pobierane); dowód: test na VM opisany niżej. Skutku polityk na sam skan (offline) nie zmierzono, więc diagnoza i opis nie obiecują, że każda wartość blokuje aktualizacje.
 
 ## Wartości domyślne na świeżym 26H2
@@ -45,9 +45,9 @@ Nie dotyczy: `kind=action` bez detekcji i cofnięcia (bez journala). Ręczny pow
 - Historia aktualizacji w Ustawieniach zostanie wyczyszczona (zostać mogą tylko wpisy definicji Microsoft Defender); aktualizacje pobiorą się od nowa.
 
 ## Test VM
-Przypadek `repair-wu-reset-full` (`Flow=Execute`): `Setup` zapisuje 6 polityk testowych z pomiaru (`WUServer`/`WUStatusServer` = `http://dso-wsus.invalid:8530`, `DisableWindowsUpdateAccess`/`SetDisableUXWUAccess` = 1, `AU\NoAutoUpdate` = 1, `AU\UseWUServer` = 1) i ustawia `UsoSvc` na `Disabled`; `Check` wymaga: klucza polityk nie ma, plik `wu-policies-*.reg` w `C:\ProgramData\DSOptimizer\backups` zawiera `WUServer`, typy startu = tabela wyżej, `wuauserv`/`bits`/`cryptsvc` działają. `Cleanup` usuwa klucz polityk i katalog kopii (VM i tak wraca do checkpointu). Dopisany w `tests/vm/cases.psd1` w Tasku 6.
+Przypadek `repair-wu-reset-full` (`Flow=Execute`): `Setup` zapisuje 6 polityk testowych z pomiaru (`WUServer`/`WUStatusServer` = `http://dso-wsus.invalid:8530`, `DisableWindowsUpdateAccess`/`SetDisableUXWUAccess` = 1, `AU\NoAutoUpdate` = 1, `AU\UseWUServer` = 1) i ustawia `UsoSvc` na `Disabled`; `Check` wymaga: klucza polityk nie ma, plik `wu-policies-*.reg` w `C:\ProgramData\DSOptimizer\backups` zawiera `WUServer`, typy startu = tabela wyżej, `wuauserv`/`bits`/`cryptsvc` działają. `Cleanup` usuwa klucz polityk i katalog kopii (VM i tak wraca do checkpointu). Dopisany w `tests/vm/cases.psd1`.
 
-Przebieg VM (Task 10, 2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1` na gałęzi `etap4b-1`; raporty poza gitem): Home i Pro po 722 zaliczone / 0 błędów / 25 pominiętych (6 przypadków ze `Skip` spoza kategorii Naprawy). `repair-wu-reset-full`: **Passed** na Home i Pro (`Executed`; kopia `wu-policies-*.reg` z `WUServer`, `wu-services-*.txt`, klucz polityk usunięty, typy startu jak na świeżym 26H2, usługi działają). Uwaga: w pierwszym przebiegu samych przypadków Napraw (`repair-1`) na Home jeden raz `bits` nie wystartował ponownie (`Failed` „Nie udało się ponownie uruchomić usług: bits.”, `NotRestored`: „Nie można uruchomić usługi bits”) – uczciwy wynik, ale przyczyny nie ustalono: w 5 kolejnych próbach (także zaraz po `repair.wu-reset`, jak w tamtym przebiegu) i w 2 kolejnych przebiegach `bits` startował; do obserwacji.
+Przebieg VM (2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1`; raporty poza gitem): Home i Pro po 722 zaliczone / 0 błędów / 25 pominiętych (6 przypadków ze `Skip` spoza kategorii Naprawy). `repair-wu-reset-full`: **Passed** na Home i Pro (`Executed`; kopia `wu-policies-*.reg` z `WUServer`, `wu-services-*.txt`, klucz polityk usunięty, typy startu jak na świeżym 26H2, usługi działają). Uwaga: w pierwszym przebiegu samych przypadków Napraw (`repair-1`) na Home jeden raz `bits` nie wystartował ponownie (`Failed` „Nie udało się ponownie uruchomić usług: bits.”, `NotRestored`: „Nie można uruchomić usługi bits”) – uczciwy wynik, ale przyczyny nie ustalono: w 5 kolejnych próbach (także zaraz po `repair.wu-reset`, jak w tamtym przebiegu) i w 2 kolejnych przebiegach `bits` startował; do obserwacji.
 
 ## Obserwacja skutku
 Metoda: sonda eksploracji (`tests/vm/explore/Invoke-E4B1Exploration.ps1`): zapis 6 polityk razem i każdej osobno, zrzut strony Windows Update w Ustawieniach (komunikat organizacji, stan przycisku „Sprawdź aktualizacje”), `reg export` / `reg delete` / `reg import` z porównaniem wartości, `ChangeServiceConfig` dla każdej usługi WU; surowe wyniki poza gitem.

@@ -1,7 +1,7 @@
 # repair.wu-reset – Zresetuj Windows Update
 
 ## Werdykt 26H2
-Portować jako `kind=action`, `risk=caution` (kategoria „Naprawy”, Etap 4b partia 1, handler C# `wu-reset`): na 26H2 Home i Pro usługi Windows Update dają się zatrzymać i przywrócić, oba foldery robocze (`SoftwareDistribution`, `catroot2`) dają się przenieść, a Windows od razu tworzy nowe. Skutek widać w Ustawieniach (historia aktualizacji wyczyszczona, aktualizacje pobierają się od nowa i instalują).
+Portować jako `kind=action`, `risk=caution` (kategoria „Naprawy”, handler C# `wu-reset`): na 26H2 Home i Pro usługi Windows Update dają się zatrzymać i przywrócić, oba foldery robocze (`SoftwareDistribution`, `catroot2`) dają się przenieść, a Windows od razu tworzy nowe. Skutek widać w Ustawieniach (historia aktualizacji wyczyszczona, aktualizacje pobierają się od nowa i instalują).
 
 ## Co zmienia
 Handler C# (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`), bez skryptu PowerShell. Kroki:
@@ -16,7 +16,7 @@ Handler C# (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`), bez skryptu Po
 Usługi chronione przez system: `msiserver`, `WaaSMedicSvc`, `DoSvc` nigdy nie są zmieniane; wynik wspomina o którejś tylko, gdy jest wyłączona (`Disabled`).
 
 ## Źródła
-- Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22, przebiegi H1, N1, P1: `docs/zrodla/2026-10-22-etap4b-1-pomiary.md`, sekcja 3 (3a, 3b, 3h), tabela decyzji pkt 3 i 3h.
+- Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22, przebiegi H1, N1, P1; pomiary 3a, 3b, 3h.
 - Brak dokumentacji MS sprawdzonej w tym zadaniu (strony o resecie składników Windows Update nie były pobierane); dowód: test na VM opisany niżej.
 
 ## Wartości domyślne na świeżym 26H2
@@ -32,9 +32,9 @@ Nie dotyczy: `kind=action` nie ma detekcji ani cofnięcia (nie ma journala). Śl
 - Polityki Windows Update tylko wypisywane, nie zmieniane (usuwa je `repair.wu-reset-full`).
 
 ## Test VM
-Przypadek `repair-wu-reset` (`Flow=Execute`): `Setup` tworzy starą kopię `C:\Windows\SoftwareDistribution.dso-20000101-000000`; `Check` wymaga, by `wuauserv`, `bits`, `cryptsvc` działały, istniała dokładnie jedna kopia `SoftwareDistribution.dso-*` i dokładnie jedna `catroot2.dso-*`, a stara kopia zniknęła. Dopisany w `tests/vm/cases.psd1` w Tasku 6. W Tasku 10 `Check` porównuje też stan `AppIDSvc` (`Win32_Service`) i sterownika `applockerfltr` (`Win32_SystemDriver`) ze stanem zapisanym w `Setup` (zależne wracają do stanu sprzed).
+Przypadek `repair-wu-reset` (`Flow=Execute`): `Setup` tworzy starą kopię `C:\Windows\SoftwareDistribution.dso-20000101-000000`; `Check` wymaga, by `wuauserv`, `bits`, `cryptsvc` działały, istniała dokładnie jedna kopia `SoftwareDistribution.dso-*` i dokładnie jedna `catroot2.dso-*`, a stara kopia zniknęła. Dopisany w `tests/vm/cases.psd1`. Później `Check` porównuje też stan `AppIDSvc` (`Win32_Service`) i sterownika `applockerfltr` (`Win32_SystemDriver`) ze stanem zapisanym w `Setup` (zależne wracają do stanu sprzed).
 
-Przebieg VM (Task 10, 2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1` na gałęzi `etap4b-1`; raporty poza gitem): Home i Pro po 722 zaliczone / 0 błędów / 25 pominiętych (6 przypadków ze `Skip` spoza kategorii Naprawy). `repair-wu-reset`: **Passed** na Home i Pro (`Executed`; zatrzymane `wuauserv`, `bits`, `cryptsvc` razem z `applockerfltr` i `AppIDSvc`, foldery przeniesione na `.dso-<znacznik>`, stara kopia usunięta, usługi i zależne z powrotem w stanie sprzed).
+Przebieg VM (2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1`; raporty poza gitem): Home i Pro po 722 zaliczone / 0 błędów / 25 pominiętych (6 przypadków ze `Skip` spoza kategorii Naprawy). `repair-wu-reset`: **Passed** na Home i Pro (`Executed`; zatrzymane `wuauserv`, `bits`, `cryptsvc` razem z `applockerfltr` i `AppIDSvc`, foldery przeniesione na `.dso-<znacznik>`, stara kopia usunięta, usługi i zależne z powrotem w stanie sprzed).
 
 ## Obserwacja skutku
 Metoda: sonda eksploracji (`tests/vm/explore/Invoke-E4B1Exploration.ps1`), zatrzymanie usług przez `ControlService` i `ServiceController.Stop()`, Restart Manager dla obu folderów, przeniesienie folderów, odczyt plików po starcie usług, API historii aktualizacji i strona Ustawień (zrzuty w surowych wynikach poza gitem).

@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/repair.wu-reset.md sha256: ab9ae70488406cce3a157f646d2a7a7b0d12801a74b3f4b9b35a49d320e7ce80 -->
+<!-- source: docs/tweaks/repair.wu-reset.md sha256: c04e3b7ec419ecfa38750a683e148da1488921db99596c52c4e38a0b76523154 -->
 
 # repair.wu-reset – Reset Windows Update
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=caution` ("Repairs" category, Stage 4b, round 1, C# handler `wu-reset`): on 26H2 Home and Pro the Windows Update services can be stopped and restored, both working folders (`SoftwareDistribution`, `catroot2`) can be moved, and Windows creates new ones right away. The effect is visible in Settings (update history cleared, updates download again and install).
+Port as `kind=action`, `risk=caution` ("Repairs" category, C# handler `wu-reset`): on 26H2 Home and Pro the Windows Update services can be stopped and restored, both working folders (`SoftwareDistribution`, `catroot2`) can be moved, and Windows creates new ones right away. The effect is visible in Settings (update history cleared, updates download again and install).
 
 ## What it changes
 C# handler (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`), without a PowerShell script. Steps:
@@ -18,7 +18,7 @@ C# handler (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`), without a Powe
 Services protected by the system: `msiserver`, `WaaSMedicSvc`, `DoSvc` are never changed; the result mentions one of them only when it's disabled (`Disabled`).
 
 ## Sources
-- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22, runs H1, N1, P1: `docs/zrodla/2026-10-22-etap4b-1-pomiary.md` (in Polish), section 3 (3a, 3b, 3h), decision table items 3 and 3h.
+- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22, runs H1, N1, P1; measurements 3a, 3b, 3h.
 - No MS documentation checked in this task (the pages about resetting Windows Update components weren't fetched); evidence: the VM test described below.
 
 ## Defaults on a fresh 26H2
@@ -34,9 +34,9 @@ Not applicable: `kind=action` has no detection or undo (no journal). Trace: the 
 - Windows Update policies are only listed, not changed (`repair.wu-reset-full` removes them).
 
 ## VM test
-Case `repair-wu-reset` (`Flow=Execute`): `Setup` creates an old copy `C:\Windows\SoftwareDistribution.dso-20000101-000000`; `Check` requires that `wuauserv`, `bits`, `cryptsvc` are running, that exactly one `SoftwareDistribution.dso-*` copy and exactly one `catroot2.dso-*` copy exist, and that the old copy is gone. Added to `tests/vm/cases.psd1` in Task 6. In Task 10, `Check` also compares the state of `AppIDSvc` (`Win32_Service`) and the `applockerfltr` driver (`Win32_SystemDriver`) with the state saved in `Setup` (the dependents return to their previous state).
+Case `repair-wu-reset` (`Flow=Execute`): `Setup` creates an old copy `C:\Windows\SoftwareDistribution.dso-20000101-000000`; `Check` requires that `wuauserv`, `bits`, `cryptsvc` are running, that exactly one `SoftwareDistribution.dso-*` copy and exactly one `catroot2.dso-*` copy exist, and that the old copy is gone. Added to `tests/vm/cases.psd1`. Later, `Check` also compares the state of `AppIDSvc` (`Win32_Service`) and the `applockerfltr` driver (`Win32_SystemDriver`) with the state saved in `Setup` (the dependents return to their previous state).
 
-VM run (Task 10, 2026-10-22, full `tests/vm/Invoke-VmTests.ps1` on the `etap4b-1` branch; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-wu-reset`: **Passed** on Home and Pro (`Executed`; `wuauserv`, `bits`, `cryptsvc` stopped together with `applockerfltr` and `AppIDSvc`, folders moved to `.dso-<timestamp>`, the old copy deleted, the services and dependents back in their previous state).
+VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-wu-reset`: **Passed** on Home and Pro (`Executed`; `wuauserv`, `bits`, `cryptsvc` stopped together with `applockerfltr` and `AppIDSvc`, folders moved to `.dso-<timestamp>`, the old copy deleted, the services and dependents back in their previous state).
 
 ## Observed effect
 Method: an exploration probe (`tests/vm/explore/Invoke-E4B1Exploration.ps1`), stopping services through `ControlService` and `ServiceController.Stop()`, Restart Manager for both folders, moving the folders, reading the files after the services start, the update history API and the Settings page (screenshots in the raw results outside git).

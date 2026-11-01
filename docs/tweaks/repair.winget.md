@@ -1,7 +1,7 @@
 # repair.winget – Napraw winget (Instalator aplikacji)
 
 ## Werdykt 26H2
-Portować jako `kind=action`, `risk=safe` (kategoria „Naprawy”, Etap 4b partia 1): na świeżej instalacji `winget` bywa niedostępny, bo brakuje aliasu `winget.exe` w profilu konta. Rejestracja istniejącego pakietu „Instalator aplikacji” dla konta przywraca alias bez pobierania czegokolwiek i działa na 26H2 Home i Pro. Bez cofnięcia.
+Portować jako `kind=action`, `risk=safe` (kategoria „Naprawy”): na świeżej instalacji `winget` bywa niedostępny, bo brakuje aliasu `winget.exe` w profilu konta. Rejestracja istniejącego pakietu „Instalator aplikacji” dla konta przywraca alias bez pobierania czegokolwiek i działa na 26H2 Home i Pro. Bez cofnięcia.
 
 ## Co zmienia
 Skrypt (`script.apply`), tylko dla konta, które uruchomiło DSOptimizer:
@@ -15,7 +15,7 @@ Skrypt (`script.apply`), tylko dla konta, które uruchomiło DSOptimizer:
 Wersji minimalnej nie porównujemy: niezmierzona (obraz 26H2 ma jedną wersję, a starszego pakietu nie pobieramy).
 
 ## Źródła
-- Pomiary na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22: `docs/zrodla/2026-10-22-etap4b-1-pomiary.md`, sekcja 6 i wiersze 6, 6i tabeli decyzji.
+- Pomiary na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22: wiersze 6, 6i tabeli decyzji.
 - Id „Instalatora aplikacji” w Sklepie `9NBLGGH4NNS1`: strona `https://apps.microsoft.com/detail/9NBLGGH4NNS1` („App Installer”) i strona Microsoft „Use WinGet” podają ten sam identyfikator (sprawdzone 2026-10-22).
 - Brak innej dokumentacji MS sprawdzonej w tym zadaniu; dowód: test na VM opisany niżej.
 
@@ -32,11 +32,11 @@ Nie dotyczy: `kind=action` nie ma detekcji ani cofnięcia. Dowodem skutku jest o
 - Tylko konto, na którym działa DSOptimizer; z innego konta administratora odmawia.
 
 ## Test VM
-Przypadki w `tests/vm/cases.psd1` (Task 8):
+Przypadki w `tests/vm/cases.psd1`:
 - `repair-winget-other-account` (Administrator PS Direct, `MessageContains='uruchom DSOptimizer na koncie'`, `Check`: stan pakietu dla kont bez zmian).
 - `repair-winget-dso` (`RunAs='dso'`; `Setup` psuje stan usunięciem aliasu `winget.exe` w profilu `dso`, jak w pomiarze; `Check`: `winget --version` uruchomione jako `dso` przez zadanie Harmonogramu kończy się kodem 0 z wersją). Stanu „Staged” dla App Installera nie da się przygotować (`Remove-AppxPackage` = 0x80073CFA, „part of Windows”), więc „zepsucie” to sam alias.
 
-Przebieg VM (Task 10, 2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1` na gałęzi `etap4b-1`; raporty poza gitem): Home i Pro po 722 zaliczone / 0 błędów / 25 pominiętych (6 przypadków ze `Skip` spoza kategorii Naprawy). `repair-winget-other-account`: **Passed** na Home i Pro (`Failed`, „… uruchom DSOptimizer na koncie <PC>\dso.”, stan pakietu bez zmian). `repair-winget-dso`: **Passed** na Home i Pro (`Executed`, „Zarejestrowano ponownie „Instalator aplikacji” … winget działa (wersja v1.11.510, odczyt zwrotny).”, `Check` `winget --version` jako `dso` = kod 0).
+Przebieg VM (2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1`; raporty poza gitem): Home i Pro po 722 zaliczone / 0 błędów / 25 pominiętych (6 przypadków ze `Skip` spoza kategorii Naprawy). `repair-winget-other-account`: **Passed** na Home i Pro (`Failed`, „… uruchom DSOptimizer na koncie <PC>\dso.”, stan pakietu bez zmian). `repair-winget-dso`: **Passed** na Home i Pro (`Executed`, „Zarejestrowano ponownie „Instalator aplikacji” … winget działa (wersja v1.11.510, odczyt zwrotny).”, `Check` `winget --version` jako `dso` = kod 0).
 
 ## Obserwacja skutku
 Metoda: w procesie konta `dso` (zadanie Harmonogramu Interactive + Highest, jak DSOptimizer po UAC) usunięcie aliasu `winget.exe`, potem `Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe` i `winget --version`; surowe wyniki poza gitem.

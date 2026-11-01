@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/repair.restore-point.md sha256: 69d7cd87cf34b8ecc9ab738c793952e6090d8ccd03ac948a304d90b9b8072643 -->
+<!-- source: docs/tweaks/repair.restore-point.md sha256: c8a2a2e7b7fe6e540c7d369d33e9e7f7d736a32a132a3bfe40f48c1197db873a -->
 
 # repair.restore-point – Create a restore point now
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=safe` ("Repairs" category, Stage 4b, round 1): an on-demand point through the existing `IRestorePointService` (the same one that creates points before changes) works on 26H2 Home and Pro when System Protection is turned on. No undo.
+Port as `kind=action`, `risk=safe` ("Repairs" category): an on-demand point through the existing `IRestorePointService` (the same one that creates points before changes) works on 26H2 Home and Pro when System Protection is turned on. No undo.
 
 ## What it changes
 C# handler `restore-point` (`RestorePointHandler`), without a script: `IRestorePointService.Create("DSOptimizer – manual restore point")` (the name follows the program language; in Polish it is "DSOptimizer – punkt ręczny"). For the duration of the call, the service sets `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore\SystemRestorePointCreationFrequency` (the 24-hour limit) to zero, calls `SystemRestore.CreateRestorePoint`, waits (up to 10 s) until the point appears in the list, and restores the previous value of the limit. Results:
@@ -12,7 +12,7 @@ C# handler `restore-point` (`RestorePointHandler`), without a script: `IRestoreP
 - `Failed` → `Failed` with the service message and code (`(code N)`), when the service provided it.
 
 ## Sources
-- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: `docs/zrodla/2026-10-22-etap4b-1-pomiary.md` (in Polish), section 7 (a point created by `DSOptimizer.exe --apply vmtest.hklm-value --restore-point required` = `Created`; with protection turned off, `CreateRestorePoint` returns "Nie można uruchomić określonej usługi, ponieważ jest ona wyłączona…" (The service cannot be started, either because it is disabled or because it has no enabled devices associated with it.)).
+- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: a point created by `DSOptimizer.exe --apply vmtest.hklm-value --restore-point required` = `Created`; with protection turned off, `CreateRestorePoint` returns "Nie można uruchomić określonej usługi, ponieważ jest ona wyłączona…" (The service cannot be started, either because it is disabled or because it has no enabled devices associated with it.).
 - No MS documentation checked in this task; evidence: the VM test described below.
 
 ## Defaults on a fresh 26H2
@@ -27,9 +27,9 @@ Not applicable: `kind=action` has no detection or undo. The evidence of the effe
 - The point doesn't cover personal files; Windows may delete the oldest points when the allotted space runs out.
 
 ## VM test
-Cases `repair-restore-point-disabled` (protection turned off: `Failed` with a message pointing to "System Protection") and `repair-restore-point-created` (protection turned on in `Setup` with `Enable-ComputerRestore -Drive 'C:\'`, `Check`: the point "DSOptimizer – punkt ręczny" (DSOptimizer – manual restore point) in the list) added to `tests/vm/cases.psd1` in Task 7.
+Cases `repair-restore-point-disabled` (protection turned off: `Failed` with a message pointing to "System Protection") and `repair-restore-point-created` (protection turned on in `Setup` with `Enable-ComputerRestore -Drive 'C:\'`, `Check`: the point "DSOptimizer – punkt ręczny" (DSOptimizer – manual restore point) in the list) added to `tests/vm/cases.psd1`.
 
-VM run (Task 10, 2026-10-22, full `tests/vm/Invoke-VmTests.ps1` on the `etap4b-1` branch; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-restore-point-disabled`: **Passed** on Home and Pro (`Failed`, code 1, "Ochrona systemu na dysku C: jest wyłączona – włącz ją pozycją „Ochrona systemu” w tej kategorii." (System Protection is turned off for the C: drive – turn it on with the "System Protection" item in this category.), no point was created). `repair-restore-point-created`: **Passed** on Home and Pro (`Executed`, "Utworzono punkt przywracania „DSOptimizer – punkt ręczny” (…)" (Created restore point "DSOptimizer – manual restore point" (…)), the point is in the `Get-ComputerRestorePoint` list).
+VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-restore-point-disabled`: **Passed** on Home and Pro (`Failed`, code 1, "Ochrona systemu na dysku C: jest wyłączona – włącz ją pozycją „Ochrona systemu” w tej kategorii." (System Protection is turned off for the C: drive – turn it on with the "System Protection" item in this category.), no point was created). `repair-restore-point-created`: **Passed** on Home and Pro (`Executed`, "Utworzono punkt przywracania „DSOptimizer – punkt ręczny” (…)" (Created restore point "DSOptimizer – manual restore point" (…)), the point is in the `Get-ComputerRestorePoint` list).
 
 ## Observed effect
 Method: creating a point through the same service (`IRestorePointService`) and reading `Get-ComputerRestorePoint` and `vssadmin list shadows`; raw results outside git. The manual action calls the same service with a different description, so the measurement covers the service, not the handler itself.

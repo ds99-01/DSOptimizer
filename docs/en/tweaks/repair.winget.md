@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/repair.winget.md sha256: d38c7c5bb57c03d9bde8471ae7382de5c4a31a90905af8b7ad00f5ccf81befb7 -->
+<!-- source: docs/tweaks/repair.winget.md sha256: 53aab591cec43f2a666812b44571a53e6a965495a5183f501defce7fabca9203 -->
 
 # repair.winget – Repair winget (App Installer)
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=safe` ("Repairs" category, Stage 4b, round 1): on a fresh installation `winget` is sometimes unavailable because the `winget.exe` alias is missing from the account profile. Registering the existing "App Installer" package for the account restores the alias without downloading anything and works on 26H2 Home and Pro. No undo.
+Port as `kind=action`, `risk=safe` ("Repairs" category): on a fresh installation `winget` is sometimes unavailable because the `winget.exe` alias is missing from the account profile. Registering the existing "App Installer" package for the account restores the alias without downloading anything and works on 26H2 Home and Pro. No undo.
 
 ## What it changes
 Script (`script.apply`), only for the account that started DSOptimizer:
@@ -17,7 +17,7 @@ Script (`script.apply`), only for the account that started DSOptimizer:
 We don't compare a minimum version: not measured (the 26H2 image has one version, and we don't download an older package).
 
 ## Sources
-- Measurements on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: `docs/zrodla/2026-10-22-etap4b-1-pomiary.md` (in Polish), section 6 and rows 6, 6i of the decision table.
+- Measurements on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: rows 6, 6i of the decision table.
 - The Store ID of "App Installer", `9NBLGGH4NNS1`: the page `https://apps.microsoft.com/detail/9NBLGGH4NNS1` ("App Installer") and the Microsoft page "Use WinGet" give the same ID (checked 2026-10-22).
 - No other MS documentation checked in this task; evidence: the VM test described below.
 
@@ -34,11 +34,11 @@ Not applicable: `kind=action` has no detection or undo. The evidence of the effe
 - Only the account DSOptimizer runs on; from another administrator account it refuses.
 
 ## VM test
-Cases in `tests/vm/cases.psd1` (Task 8):
+Cases in `tests/vm/cases.psd1`:
 - `repair-winget-other-account` (Administrator via PS Direct, `MessageContains='uruchom DSOptimizer na koncie'`, `Check`: the package state for the accounts unchanged).
 - `repair-winget-dso` (`RunAs='dso'`; `Setup` breaks the state by deleting the `winget.exe` alias in the `dso` profile, as in the measurement; `Check`: `winget --version` run as `dso` through a Task Scheduler task ends with code 0 and a version). The "Staged" state can't be prepared for App Installer (`Remove-AppxPackage` = 0x80073CFA, "part of Windows"), so the "breakage" is the alias alone.
 
-VM run (Task 10, 2026-10-22, full `tests/vm/Invoke-VmTests.ps1` on the `etap4b-1` branch; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-winget-other-account`: **Passed** on Home and Pro (`Failed`, "… uruchom DSOptimizer na koncie <PC>\dso." (… run DSOptimizer on account <PC>\dso.), the package state unchanged). `repair-winget-dso`: **Passed** on Home and Pro (`Executed`, "Zarejestrowano ponownie „Instalator aplikacji” … winget działa (wersja v1.11.510, odczyt zwrotny)." (Registered "App Installer" again … winget works (version v1.11.510, verified).), `Check` `winget --version` as `dso` = code 0).
+VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-winget-other-account`: **Passed** on Home and Pro (`Failed`, "… uruchom DSOptimizer na koncie <PC>\dso." (… run DSOptimizer on account <PC>\dso.), the package state unchanged). `repair-winget-dso`: **Passed** on Home and Pro (`Executed`, "Zarejestrowano ponownie „Instalator aplikacji” … winget działa (wersja v1.11.510, odczyt zwrotny)." (Registered "App Installer" again … winget works (version v1.11.510, verified).), `Check` `winget --version` as `dso` = code 0).
 
 ## Observed effect
 Method: in a process of the `dso` account (a Task Scheduler task, Interactive + Highest, like DSOptimizer after UAC), deleting the `winget.exe` alias, then `Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe` and `winget --version`; raw results outside git.

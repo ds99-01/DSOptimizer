@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/repair.wu-reset-full.md sha256: db4f4d86902a0acda6752a11feca9850d86e88d4233a50d77486d8096784f9b8 -->
+<!-- source: docs/tweaks/repair.wu-reset-full.md sha256: 2b2dd5e01f604f1efa81759c948447bbc536488b6c8002ab4b805c0423ca1625 -->
 
 # repair.wu-reset-full – Reset Windows Update and remove blocks
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=experimental` ("Repairs" category, Stage 4b, round 1, C# handler `wu-reset-full`): everything from `repair.wu-reset` plus exporting and removing the Windows Update policies and restoring the startup types of the WU services to the values of a fresh 26H2. On Pro, the full set of test policies makes Settings say that your organization manages the Windows Update settings, with an inactive button, and after the key is removed the message disappears.
+Port as `kind=action`, `risk=experimental` ("Repairs" category, C# handler `wu-reset-full`): everything from `repair.wu-reset` plus exporting and removing the Windows Update policies and restoring the startup types of the WU services to the values of a fresh 26H2. On Pro, the full set of test policies makes Settings say that your organization manages the Windows Update settings, with an inactive button, and after the key is removed the message disappears.
 
 ## What it changes
 C# handler (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`, `full` variant). Steps on top of `repair.wu-reset`:
@@ -30,7 +30,7 @@ Table of startup types (the same on Home and Pro):
 `msiserver`, `WaaSMedicSvc` and `DoSvc` are never changed: writing the startup type ends with refusal 5 even for the Administrator (measurement), and `DoSvc` has different values on Home and Pro. The result mentions one of them only when it's disabled (`Disabled`). No DLL registration (`regsvr32`), no modules from outside the system, no touching `WaaSMedicSvc`.
 
 ## Sources
-- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: `docs/zrodla/2026-10-22-etap4b-1-pomiary.md` (in Polish), decision table items 3, 3h and 4, sections 3 and 4 (policies: test write, the Settings view with all of them and with each one separately, `reg export`/`delete`/`import`).
+- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: measurements 3, 3h and 4 (policies: test write, the Settings view with all of them and with each one separately, `reg export`/`delete`/`import`).
 - No MS documentation checked in this task (the Windows Update policy pages weren't fetched); evidence: the VM test described below. The effect of the policies on the scan itself (offline) wasn't measured, so the diagnosis and the description don't promise that every value blocks updates.
 
 ## Defaults on a fresh 26H2
@@ -47,9 +47,9 @@ Not applicable: `kind=action` without detection and undo (no journal). Going bac
 - Update history in Settings will be cleared (only Microsoft Defender definition entries may stay); updates will download again.
 
 ## VM test
-Case `repair-wu-reset-full` (`Flow=Execute`): `Setup` writes 6 test policies from the measurement (`WUServer`/`WUStatusServer` = `http://dso-wsus.invalid:8530`, `DisableWindowsUpdateAccess`/`SetDisableUXWUAccess` = 1, `AU\NoAutoUpdate` = 1, `AU\UseWUServer` = 1) and sets `UsoSvc` to `Disabled`; `Check` requires: the policy key is gone, the `wu-policies-*.reg` file in `C:\ProgramData\DSOptimizer\backups` contains `WUServer`, the startup types = the table above, `wuauserv`/`bits`/`cryptsvc` are running. `Cleanup` removes the policy key and the backup folder (the VM goes back to the checkpoint anyway). Added to `tests/vm/cases.psd1` in Task 6.
+Case `repair-wu-reset-full` (`Flow=Execute`): `Setup` writes 6 test policies from the measurement (`WUServer`/`WUStatusServer` = `http://dso-wsus.invalid:8530`, `DisableWindowsUpdateAccess`/`SetDisableUXWUAccess` = 1, `AU\NoAutoUpdate` = 1, `AU\UseWUServer` = 1) and sets `UsoSvc` to `Disabled`; `Check` requires: the policy key is gone, the `wu-policies-*.reg` file in `C:\ProgramData\DSOptimizer\backups` contains `WUServer`, the startup types = the table above, `wuauserv`/`bits`/`cryptsvc` are running. `Cleanup` removes the policy key and the backup folder (the VM goes back to the checkpoint anyway). Added to `tests/vm/cases.psd1`.
 
-VM run (Task 10, 2026-10-22, full `tests/vm/Invoke-VmTests.ps1` on the `etap4b-1` branch; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-wu-reset-full`: **Passed** on Home and Pro (`Executed`; `wu-policies-*.reg` backup with `WUServer`, `wu-services-*.txt`, the policy key removed, the startup types as on a fresh 26H2, the services running). Note: in the first run of the Repairs cases only (`repair-1`), on Home `bits` once didn't start again (`Failed` "Nie udało się ponownie uruchomić usług: bits." (Couldn't restart services: bits.), `NotRestored`: "Nie można uruchomić usługi bits" (Cannot start service bits)) – an honest result, but the cause wasn't found: in 5 further attempts (also right after `repair.wu-reset`, as in that run) and in 2 further runs `bits` started; to be watched.
+VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-wu-reset-full`: **Passed** on Home and Pro (`Executed`; `wu-policies-*.reg` backup with `WUServer`, `wu-services-*.txt`, the policy key removed, the startup types as on a fresh 26H2, the services running). Note: in the first run of the Repairs cases only (`repair-1`), on Home `bits` once didn't start again (`Failed` "Nie udało się ponownie uruchomić usług: bits." (Couldn't restart services: bits.), `NotRestored`: "Nie można uruchomić usługi bits" (Cannot start service bits)) – an honest result, but the cause wasn't found: in 5 further attempts (also right after `repair.wu-reset`, as in that run) and in 2 further runs `bits` started; to be watched.
 
 ## Observed effect
 Method: an exploration probe (`tests/vm/explore/Invoke-E4B1Exploration.ps1`): writing the 6 policies together and each one separately, a screenshot of the Windows Update page in Settings (the organization message, the state of the "Sprawdź aktualizacje" (Check for updates) button), `reg export` / `reg delete` / `reg import` with a comparison of the values, `ChangeServiceConfig` for each WU service; raw results outside git.

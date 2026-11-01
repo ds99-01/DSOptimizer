@@ -1,10 +1,10 @@
 # repair.windows-old – Usuń poprzednią instalację Windows
 
 ## Werdykt 26H2
-Portować jako `kind=action`, `risk=caution` (kategoria „Naprawy”, Etap 4b partia 2, długa naprawa z oknem postępu). Mechanizm
-zmierzony na VM 26H2 Home i Pro (`docs/zrodla/2026-10-22-etap4b-2-pomiary.md`, pkt 5, 5f i 6): program obsługi
+Portować jako `kind=action`, `risk=caution` (kategoria „Naprawy”, długa naprawa z oknem postępu). Mechanizm
+zmierzony na VM 26H2 Home i Pro (pomiary 5, 5f i 6): program obsługi
 „Previous Installations” Oczyszczania dysku (`cleanmgr /sagerun`) rozpoznaje przygotowany folder `C:\Windows.old` i go usuwa.
-Tylko mechanizm A – bez przejmowania własności i zmiany ACL w C# (decyzja autora). Przygotowany folder to zwykłe
+Tylko mechanizm A – bez przejmowania własności i zmiany ACL w C# (przyjęta decyzja). Przygotowany folder to zwykłe
 pliki z właścicielem `BUILTIN\Administratorzy`; prawdziwy `Windows.old` po aktualizacji funkcji ma pliki z ACL `TrustedInstaller` i
 tysiące elementów – ten scenariusz jest **do potwierdzenia na sprzęcie**.
 
@@ -29,9 +29,9 @@ Handler C# `windows-old` (`WindowsOldHandler`), bez skryptu katalogu:
    uruchomieniem”), a CLI nie ma zatrzymania. Wycofać się można tylko w oknie potwierdzenia.
 5. Krok 1 z 2 „Oczyszczanie dysku”: `StateFlags7351` = DWORD `2` (zaznaczone) **tylko** pod `VolumeCaches\Previous Installations`,
    potem `%SystemRoot%\System32\cleanmgr.exe /sagerun:7351` przez `IServicingToolRunner` (`CreateProcessW` pełnej ścieżki, poza Job
-   Objectem, bez zabijania, limit = `timeoutSeconds` = 2700 s). Program czeka na koniec procesu (decyzja Tasku 2: folder znika w kilka
-   sekund, ale w pomiarze Tasku 2 cleanmgr z `DismHost` pracował jeszcze ok. 11 min; czy usunięcie flagi przed końcem procesu
-   zmienia wynik – niezmierzone). W przebiegach handlera (Task 8) cleanmgr kończył się sam po 7 s – sekcja „Obserwacja skutku”. W `finally` usunięcie własnej wartości `StateFlags7351` – także po błędzie startu, wyjątku i limicie. Nieudane
+   Objectem, bez zabijania, limit = `timeoutSeconds` = 2700 s). Program czeka na koniec procesu (wniosek z pomiaru: folder znika w kilka
+   sekund, ale w pomiarze mechanizmu cleanmgr z `DismHost` pracował jeszcze ok. 11 min; czy usunięcie flagi przed końcem procesu
+   zmienia wynik – niezmierzone). W przebiegach handlera cleanmgr kończył się sam po 7 s – sekcja „Obserwacja skutku”. W `finally` usunięcie własnej wartości `StateFlags7351` – także po błędzie startu, wyjątku i limicie. Nieudane
    zaznaczenie = `Failed`, cleanmgr nie startuje. Nieudane usunięcie = `Failed` z wpisem w „nie przywrócono” (inaczej kolejne
    uruchomienie odmówi przez punkt 3).
 6. Krok 2 z 2 „Sprawdzenie” (odczyt zwrotny): wolne miejsce po i istnienie folderu.
@@ -48,8 +48,8 @@ Handler C# `windows-old` (`WindowsOldHandler`), bez skryptu katalogu:
 Handler niczego sam nie usuwa, nie przejmuje własności i nie zmienia ACL (test `NeverDeletesFilesItself`).
 
 ## Źródła
-- Test na VM 26H2 Home i Pro (build 26300.9457, pl-PL), 2026-10-22: `docs/zrodla/2026-10-22-etap4b-2-pomiary.md`,
-  pkt 5, 5f i 6, sekcja 5 (skrypt `tests/vm/explore/Invoke-E4B2Exploration.ps1`, `Invoke-E4B2WindowsOldProbe`).
+- Test na VM 26H2 Home i Pro (build 26300.9457, pl-PL), 2026-10-22:
+  pomiary 5, 5f i 6 (skrypt `tests/vm/explore/Invoke-E4B2Exploration.ps1`, `Invoke-E4B2WindowsOldProbe`).
 - `cleanmgr` (`/sageset:n`, `/sagerun:n`, n = 0–9999): https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/cleanmgr
   (MS Learn, za pomiarem z 2026-10-22).
 - `StateFlagsNNNN` pod `VolumeCaches\<program obsługi>` (0 = niezaznaczone, 2 = zaznaczone):
@@ -69,18 +69,18 @@ zakończeniu cleanmgr i wolne miejsce przed/po. Usuniętej poprzedniej instalacj
 
 ## Ryzyka i ostrzeżenia
 - `risk=caution`: po usunięciu nie da się wrócić do poprzedniej wersji Windows (Microsoft Support).
-- Czas: folder znika w kilka sekund; Oczyszczanie dysku kończyło pracę po 7 s (przebiegi handlera, Task 8) albo po ok. 11 min
-  (pomiar K2 Tasku 2); przy prawdziwym, dużym Windows.old – niezmierzone. Limit czekania 45 min, po nim cleanmgr pracuje dalej w tle.
+- Czas: folder znika w kilka sekund; Oczyszczanie dysku kończyło pracę po 7 s (przebiegi handlera) albo po ok. 11 min
+  (pomiar w sesji użytkownika `dso`, zadanie podniesione); przy prawdziwym, dużym Windows.old – niezmierzone. Limit czekania 45 min, po nim cleanmgr pracuje dalej w tle.
 - Po potwierdzeniu nie da się przerwać: „Zatrzymaj” jest nieaktywne przez cały przebieg (cleanmgr nie jest przerywany).
 - Ustawienie `StateFlags7351` istnieje tylko na czas przebiegu i dotyczy jednego programu obsługi; cudza wartość z tym numerem =
   odmowa bez zmian.
-- Okno cleanmgr w sesji użytkownika: **niezmierzone** (pomiar K2 bez zrzutu ekranu).
-- Z sesji 0 (PowerShell Direct, K1) cleanmgr usuwa folder, ale nie kończy się w 1200 s – program uruchamiany z sesji użytkownika
-  (GUI po UAC albo zadanie Harmonogramu) tego problemu nie ma (pomiar K2). Uruchomienie handlera z sesji 0 – niezmierzone; według
-  pomiaru K1 spodziewany wynik to `NotConfirmed` po 45 min, z folderem już usuniętym.
+- Okno cleanmgr w sesji użytkownika: **niezmierzone** (pomiar w sesji użytkownika `dso` bez zrzutu ekranu).
+- Z sesji 0 (konto Administrator przez PowerShell Direct) cleanmgr usuwa folder, ale nie kończy się w 1200 s – program uruchamiany z sesji użytkownika
+  (GUI po UAC albo zadanie Harmonogramu) tego problemu nie ma (pomiar w sesji użytkownika `dso`). Uruchomienie handlera z sesji 0 – niezmierzone; według
+  pomiaru z sesji 0 spodziewany wynik to `NotConfirmed` po 45 min, z folderem już usuniętym.
 
 ## Test VM
-Przypadki w `tests/vm/cases.psd1` (Task 8), `Flow='Execute'`, wbudowany katalog, bez sieci:
+Przypadki w `tests/vm/cases.psd1`, `Flow='Execute'`, wbudowany katalog, bez sieci:
 - `repair-windows-old-absent` (bez `RunAs`): świeża VM bez `Windows.old` → `NotSupported`, kod 1, komunikat „nie ma czego usuwać”;
   `Check`: folderu nie ma, żadnej wartości `StateFlags7351` pod `VolumeCaches`, cleanmgr nie działa.
 - `repair-windows-old` (`RunAs='dso'`, CLI z zadania Harmonogramu konta `dso` – z PS Direct cleanmgr się nie kończy, pomiar 5), `CliTimeoutSeconds = 3000` (powyżej limitu handlera 2700 s, żeby wynik `NotConfirmed` też dotarł do raportu).
@@ -92,21 +92,21 @@ Przypadki w `tests/vm/cases.psd1` (Task 8), `Flow='Execute'`, wbudowany katalog,
 Wyniki przebiegu: sekcja „Obserwacja skutku”.
 
 ## Obserwacja skutku
-Metoda: pomiar mechanizmu (Task 2): przygotowany folder 200 MB, `StateFlags7351` tylko pod `Previous Installations`,
+Metoda: pomiar mechanizmu: przygotowany folder 200 MB, `StateFlags7351` tylko pod `Previous Installations`,
 `cleanmgr /sagerun:7351`, próbki co 5 s (istnienie folderu, wolne miejsce, procesy), po przebiegu odczyt wszystkich `VolumeCaches`.
-- **Home** (`DSO-26H2-Home`, 26300.9457), 2026-10-22: K1 (PS Direct, sesja 0) – folder znika w ≤ 5 s, miejsce wraca (+208,8 MB),
-  cleanmgr z `DismHost` żyje do limitu 1200 s (zabity); K2 (zadanie `dso`, sesja 1) – folder znika w ≤ 5 s, cleanmgr kończy się sam
+- **Home** (`DSO-26H2-Home`, 26300.9457), 2026-10-22: konto Administrator przez PowerShell Direct (sesja 0) – folder znika w ≤ 5 s, miejsce wraca (+208,8 MB),
+  cleanmgr z `DismHost` żyje do limitu 1200 s (zabity); sesja użytkownika `dso` (zadanie podniesione, sesja 1) – folder znika w ≤ 5 s, cleanmgr kończy się sam
   po 641 s z wynikiem 0x0; flaga po każdym przebiegu nieobecna pod 31 kluczami.
-- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: K1 jak Home; K2 – folder znika w ≤ 5 s, koniec po 665 s, wynik 0x0.
+- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: konto Administrator przez PowerShell Direct jak Home; sesja użytkownika `dso` – folder znika w ≤ 5 s, koniec po 665 s, wynik 0x0.
 - Co robi `DismHost` przez ok. 11 min po usunięciu folderu – niezmierzone (wolne miejsce zmienia się w tym czasie o mniej niż 1 MB).
-- Sam handler (Task 8, 2026-10-23, `tests/vm/Invoke-VmTests.ps1 -CasesPath <tylko dwa przypadki>`, gałąź `etap4b-2`, bez sieci,
+- Sam handler (2026-10-23, `tests/vm/Invoke-VmTests.ps1 -CasesPath <tylko dwa przypadki>`, bez sieci,
   raporty poza gitem): **Passed** na Home i Pro (po 12 zaliczonych / 0 błędów). `repair-windows-old-absent`: `NotSupported`, kod 1,
   „Nie ma poprzedniej instalacji Windows – nie ma czego usuwać.”. `repair-windows-old` (CLI z zadania konta `dso`):
   `cleanmgr.exe /sagerun:7351` zakończony **kodem 0 po 7 s** (Home i Pro), `Executed` „Usunięto poprzednią instalację Windows.
   Zwolniono: 158 MB.” (Home) / „… 193 MB.” (Pro); niezależny `Check` w VM: folderu nie ma, brak `StateFlags7351` pod wszystkimi
   `VolumeCaches\*`, cleanmgr nie działa. Drugi, diagnostyczny przebieg (ten sam przypadek, `Check` dodatkowo bez działającego
   `DismHost`): Passed na obu, znowu kod 0 po 7 s, zwolniono 192 MB / 198 MB, a po wyjściu cleanmgr `DismHost` nie działa – po
-  zakończeniu nic nie pracuje w tle. Dlaczego pomiar Tasku 2 (K2: `Process` z `CreateNoWindow` w zadaniu Harmonogramu) trwał
+  zakończeniu nic nie pracuje w tle. Dlaczego pomiar mechanizmu (sesja użytkownika `dso`: `Process` z `CreateNoWindow` w zadaniu Harmonogramu) trwał
   641/665 s, a przebieg handlera (`CreateProcessW` z DSOptimizera w zadaniu konta `dso`) 7 s – **niezmierzone**.
 - Prawdziwy `Windows.old` po aktualizacji funkcji (pliki `TrustedInstaller`, kilka–kilkanaście GB, opcja powrotu w Ustawieniach):
   **do potwierdzenia na sprzęcie** – na VM nie da się go uczciwie odtworzyć bez zmiany ACL.
