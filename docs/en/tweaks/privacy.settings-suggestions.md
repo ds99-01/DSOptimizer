@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.settings-suggestions.md sha256: 13662999f6313e5ca4186f68bca9154db345323405265a662cda1081240ef21f -->
+<!-- source: docs/tweaks/privacy.settings-suggestions.md sha256: de2bebccd955b43d6e92a1ed9bfb964ea2ef4bce6f2260f0ac68cba29da2bae9 -->
 
 # privacy.settings-suggestions – Turn off recommendations and offers in Settings
 
@@ -27,7 +27,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `ContentDel
 - No warnings in the catalog. The item doesn't lock the toggle (it writes the toggle's values, not a policy).
 
 ## VM test
-Case `privacy-settings-suggestions` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The Administrator's HKCU unchanged, the `ContentDeliveryManager` key stayed (`KeyPresentAfterUndo`). The exploration of 2026-10-21 passed on Home and Pro.
+Case `privacy-settings-suggestions` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The Administrator's HKCU unchanged, the `ContentDeliveryManager` key stayed (`KeyPresentAfterUndo`). The VM test of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: the "Rekomendacje i oferty w ustawieniach" (Recommendations and offers in Settings) toggle in Settings (UI Automation) after writing the three values through the API. Result: toggle "wyłączone" (Off); writing `1` = "włączone" (On). Evidence: toggle state in Settings; the content itself wasn't observed.

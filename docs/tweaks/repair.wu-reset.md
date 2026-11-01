@@ -16,7 +16,7 @@ Handler C# (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`), bez skryptu Po
 Usługi chronione przez system: `msiserver`, `WaaSMedicSvc`, `DoSvc` nigdy nie są zmieniane; wynik wspomina o którejś tylko, gdy jest wyłączona (`Disabled`).
 
 ## Źródła
-- Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22, przebiegi H1, N1, P1; pomiary 3a, 3b, 3h.
+- Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22, trzy przebiegi; pomiary 3a, 3b, 3h.
 - Brak dokumentacji MS sprawdzonej w tym zadaniu (strony o resecie składników Windows Update nie były pobierane); dowód: test na VM opisany niżej.
 
 ## Wartości domyślne na świeżym 26H2
@@ -37,6 +37,6 @@ Przypadek `repair-wu-reset` (`Flow=Execute`): `Setup` tworzy starą kopię `C:\W
 Przebieg VM (2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1`; raporty poza gitem): Home i Pro po 722 zaliczone / 0 błędów / 25 pominiętych (6 przypadków ze `Skip` spoza kategorii Naprawy). `repair-wu-reset`: **Passed** na Home i Pro (`Executed`; zatrzymane `wuauserv`, `bits`, `cryptsvc` razem z `applockerfltr` i `AppIDSvc`, foldery przeniesione na `.dso-<znacznik>`, stara kopia usunięta, usługi i zależne z powrotem w stanie sprzed).
 
 ## Obserwacja skutku
-Metoda: sonda eksploracji (`tests/vm/explore/Invoke-E4B1Exploration.ps1`), zatrzymanie usług przez `ControlService` i `ServiceController.Stop()`, Restart Manager dla obu folderów, przeniesienie folderów, odczyt plików po starcie usług, API historii aktualizacji i strona Ustawień (zrzuty w surowych wynikach poza gitem).
+Metoda: test na VM (`tests/vm/explore/Invoke-E4B1Exploration.ps1`), zatrzymanie usług przez `ControlService` i `ServiceController.Stop()`, Restart Manager dla obu folderów, przeniesienie folderów, odczyt plików po starcie usług, API historii aktualizacji i strona Ustawień (zrzuty w surowych wynikach poza gitem).
 - **Home** (`DSO-26H2-Home`, 26300.9457, bez sieci), 2026-10-22: `cryptsvc` przez `ControlService(STOP)` = kod 1051 (działają `AppIDSvc` i `applockerfltr`); `ServiceController.Stop()` zatrzymuje wszystkie trzy w ok. 0,5 s, potem `catroot2` daje się przenieść. `SoftwareDistribution` nie istnieje do startu `wuauserv`. Po starcie usług nowy `catroot2` (39 plików bazy `edb*`) jest w sekundzie 0; wszystkie usługi wracają do stanu sprzed (`applockerfltr` startuje sam razem z `AppIDSvc`, jego jawny start zgłasza „już działa”). Historia bez sieci: pusta przed i po.
-- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: zatrzymanie i przeniesienie jak Home (P1, N1); nowy `SoftwareDistribution` (DataStore, Download, ReportingEvents.log) w sekundzie 0 po starcie `wuauserv`. Z siecią (N1): przed resetem 2 wpisy historii (sterownik + definicje Defendera); po resecie API historii zwraca 0, w Ustawieniach znika wpis sterownika, zostaje „Aktualizacje definicji (1)”. Po podłączeniu sieci WU sam zainstalował 2 aktualizacje (wynik Succeeded), strona Windows Update bez błędu.
+- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: zatrzymanie i przeniesienie jak Home; nowy `SoftwareDistribution` (DataStore, Download, ReportingEvents.log) w sekundzie 0 po starcie `wuauserv`. Z siecią: przed resetem 2 wpisy historii (sterownik + definicje Defendera); po resecie API historii zwraca 0, w Ustawieniach znika wpis sterownika, zostaje „Aktualizacje definicji (1)”. Po podłączeniu sieci WU sam zainstalował 2 aktualizacje (wynik Succeeded), strona Windows Update bez błędu.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.start-recommended-section.md sha256: d47a258f8bdbf315e7625a287c9f3c09769dd560ae9f3c9fe2eed57ef0774e2d -->
+<!-- source: docs/tweaks/privacy.start-recommended-section.md sha256: a436fc61a8f2236bf92a5bbbb5ae86ce848e8cb09f8ece2076776a6f945d92fe -->
 
 # privacy.start-recommended-section – Hide the "Recommended" section in the Start menu
 
@@ -28,7 +28,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: value `HideReco
 - Beyond the notes in the program (in the technical details or only here): the effect of restarting File Explorer alone (`tools.restart-explorer`) wasn't checked.
 
 ## VM test
-Case `privacy-start-recommended-section` (`Flow=Full`) in `tests/vm/cases.psd1` (`KeyAbsentAfterUndo` for the user's `Policies\...\Explorer` key, `NotWrittenTo` for the `HKCU` of the Administrator process). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The user's `Policies\Microsoft\Windows\Explorer` key created by apply doesn't exist after undo (`KeyAbsentAfterUndo`), the Administrator's HKCU unchanged. The exploration of 2026-10-21 passed on Home and Pro.
+Case `privacy-start-recommended-section` (`Flow=Full`) in `tests/vm/cases.psd1` (`KeyAbsentAfterUndo` for the user's `Policies\...\Explorer` key, `NotWrittenTo` for the `HKCU` of the Administrator process). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The user's `Policies\Microsoft\Windows\Explorer` key created by apply doesn't exist after undo (`KeyAbsentAfterUndo`), the Administrator's HKCU unchanged. The VM test of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: screenshot of the Start menu before and after writing the policy and restarting File Explorer, and also after restarting the VM. Result: the "Proponowane" (Recommended) section disappears from Start (after restarting File Explorer and after restarting the VM); after undo it comes back.

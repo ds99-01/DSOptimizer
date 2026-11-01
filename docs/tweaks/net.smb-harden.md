@@ -1,7 +1,7 @@
 # net.smb-harden – Wyłącz logowanie gościa i wymagaj podpisywania SMB
 
 ## Werdykt 26H2
-Portować z ograniczeniem, jako `kind=action`, `risk=caution` (decyzja z 2026-10-18: tylko klient SMB, `caution` zamiast `safe`). Akcja ustawia dwa ustawienia klienta SMB na wartości, które Microsoft podaje jako bezpieczne: niezabezpieczone logowanie gościa wyłączone, podpisywanie wymagane. Stara pozycja `lan_panic` z poprzedniej wersji robiła więcej (wszystkie profile sieci na Public, zatrzymanie usług odnajdywania, NetBIOS), czego Microsoft nie opisuje jako utwardzania, więc tego nie przenosimy; opis „zabetonowanie usług sieciowych” był nieprawdziwy względem tego, co robi ta wersja.
+Portować z ograniczeniem, jako `kind=action`, `risk=caution` (decyzja z 2026-10-18: tylko klient SMB, `caution`, nie `safe`). Akcja ustawia dwa ustawienia klienta SMB na wartości, które Microsoft podaje jako bezpieczne: niezabezpieczone logowanie gościa wyłączone, podpisywanie wymagane. Stara pozycja `lan_panic` z poprzedniej wersji robiła więcej (wszystkie profile sieci na Public, zatrzymanie usług odnajdywania, NetBIOS), czego Microsoft nie opisuje jako utwardzania, więc tego nie przenosimy; opis „zabetonowanie usług sieciowych” był nieprawdziwy względem tego, co robi ta wersja.
 
 Akcja nie ma detekcji, journala ani undo (`TweakEngine.Execute` uruchamia tylko `script.apply`). Jedynym dowodem skutku jest **odczyt zwrotny** w samym skrypcie: gdy nie zgadza się z oczekiwanym, skrypt kończy się kodem ≠ 0 i silnik zwraca `Failed` z komunikatem, a nie zielone `Executed`.
 

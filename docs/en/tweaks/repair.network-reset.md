@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.network-reset.md sha256: e5ea15f73f4a3edbdd6d331426ab82649066265a222dc8d079fe9e22ce0e3a3e -->
+<!-- source: docs/tweaks/repair.network-reset.md sha256: 47f257616d25609930e9e40f7b1650838c88f181786c128d44c5b26aa8277618 -->
 
 # repair.network-reset – Reset network settings
 
@@ -19,8 +19,8 @@ Last line of stdout: "The commands succeeded. Takes effect after the computer re
 **Rule for judging `netsh int ip reset`** (VM measurement): code 0 = success. Code 1 **and** exactly one line ending with `failed.` **and** "Odmowa dost…" or "Access is denied" in the next non-empty line **and** all other `Resetting …` entries ending with `OK!` = success with the note "One entry protected by the system denied access – this is normal on Windows 11, the rest was reset." Any other case (another code, more than one `failed`, another message, no denial) = `Failed` with the output. The comparison is done without Polish characters ("Odmowa dost"), because the message arrives in the wrong encoding ("dost─Öpu": UTF-8 bytes read as OEM 852); the test covers the PL, EN and garbled variants. The test example is the verbatim output from the Home VM (34 entries, 33 `OK!`, one `failed.`).
 
 ## Sources
-- Test on 26H2 Home and Pro VMs (26300.9457), 2026-10-22, contexts: the Administrator account over PowerShell Direct (session 0) and the `dso` user session (elevated task, Interactive + Highest); probe S1.
-- ACL reading (S1, Home): 6 subkeys of `HKLM\SYSTEM\CurrentControlSet\Control\Nsi` can't be opened for writing by the Administrator (among others `{eb004a00-9b1a-11d4-9123-0050047759bc}\26` and `\4`; SDDL `O:BAG:SYD:P(A;OICI;CCDCLCSWRPRC;;;WD)`) – the factory state of a fresh system. Which of them the netsh denial concerns couldn't be confirmed (`netsh int ip reset <file>` doesn't create a log file on 26H2).
+- Test on 26H2 Home and Pro VMs (26300.9457), 2026-10-22, contexts: the Administrator account over PowerShell Direct (session 0) and the `dso` user session (elevated task, Interactive + Highest).
+- ACL reading (Home): 6 subkeys of `HKLM\SYSTEM\CurrentControlSet\Control\Nsi` can't be opened for writing by the Administrator (among others `{eb004a00-9b1a-11d4-9123-0050047759bc}\26` and `\4`; SDDL `O:BAG:SYD:P(A;OICI;CCDCLCSWRPRC;;;WD)`) – the factory state of a fresh system. Which of them the netsh denial concerns couldn't be confirmed (`netsh int ip reset <file>` doesn't create a log file on 26H2).
 - No MS documentation checked in this task (the `netsh` command pages weren't fetched); evidence: the VM test. The restart requirement is confirmed by the tool's own message: "You must restart the computer in order to complete the reset." The behavior on 26H2 comes only from the measurement.
 
 ## Defaults on a fresh 26H2
@@ -45,4 +45,4 @@ VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Ho
 ## Observed effect
 Method: exit codes and the full `netsh` output, reading the registry `HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\{GUID}` (`IPAddress`, `SubnetMask`, `DefaultGateway`, `NameServer`) before the reset, right after it and after a VM restart; a manual IP set with `netsh interface ipv4 set address … source=static` and `Set-DnsClientServerAddress`.
 - **Home** (`DSO-26H2-Home`, 26300.9457, no network), 2026-10-22: `winsock reset` code 0; `int ip reset` code 1 (one access denial, the rest OK). The `IPAddress`, `SubnetMask`, `DefaultGateway` values disappear from the registry right away; the manual address works until the restart, and after the restart the adapter is on DHCP (APIPA, because there's no network). The manual DNS servers (`NameServer`) survived the reset and the restart.
-- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22 (runs P1 and A2): the same result as Home. The network results of P1 are invalid (after the reset the adapter didn't get an address from DHCP); the result is based on A2.
+- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22 (two runs): the same result as Home. The network results of one of those runs are invalid (after the reset the adapter didn't get an address from DHCP); the result is based on the other.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/tools.winutil.md sha256: 75e8a5dbb432933d876264da21ed6e3379b4aa2013c49dbf180eab840f27206c -->
+<!-- source: docs/tweaks/tools.winutil.md sha256: ca8fb991cf3172b417256ac05a1540d3a96457ef4c85c13699b806b080418b37 -->
 
 # tools.winutil – Open WinUtil (Chris Titus)
 
@@ -44,5 +44,5 @@ Not applicable: `kind=action` without detection and undo. `Executed` means the f
 
 ## VM test
 - `tools-winutil-offline` (`Flow=Execute`, `Catalog=BuiltIn`, VM without a network): expected `Failed` with code 1 and the message "brak połączenia z GitHubem" (no connection to GitHub); `Check` = no `powershell.exe` with `-File` pointing to `C:\ProgramData\DSOptimizer\downloads\*.ps1` and no `*.ps1` files in `downloads`. Result of the run (`Invoke-VmTests.ps1`, VM without a network, 2026-10-26): **Passed on both editions** – Pro 799 / 0 / 25 skipped, Home 799 / 0 / 25 (`tools-winutil-offline` green on Pro and Home).
-- `tools-winutil-effect`: **Skipped** (reason: the effect with a network is covered by a VM measurement, the `av` phase). The WinUtil window and GUI with a network were measured on the VM (above, variant B).
+- `tools-winutil-effect`: **Skipped** (reason: the effect with a network is covered by a separate VM measurement with a network). The WinUtil window and GUI with a network were measured on the VM (above, variant B).
 - The former case `tools-winutil-launch` (2026-10-19, Passed on Home and Pro) was removed together with the `irm … | iex` command.

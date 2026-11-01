@@ -4,7 +4,7 @@
 Portować jako `kind=action`, `risk=safe` (nowa kategoria „Naprawy”): czyszczenie pamięci podręcznej rozwiązywania nazw (`Clear-DnsClientCache`) działa na 26H2 Home i Pro, a skutek da się potwierdzić odczytem zwrotnym (`Get-DnsClientCache`). Bez cofnięcia: pamięć odbudowuje się sama.
 
 ## Co zmienia
-Czyści pamięć podręczną klienta DNS (usługa `Dnscache`). Nie zmienia ustawień DNS, pliku `hosts`, rejestru ani konfiguracji kart. Skrypt (`script.apply`), po nazwach poleceń (testy je mockują):
+Czyści pamięć podręczną klienta DNS (usługa `Dnscache`). Nie zmienia ustawień DNS, pliku `hosts`, rejestru ani konfiguracji kart. Skrypt (`script.apply`), po nazwach poleceń (testy jednostkowe, bez prawdziwego polecenia):
 1. `Get-DnsClientCache` – odczyt przed (liczba wpisów do komunikatu).
 2. `Clear-DnsClientCache`.
 3. `Get-DnsClientCache` – odczyt zwrotny.
@@ -15,7 +15,7 @@ Kryterium sukcesu (decyzja z pomiaru): każdy wpis, który zostaje w pamięci po
 Nie liczymy spadku liczby wpisów: `Get-DnsClientCache` nie pokazuje nazw publicznych rozwiązanych przez `Resolve-DnsName` ani przez aplikacje (pomiar N1), więc „przed” bywa mniejsze, niż się wydaje, a spadek nie dowodzi niczego.
 
 ## Źródła
-- Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22: `ipconfig /flushdns` (kod 0) i `Clear-DnsClientCache` dają ten sam stan pamięci (przebiegi H1, P1, A2, N1).
+- Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22: `ipconfig /flushdns` (kod 0) i `Clear-DnsClientCache` dają ten sam stan pamięci.
 - Brak dokumentacji MS sprawdzonej w tym zadaniu (strony cmdletów `Clear-DnsClientCache`/`Get-DnsClientCache` nie były pobierane); dowód: test na VM opisany wyżej. Zachowanie „zostają wpisy z `hosts`” pochodzi wyłącznie z pomiaru.
 
 ## Wartości domyślne na świeżym 26H2

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.windows-tips.md sha256: 5760b0139b3ae4119166bd64625b5e6e01eb14186bdf71f1fc5b3f80245d7405 -->
+<!-- source: docs/tweaks/privacy.windows-tips.md sha256: db5b48ba11293b45c262776b4deb09d2bf11033fbab5ff43dff424ff1b34099d -->
 
 # privacy.windows-tips – Turn off Windows tips and suggestions
 
@@ -27,7 +27,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `SubscribedCont
 - No warnings in the catalog.
 
 ## VM test
-Case `privacy-windows-tips` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The value 1 from before apply came back from the snapshot, the Administrator's HKCU unchanged. The exploration of 2026-10-21 passed on Home and Pro.
+Case `privacy-windows-tips` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The value 1 from before apply came back from the snapshot, the Administrator's HKCU unchanged. The VM test of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: the "Uzyskaj porady i sugestie podczas korzystania z systemu Windows" (Get tips and suggestions when using Windows) checkbox in Settings (UI Automation) after a write through the API. Result: checkbox cleared; after undo selected. Evidence: toggle state in Settings; the content itself wasn't observed.

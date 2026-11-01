@@ -27,7 +27,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: klucz `Privacy` istnieje, 
 - Bez ostrzeżeń w katalogu.
 
 ## Test VM
-Przypadek `privacy-tailored-experiences` (`Flow=Full`) w `tests/vm/cases.psd1` (`NotWrittenTo` dla `HKCU` procesu Administratora, bo pozycja jest per użytkownik; `KeyPresentAfterUndo`, bo klucz istnieje na świeżej instalacji). Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). Po undo wartość `PersonalizedOffersEnabled` znowu nie istnieje, klucz `Privacy` został. Eksploracja z 2026-10-21 przeszła na Home i Pro.
+Przypadek `privacy-tailored-experiences` (`Flow=Full`) w `tests/vm/cases.psd1` (`NotWrittenTo` dla `HKCU` procesu Administratora, bo pozycja jest per użytkownik; `KeyPresentAfterUndo`, bo klucz istnieje na świeżej instalacji). Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). Po undo wartość `PersonalizedOffersEnabled` znowu nie istnieje, klucz `Privacy` został. Test na VM z 2026-10-21 przeszedł na Home i Pro.
 
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: przełącznik „Spersonalizowane oferty” w Ustawieniach (UI Automation) po zapisie przez API. Wynik: przełącznik zgodny z zapisaną wartością (brak wartości = wyłączony, `1` = włączony). dowód: stan przełącznika w Ustawieniach, treści nie obserwowano.

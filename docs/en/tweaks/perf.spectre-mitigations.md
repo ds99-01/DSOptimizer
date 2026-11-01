@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/perf.spectre-mitigations.md sha256: 0bb2ee3b1b6898aba1d4d62e7c2cf2436789800b37c1d1488ebd34c500cbf6b2 -->
+<!-- source: docs/tweaks/perf.spectre-mitigations.md sha256: d9c701813a0c47afeb1251d0cbe50b3f477d97863ef0ffcbfa23ea28137fe50b -->
 
 # perf.spectre-mitigations – turning off Spectre/Meltdown mitigations (not ported)
 
@@ -13,7 +13,7 @@ Reasons for rejection:
 - Turning them off lowers protection (Spectre variant 2, Meltdown and related). MS warns that Hyper-V hosts, Remote Desktop Services hosts and systems that run untrusted code are at increased risk. The tool runs on other people's computers, so lowering security with no measured benefit goes against its purpose.
 - No measured or documented benefit on a modern processor; MS doesn't say how much turning them off gains. A result from a VM wouldn't be evidence for real hardware (the processor is virtualized).
 - Registry detection doesn't see the real state of the mitigations (that's what the `SpeculationControl` module from the PowerShell Gallery does, and it needs a network connection).
-- The Intel/AMD variants from the spec don't exist for turning them off: MS gives one pair 3/3 (or 1/3 for variant 2 only); vendor-specific variants are about turning on additional mitigations.
+- There are no separate Intel/AMD variants for turning them off: MS gives one pair 3/3 (or 1/3 for variant 2 only); vendor-specific variants are about turning on additional mitigations.
 - The previous version's description ("restores full branch prediction speed") and the warnings about corporate hypervisors have no MS source.
 
 ## Sources

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/panels.control-panel.md sha256: 914bc203c31ca1c75f495335cd0cc513b87ee07ee50faddebf3c8585be8fa5ff -->
+<!-- source: docs/tweaks/panels.control-panel.md sha256: 8bc31c43604cbf8b462b14c80085b9d28a7394b561f2e3c690051a8bb536d146 -->
 
 # panels.control-panel – Control Panel
 
@@ -14,7 +14,7 @@ Rejected variants (not separate items; VM data in the "Sources" section):
 
 ## Sources
 - WinUtil `config/feature.json` @ `144d516` (MIT, 2026-07-31): WPFPanelControl = "Control Panel", `InvokeScript`: `control`. A hint for the list and the command, not evidence of the effect – https://raw.githubusercontent.com/ChrisTitusTech/winutil/144d51675190ffcb2553b7ba5313f8d602c8ecf9/config/feature.json
-- Microsoft Learn: no page with a canonical name or command for this item in Windows 11 (research, sections 2.2 and 3.4: class B, WinUtil only); in general, MS only confirms that Control Panel exists for compatibility and that some settings are moving to Settings: https://support.microsoft.com/en-us/windows/system-configuration-tools-in-windows-f8a49657-b038-43b8-82d3-28bea0c5666b
+- Microsoft Learn: no page with a canonical name or command for this item in Windows 11 (only WinUtil gives a name); in general, MS only confirms that Control Panel exists for compatibility and that some settings are moving to Settings: https://support.microsoft.com/en-us/windows/system-configuration-tools-in-windows-f8a49657-b038-43b8-82d3-28bea0c5666b
 - Reading from 26H2 VMs (build 26300.9457), Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), 2026-10-19: the Control Panel window (`CabinetWClass`) in the user's `explorer.exe` (`/factory`).
   - The Administrator account over PowerShell Direct (session 0): after 10 s, `control.exe` is running (this session doesn't show the user's window, only that the process started).
   - The `dso` user session (elevated task): the Control Panel window (`CabinetWClass`). Home = Pro in all fields except the PIDs.
@@ -31,9 +31,9 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 - The scenario "DSOptimizer elevated with a different administrator account than the signed-in user" wasn't measured on a VM for this panel (the `control.exe`/`explorer.exe` host itself uses associations and COM in the elevated process; DSOptimizer controls only the path of the file it starts).
 
 ## VM test
-VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in these cases.
+VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in each of the panel cases.
 - `panels-control-panel` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: a bare `control.exe` is running (the command line ends with `control.exe`, no arguments); `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (the Administrator account over PowerShell Direct, session 0), not that the window appeared for the user.**
-- Exploration in the `dso` user session (elevated task, `Limited` token): the "Panel sterowania" (Control Panel) window. Home = Pro.
+- VM test in the `dso` user session (elevated task, `Limited` token): the "Panel sterowania" (Control Panel) window. Home = Pro.
 - The manual click (Pro VM, `dso` session, Win+R, 2026-10-19): `control` opens the classic window.
-- The clicked command (`control`) isn't exactly the same as the item's `launch` (`control.exe`, full path from System32): the click confirms the panel, while the item's `launch` is confirmed only by the exploration in the `dso` user session (elevated task).
+- The clicked command (`control`) isn't exactly the same as the item's `launch` (`control.exe`, full path from System32): the click confirms the panel, while the item's `launch` is confirmed only by the VM test in the `dso` user session (elevated task).
 - **Smoke test with the real `DSOptimizer.exe` in the `dso` session: not checked manually in the app**. Not done; the item goes into `main` with this caveat. A mismatch between "the process is running" (Check) and a window visible to the user will show up only on first use from the app.

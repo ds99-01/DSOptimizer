@@ -5,7 +5,7 @@ Portować z ostrzeżeniem: mechanizm jest udokumentowany przez MS (Policy CSP / 
 
 ## Co zmienia
 - `HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR`, wartość `AllowGameDVR`, **DWord**, ustawiana na `0` (Not allowed); `scope=machine`.
-- Na świeżym 26H2 nie istnieje ani wartość, ani klucz `GameDVR`. Apply tworzy klucz; undo usuwa wartość **i** pusty klucz `GameDVR` utworzony przez apply (mechanizm A1 dla `registry[]`), a klucz nadrzędny `...\Policies\Microsoft\Windows` zostaje.
+- Na świeżym 26H2 nie istnieje ani wartość, ani klucz `GameDVR`. Apply tworzy klucz; undo usuwa wartość **i** pusty klucz `GameDVR` utworzony przez apply (mechanizm silnika dla `registry[]`), a klucz nadrzędny `...\Policies\Microsoft\Windows` zostaje.
 
 **Zmiana semantyki względem poprzedniej wersji:** `ux_gamedvr` w poprzedniej wersji było przełącznikiem użytkownika (klucze HKCU). Alias wskazuje teraz na tę pozycję, czyli politykę maszynową dla wszystkich użytkowników. Odpowiednik użytkownika (`GameDVR_Enabled`) nie został zportowany (patrz `ux.game-dvr.md`: brak źródła MS).
 

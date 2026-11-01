@@ -25,7 +25,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: `SubscribedContent-338389E
 - Bez ostrzeżeń w katalogu.
 
 ## Test VM
-Przypadek `privacy-windows-tips` (`Flow=Full`) w `tests/vm/cases.psd1` (`NotWrittenTo` dla `HKCU` procesu Administratora, bo pozycja jest per użytkownik; `KeyPresentAfterUndo`, bo klucz istnieje na świeżej instalacji). Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). Wartość 1 sprzed apply wróciła ze snapshotu, HKCU Administratora bez zmian. Eksploracja z 2026-10-21 przeszła na Home i Pro.
+Przypadek `privacy-windows-tips` (`Flow=Full`) w `tests/vm/cases.psd1` (`NotWrittenTo` dla `HKCU` procesu Administratora, bo pozycja jest per użytkownik; `KeyPresentAfterUndo`, bo klucz istnieje na świeżej instalacji). Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). Wartość 1 sprzed apply wróciła ze snapshotu, HKCU Administratora bez zmian. Test na VM z 2026-10-21 przeszedł na Home i Pro.
 
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Metoda: pole „Uzyskaj porady i sugestie podczas korzystania z systemu Windows” w Ustawieniach (UI Automation) po zapisie przez API. Wynik: pole odznaczone; po cofnięciu zaznaczone. dowód: stan przełącznika w Ustawieniach, treści nie obserwowano.

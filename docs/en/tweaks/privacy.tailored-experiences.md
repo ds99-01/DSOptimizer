@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.tailored-experiences.md sha256: 6c06c98034d1183cd8bef129a0ca07352803cbf5e74949d2d0fa3971ac31442a -->
+<!-- source: docs/tweaks/privacy.tailored-experiences.md sha256: 173a9947367f633a0bb1a153a8048ae9984c99895c1ffe439618d3a1e9571fa2 -->
 
 # privacy.tailored-experiences – Turn off personalized offers
 
@@ -29,7 +29,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `Privacy` k
 - No warnings in the catalog.
 
 ## VM test
-Case `privacy-tailored-experiences` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). After undo the `PersonalizedOffersEnabled` value again doesn't exist, the `Privacy` key stayed. The exploration of 2026-10-21 passed on Home and Pro.
+Case `privacy-tailored-experiences` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). After undo the `PersonalizedOffersEnabled` value again doesn't exist, the `Privacy` key stayed. The VM test of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`), 2026-10-21. Method: the "Spersonalizowane oferty" (Personalized offers) toggle in Settings (UI Automation) after a write through the API. Result: the toggle matches the written value (no value = off, `1` = on). Evidence: toggle state in Settings; the content itself wasn't observed.

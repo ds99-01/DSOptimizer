@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.ipv6-disable.md sha256: a6a9a9e3c76247721b2a8df67c9c6cf42e97971480604b030218e7e3044dd900 -->
+<!-- source: docs/tweaks/net.ipv6-disable.md sha256: 5357e2a617123575df936d6c6d3e853c24e1b653390c357f893bd29cfd200697 -->
 
 # net.ipv6-disable – Turn off IPv6
 
@@ -23,7 +23,7 @@ Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457), 2026-10-18 
 ## Detection and undo
 - Detection: registry only, by equality: exactly DWORD 0xFF -> `Applied`; 0xFFFFFFFF, 0x20 and any other value or none -> `NotApplied`. There's no check of the real state of the stack (MS gives no documented reading for that; the adapter checkbox doesn't change), so `Applied` means "value set as MS describes".
 - Undo: restores the value from the journal snapshot; if there was no value, it deletes it (it doesn't write 0). Without an entry in the change history, the fallback is `original` = `<RemoveEntry>`; if `net.ipv6-prefer-ipv4` was in effect before the change without an entry in the change history, that setting will be lost.
-- Conflict with `net.ipv6-prefer-ipv4` (same registry value): the engine enforces the `conflicts` field. Apply of this item is refused (`Refused`, with no write at all and no change to the journal) while `net.ipv6-prefer-ipv4` has an active entry in the change history; that item has to be undone first, after which Apply succeeds (engine tests on fakes). If the journal can't be read, Apply ends with `Failed` without writing (it doesn't let the conflict through). Undo of this item without its own entry in the change history (undo to defaults) is also refused (`Refused`) while `net.ipv6-prefer-ipv4` is active, so as not to overwrite its value. Limitation: the conflict covers only entries in the change history; a `DisabledComponents` value set by hand outside the tool isn't detected as a conflict (apply overwrites it, and undo restores it from the snapshot).
+- Conflict with `net.ipv6-prefer-ipv4` (same registry value): the engine enforces the `conflicts` field. Apply of this item is refused (`Refused`, with no write at all and no change to the journal) while `net.ipv6-prefer-ipv4` has an active entry in the change history; that item has to be undone first, after which Apply succeeds (unit tests on a registry stand-in). If the journal can't be read, Apply ends with `Failed` without writing (it doesn't let the conflict through). Undo of this item without its own entry in the change history (undo to defaults) is also refused (`Refused`) while `net.ipv6-prefer-ipv4` is active, so as not to overwrite its value. Limitation: the conflict covers only entries in the change history; a `DisabledComponents` value set by hand outside the tool isn't detected as a conflict (apply overwrites it, and undo restores it from the snapshot).
 - No `CheckAfterApply` with the prefix policy: MS doesn't define what `Get-NetPrefixPolicy` looks like at 0xFF.
 
 ## Risks and warnings

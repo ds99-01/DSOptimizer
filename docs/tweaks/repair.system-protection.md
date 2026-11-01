@@ -4,9 +4,9 @@
 Portować jako `kind=tweak`, `risk=safe` (kategoria „Naprawy”): na świeżej 26H2 Home i Pro ochrona systemu jest wyłączona, więc żaden punkt przywracania nie powstaje; `Enable-ComputerRestore -Drive 'C:\'` włącza ją tak samo jak okno „Ochrona systemu”, a skutek da się odczytać z rejestru. Cofnięcie wyłącza ochronę tylko wtedy, gdy włączył ją program, i nie usuwa istniejących punktów.
 
 ## Co zmienia
-Skrypt (`script.detect` / `capture` / `apply` / `undo`), po nazwach poleceń (testy je mockują):
+Skrypt (`script.detect` / `capture` / `apply` / `undo`), po nazwach poleceń (testy jednostkowe, bez prawdziwego polecenia):
 - `Enable-ComputerRestore -Drive 'C:\'` (apply) i `Disable-ComputerRestore -Drive 'C:\'` (undo). Limit miejsca ustawia VSS sam (3% woluminu, ta sama wartość co przy włączeniu z okna); **bez `vssadmin resize`**, więc `vssadmin` w ogóle nie jest wołany.
-- Odczyt (tylko odczyt, helpery mockowane w testach): `Get-DsoSystemVolumeId` (CIM `Win32_Volume`, `DriveLetter='C:'`, `DeviceID` = `\\?\Volume{GUID}\`) i `Get-DsoProtectionClients` (wartość REG_MULTI_SZ `{09F7EDC5-294E-4180-AF6A-FB0E6A0E9513}` w `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SPP\Clients`, widok 64-bit).
+- Odczyt (tylko odczyt, testy jednostkowe, bez prawdziwego polecenia): `Get-DsoSystemVolumeId` (CIM `Win32_Volume`, `DriveLetter='C:'`, `DeviceID` = `\\?\Volume{GUID}\`) i `Get-DsoProtectionClients` (wartość REG_MULTI_SZ `{09F7EDC5-294E-4180-AF6A-FB0E6A0E9513}` w `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SPP\Clients`, widok 64-bit).
 
 ## Źródła
 - Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22.
@@ -24,7 +24,7 @@ Home i Pro (odczyt 2026-10-22): `SPP\Clients` bez wpisu, `vssadmin list shadowst
 ## Ryzyka i ostrzeżenia
 - `risk=safe`.
 - Ostrzeżenia w katalogu: „Cofnięcie wyłącza ochronę: nowe punkty nie powstaną, a z istniejących nie przywrócisz systemu (zostają na dysku).” oraz „Samo włączenie nie tworzy punktu – pierwszy powstanie przed zmianą albo po „Utwórz punkt przywracania teraz”.”
-- Pierwsze ostrzeżenie to skrót tekstu zmienionego względem specu (pomiar przeczy „usuwa wszystkie punkty”). Pełny tekst: „Wyłączenie ochrony systemu blokuje tworzenie nowych punktów przywracania i przywracanie systemu z istniejących. Istniejące punkty zostają na dysku (zajmują miejsce) i wrócą po ponownym włączeniu ochrony; usunąć je można w oknie »Ochrona systemu« (Konfiguruj → Usuń).”
+- Pierwsze ostrzeżenie to skrót tekstu poprawionego, bo pomiar przeczy brzmieniu „usuwa wszystkie punkty”. Pełny tekst: „Wyłączenie ochrony systemu blokuje tworzenie nowych punktów przywracania i przywracanie systemu z istniejących. Istniejące punkty zostają na dysku (zajmują miejsce) i wrócą po ponownym włączeniu ochrony; usunąć je można w oknie »Ochrona systemu« (Konfiguruj → Usuń).”
 - Limit miejsca ustawia Windows (3% dysku C: na zmierzonej maszynie); program go nie zmienia.
 - Samo włączenie nie tworzy punktu. Wyłączenie ochrony „z kasowaniem punktów” (`vssadmin delete shadows`) to osobna, nieodwracalna operacja, której tu nie ma i której nie mierzono.
 
@@ -36,4 +36,4 @@ Przebieg VM (2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1`; raporty poza gite
 ## Obserwacja skutku
 Metoda: odczyt `SPP\Clients`, `vssadmin list shadowstorage` i `Get-ComputerRestorePoint` przed i po zmianie; punkt tworzony po włączeniu; surowe wyniki poza gitem.
 - **Home** (`DSO-26H2-Home`, 26300.9457), 2026-10-22: włączenie z okna „Ochrona systemu” (`SystemPropertiesProtection.exe` → Konfiguruj → „Włącz ochronę systemu”) i `Enable-ComputerRestore -Drive 'C:\'` (24–26 ms) dają ten sam stan: wpis w `SPP\Clients`, shadow storage powstaje przy pierwszym punkcie z limitem 2 052 367 196 B = 3,0% woluminu 68 412 239 872 B. `Disable-ComputerRestore -Drive 'C:\'` usuwa wpis, ale punkt zostaje (`Get-ComputerRestorePoint` i `vssadmin list shadows` go widzą po 3 s, 60 s i po restarcie VM); po ponownym `Enable-ComputerRestore` punkt jest znów na liście. Przy wyłączonej ochronie punktu nie da się utworzyć (WMI: usługa wyłączona).
-- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: identycznie jak na Home (przebiegi P1 i A2).
+- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: identycznie jak na Home (w dwóch przebiegach).

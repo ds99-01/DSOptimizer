@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.widgets.md sha256: f24da784038dd7c4d8468199cf76d5e3125567b7a2f37cf11a1fb1e049bafb9b -->
+<!-- source: docs/tweaks/privacy.widgets.md sha256: aa12a7ecfa5688e9e9360f86f777074732af72657a21e5f75c02c89ce5b21512 -->
 
 # privacy.widgets – Turn off Widgets
 
@@ -27,7 +27,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `HKLM\SOFTWARE\
 - Beyond the notes in the program (in the technical details or only here): restarting File Explorer is the `tools.restart-explorer` item; after the change the "Widgets" toggle in Settings is grayed out (the policy locks it and this can't be avoided).
 
 ## VM test
-Case `privacy-widgets` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyAbsentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Dsh`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `Dsh` key created by apply doesn't exist after undo (`KeyAbsentAfterUndo`). The exploration of 2026-10-21 (write through the API and undo) passed on Home and Pro.
+Case `privacy-widgets` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyAbsentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Dsh`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `Dsh` key created by apply doesn't exist after undo (`KeyAbsentAfterUndo`). The VM test of 2026-10-21 (write through the API and undo) passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: UI Automation of Settings by `AutomationId`, screenshots, the Win+W keys in the `dso` session. Result: after writing `AllowNewsAndInterests`=0 the Win+W shortcut doesn't open the board; the "Widżety" (Widgets) toggle in Settings is grayed out and off; the taskbar button disappears after File Explorer restarts (without a restart the board is blocked, the button is still visible). After undo (value and key deleted) Win+W opens the board again, the toggle is active, the button comes back after File Explorer restarts.

@@ -1,4 +1,4 @@
-<!-- source: docs/apps/install-README.md sha256: 362071cbfc75978a956087801bc512fcb351ef5c8c156f3bda69e89f2bcc0e3a -->
+<!-- source: docs/apps/install-README.md sha256: e1eb8d20d1a7d108f5d411b5f980b82806fe20fd38b9eeb291e62fb988257dd1 -->
 
 # App install – list `apps.json`
 
@@ -128,14 +128,14 @@ with network (paragraph "RustDesk: CLI run with network" below; `msiexec` time f
 | `install.steam` | `Valve.Steam` | games | 0 (nullsoft) | computer (HKLM32) | 0 (5 s) | 0 (8 s) | Pro: `Installed` (7 s) | `Steam` / `Valve Corporation` | `displayName: "Steam"`, `publisher: "Valve Corporation"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/v/Valve/Steam |
 | `install.epic-games` | `EpicGames.EpicGamesLauncher` | games | 0 (wix) | computer (HKLM) | 0 (54 s) | – | Pro: `Installed` (39 s) | `Epic Games Launcher` / `Epic Games, Inc.` (+ `Microsoft GameInput`) | `displayName: "Epic Games Launcher"`, `publisher: "Epic Games, Inc."` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/e/EpicGames/EpicGamesLauncher |
 | `install.gog-galaxy` | `GOG.Galaxy` | games | 0 (inno) | computer (HKLM) | 0 (42 s) | – | Pro: `Installed` (42 s); Home: `Installed` (51 s) | `GOG GALAXY` / `GOG.com` | `displayName: "GOG GALAXY"`, `publisher: "GOG.com"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/GOG/Galaxy |
-| `install.vcredist-x64` | `Microsoft.VCRedist.2015+.x64` | runtimes | 0 (burn) | computer (HKLM32) | `0x8A150061` (LibreOffice dependency from the `network` phase); spike: 0 (7 s) | `0x8A150061` (as above) | Pro: `Installed` (11 s); Home (retry): `Installed` (11 s) | `Microsoft Visual C++ v14 Redistributable (x64) - 14.51.36247` / `Microsoft Corporation` (+ 2 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Visual C++ *Redistributable (x64) - 14.*"`, `publisher: "Microsoft Corporation"` (also catches the name `Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.51.36231` from T11 Home) | in (installation: spike and winget dependency) | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/VCRedist/2015+/x64 |
-| `install.vcredist-x86` | `Microsoft.VCRedist.2015+.x86` | runtimes | 0 (burn) | computer (HKLM32) | 0 (9 s) | – | Pro: `Installed` (8 s) | `Microsoft Visual C++ v14 Redistributable (x86) - 14.51.36247` / `Microsoft Corporation` (+ 2 × `SystemComponent=1`) | `displayName: "Microsoft Visual C++ *Redistributable (x86) - 14.*"`, `publisher: "Microsoft Corporation"` (also catches `… 2015-2022 Redistributable (x86) - 14.51.36231` from T11 Home) | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/VCRedist/2015+/x86 |
+| `install.vcredist-x64` | `Microsoft.VCRedist.2015+.x64` | runtimes | 0 (burn) | computer (HKLM32) | `0x8A150061` (LibreOffice dependency from the `network` phase); spike: 0 (7 s) | `0x8A150061` (as above) | Pro: `Installed` (11 s); Home (retry): `Installed` (11 s) | `Microsoft Visual C++ v14 Redistributable (x64) - 14.51.36247` / `Microsoft Corporation` (+ 2 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Visual C++ *Redistributable (x64) - 14.*"`, `publisher: "Microsoft Corporation"` (also catches the name `Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.51.36231` from the CLI series on Home) | in (installation: spike and winget dependency) | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/VCRedist/2015+/x64 |
+| `install.vcredist-x86` | `Microsoft.VCRedist.2015+.x86` | runtimes | 0 (burn) | computer (HKLM32) | 0 (9 s) | – | Pro: `Installed` (8 s) | `Microsoft Visual C++ v14 Redistributable (x86) - 14.51.36247` / `Microsoft Corporation` (+ 2 × `SystemComponent=1`) | `displayName: "Microsoft Visual C++ *Redistributable (x86) - 14.*"`, `publisher: "Microsoft Corporation"` (also catches `… 2015-2022 Redistributable (x86) - 14.51.36231` from the CLI series on Home) | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/VCRedist/2015+/x86 |
 | `install.dotnet-desktop-8` | `Microsoft.DotNet.DesktopRuntime.8` | runtimes | 0 (burn) | computer (HKLM32) | 0 (13 s) | – | Pro: `Installed` (12 s); Home: `Installed` (17 s) | `Microsoft Windows Desktop Runtime - 8.0.32 (x64)` / `Microsoft Corporation` (+ 4 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Windows Desktop Runtime - 8.* (x64)"`, `publisher: "Microsoft Corporation"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/8 |
 | `install.dotnet-desktop-9` | `Microsoft.DotNet.DesktopRuntime.9` | runtimes | 0 (burn) | computer (HKLM32) | 0 (11 s) | – | Pro: `Installed` (13 s) | `Microsoft Windows Desktop Runtime - 9.0.21 (x64)` / `Microsoft Corporation` (+ 4 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Windows Desktop Runtime - 9.* (x64)"`, `publisher: "Microsoft Corporation"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/9 |
 | `install.dotnet-desktop-10` | `Microsoft.DotNet.DesktopRuntime.10` | runtimes | – | computer (HKLM32) | – | – | Pro: `Installed` (15 s); Home: `Installed` (16 s) | `Microsoft Windows Desktop Runtime 10.0.14 (x64)` / `Microsoft Corporation` (no hyphen after "Runtime", unlike 8 and 9; + 4 × HKLM `SystemComponent=1`) | `displayName: "Microsoft Windows Desktop Runtime 10.* (x64)"`, `publisher: "Microsoft Corporation"` | in | https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/DotNet/DesktopRuntime/10 |
 
 Evidence rule: every winget item has `show` = 0, and each one went through a full installation with a reading of the Uninstall entry on Pro
-(Discord – entry with a delay, below). VC++ x64 gave only `0x8A150061` in the main measurement, because winget had installed it earlier
+(Discord – entry with a delay, below). VC++ x64 gave only `0x8A150061` in the Pro measurement, because winget had installed it earlier
 as a LibreOffice dependency; its own `install` with verification passed in the Pro spike (0, 7 s) and in the CLI batch
 (Pro `Installed`, 11 s; Home – retry – `Installed`, 11 s). On Home, one item from each category passed: Chrome
 and Firefox, Discord, VLC, SumatraPDF and LibreOffice, Notepad++ and 7-Zip, AnyDesk, Steam (VC++ x64 only as a LibreOffice
@@ -165,7 +165,7 @@ Task Scheduler task (`tests/vm/explore/Invoke-E4CExploration.ps1 -Phase cli-inst
   program is on the list of installed apps; check the winget log" (`NotConfirmed`, CLI code 4 instead of 1): after an unknown code
   the list item gets one fresh reading, and a visible program is never "Installed", because the code can also mean
   an installation interrupted halfway. The result wasn't measured again on a VM (it needs the App Installer self-update to be repeated).
-- **Home (one item from each category, different from the main measurement) + `winget:PuTTY.PuTTY`:** 9/9 `Installed`, CLI code 0,
+- **Home (one item from each category, different from the Pro measurement) + `winget:PuTTY.PuTTY`:** 9/9 `Installed`, CLI code 0,
   3 min 34 s; PuTTY confirmed by `winget list --id --exact` (`Installed`, not `InstalledUnverified`). `--list-install`:
   8 list items from this batch = `installed = true`. winget without an update (v1.11.510).
 - **Discord:** the HKU entry appeared after winget exited – "Zainstalowano i sprawdzono." (Installed and verified.) about 14 s (Home) and 20 s (Pro) after the line
@@ -225,7 +225,7 @@ RustDesk has no package in the `winget` source (`show` = `0x8A150014`, section "
 the official MSI from the GitHub release. Spike: VM
 `DSO-26H2-Home` (26300), account `dso` from a Task Scheduler task (as after UAC), network `Default Switch` only for the duration of the spike, then revert.
 Raw results outside git (`releases.json`, `download.json`, `install.json`, `diff.json`,
-`timeline.txt`, `msi-install.log`); API and code research also outside git.
+`timeline.txt`, `msi-install.log`); results of the API and code investigation also outside git.
 
 - **Version:** `GET https://api.github.com/repos/rustdesk/rustdesk/releases/latest` = tag `1.5.0` (2026-09-30), `prerelease=false`,
   previous `1.4.9`; `nightly` is a separate prerelease release that `latest` skips.
@@ -265,7 +265,7 @@ Raw results outside git (`releases.json`, `download.json`, `install.json`, `diff
 ### Rule limitations (deliberate)
 
 - Visual C++ x64/x86: the rule `Microsoft Visual C++ *Redistributable (x64) - 14.*` (and likewise `(x86)`) catches both measured
-  names of the 14.x family: `… v14 Redistributable (x64) - 14.51.36247` (T2) and `… 2015-2022 Redistributable (x64) - 14.51.36231`
+  names of the 14.x family: `… v14 Redistributable (x64) - 14.51.36247` and `… 2015-2022 Redistributable (x64) - 14.51.36231`
   (CLI batch, Home), both give "Installed". It doesn't catch 2013 (` - 12.`), 2012 (` - 11.`), 2010 (`… 2010  x64 Redistributable - 10.`)
   or the components `… X64 Minimum/Additional Runtime - 14.…` (negative tests on synthetic names). Another 14.x release
   with yet another entry name won't get the status; then winget either returns "Already installed" or – as on Home in the CLI batch –

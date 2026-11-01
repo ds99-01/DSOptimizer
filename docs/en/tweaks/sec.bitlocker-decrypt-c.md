@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.bitlocker-decrypt-c.md sha256: ed4d5f6eebe6531ce30cc253c407fc1a3af7d01a8af5129cc16ef9e8df413a82 -->
+<!-- source: docs/tweaks/sec.bitlocker-decrypt-c.md sha256: c926b4444f5b3859e58413ac8f7ca7f7fb16d23cff59241d2e68b729e69e87cd -->
 
 # sec.bitlocker-decrypt-c – Turn off BitLocker encryption on the C: drive
 
@@ -33,7 +33,7 @@ Port as `kind=action`, `risk=caution` (new item; the previous version had no dec
 ## Defaults on a fresh 26H2
 Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, 2026-10-18):
 - The `Win32_EncryptableVolume` class (`root\CIMV2\Security\MicrosoftVolumeEncryption`, filter `DriveLetter='C:'`) **exists and returns 1 volume on Home and Pro**. `GetConversionStatus` returns the fields `ReturnValue`, `ConversionStatus`, `EncryptionPercentage`, `EncryptionFlags`, `WipingPercentage`, `WipingStatus` (type `UInt32`; same shape on both editions).
-- **Exploration 2026-10-18 (22:45 Home, 22:51 Pro):** Home `ConversionStatus` = 2 (EncryptionInProgress), `EncryptionPercentage` = 78, `ProtectionStatus` = 0 (Off), 0 protectors; Pro `ConversionStatus` = 0 (FullyDecrypted), `EncryptionPercentage` = 0, `ProtectionStatus` = 0.
+- **VM test 2026-10-18 (22:45 Home, 22:51 Pro):** Home `ConversionStatus` = 2 (EncryptionInProgress), `EncryptionPercentage` = 78, `ProtectionStatus` = 0 (Off), 0 protectors; Pro `ConversionStatus` = 0 (FullyDecrypted), `EncryptionPercentage` = 0, `ProtectionStatus` = 0.
 - **Full VM run `vm-run-20261019-002807` (2026-10-19):** the action found automatic device encryption in progress on both editions: Home 6% encrypted, Pro 78% encrypted (local account). Observation: after the `czysta-26H2` checkpoint starts, automatic device encryption runs on Home and Pro, and the progress at the moment of the action varies between runs. MS: encryption starts in OOBE, and protection is armed only after signing in with a Microsoft/Entra account.
 
 ## Detection and undo
@@ -47,10 +47,10 @@ No detection (`kind=action`). **No undo** (no journal): decryption has no revers
 - Confirmation in the UI before running; the CLI doesn't ask.
 
 ## VM test
-Encrypted drive path: a real `Decrypt` exercised on the VM on BOTH editions (Home and Pro), because automatic device encryption runs there after the checkpoint starts; we don't do our own encryption in the VM (a settled decision). So we don't check on the VM: `Decrypt` on a fully encrypted drive (`ConversionStatus` = 1), the code `0x80310029`, or resuming (3, 5); these paths are covered only by unit tests on helper mocks.
+Encrypted drive path: a real `Decrypt` exercised on the VM on BOTH editions (Home and Pro), because automatic device encryption runs there after the checkpoint starts; we don't do our own encryption in the VM (a settled decision). So we don't check on the VM: `Decrypt` on a fully encrypted drive (`ConversionStatus` = 1), the code `0x80310029`, or resuming (3, 5); these paths are covered only by unit tests, without the real command.
 
 VM run results (build 26300.9457, 2026-10-19):
 - Full run `vm-run-20261019-002807`: **Home Passed** (`Executed`, "Odszyfrowywanie C: rozpoczęte: 6% zaszyfrowane…" (Decryption of C: started: 6% encrypted…), `Check` Passed). **Pro: action `Executed`** ("Odszyfrowywanie C: rozpoczęte: 78% zaszyfrowane…" (Decryption of C: started: 78% encrypted…)), but `Check` **Failed**: the old `Check` required status 0 on Pro, and the verification gave 3. This was a bug in the case (it assumed a stable BitLocker state at the checkpoint), not in the action; fixed in the test case.
 - Rerun of this case alone after the fix, `vm-run-decrypt-20261019-005135`: **Home 4 passed / 0 failed** ("…78% zaszyfrowane…" (…78% encrypted…)), **Pro 4 / 0** ("…76% zaszyfrowane…" (…76% encrypted…)), `Check` (`ReturnValue` 0, `ConversionStatus` ∈ {3, 0}) Passed. After the runs, both VMs are `Off` at the `czysta-26H2` checkpoint.
-- So the real `Decrypt` path + verification was checked on BOTH editions, thanks to automatic device encryption running after the checkpoint starts. The "already decrypted" path (status 0) wasn't measured on the VM; it's covered only by unit tests on mocks (likewise 1, 4, 3/5 and `0x80310029`).
+- So the real `Decrypt` path + verification was checked on BOTH editions, thanks to automatic device encryption running after the checkpoint starts. The "already decrypted" path (status 0) wasn't measured on the VM; it's covered only by unit tests, without the real command (likewise 1, 4, 3/5 and `0x80310029`).
 - The `sec-bitlocker-decrypt-c` case (`Flow=Execute`, `Catalog=BuiltIn`) is in `tests/vm/cases.psd1`; it has one `Check` for both editions: `GetConversionStatus` returns `ReturnValue` 0, and `ConversionStatus` is 3 or 0 (the progress of automatic encryption at the moment of the action isn't deterministic).

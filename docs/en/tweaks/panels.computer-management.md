@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/panels.computer-management.md sha256: 11eaa5d9af438c40eec289ad939d1305385cf7172e59fbc947cb02d30fdd3b8c -->
+<!-- source: docs/tweaks/panels.computer-management.md sha256: 06b7b3c1e15af499182182ed538ca74afbf7ef87b1b46952ae4375c0096768fe -->
 
 # panels.computer-management – Computer Management
 
@@ -14,7 +14,7 @@ Rejected variants (not separate items; VM data in the "Sources" section):
 
 ## Sources
 - WinUtil `config/feature.json` @ `144d516` (MIT, 2026-07-31): WPFPanelComputer = "Computer Management", `InvokeScript`: `compmgmt.msc`. A hint for the list and the command, not evidence of the effect – https://raw.githubusercontent.com/ChrisTitusTech/winutil/144d51675190ffcb2553b7ba5313f8d602c8ecf9/config/feature.json
-- Microsoft Learn: no page with a canonical name or command for this item in Windows 11 (research, sections 2.2 and 3.4: class B, WinUtil only); in general, MS only confirms that Control Panel exists for compatibility and that some settings are moving to Settings: https://support.microsoft.com/en-us/windows/system-configuration-tools-in-windows-f8a49657-b038-43b8-82d3-28bea0c5666b
+- Microsoft Learn: no page with a canonical name or command for this item in Windows 11 (only WinUtil gives a name); in general, MS only confirms that Control Panel exists for compatibility and that some settings are moving to Settings: https://support.microsoft.com/en-us/windows/system-configuration-tools-in-windows-f8a49657-b038-43b8-82d3-28bea0c5666b
 - Reading from 26H2 VMs (build 26300.9457), Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), 2026-10-19: the Computer Management window (`MMCMainFrame`) in the user's `mmc.exe` (elevated). Measured command line: `"C:\Windows\system32\mmc.exe" "C:\Windows\System32\compmgmt.msc"`.
   - The Administrator account over PowerShell Direct (session 0): after 10 s, `mmc.exe` is running (this session doesn't show the user's window, only that the process started).
   - The `dso` user session (elevated task): the Computer Management window (`MMCMainFrame`). Home = Pro in all fields except the PIDs.
@@ -31,9 +31,9 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 - Measured on a VM with Polish regional settings; the window title may differ in another culture.
 
 ## VM test
-VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in these cases.
+VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in each of the panel cases.
 - `panels-computer-management` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: `mmc.exe` with a command line containing `compmgmt.msc` is running; `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (the Administrator account over PowerShell Direct, session 0), not that the window appeared for the user.**
-- Exploration in the `dso` user session (elevated task, `Limited` token): the "Zarządzanie komputerem" (Computer Management) window (`MMCMainFrame`). Home = Pro.
+- VM test in the `dso` user session (elevated task, `Limited` token): the "Zarządzanie komputerem" (Computer Management) window (`MMCMainFrame`). Home = Pro.
 - The manual click (Pro VM, `dso` session, Win+R, 2026-10-19): `compmgmt.msc` opens the classic window.
-- The item's `launch` runs the clicked command (`compmgmt.msc`) as `mmc.exe` with the full path of the `.msc` file, so it isn't exactly the same command: the click confirms the panel, while the item's `launch` is confirmed only by the exploration in the `dso` user session (elevated task).
+- The item's `launch` runs the clicked command (`compmgmt.msc`) as `mmc.exe` with the full path of the `.msc` file, so it isn't exactly the same command: the click confirms the panel, while the item's `launch` is confirmed only by the VM test in the `dso` user session (elevated task).
 - **Smoke test with the real `DSOptimizer.exe` in the `dso` session: not checked manually in the app**. Not done; the item goes into `main` with this caveat. A mismatch between "the process is running" (Check) and a window visible to the user will show up only on first use from the app.

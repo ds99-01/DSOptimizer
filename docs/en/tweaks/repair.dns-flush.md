@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.dns-flush.md sha256: d50402168ca26816b42bf567d346b9f6be9c662109c29d183b97050f498bac0b -->
+<!-- source: docs/tweaks/repair.dns-flush.md sha256: 7c3d83ac21852039afc70ca1df4469a9924492482c96ec1250175f1be3fe3e16 -->
 
 # repair.dns-flush – Clear the DNS cache
 
@@ -10,14 +10,14 @@ Clears the DNS client cache (the `Dnscache` service). Doesn't change DNS setting
 1. `Get-DnsClientCache` – reading before (the number of entries for the message).
 2. `Clear-DnsClientCache`.
 3. `Get-DnsClientCache` – verification.
-4. `Get-DsoHostsText` – a helper that reads `%SystemRoot%\System32\drivers\etc\hosts` (read-only; mocked in the tests).
+4. `Get-DsoHostsText` – a helper that reads `%SystemRoot%\System32\drivers\etc\hosts` (read-only; unit tests, without the real command).
 
 Success criterion (decision from the measurement): every entry that stays in the cache after clearing is for a name from the `hosts` file (the words after the address, without `#` comments, without a trailing dot, case-insensitive) or for its reverse name (`*.in-addr.arpa`, `*.ip6.arpa`), of any type and status. An empty cache is also a success. Any other entry = `Failed` "The DNS cache wasn't cleared: N entries remain." Success: "Cleared the DNS cache (entries before: N, after: M – only entries from the hosts file)."
 
 We don't count the drop in the number of entries: `Get-DnsClientCache` doesn't show public names resolved by `Resolve-DnsName` or by apps (measurement N1), so "before" is sometimes smaller than it seems, and a drop proves nothing.
 
 ## Sources
-- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: `ipconfig /flushdns` (code 0) and `Clear-DnsClientCache` give the same cache state (runs H1, P1, A2, N1).
+- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: `ipconfig /flushdns` (code 0) and `Clear-DnsClientCache` give the same cache state.
 - No MS documentation checked in this task (the cmdlet pages for `Clear-DnsClientCache`/`Get-DnsClientCache` weren't fetched); evidence: the VM test described above. The behavior "entries from `hosts` stay" comes only from the measurement.
 
 ## Defaults on a fresh 26H2

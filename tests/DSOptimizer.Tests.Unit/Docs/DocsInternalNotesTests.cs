@@ -46,6 +46,21 @@ public class DocsInternalNotesTests
         @"(?<![0-9A-Za-z{_.-])(?=[0-9a-f]*[a-f])(?=[0-9a-f]*[0-9])[0-9a-f]{7,40}(?![0-9A-Za-z_-])",
     }.Select(p => new Regex(p, RegexOptions.CultureInvariant)).ToArray();
 
+    /// <summary>Wzorce stosowane po wycięciu spanów kodu w backtickach (nazwy plików skryptów, klucze i identyfikatory nie są notatkami).</summary>
+    private static readonly Regex CodeSpan = new(@"`[^`]*`", RegexOptions.CultureInvariant);
+
+    private static readonly Regex[] ProseNotePatterns = new[]
+    {
+        @"\b(?:[Mm]ock|[Ff]ake)\w*",
+        @"\bspecu\b|\bfrom the spec\b",
+        @"\bsond[ayąęo]\b|\bprobe\b S?\d",
+        @"\b(?:decyzj\w*|decision) [DS]\d+\b",
+        // oznaczenia przebiegów, reguł i sond tylko w zwrotach, które naprawdę wystąpiły (nie S0-S5 stanów uśpienia ani nazw sprzętu)
+        @"\b(?:przebieg\w*|runs?|reguł\w*|rules?|mechanizm\w*|mechanisms?|przypadkach|sonda|probe|from|z) [CDTAHPN]\d+\b|\b[CDTAHPN]\d+ (?:run|cases)\b|\(S\d+,|\([CDTAHPN]\d+\)|\bA[1-4] (?:plik|file|folder)\b|; A[1-4] ",
+        @"\bw tej partii\b|\bz wcześniejszych partii\b|\bin this batch\b|\bearlier rounds\b",
+        @"\beksploracj\w*|\bexploration\b",
+    }.Select(p => new Regex(p, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)).ToArray();
+
     private static readonly Regex CaveatPattern = new(
         @"nie ?(sprawdz|testowan|potwierdz|zmierz|mierz|przećwicz)|not (checked|tested|confirmed|measured|verified|exercised)|(wasn't|weren't|isn't|aren't|hasn't|haven't) (been )?(checked|tested|confirmed|measured|verified)|unverified|untested|do potwierdzenia|to be confirmed|nie ?wykonan|not done|niepotwierdz",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
@@ -54,7 +69,8 @@ public class DocsInternalNotesTests
     internal static IReadOnlyList<string> FindNotes(string line)
     {
         var text = Url.Replace(line, " ");
-        return NotePatterns.Where(p => p.IsMatch(text)).Select(p => p.ToString()).ToList();
+        var prose = CodeSpan.Replace(text, " ");
+        return NotePatterns.Where(p => p.IsMatch(text)).Concat(ProseNotePatterns.Where(p => p.IsMatch(prose))).Select(p => p.ToString()).ToList();
     }
 
     [Theory]
@@ -74,6 +90,32 @@ public class DocsInternalNotesTests
     [InlineData("round C4")]
     [InlineData("zapis w `report.json`")]
     [InlineData("commit 90fe2ae")]
+    [InlineData("testy mockują oba helpery")]
+    [InlineData("mocked in the tests")]
+    [InlineData("pokrywają mocki w testach")]
+    [InlineData("warianty ze specu")]
+    [InlineData("a text changed from the spec")]
+    [InlineData("obserwacja (sonda 7)")]
+    [InlineData("(probe 7, 2026-10-18)")]
+    [InlineData("sprawdzono sondą (4b)")]
+    [InlineData("odrzucony (decyzja D2)")]
+    [InlineData("rejected (decision D4)")]
+    [InlineData("w przypadkach C5 puste")]
+    [InlineData("in the C5 cases empty")]
+    [InlineData("runs P1 and A2")]
+    [InlineData("z przebiegu C1")]
+    [InlineData("reguła A1 usuwa klucze")]
+    [InlineData("rule A1 deletes keys")]
+    [InlineData("nazwy rodziny (T2) i inne")]
+    [InlineData("z T11 Home")]
+    [InlineData("Odczyt ACL (S1, Home)")]
+    [InlineData("**Wyniki:** A1 plik w katalogu")]
+    [InlineData("wykrywania MDM w tej partii nie ma")]
+    [InlineData("Pominięcia z wcześniejszych partii")]
+    [InlineData("not in this batch")]
+    [InlineData("Skips from earlier rounds")]
+    [InlineData("Eksploracja w sesji użytkownika")]
+    [InlineData("The exploration of 2026-10-21 passed")]
     public void FindNotes_FindsInternalNote(string line) => Assert.NotEmpty(FindNotes(line));
 
     [Theory]
@@ -84,6 +126,13 @@ public class DocsInternalNotesTests
     [InlineData("kod `0x80004004`")]
     [InlineData("Run all of the round-trip checks first.")]
     [InlineData("`vm-run-20261019-002807`")]
+    [InlineData("poziom uśpienia S4 (hibernacja), też S1, S2, S3")]
+    [InlineData("„Precision M65” w ITPro Today")]
+    [InlineData("skrypt `tests/vm/explore/Invoke-E4B1Exploration.ps1` i `FakeWebDownloader`")]
+    [InlineData("Eksplorator plików i Explorer")]
+    [InlineData("klucz `C5` w spanie kodu i `decyzja D2` też")]
+    [InlineData("testy jednostkowe, bez prawdziwego polecenia")]
+    [InlineData("Test na VM, zebrane na VM")]
     public void FindNotes_LeavesOrdinaryText(string line) => Assert.Empty(FindNotes(line));
 
     /// <summary>Linia bez fragmentów dozwolonych dla pliku: wyjątek zwalnia tylko ten fragment, nie całą linię.</summary>
@@ -105,7 +154,6 @@ public class DocsInternalNotesTests
     public void CaveatPattern_CountsConfirmationAndNotDone(string line) => Assert.Matches(CaveatPattern, line);
 
     [Theory]
-    [InlineData("none")]
     [InlineData("docs/tweaks/panels.")]
     [InlineData("docs/en/tweaks/panels.")]
     [InlineData("docs/tweaks/repair.")]
@@ -132,13 +180,10 @@ public class DocsInternalNotesTests
     [InlineData("docs/en/tweaks/README.md")]
     public void Batch_HasNoInternalNotes(string batch)
     {
-        // batch = prefiks ścieżki względem repo (z ukośnikami /), np. "docs/tweaks/disk." albo "docs/en/apps/"; "none" = kontrola, nic nie filtruje.
+        // batch = prefiks ścieżki względem repo (z ukośnikami /), np. "docs/tweaks/disk." albo "docs/en/apps/".
         var allowed = LoadAllowed();
         var files = DocFiles().Where(f => f.Key.StartsWith(batch, StringComparison.Ordinal)).ToList();
-        if (batch != "none")
-        {
-            Assert.NotEmpty(files);
-        }
+        Assert.NotEmpty(files);
 
         var violations = new List<string>();
         foreach (var file in files)

@@ -17,7 +17,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: `HKU\<SID>\Software\Classe
 ## Detekcja i undo
 - Detekcja: wartość domyślna `InprocServer32` = pusty REG_SZ -> `Applied`; brak klucza lub inna wartość -> `NotApplied`.
 - Undo przywraca snapshot sprzed zmiany z journala (brak wartości = usunięcie wartości, a potem obu kluczy utworzonych przez apply); `original` = `<RemoveEntry>` to tylko fallback.
-- Obserwacja z testu na VM: po cofnięciu oba klucze zostały usunięte, a po restarcie Eksploratora wróciło menu Windows 11. Usunięcie obu kluczy przez silnik potwierdził przypadek VM 2026-10-21 na Home i Pro (sekcja „Test VM”).
+- Obserwacja z ręcznego testu na VM: po cofnięciu oba klucze zostały usunięte, a po restarcie Eksploratora wróciło menu Windows 11. Usunięcie obu kluczy przez silnik potwierdził przypadek VM 2026-10-21 na Home i Pro (sekcja „Test VM”).
 
 ## Ryzyka i ostrzeżenia
 - `risk=caution`, `suggested=false`.
@@ -25,7 +25,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: `HKU\<SID>\Software\Classe
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): DSOptimizer sam Eksploratora nie restartuje (restart to pozycja `tools.restart-explorer`); wpis w HKCU przesłania rejestrację menu Windows 11 dla tego konta, a cofnięcie przywraca stan sprzed zmiany.
 
 ## Test VM
-Przypadek `ux-classic-context-menu` (`Flow=Full`) w `tests/vm/cases.psd1`: `KeyAbsentAfterUndo` dla `{86ca…}` i `{86ca…}\InprocServer32` (w `HKU\{UserSid}\…`), `NotWrittenTo` dla HKCU Administratora. Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`, test na VM): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). Silnik po undo usunął oba klucze utworzone przez apply: `{86ca…}\InprocServer32` i `{86ca…}` (`KeyAbsentAfterUndo`). Po apply niezależny odczyt widział pustą wartość domyślną (`Exists`, `String`, dane puste), a detekcja `Applied`; po undo brak klucza i detekcja `NotApplied` (pusta wartość domyślna i brak klucza są rozróżniane). HKCU Administratora bez zmian.
+Przypadek `ux-classic-context-menu` (`Flow=Full`) w `tests/vm/cases.psd1`: `KeyAbsentAfterUndo` dla `{86ca…}` i `{86ca…}\InprocServer32` (w `HKU\{UserSid}\…`), `NotWrittenTo` dla HKCU Administratora. Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). Silnik po undo usunął oba klucze utworzone przez apply: `{86ca…}\InprocServer32` i `{86ca…}` (`KeyAbsentAfterUndo`). Po apply niezależny odczyt widział pustą wartość domyślną (`Exists`, `String`, dane puste), a detekcja `Applied`; po undo brak klucza i detekcja `NotApplied` (pusta wartość domyślna i brak klucza są rozróżniane). HKCU Administratora bez zmian.
 
 ## Obserwacja skutku
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Metoda: prawy klik na pulpicie w sesji `dso` po restarcie Eksploratora, odczyt klasy otwartego okna menu. Wynik: z kluczem prawy klik na pulpicie otwiera okno klasy `#32768` (menu Win32); bez klucza otwiera się `Microsoft.UI.Content.PopupWindowSiteBridge` (menu Windows 11). Po cofnięciu (oba klucze usunięte) i restarcie Eksploratora wraca menu Windows 11.

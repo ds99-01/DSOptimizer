@@ -4,7 +4,7 @@
 Portować jako `kind=action`, `risk=caution`, `requiresReboot=true`: `netsh winsock reset` i `netsh int ip reset` działają na 26H2 Home i Pro, ale skutek widać dopiero po restarcie, a `netsh int ip reset` na świeżym systemie zawsze kończy się kodem 1 z jedną odmową dostępu przy chronionym kluczu. Dlatego ocena wyniku nie opiera się na „kod ≠ 0 = błąd”, tylko na zmierzonym wzorcu (niżej).
 
 ## Co zmienia
-Skrypt (`script.apply`), polecenia po nazwie (testy mockują `netsh`, `Get-NetIPConfiguration`, `Clear-DnsClientCache`):
+Skrypt (`script.apply`), polecenia po nazwie (testy jednostkowe, bez prawdziwych poleceń `netsh`, `Get-NetIPConfiguration`, `Clear-DnsClientCache`):
 1. `Get-NetIPConfiguration` – konfiguracja IP każdego adaptera trafia do stdout (a więc do logu): alias, IPv4 z maską, brama, DNS, DHCP tak/nie. Błąd odczytu = `Failed` bez żadnej zmiany.
 2. `netsh winsock reset` – kod ≠ 0 = `Failed` z wyjściem; następne polecenia nie startują.
 3. `netsh int ip reset` – ocena wyniku wg reguły niżej.
@@ -17,8 +17,8 @@ Ostatnia linia stdout: „Polecenia zakończone powodzeniem. Skutek po restarcie
 **Reguła oceny `netsh int ip reset`** (pomiar VM): kod 0 = sukces. Kod 1 **i** dokładnie jedna linia kończąca się na `failed.` **i** w następnej niepustej linii „Odmowa dost…” albo „Access is denied” **i** wszystkie pozostałe pozycje `Resetting …` kończą się `OK!` = sukces z adnotacją „Jedna pozycja chroniona przez system odmówiła dostępu – to zwykłe zachowanie Windows 11, reszta zresetowana.” Każdy inny przypadek (inny kod, więcej niż jedno `failed`, inny komunikat, brak odmowy) = `Failed` z wyjściem. Porównanie bez polskich znaków („Odmowa dost”), bo komunikat przychodzi w złym kodowaniu („dost─Öpu”: bajty UTF-8 czytane jako OEM 852); test pokrywa wariant PL, EN i zniekształcony. Testowy przykład to dosłowne wyjście z VM Home (34 pozycje, 33 `OK!`, jedna `failed.`).
 
 ## Źródła
-- Test na VM 26H2 Home i Pro (26300.9457), 2026-10-22, konteksty: konto Administrator przez PowerShell Direct (sesja 0) i sesja użytkownika `dso` (zadanie podniesione, Interactive + Highest); sonda S1.
-- Odczyt ACL (S1, Home): 6 podkluczy `HKLM\SYSTEM\CurrentControlSet\Control\Nsi` nie otwiera się do zapisu dla Administratora (m.in. `{eb004a00-9b1a-11d4-9123-0050047759bc}\26` i `\4`; SDDL `O:BAG:SYD:P(A;OICI;CCDCLCSWRPRC;;;WD)`) – fabryczny stan świeżego systemu. Którego z nich dotyczy odmowa netsh, nie udało się potwierdzić (`netsh int ip reset <plik>` na 26H2 nie tworzy pliku logu).
+- Test na VM 26H2 Home i Pro (26300.9457), 2026-10-22, konteksty: konto Administrator przez PowerShell Direct (sesja 0) i sesja użytkownika `dso` (zadanie podniesione, Interactive + Highest).
+- Odczyt ACL (Home): 6 podkluczy `HKLM\SYSTEM\CurrentControlSet\Control\Nsi` nie otwiera się do zapisu dla Administratora (m.in. `{eb004a00-9b1a-11d4-9123-0050047759bc}\26` i `\4`; SDDL `O:BAG:SYD:P(A;OICI;CCDCLCSWRPRC;;;WD)`) – fabryczny stan świeżego systemu. Którego z nich dotyczy odmowa netsh, nie udało się potwierdzić (`netsh int ip reset <plik>` na 26H2 nie tworzy pliku logu).
 - Brak dokumentacji MS sprawdzonej w tym zadaniu (strony poleceń `netsh` nie były pobierane); dowód: test na VM. Wymóg restartu potwierdza komunikat samego narzędzia: „You must restart the computer in order to complete the reset.” Zachowanie na 26H2 pochodzi wyłącznie z pomiaru.
 
 ## Wartości domyślne na świeżym 26H2
@@ -43,4 +43,4 @@ Przebieg VM (2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1`; raporty poza gite
 ## Obserwacja skutku
 Metoda: kody wyjścia i pełne wyjście `netsh`, odczyt rejestru `HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\{GUID}` (`IPAddress`, `SubnetMask`, `DefaultGateway`, `NameServer`) przed resetem, zaraz po nim i po restarcie VM; ręczny IP ustawiony przez `netsh interface ipv4 set address … source=static` i `Set-DnsClientServerAddress`.
 - **Home** (`DSO-26H2-Home`, 26300.9457, bez sieci), 2026-10-22: `winsock reset` kod 0; `int ip reset` kod 1 (jedna odmowa dostępu, reszta OK). Wartości `IPAddress`, `SubnetMask`, `DefaultGateway` znikają z rejestru od razu; ręczny adres działa do restartu, po restarcie karta jest na DHCP (APIPA, bo bez sieci). Ręczne serwery DNS (`NameServer`) przetrwały reset i restart.
-- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22 (przebiegi P1 i A2): identyczny wynik jak Home. Wyniki sieciowe P1 są nieważne (po resecie karta nie dostała adresu z DHCP); wynik opiera się na A2.
+- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22 (dwa przebiegi): identyczny wynik jak Home. Wyniki sieciowe z jednego z tych przebiegów są nieważne (po resecie karta nie dostała adresu z DHCP); wynik opiera się na drugim.

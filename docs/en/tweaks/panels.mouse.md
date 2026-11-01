@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/panels.mouse.md sha256: 5ffb01cea603fa9261a10f07dfc81b542d3c997a0887add28b59d9149274eabc -->
+<!-- source: docs/tweaks/panels.mouse.md sha256: 4150dd52c2a4ecfd2c13a62b58c28d4cb9ead9ca4b0941f7d435ccc4430a4c25 -->
 
 # panels.mouse – Mouse Properties
 
@@ -31,9 +31,9 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 - The scenario "DSOptimizer elevated with a different administrator account than the signed-in user" wasn't measured on a VM for this panel (the `control.exe`/`explorer.exe` host itself uses associations and COM in the elevated process; DSOptimizer controls only the path of the file it starts).
 
 ## VM test
-VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in these cases.
+VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in each of the panel cases.
 - `panels-mouse` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: `rundll32.exe` with a command line containing `main.cpl` is running; `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (the Administrator account over PowerShell Direct, session 0), not that the window appeared for the user.**
-- Exploration in the `dso` user session (elevated task, `Limited` token): the "Właściwości: Mysz" (Mouse Properties) window. Home = Pro.
+- VM test in the `dso` user session (elevated task, `Limited` token): the "Właściwości: Mysz" (Mouse Properties) window. Home = Pro.
 - The manual click (Pro VM, `dso` session, Win+R, 2026-10-19): `main.cpl` opens the classic window.
-- The clicked command (`main.cpl`) isn't the same as the item's `launch` (`control.exe /name Microsoft.Mouse`): the click confirms the panel, while the item's `launch` is confirmed only by the exploration in the `dso` user session (elevated task).
+- The clicked command (`main.cpl`) isn't the same as the item's `launch` (`control.exe /name Microsoft.Mouse`): the click confirms the panel, while the item's `launch` is confirmed only by the VM test in the `dso` user session (elevated task).
 - **Smoke test with the real `DSOptimizer.exe` in the `dso` session: not checked manually in the app**. Not done; the item goes into `main` with this caveat. A mismatch between "the process is running" (Check) and a window visible to the user will show up only on first use from the app.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.bitlocker-prevent-auto.md sha256: a84f5204d89ef8097dcf821c3e3658d54677e5dbb2a61a1e5358f161b236e4f5 -->
+<!-- source: docs/tweaks/sec.bitlocker-prevent-auto.md sha256: 156cab47c0df14849d6b85e06a12eb5496dac1cf32535d2d1add63386d351b6f -->
 
 # sec.bitlocker-prevent-auto – Block automatic drive encryption (BitLocker)
 
@@ -25,7 +25,7 @@ Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, 2026-10-18; 
 - `PreventDeviceEncryption`: **`Exists=false`** on Home and Pro (the value doesn't exist; that's different from the value `0`). Hence `original` = `<RemoveEntry>` is confirmed by the reading, and the system key `Control\BitLocker` survives undo (undo deletes only our value), so `Expect.KeyPresentAfterUndo` in the VM case is correct.
 - The **DWord** type follows from the MS text ("PreventDeviceEncryption equal to True (1)", Sources section). The VM reading after writing through the registry API shows only the type of our own write, so it isn't independent evidence of the type.
 - **Discrepancy between MS and the observation:** MS writes that automatic encryption "is not enabled with local accounts", yet on the VMs with a local account it was in progress on Home and Pro. You mustn't conclude from this that the item is unnecessary with a local account.
-- State observed after the checkpoint starts (local account): automatic device encryption was **in progress** on Home and Pro, and the progress varies between runs. Exploration 2026-10-18: Home `ConversionStatus` = 2 (EncryptionInProgress), 78%, `ProtectionStatus` = 0 (Off), 0 protectors (22:45); Pro `ConversionStatus` = 0, 0% (22:51). Full VM run `vm-run-20261019-002807` (2026-10-19): Home 6% encrypted, Pro 78% encrypted. We give this as an observation; according to MS, encryption starts in OOBE, and protection is armed only after signing in with a Microsoft/Entra account. We don't draw conclusions from this about how this value works.
+- State observed after the checkpoint starts (local account): automatic device encryption was **in progress** on Home and Pro, and the progress varies between runs. VM test 2026-10-18: Home `ConversionStatus` = 2 (EncryptionInProgress), 78%, `ProtectionStatus` = 0 (Off), 0 protectors (22:45); Pro `ConversionStatus` = 0, 0% (22:51). Full VM run `vm-run-20261019-002807` (2026-10-19): Home 6% encrypted, Pro 78% encrypted. We give this as an observation; according to MS, encryption starts in OOBE, and protection is armed only after signing in with a Microsoft/Entra account. We don't draw conclusions from this about how this value works.
 
 ## Detection and undo
 - Detection: registry only, by equality: exactly DWORD `1` -> `Applied`, another value or none -> `NotApplied`. This is honest, because the item promises only writing the value; the real effect (whether encryption turns on) isn't detected.

@@ -11,7 +11,7 @@ Powody odrzucenia:
 - Wyłączenie obniża ochronę (Spectre wariant 2, Meltdown i pokrewne). MS ostrzega, że hosty Hyper-V, hosty usług pulpitu zdalnego i systemy uruchamiające niezaufany kod są w zwiększonym ryzyku. Narzędzie działa na cudzych komputerach, więc obniżanie zabezpieczeń bez zmierzonej korzyści przeczy jego celowi.
 - Brak zmierzonej ani udokumentowanej korzyści na współczesnym procesorze; MS nie podaje, ile daje wyłączenie. Wynik z VM nie byłby dowodem dla żelaza (procesor jest wirtualizowany).
 - Detekcja rejestrowa nie widzi realnego stanu mitygacji (to robi moduł `SpeculationControl` z PowerShell Gallery, który wymaga sieci).
-- Warianty Intel/AMD ze specu nie istnieją dla wyłączania: MS podaje jedną parę 3/3 (albo 1/3 tylko dla wariantu 2); warianty zależne od dostawcy dotyczą włączania dodatkowych mitygacji.
+- Osobnych wariantów Intel/AMD do wyłączania nie ma: MS podaje jedną parę 3/3 (albo 1/3 tylko dla wariantu 2); warianty zależne od dostawcy dotyczą włączania dodatkowych mitygacji.
 - Opis z poprzedniej wersji („przywraca pełną prędkość predykcji gałęzi”) i ostrzeżenia o korporacyjnych hypervisorach nie mają źródła MS.
 
 ## Źródła

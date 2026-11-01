@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.diagnostic-data-required.md sha256: 17cc3597ee8bf3a6732760fbfcb32cd64a04b0b0dcaa6b1a59d059890e60fb70 -->
+<!-- source: docs/tweaks/privacy.diagnostic-data-required.md sha256: fc7a773ea9f0a0c01a764c4ef63434c4641b50b657177d1f7bcd58473439ede4 -->
 
 # privacy.diagnostic-data-required – Limit diagnostic data to required data
 
@@ -31,7 +31,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `HKLM\SOFTWARE\
 - No restart (no restart is required, `requiresReboot=false`); File Explorer doesn't need to be restarted.
 
 ## VM test
-Case `privacy-diagnostic-data-required` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyPresentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection` (the key exists on a fresh installation, the value doesn't exist after undo). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection` key existed before apply and survived undo (`KeyPresentAfterUndo`), and `AllowTelemetry` again doesn't exist after undo. The exploration of 2026-10-21 passed on Home and Pro.
+Case `privacy-diagnostic-data-required` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyPresentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection` (the key exists on a fresh installation, the value doesn't exist after undo). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection` key existed before apply and survived undo (`KeyPresentAfterUndo`), and `AllowTelemetry` again doesn't exist after undo. The VM test of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: UI Automation of Settings (Privacy & security > Diagnostics & feedback) and screenshots after a write through the registry API. Result: the banner "Niektórymi z tych ustawień zarządza Twoja organizacja" (Some of these settings are managed by your organization) and "Twoja organizacja zezwala na wysyłanie tylko wymaganych danych diagnostycznych" (Your organization allows only required diagnostic data to be sent), the optional diagnostic data toggle grayed out. After undo (value deleted) the banner disappears and the toggle is active again.

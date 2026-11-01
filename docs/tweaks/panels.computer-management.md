@@ -12,7 +12,7 @@ Odrzucone warianty (nie osobne pozycje; dane z VM w sekcji „Źródła”):
 
 ## Źródła
 - WinUtil `config/feature.json` @ `144d516` (MIT, 2026-07-31): WPFPanelComputer = „Computer Management”, `InvokeScript`: `compmgmt.msc`. Hint co do listy i polecenia, nie dowód skutku – https://raw.githubusercontent.com/ChrisTitusTech/winutil/144d51675190ffcb2553b7ba5313f8d602c8ecf9/config/feature.json
-- Microsoft Learn: brak strony z nazwą kanoniczną lub poleceniem dla tej pozycji w Windows 11 (research, sekcje 2.2 i 3.4: klasa B, tylko WinUtil); ogólnie MS potwierdza tylko, że Panel sterowania istnieje dla zgodności, a część ustawień migruje do Ustawień: https://support.microsoft.com/en-us/windows/system-configuration-tools-in-windows-f8a49657-b038-43b8-82d3-28bea0c5666b
+- Microsoft Learn: brak strony z nazwą kanoniczną lub poleceniem dla tej pozycji w Windows 11 (nazwę podaje tylko WinUtil); ogólnie MS potwierdza tylko, że Panel sterowania istnieje dla zgodności, a część ustawień migruje do Ustawień: https://support.microsoft.com/en-us/windows/system-configuration-tools-in-windows-f8a49657-b038-43b8-82d3-28bea0c5666b
 - Odczyt VM 26H2 (build 26300.9457), Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), 2026-10-19: Okno „Zarządzanie komputerem” (`MMCMainFrame`) w `mmc.exe` użytkownika (podniesionym). Zmierzona linia poleceń: `"C:\Windows\system32\mmc.exe" "C:\Windows\System32\compmgmt.msc"`.
   - Konto Administrator przez PowerShell Direct (sesja 0): po 10 s żyje `mmc.exe` (ta sesja nie pokazuje okna użytkownika, tylko start procesu).
   - Sesja użytkownika `dso` (zadanie podniesione): okno „Zarządzanie komputerem” (`MMCMainFrame`). Home = Pro we wszystkich polach poza PID-ami.
@@ -29,9 +29,9 @@ Nie dotyczy: `kind=panel` nie ma detekcji ani cofnięcia. `Executed` oznacza tyl
 - Zmierzone na VM z polskimi ustawieniami regionalnymi; tytuł okna może się różnić na innej kulturze.
 
 ## Test VM
-Przebieg VM `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Raporty lokalne poza gitem. Przebieg łącznie: Home 401 zaliczonych / 0 błędów / 29 pominiętych, Pro 401 / 0 / 29 (`main` 313/0/29 + przebiegi Reboot); w tych przypadkach `CleanupError` puste.
+Przebieg VM `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Raporty lokalne poza gitem. Przebieg łącznie: Home 401 zaliczonych / 0 błędów / 29 pominiętych, Pro 401 / 0 / 29 (`main` 313/0/29 + przebiegi Reboot); w każdym z przypadków paneli `CleanupError` puste.
 - `panels-computer-management` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** na Home i Pro (`ExecuteExit=0`, `Executed`). `Check` odpytuje w pętli: żyje `mmc.exe` z linią poleceń zawierającą `compmgmt.msc`; `Cleanup` zamyka tylko procesy pasujące do `Check`. **Check dowodzi, że proces z polecenia żyje (konto Administrator przez PowerShell Direct, sesja 0), nie że okno pojawiło się u użytkownika.**
-- Eksploracja w sesji użytkownika `dso` (zadanie podniesione, token `Limited`): okno „Zarządzanie komputerem” (`MMCMainFrame`). Home = Pro.
+- Test na VM w sesji użytkownika `dso` (zadanie podniesione, token `Limited`): okno „Zarządzanie komputerem” (`MMCMainFrame`). Home = Pro.
 - Klik ręczny (VM Pro, sesja `dso`, Win+R, 2026-10-19): `compmgmt.msc` otwiera klasyczne okno.
-- Kliknięte polecenie (`compmgmt.msc`) jest uruchamiane przez `launch` pozycji jako `mmc.exe` z pełną ścieżką pliku `.msc`, więc to nie jest dokładnie to samo polecenie: klik potwierdza panel, a `launch` pozycji potwierdza dopiero eksploracja w sesji użytkownika `dso` (zadanie podniesione).
+- Kliknięte polecenie (`compmgmt.msc`) jest uruchamiane przez `launch` pozycji jako `mmc.exe` z pełną ścieżką pliku `.msc`, więc to nie jest dokładnie to samo polecenie: klik potwierdza panel, a `launch` pozycji potwierdza dopiero test na VM w sesji użytkownika `dso` (zadanie podniesione).
 - **Smoke z prawdziwym `DSOptimizer.exe` w sesji `dso`: nie sprawdzono ręcznie w programie**. Niewykonany; pozycja wchodzi do `main` z tym zastrzeżeniem. Rozbieżność między „proces żyje” (Check) a oknem widocznym dla użytkownika wyjdzie dopiero przy pierwszym użyciu z aplikacji.

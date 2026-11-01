@@ -1,4 +1,4 @@
-<!-- source: docs/prep/README.md sha256: b024e465fd28acfb57b8ba418d3ec7c6fb4ed08e5928ff7c7e00656182885dd6 -->
+<!-- source: docs/prep/README.md sha256: 0c852724214ff9db6dd3a0a157bcbf5d6c62d7f7ef3da08656d3bfc4adf4321a -->
 
 # Preparation – verified manufacturer addresses
 
@@ -110,6 +110,6 @@ Script `tests/vm/explore/Invoke-E4A3Exploration.ps1`, raw results outside git. C
 - **Intel graphics – Arc driver page**: the "Intel® Arc™ Graphics – Windows" page (`/download/785597/...`) today covers
   only Arc and Core Ultra (downloaded page 2026-10-21), not Iris Xe and older ones, so it isn't suitable as one address for every Intel card.
 - **Intel Driver & Support Assistant (rejected)**: `https://www.intel.com/content/www/us/en/support/detect.html` exists (downloaded page
-  2026-10-21), but it leads to an installed tool that updates drivers, and the project assumptions forbid suggesting such tools. Replaced by the "Support for Intel® Graphics" page.
+  2026-10-21), but it leads to an installed tool that updates drivers, and the program deliberately doesn't suggest such tools. Replaced by the "Support for Intel® Graphics" page.
 - **WMI names outside the table**: `ASUS` (substring in `asus-nb-wmi.c`, no exact match), `MICRO-STAR INT…` (old MSI,
   only a substring in `msi-laptop.c`). Without an exact string they don't go in; such a laptop gets "Search for a support page".

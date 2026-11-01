@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/panels.firewall.md sha256: cc1b2eaf93b420a558901a3dc6685542f224d4d7e2292ef0e677ebf99a71872a -->
+<!-- source: docs/tweaks/panels.firewall.md sha256: 8075ef83e630a557a611b131aed28d14e09b233488ff30bad1907430b1a0b723 -->
 
 # panels.firewall – Windows Defender Firewall
 
@@ -31,9 +31,9 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 - The scenario "DSOptimizer elevated with a different administrator account than the signed-in user" wasn't measured on a VM for this panel (the `control.exe`/`explorer.exe` host itself uses associations and COM in the elevated process; DSOptimizer controls only the path of the file it starts).
 
 ## VM test
-VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in these cases.
+VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in each of the panel cases.
 - `panels-firewall` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: `control.exe` with a command line containing `Microsoft.WindowsFirewall` is running; `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (the Administrator account over PowerShell Direct, session 0), not that the window appeared for the user.**
-- Exploration in the `dso` user session (elevated task, `Limited` token): the "Zapora Windows Defender" (Windows Defender Firewall) window. Home = Pro.
+- VM test in the `dso` user session (elevated task, `Limited` token): the "Zapora Windows Defender" (Windows Defender Firewall) window. Home = Pro.
 - The manual click (Pro VM, `dso` session, Win+R, 2026-10-19): `firewall.cpl` opens the classic window.
-- The clicked command (`firewall.cpl`) isn't the same as the item's `launch` (`control.exe /name Microsoft.WindowsFirewall`): the click confirms the panel, while the item's `launch` is confirmed only by the exploration in the `dso` user session (elevated task).
+- The clicked command (`firewall.cpl`) isn't the same as the item's `launch` (`control.exe /name Microsoft.WindowsFirewall`): the click confirms the panel, while the item's `launch` is confirmed only by the VM test in the `dso` user session (elevated task).
 - **Smoke test with the real `DSOptimizer.exe` in the `dso` session: not checked manually in the app**. Not done; the item goes into `main` with this caveat. A mismatch between "the process is running" (Check) and a window visible to the user will show up only on first use from the app.

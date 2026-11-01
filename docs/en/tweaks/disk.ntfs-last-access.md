@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.ntfs-last-access.md sha256: eefdfba5a84bdd46560e5139a0740dfcf34842b00747f832d67482e11c02ed37 -->
+<!-- source: docs/tweaks/disk.ntfs-last-access.md sha256: 83e2c29b7ed9df0b0647f37da4d8ba945ce2617f941f02ca460ed925c5b4e084 -->
 
 # disk.ntfs-last-access – Turn off recording the last access time of files
 
@@ -43,4 +43,4 @@ Case `disk-ntfs-last-access` (`Flow=Reboot`, run `reboot-disk-ntfs-last-access`,
 - Checked: `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = true), `detect-after-apply` = `Applied`, **real restart** (confirmed), `detect-after-reboot` = `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`. The restart didn't revert the setting on the VM.
 - Case `disk-ntfs-last-access-mode3` (`DetectOnly`, in the `main` run): Setup wrote `0x80000003` through the .NET API, detection = `Applied` (consistent with the bit mask).
 - Check: none.
-- **Not checked:** the effect on the `LastAccessTime` of files and the behavior on real hardware. The detailed snapshot values from the refreshed run weren't analyzed here (the last `SnapshotDiff` analysis comes from the C1 run: undo restored the value from the snapshot, not the fallback).
+- **Not checked:** the effect on the `LastAccessTime` of files and the behavior on real hardware. The detailed snapshot values from the refreshed run weren't analyzed here (the last `SnapshotDiff` analysis comes from an earlier run: undo restored the value from the snapshot, not the fallback).

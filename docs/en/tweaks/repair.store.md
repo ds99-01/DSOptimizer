@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.store.md sha256: d99aae1e6a7371a94258994e379fe4d79bf8765a45973ec73f56a5d4d8ff67fc -->
+<!-- source: docs/tweaks/repair.store.md sha256: 06f4ce885b918cd8ea37e2487549ffbd8ee5e4d765167dbf518ee4ee4caedd3d -->
 
 # repair.store – Repair Microsoft Store on this account
 
@@ -17,7 +17,7 @@ A fourth helper, `Get-DsoAccountName` (`SecurityIdentifier.Translate` → accoun
 
 Flow and results (no path gives a success without verification):
 - (a) Process SID ≠ `$UserSid` (the SID of the signed-in user): `Failed` "The Microsoft Store repair works only for the account DSOptimizer runs on: run DSOptimizer on account <name>. Nothing was changed." (the same sentence as in `repair.winget`; the name from `Get-DsoAccountName`, and when the SID can't be translated – the SID alone) WITHOUT reading the packages and calling the registration. Measured reason: registration from the `Administrator` account adds the package to the Administrator, while the entry of the `dso` account stays unchanged, so the "repair" wouldn't touch the account that matters.
-- (b) No `Microsoft.WindowsStore` package on the disk (it isn't in the `-AllUsers` list; e.g. LTSC): `Failed` "The Microsoft Store package isn't installed for this account; this action doesn't install it." (decision D4), without registration. Several packages with this name for the account (or several on the disk without an `Installed` entry for the account): `Failed` (it's unclear which one to register). A package on the disk without an `Installed` entry for the account (below): registration and verification.
+- (b) No `Microsoft.WindowsStore` package on the disk (it isn't in the `-AllUsers` list; e.g. LTSC): `Failed` "The Microsoft Store package isn't installed for this account; this action doesn't install it." , without registration. Several packages with this name for the account (or several on the disk without an `Installed` entry for the account): `Failed` (it's unclear which one to register). A package on the disk without an `Installed` entry for the account (below): registration and verification.
 - (c) No install location or an unreadable `AppxManifest.xml`: `Failed` with the reason, without registration.
 - (d) An `Add-AppxPackage` error: `Failed` with the error message.
 - (e) After registration, verification: no package for the account or `Status` ≠ `Ok`: `Failed`.
@@ -32,7 +32,7 @@ An extension of the mechanism to a state that used to end with a refusal. The sc
 
 **Verdict: it goes in** (VM measurement, 26H2 Home and Pro, 2026-10-22, 3 runs; details in "Observed effect").
 
-The script NEVER calls `wsreset.exe` (including `wsreset -i`) or `Remove-AppxPackage` (the harness safeguards throw on an unmocked call).
+The script NEVER calls `wsreset.exe` (including `wsreset -i`) or `Remove-AppxPackage` (the harness safeguards throw on a call the test hasn't replaced).
 
 ## Sources
 - MS: `Add-AppxPackage` (ms.date 2023-05-15), accessed 2026-10-19: https://learn.microsoft.com/en-us/powershell/module/appx/add-appxpackage – example 3 "Add a disabled app package in development mode" (`Get-AppxPackage … InstallLocation`, `Add-AppxPackage -Path $ManifestPath -Register -DisableDevelopmentMode`); `-DisableDevelopmentMode` registers "an existing app package installation that has been disabled, didn't register, or has become corrupted".
@@ -45,7 +45,7 @@ The script NEVER calls `wsreset.exe` (including `wsreset -i`) or `Remove-AppxPac
   - Account `dso` (user session, elevated task): the registration ends with `Ok` in about 2 s, `Status` after = `Ok`; no change is visible, because the package was already registered.
   - `PackageUserInformation` is empty in a reading without `-AllUsers`.
   - `wsreset.exe -i`: exit code 0 on error 0x80070520 (the Administrator account over PowerShell Direct, session 0) and 0x80072ee7 (the `dso` user session, elevated task), so code 0 doesn't prove success; the action doesn't use it.
-  - Not tested on a VM: no package on the disk (LTSC; covered by mocks in the tests) and the Store working after registration (VM without a network). `Remove-AppxPackage` as `dso` was measured only on 2026-10-22 (preparing the `Staged` state, "Observed effect" section).
+  - Not tested on a VM: no package on the disk (LTSC; covered by unit tests, without the real command) and the Store working after registration (VM without a network). `Remove-AppxPackage` as `dso` was measured only on 2026-10-22 (preparing the `Staged` state, "Observed effect" section).
 
 ## Defaults on a fresh 26H2
 Package `Microsoft.WindowsStore` 22506.1400.2.0, `Status` = `Ok`, installed for the `dso` account (`Installed`) on 26H2 Home and Pro VMs (`Get-AppxPackage -AllUsers` reading from 2026-10-19). The `Administrator` account didn't have the Store until it was registered from its session.
@@ -61,11 +61,11 @@ Not applicable: `kind=action` has no detection or undo (no journal). Registering
 - Store in use (Home and Pro VMs, 2026-10-22): right after sign-in, `Add-AppxPackage -Register` returns `0x80073D02` ("aplikacje trzeba zamknąć: Microsoft.WindowsStore" (the apps must be closed: Microsoft.WindowsStore)), although no process from the Store package is visible; the same registration about 76–80 s after `explorer.exe` starts goes through. The action then ends with an error with the message "Microsoft Store is in use right now … close the Store, wait a minute and run the repair again" (the details of the original error are in the same message). The program doesn't close the Store itself (no `-ForceApplicationShutdown`).
 
 ## VM test
-VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. The whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + the Reboot runs); in the C5 cases `CleanupError` empty.
+VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. The whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + the Reboot runs); in the panel cases `CleanupError` empty.
 - `repair-store-other-account` (formerly `tools-store-repair-other-account`) (`Flow=Execute`, `Catalog=BuiltIn`): **Passed** on Home and Pro (`ExecuteExit=1`, `Failed`, the message then contained "Rejestracja działa tylko dla konta" (Registration works only for the account); since later fixes, the case checks for "uruchom DSOptimizer na koncie" (run DSOptimizer on account)). The runner is an Administrator, while `$UserSid` is the `dso` account, so the action refuses without registration. `Setup` saves the `Get-AppxPackage -AllUsers -Name Microsoft.WindowsStore` reading (it throws when the package is missing or there's no line with `|S-1-5-21-`, which confirms the shape of `UserSecurityId.Sid`; it also saves a reading of the manifest, read-only); `Check` requires the `-AllUsers` reading after the action to be identical to the one before (no new Administrator entry); `Cleanup` deletes the helper files.
 - `tools-store-repair-register-dso` (run 2026-10-19): **Skipped** (the runner couldn't do `RunAs`). Replaced by the active `repair-store-register-dso` (`RunAs='dso'`): the `Installed` state unchanged, the action registers again and the verification stays `Installed` + `Status` = `Ok`.
 - `repair-store-staged-dso` (`RunAs='dso'`): `Setup` prepares the `Staged` state as in the measurement (`Remove-AppxPackage -Package <PackageFullName>` in a `dso` process through a Task Scheduler task, Interactive + Highest), `Check`: `InstallState` for the `dso` SID = `Installed`. The Store working after the repair needs a network, which the VM doesn't have.
-- Exploration in the `dso` user session (elevated task): registration from the manifest ends with `Ok` in about 2 s, `Status` after = `Ok`; the Administrator account over PowerShell Direct (session 0) registers the package for the Administrator, and the `dso` entry stays unchanged.
+- VM test in the `dso` user session (elevated task): registration from the manifest ends with `Ok` in about 2 s, `Status` after = `Ok`; the Administrator account over PowerShell Direct (session 0) registers the package for the Administrator, and the `dso` entry stays unchanged.
 - **Not tested on a VM:** the positive path with `DSOptimizer.exe` in the GUI (a successful registration in the session of the account that started the app; the CLI as `dso` is covered by `repair-store-register-dso` and `repair-store-staged-dso`) and the Store working after the repair (no network). There's also no installation of the Store (including on LTSC) and no `wsreset -i`.
 - **Smoke test with the real `DSOptimizer.exe` in the `dso` session: not checked manually in the program**. Not done; the item goes into `main` with this caveat.
 

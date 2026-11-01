@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.wu-reset.md sha256: c04e3b7ec419ecfa38750a683e148da1488921db99596c52c4e38a0b76523154 -->
+<!-- source: docs/tweaks/repair.wu-reset.md sha256: a069164e16f3e8019b6ee9dd73d47cd0e435cd4f5286692e435b70123a8d0f44 -->
 
 # repair.wu-reset – Reset Windows Update
 
@@ -18,7 +18,7 @@ C# handler (`src/DSOptimizer.Core/Repair/WindowsUpdateReset.cs`), without a Powe
 Services protected by the system: `msiserver`, `WaaSMedicSvc`, `DoSvc` are never changed; the result mentions one of them only when it's disabled (`Disabled`).
 
 ## Sources
-- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22, runs H1, N1, P1; measurements 3a, 3b, 3h.
+- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22, three runs; measurements 3a, 3b, 3h.
 - No MS documentation checked in this task (the pages about resetting Windows Update components weren't fetched); evidence: the VM test described below.
 
 ## Defaults on a fresh 26H2
@@ -39,6 +39,6 @@ Case `repair-wu-reset` (`Flow=Execute`): `Setup` creates an old copy `C:\Windows
 VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-wu-reset`: **Passed** on Home and Pro (`Executed`; `wuauserv`, `bits`, `cryptsvc` stopped together with `applockerfltr` and `AppIDSvc`, folders moved to `.dso-<timestamp>`, the old copy deleted, the services and dependents back in their previous state).
 
 ## Observed effect
-Method: an exploration probe (`tests/vm/explore/Invoke-E4B1Exploration.ps1`), stopping services through `ControlService` and `ServiceController.Stop()`, Restart Manager for both folders, moving the folders, reading the files after the services start, the update history API and the Settings page (screenshots in the raw results outside git).
+Method: a VM test (`tests/vm/explore/Invoke-E4B1Exploration.ps1`), stopping services through `ControlService` and `ServiceController.Stop()`, Restart Manager for both folders, moving the folders, reading the files after the services start, the update history API and the Settings page (screenshots in the raw results outside git).
 - **Home** (`DSO-26H2-Home`, 26300.9457, no network), 2026-10-22: `cryptsvc` through `ControlService(STOP)` = code 1051 (`AppIDSvc` and `applockerfltr` are running); `ServiceController.Stop()` stops all three in about 0.5 s, after which `catroot2` can be moved. `SoftwareDistribution` doesn't exist until `wuauserv` starts. After the services start, the new `catroot2` (39 `edb*` database files) is there at second 0; all services return to their previous state (`applockerfltr` starts on its own together with `AppIDSvc`, and starting it explicitly reports "już działa" (already running)). History without a network: empty before and after.
-- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: stopping and moving the same as Home (P1, N1); the new `SoftwareDistribution` (DataStore, Download, ReportingEvents.log) is there at second 0 after `wuauserv` starts. With a network (N1): before the reset 2 history entries (a driver + Defender definitions); after the reset the history API returns 0, the driver entry disappears in Settings, "Aktualizacje definicji (1)" (Definition updates (1)) stays. After the network was connected, WU installed 2 updates on its own (result Succeeded), the Windows Update page without errors.
+- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: stopping and moving the same as Home; the new `SoftwareDistribution` (DataStore, Download, ReportingEvents.log) is there at second 0 after `wuauserv` starts. With a network: before the reset 2 history entries (a driver + Defender definitions); after the reset the history API returns 0, the driver entry disappears in Settings, "Aktualizacje definicji (1)" (Definition updates (1)) stays. After the network was connected, WU installed 2 updates on its own (result Succeeded), the Windows Update page without errors.

@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/net.smb-harden.md sha256: 6e9e069ff1acabf96b97dc82d5402bd522b8584032e5ba917337bc38628ea370 -->
+<!-- source: docs/tweaks/net.smb-harden.md sha256: 056dbd56446c080237f479fd8c7aeed77b62c346facda8c1de9e44fb425f6890 -->
 
 # net.smb-harden – Turn off guest logons and require SMB signing
 
 ## Verdict for 26H2
-Port with a restriction, as `kind=action`, `risk=caution` (decision of 2026-10-18: SMB client only, `caution` instead of `safe`). The action sets two SMB client settings to the values Microsoft gives as secure: insecure guest logons off, signing required. The old `lan_panic` item from the previous version did more (all network profiles to Public, stopping discovery services, NetBIOS), which Microsoft doesn't describe as hardening, so we don't carry it over; the description "locking network services down for good" was untrue for what this version does.
+Port with a restriction, as `kind=action`, `risk=caution` (decision of 2026-10-18: SMB client only, `caution`, not `safe`). The action sets two SMB client settings to the values Microsoft gives as secure: insecure guest logons off, signing required. The old `lan_panic` item from the previous version did more (all network profiles to Public, stopping discovery services, NetBIOS), which Microsoft doesn't describe as hardening, so we don't carry it over; the description "locking network services down for good" was untrue for what this version does.
 
 The action has no detection, journal or undo (`TweakEngine.Execute` runs only `script.apply`). The only evidence of the effect is the **verification** in the script itself: when it doesn't match the expected values, the script ends with code ≠ 0 and the engine returns `Failed` with a message, not a green `Executed`.
 

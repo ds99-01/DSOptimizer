@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/panels.network-connections.md sha256: 55ba3354af7b3221b1be4b16ada6694c550a52f8a043d9ea10dd3ca2d1eb37d1 -->
+<!-- source: docs/tweaks/panels.network-connections.md sha256: ea611bee9b149adf4df8777faa55a3a5bbe8e4c3d76d6c7140de653401f6913e -->
 
 # panels.network-connections – Network Connections
 
@@ -31,9 +31,9 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 - The scenario "DSOptimizer elevated with a different administrator account than the signed-in user" wasn't measured on a VM for this panel (the `control.exe`/`explorer.exe` host itself uses associations and COM in the elevated process; DSOptimizer controls only the path of the file it starts).
 
 ## VM test
-VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in these cases.
+VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in each of the panel cases.
 - `panels-network-connections` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: `control.exe` with a command line containing `netconnections` is running; `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (the Administrator account over PowerShell Direct, session 0), not that the window appeared for the user.**
-- Exploration in the `dso` user session (elevated task, `Limited` token): the "Połączenia sieciowe" (Network Connections) window. Home = Pro.
+- VM test in the `dso` user session (elevated task, `Limited` token): the "Połączenia sieciowe" (Network Connections) window. Home = Pro.
 - The manual click (Pro VM, `dso` session, Win+R, 2026-10-19): `ncpa.cpl` and `control.exe netconnections` open the classic window.
-- The clicked commands (`ncpa.cpl`, `control.exe netconnections`) only partly match the item's `launch` (`control.exe netconnections`; `ncpa.cpl` alone is a different command): the click confirms the panel, while the item's `launch` is confirmed only by the exploration in the `dso` user session (elevated task).
+- The clicked commands (`ncpa.cpl`, `control.exe netconnections`) only partly match the item's `launch` (`control.exe netconnections`; `ncpa.cpl` alone is a different command): the click confirms the panel, while the item's `launch` is confirmed only by the VM test in the `dso` user session (elevated task).
 - **Smoke test with the real `DSOptimizer.exe` in the `dso` session: not checked manually in the app**. Not done; the item goes into `main` with this caveat. A mismatch between "the process is running" (Check) and a window visible to the user will show up only on first use from the app.

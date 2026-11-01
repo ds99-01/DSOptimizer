@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.winget.md sha256: 53aab591cec43f2a666812b44571a53e6a965495a5183f501defce7fabca9203 -->
+<!-- source: docs/tweaks/repair.winget.md sha256: a9ce4151c9605a6a32f2a5f5c34650f7157df3a473a448e080f0f2b8711373c3 -->
 
 # repair.winget – Repair winget (App Installer)
 
@@ -43,4 +43,4 @@ VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Ho
 ## Observed effect
 Method: in a process of the `dso` account (a Task Scheduler task, Interactive + Highest, like DSOptimizer after UAC), deleting the `winget.exe` alias, then `Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe` and `winget --version`; raw results outside git.
 - **Home** (`DSO-26H2-Home`, 26300.9457), 2026-10-22: after the alias is deleted, `winget` = "Nie można odnaleźć określonego pliku" (The system cannot find the file specified), the package is still `Installed`; registration by family name (0.4–0.5 s) restores the alias, `winget --version` = `v1.11.510`, code 0. `Remove-AppxPackage` for the account: refused with 0x80073CFA.
-- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: identical (run A2: registration 0.53 s). With a network (N1): `winget source list` code 0, `winget search PowerToys` downloaded the source and returned a result, code 0 (the action doesn't check this).
+- **Pro** (`DSO-26H2-Pro`, 26300.9457), 2026-10-22: identical (registration 0.53 s). With a network: `winget source list` code 0, `winget search PowerToys` downloaded the source and returned a result, code 0 (the action doesn't check this).

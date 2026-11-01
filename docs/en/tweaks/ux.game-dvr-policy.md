@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.game-dvr-policy.md sha256: fc8faa2e720bbf3ece827c1fc5456f1fe28f1e91a745c19d80b54fd5ea2bc247 -->
+<!-- source: docs/tweaks/ux.game-dvr-policy.md sha256: 056d7ec1287980d94116efa00ccfc578b269707b7a1526b58207ca15c5a74b0d -->
 
 # ux.game-dvr-policy – Block game recording and broadcasting on the whole computer
 
@@ -7,7 +7,7 @@ Port with a warning: the mechanism is documented by MS (Policy CSP / ADMX), but 
 
 ## What it changes
 - `HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR`, value `AllowGameDVR`, **DWord**, set to `0` (Not allowed); `scope=machine`.
-- On a fresh 26H2 neither the value nor the `GameDVR` key exists. Apply creates the key; undo deletes the value **and** the empty `GameDVR` key created by apply (mechanism A1 for `registry[]`), and the parent key `...\Policies\Microsoft\Windows` stays.
+- On a fresh 26H2 neither the value nor the `GameDVR` key exists. Apply creates the key; undo deletes the value **and** the empty `GameDVR` key created by apply (the engine mechanism for `registry[]`), and the parent key `...\Policies\Microsoft\Windows` stays.
 
 **Change of meaning compared to the previous version:** `ux_gamedvr` in the previous version was a per-user switch (HKCU keys). The alias now points to this item, that is, a machine policy for all users. The per-user equivalent (`GameDVR_Enabled`) wasn't ported (see `ux.game-dvr.md`: no MS source).
 
