@@ -1,15 +1,15 @@
-<!-- source: docs/tweaks/sec.bitlocker-decrypt-c.md sha256: fd187af41fbec18305bd05db0904b2b20d6774dba7c2e72472334022bb03693c -->
+<!-- source: docs/tweaks/sec.bitlocker-decrypt-c.md sha256: ed4d5f6eebe6531ce30cc253c407fc1a3af7d01a8af5129cc16ef9e8df413a82 -->
 
 # sec.bitlocker-decrypt-c – Turn off BitLocker encryption on the C: drive
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=caution` (new item; v3.2 had no decryption, `sec_bitlocker_kill` is the block on automatic encryption, a separate item `sec.bitlocker-prevent-auto`). Decisions:
+Port as `kind=action`, `risk=caution` (new item; the previous version had no decryption, `sec_bitlocker_kill` is the block on automatic encryption, a separate item `sec.bitlocker-prevent-auto`). Decisions:
 - The action has no detection, journal or undo. The only evidence of the effect is the **verification** of `ConversionStatus` after `Decrypt`; a mismatched reading gives an exit code ≠ 0 (`Failed`), not a green `Executed`.
 - `Decrypt` returns right away, and Windows decrypts in the background (even after a restart), so the action **doesn't wait** for the end. Success means "decryption started or in progress", not "drive decrypted".
 - Auto-unlock keys of other drives (`FVE_E_AUTOUNLOCK_ENABLED`) are `Failed`; the action doesn't remove them itself (that would change other drives, a user decision).
 
 ## What it changes
-- The script (`script.apply`, `-File`, PowerShell 5.1) calls WMI only through two helper functions: `Get-DsoVolumeConversionStatus` (returns an object with `ReturnValue`, `ConversionStatus`, `EncryptionPercentage`, and `$null` when there's no volume) and `Invoke-DsoVolumeDecrypt` (returns `ReturnValue` as `uint32`). The real bodies: `Get-CimInstance -Namespace root\CIMV2\Security\MicrosoftVolumeEncryption -ClassName Win32_EncryptableVolume -Filter "DriveLetter='C:'"` and `Invoke-CimMethod -MethodName 'GetConversionStatus'` / `'Decrypt'`. Unit tests mock both helpers; the harness has safeguards on them and on `Invoke-CimMethod`.
+- The script (`script.apply`, `-File`, PowerShell 5.1) calls WMI only through two helper functions: `Get-DsoVolumeConversionStatus` (returns an object with `ReturnValue`, `ConversionStatus`, `EncryptionPercentage`, and `$null` when there's no volume) and `Invoke-DsoVolumeDecrypt` (returns `ReturnValue` as `uint32`). The real bodies: `Get-CimInstance -Namespace root\CIMV2\Security\MicrosoftVolumeEncryption -ClassName Win32_EncryptableVolume -Filter "DriveLetter='C:'"` and `Invoke-CimMethod -MethodName 'GetConversionStatus'` / `'Decrypt'`. Unit tests replace both helpers; the harness has safeguards on them and on `Invoke-CimMethod`.
 - Decisions only by WMI numeric codes and the `ConversionStatus` enum (0 FullyDecrypted, 1 FullyEncrypted, 2 EncryptionInProgress, 3 DecryptionInProgress, 4 EncryptionPaused, 5 DecryptionPaused), without language-dependent text. The percentage (`EncryptionPercentage`) goes only into the message: MS "Always use ConversionStatus".
 - Result paths:
   - `ConversionStatus` = 0 before: `Executed`, message "C: isn't encrypted – nothing was changed", `Decrypt` **isn't called**.
@@ -29,10 +29,9 @@ Port as `kind=action`, `risk=caution` (new item; v3.2 had no decryption, `sec_bi
 - MS Learn, `Win32_EncryptableVolume.GetConversionStatus` (ms.date 2018-05-31): https://learn.microsoft.com/en-us/windows/win32/secprov/getconversionstatus-win32-encryptablevolume
   - `ConversionStatus` 0–5 as above; `EncryptionPercentage` 0–100: "an encryption percentage of 0 or 100 does not necessarily indicate that the disk is fully decrypted or fully encrypted. Always use ConversionStatus".
 - MS Learn, `Disable-BitLocker` (BitLocker module, a hint, we don't use it): "removes all key protectors and begins decrypting": https://learn.microsoft.com/en-us/powershell/module/bitlocker/disable-bitlocker
-- Round C4 research: `docs/zrodla/2026-10-18-partia-c4-zrodla.md` (in Polish), section 2 and "Wyniki VM (2026-10-18, eksploracja C4)" (VM results, C4 exploration).
 
 ## Defaults on a fresh 26H2
-Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, 2026-10-18; details in the research):
+Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, 2026-10-18):
 - The `Win32_EncryptableVolume` class (`root\CIMV2\Security\MicrosoftVolumeEncryption`, filter `DriveLetter='C:'`) **exists and returns 1 volume on Home and Pro**. `GetConversionStatus` returns the fields `ReturnValue`, `ConversionStatus`, `EncryptionPercentage`, `EncryptionFlags`, `WipingPercentage`, `WipingStatus` (type `UInt32`; same shape on both editions).
 - **Exploration 2026-10-18 (22:45 Home, 22:51 Pro):** Home `ConversionStatus` = 2 (EncryptionInProgress), `EncryptionPercentage` = 78, `ProtectionStatus` = 0 (Off), 0 protectors; Pro `ConversionStatus` = 0 (FullyDecrypted), `EncryptionPercentage` = 0, `ProtectionStatus` = 0.
 - **Full VM run `vm-run-20261019-002807` (2026-10-19):** the action found automatic device encryption in progress on both editions: Home 6% encrypted, Pro 78% encrypted (local account). Observation: after the `czysta-26H2` checkpoint starts, automatic device encryption runs on Home and Pro, and the progress at the moment of the action varies between runs. MS: encryption starts in OOBE, and protection is armed only after signing in with a Microsoft/Entra account.
@@ -45,13 +44,13 @@ No detection (`kind=action`). **No undo** (no journal): decryption has no revers
 - No undo; the action doesn't wait for the end (progress: the next run or Settings).
 - Auto-unlock keys of other drives (0x80310029): `Failed`, the action doesn't remove them. By hand: `Clear-BitLockerAutoUnlock`, if it's a deliberate decision.
 - Without `sec.bitlocker-prevent-auto`, device encryption may start again (not measured; MS doesn't describe this). A company or school policy may require encryption or encrypt the drive again.
-- Confirmation in the UI before running (spec, section 7); the CLI doesn't ask.
+- Confirmation in the UI before running; the CLI doesn't ask.
 
 ## VM test
-Encrypted drive path: a real `Decrypt` exercised on the VM on BOTH editions (Home and Pro), because automatic device encryption runs there after the checkpoint starts; we don't do our own encryption in the VM (the author's decision). So we don't check on the VM: `Decrypt` on a fully encrypted drive (`ConversionStatus` = 1), the code `0x80310029`, or resuming (3, 5); these paths are covered only by unit tests on helper mocks.
+Encrypted drive path: a real `Decrypt` exercised on the VM on BOTH editions (Home and Pro), because automatic device encryption runs there after the checkpoint starts; we don't do our own encryption in the VM (a settled decision). So we don't check on the VM: `Decrypt` on a fully encrypted drive (`ConversionStatus` = 1), the code `0x80310029`, or resuming (3, 5); these paths are covered only by unit tests on helper mocks.
 
 VM run results (build 26300.9457, 2026-10-19):
-- Full run `vm-run-20261019-002807` (HEAD `d589405`): **Home Passed** (`Executed`, "Odszyfrowywanie C: rozpoczęte: 6% zaszyfrowane…" (Decryption of C: started: 6% encrypted…), `Check` Passed). **Pro: action `Executed`** ("Odszyfrowywanie C: rozpoczęte: 78% zaszyfrowane…" (Decryption of C: started: 78% encrypted…)), but `Check` **Failed**: the old `Check` required status 0 on Pro, and the verification gave 3. This was a bug in the case (it assumed a stable BitLocker state at the checkpoint), not in the action; fix `962ae0e`.
-- Rerun of this case alone after the fix, `vm-run-decrypt-20261019-005135` (HEAD `962ae0e`): **Home 4 passed / 0 failed** ("…78% zaszyfrowane…" (…78% encrypted…)), **Pro 4 / 0** ("…76% zaszyfrowane…" (…76% encrypted…)), `Check` (`ReturnValue` 0, `ConversionStatus` ∈ {3, 0}) Passed. After the runs, both VMs are `Off` at the `czysta-26H2` checkpoint.
+- Full run `vm-run-20261019-002807`: **Home Passed** (`Executed`, "Odszyfrowywanie C: rozpoczęte: 6% zaszyfrowane…" (Decryption of C: started: 6% encrypted…), `Check` Passed). **Pro: action `Executed`** ("Odszyfrowywanie C: rozpoczęte: 78% zaszyfrowane…" (Decryption of C: started: 78% encrypted…)), but `Check` **Failed**: the old `Check` required status 0 on Pro, and the verification gave 3. This was a bug in the case (it assumed a stable BitLocker state at the checkpoint), not in the action; fixed in the test case.
+- Rerun of this case alone after the fix, `vm-run-decrypt-20261019-005135`: **Home 4 passed / 0 failed** ("…78% zaszyfrowane…" (…78% encrypted…)), **Pro 4 / 0** ("…76% zaszyfrowane…" (…76% encrypted…)), `Check` (`ReturnValue` 0, `ConversionStatus` ∈ {3, 0}) Passed. After the runs, both VMs are `Off` at the `czysta-26H2` checkpoint.
 - So the real `Decrypt` path + verification was checked on BOTH editions, thanks to automatic device encryption running after the checkpoint starts. The "already decrypted" path (status 0) wasn't measured on the VM; it's covered only by unit tests on mocks (likewise 1, 4, 3/5 and `0x80310029`).
 - The `sec-bitlocker-decrypt-c` case (`Flow=Execute`, `Catalog=BuiltIn`) is in `tests/vm/cases.psd1`; it has one `Check` for both editions: `GetConversionStatus` returns `ReturnValue` 0, and `ConversionStatus` is 3 or 0 (the progress of automatic encryption at the moment of the action isn't deterministic).

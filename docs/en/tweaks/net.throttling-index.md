@@ -1,23 +1,22 @@
-<!-- source: docs/tweaks/net.throttling-index.md sha256: 13c333af8435547de4581185c72f37bd6bcb13300b96eca0509c0c9aaabada95 -->
+<!-- source: docs/tweaks/net.throttling-index.md sha256: 4bdc37e65537a99bca002098db3999cf53c45b89d372d155d2d867dc1784630f -->
 
 # net.throttling-index – NetworkThrottlingIndex / SystemResponsiveness (not ported)
 
 ## Verdict for 26H2
-Not ported (the author's decision of 2026-10-18): `NetworkThrottlingIndex` has no MS documentation, and `SystemResponsiveness` = 0 from v3.2 is treated as 20 according to MS, so it changes nothing. The v3.2 alias `net_throttle` has no item in the catalog.
+Not ported (decision of 2026-10-18): `NetworkThrottlingIndex` has no MS documentation, and `SystemResponsiveness` = 0 from the previous version is treated as 20 according to MS, so it changes nothing. The alias `net_throttle` from the previous version has no item in the catalog.
 
 ## What it changes
-The item isn't in the catalog and changes nothing. Entry considered (v3.2): `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile`, `NetworkThrottlingIndex` = 0xFFFFFFFF and `SystemResponsiveness` = 0 (both DWord).
+The item isn't in the catalog and changes nothing. Entry considered (previous version): `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile`, `NetworkThrottlingIndex` = 0xFFFFFFFF and `SystemResponsiveness` = 0 (both DWord).
 
 Reasons for rejection:
-- MS (MMCSS): `SystemResponsiveness` is the percentage of CPU guaranteed to low-priority tasks; values below 10 and above 100 are treated as 20. So the zero from v3.2 doesn't give "0%", and the documented effect is the default value.
+- MS (MMCSS): `SystemResponsiveness` is the percentage of CPU guaranteed to low-priority tasks; values below 10 and above 100 are treated as 20. So the zero from the previous version doesn't give "0%", and the documented effect is the default value.
 - `NetworkThrottlingIndex` doesn't appear in MS documentation (the MMCSS page doesn't list it). The semantics (10 by default, 0xFFFFFFFF = off) come only from an anonymous community answer, which isn't MS evidence.
-- The v3.2 description ("80% bandwidth limit") has no MS source: MS talks about CPU for low-priority tasks, not about connection bandwidth.
+- The description from the previous version ("80% bandwidth limit") has no MS source: MS talks about CPU for low-priority tasks, not about connection bandwidth.
 - The network effect can't be measured on a VM without a network; writing a value that MS doesn't honor or doesn't document would be a fake tweak.
 
 ## Sources
 - https://learn.microsoft.com/en-us/windows/win32/procthread/multimedia-class-scheduler-service – MS, accessed 2026-10-18 (fetched twice): `SystemResponsiveness` (REG_DWORD, rounded to multiples of 10, values below 10 and above 100 treated as 20, 100 turns off MMCSS); `NetworkThrottlingIndex` isn't listed.
 - https://learn.microsoft.com/en-my/answers/questions/4324930/network-throttling-mechanism – community answer (this is NOT MS documentation), accessed 2026-10-18: 10 by default, `ffffffff` as off.
-- Research: `docs/zrodla/2026-10-18-partia-c3-zrodla.md` (in Polish), section 1.
 
 ## Defaults on a fresh 26H2
 Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = Pro, read only), key `SystemProfile`:

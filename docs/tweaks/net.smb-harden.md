@@ -1,13 +1,13 @@
 # net.smb-harden – Wyłącz logowanie gościa i wymagaj podpisywania SMB
 
 ## Werdykt 26H2
-Portować z ograniczeniem, jako `kind=action`, `risk=caution` (decyzja autora z 2026-10-18: tylko klient SMB, `caution` zamiast `safe` ze specu). Akcja ustawia dwa ustawienia klienta SMB na wartości, które Microsoft podaje jako bezpieczne: niezabezpieczone logowanie gościa wyłączone, podpisywanie wymagane. Stara pozycja `lan_panic` z v3.2 robiła więcej (wszystkie profile sieci na Public, zatrzymanie usług odnajdywania, NetBIOS), czego Microsoft nie opisuje jako utwardzania, więc tego nie przenosimy; opis „zabetonowanie usług sieciowych” był nieprawdziwy względem tego, co robi ta wersja.
+Portować z ograniczeniem, jako `kind=action`, `risk=caution` (decyzja z 2026-10-18: tylko klient SMB, `caution` zamiast `safe`). Akcja ustawia dwa ustawienia klienta SMB na wartości, które Microsoft podaje jako bezpieczne: niezabezpieczone logowanie gościa wyłączone, podpisywanie wymagane. Stara pozycja `lan_panic` z poprzedniej wersji robiła więcej (wszystkie profile sieci na Public, zatrzymanie usług odnajdywania, NetBIOS), czego Microsoft nie opisuje jako utwardzania, więc tego nie przenosimy; opis „zabetonowanie usług sieciowych” był nieprawdziwy względem tego, co robi ta wersja.
 
 Akcja nie ma detekcji, journala ani undo (`TweakEngine.Execute` uruchamia tylko `script.apply`). Jedynym dowodem skutku jest **odczyt zwrotny** w samym skrypcie: gdy nie zgadza się z oczekiwanym, skrypt kończy się kodem ≠ 0 i silnik zwraca `Failed` z komunikatem, a nie zielone `Executed`.
 
 ## Co zmienia
 - Skrypt (`script.apply`, `-File`, PowerShell 5.1): przez funkcję pomocniczą `Set-DsoSmbClientSetting` wywołuje `Set-SmbClientConfiguration -EnableInsecureGuestLogons $false -RequireSecuritySignature $true -Force`, a potem przez `Get-DsoSmbClientSetting` czyta z `Get-SmbClientConfiguration` wartości logiczne `EnableInsecureGuestLogons` i `RequireSecuritySignature`.
-- Skutek w rejestrze (zmierzony na VM po tym samym cmdlecie, `docs/zrodla/2026-10-18-partia-c3-zrodla.md`, „Wyniki VM”): DWORD `AllowInsecureGuestAuth` = 0 i `RequireSecuritySignature` = 1 w `HKLM\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters`. Zapisuje je cmdlet; skrypt nie dotyka rejestru bezpośrednio.
+- Skutek w rejestrze (zmierzony na VM po tym samym cmdlecie): DWORD `AllowInsecureGuestAuth` = 0 i `RequireSecuritySignature` = 1 w `HKLM\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters`. Zapisuje je cmdlet; skrypt nie dotyka rejestru bezpośrednio.
 - Odczyt zwrotny: obie wartości muszą być typu bool i równe oczekiwanym (gość `False`, podpisywanie `True`). Brak wartości logicznej (błąd cmdletu, `$null`, tekst) albo rozjazd = wyjątek, kod wyjścia 1, komunikat na stderr („Odczyt zwrotny nie zgadza się z oczekiwanym: …”).
 - Nie dotyka: serwera SMB (`Set-SmbServerConfiguration`), usług odnajdywania (`fdPHost`, `FDResPub`, `SSDPSRV`), NetBIOS, profilu sieci, polityk.
 
@@ -17,7 +17,7 @@ Akcja nie ma detekcji, journala ani undo (`TweakEngine.Execute` uruchamia tylko 
 - https://learn.microsoft.com/en-us/windows-server/storage/file-server/enable-insecure-guest-logons-smb2-and-smb3 – MS Learn, dostęp 2026-10-18: „Windows disables insecure guest logons by default” (Windows 11 Pro/Enterprise/Education), „We recommend that you don't enable insecure guest logons.”
 - https://learn.microsoft.com/en-us/powershell/module/smbshare/set-smbclientconfiguration?view=windowsserver2025-ps – MS Learn, dostęp 2026-10-18: `-EnableInsecureGuestLogons`, `-RequireSecuritySignature`, `-Force`.
 - https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/microsoft-network-client-digitally-sign-communications-always – MS (archiwum), dostęp 2026-10-18: „Best practice: Enable Microsoft network client: Digitally sign communications (always)”.
-- Odczyt VM 26H2 Home i Pro, 2026-10-18 (sekcja „Wyniki VM” w pliku research).
+- Odczyt VM 26H2 Home i Pro, 2026-10-18.
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), build 26300.9457, 2026-10-18:
@@ -40,11 +40,11 @@ Brak detekcji (`kind=action`): w UI nie ma wiersza stanu, a ponowne uruchomienie
 
 ## Ryzyka i ostrzeżenia
 - `risk=caution`. Ostrzeżenia (zgodne z polem `warnings` w katalogu): „Stare NAS-y i dyski sieciowe bez podpisywania albo wpuszczające tylko gościa mogą przestać się łączyć.” oraz „Późniejsze cofnięcie pozycji logowania gościa albo podpisywania SMB zdejmie to zabezpieczenie.”
-- Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): brak cofnięcia z poleceniem ręcznego cofnięcia; Microsoft „Windows disables insecure guest logons by default” + „We recommend that you don't enable insecure guest logons.” i zmiana względem stanu domyślnego Home; podpisywanie (już True na obu edycjach, ale wymuszenie może zablokować połączenia z urządzeniami bez podpisywania: `STATUS_INVALID_SIGNATURE`, „security policies block unauthenticated guest access”); nadpisanie stanu tweaków SMB z journala; zakres tylko klient; zachowanie pod polityką (GPO) niesprawdzone: zamierzenie to `Failed`, gdy odczyt zwrotny się nie zgadza, ale nie sprawdzono, czy `Get-SmbClientConfiguration` uwzględnia politykę; jeśli nie, akcja może zgłosić `Executed` (odczyt zwrotny zgodny) mimo polityki, która nadal przesłania ustawienie. Ograniczenie; weryfikacja na VM z polityką ustawioną oficjalnym narzędziem to CARRY do kolejnej partii.
+- Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): brak cofnięcia z poleceniem ręcznego cofnięcia; Microsoft „Windows disables insecure guest logons by default” + „We recommend that you don't enable insecure guest logons.” i zmiana względem stanu domyślnego Home; podpisywanie (już True na obu edycjach, ale wymuszenie może zablokować połączenia z urządzeniami bez podpisywania: `STATUS_INVALID_SIGNATURE`, „security policies block unauthenticated guest access”); nadpisanie stanu tweaków SMB z journala; zakres tylko klient; zachowanie pod polityką (GPO) niesprawdzone: zamierzenie to `Failed`, gdy odczyt zwrotny się nie zgadza, ale nie sprawdzono, czy `Get-SmbClientConfiguration` uwzględnia politykę; jeśli nie, akcja może zgłosić `Executed` (odczyt zwrotny zgodny) mimo polityki, która nadal przesłania ustawienie. Ograniczenie; nie sprawdzono tego na VM z polityką ustawioną oficjalnym narzędziem.
 - Skutek w sieci lokalnej nie jest zmierzony.
 
 ## Test VM
-Przebieg VM z 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba bez błędów (278 zaliczonych / 0 błędów / 17 pominiętych na każdej VM). Raporty lokalne: `tests/vm/out/<data>/<VM>/<RunLabel>/report.json` (katalog w `.gitignore`).
+Przebieg VM z 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba bez błędów (278 zaliczonych / 0 błędów / 17 pominiętych na każdej VM). Raporty lokalne, poza repozytorium: `tests/vm/out/<data>/<VM>/<RunLabel>/`.
 
 Przypadek `net-smb-harden` (`Flow=Execute`, `Catalog=BuiltIn`), **Passed** na Home i Pro (Pester main 191/0/17):
 - Sprawdzono: `execute` kod 0, wynik `Executed`; pole `message` raportu CLI zawiera stdout akcji: „Klient SMB: EnableInsecureGuestLogons = False, RequireSecuritySignature = True (odczyt zwrotny zgodny).” `Check` (niezależny od skryptu akcji): **Passed**: cmdlet daje gość `False` i podpisywanie `True`, a DWORD-y w rejestrze to 0 i 1.

@@ -34,3 +34,5 @@ docs/tweaks/ux.game-dvr.md	czy autor jest pracownikiem MS	autor cudzej odpowiedz
 docs/en/tweaks/net.smb-guest-access.md	a fake server on the network	zwykłe zdanie (fałszywy serwer w sieci), nie znacznik testowy
 docs/en/tweaks/net.throttling-index.md	would be a fake tweak	zwykłe zdanie (pozorna zmiana), nie znacznik testowy
 docs/en/tweaks/perf.vbs-hvci.md	`apply` is a no-op	opis skryptu (apply niczego nie robi), nie znacznik testowy
+docs/en/tweaks/net.smb-guest-access.md	a fake server on the network	zwykły tekst: dosłowny cytat ostrzeżenia z katalogu programu ('fake server' = fałszywy serwer)
+docs/en/tweaks/net.throttling-index.md	would be a fake tweak	zwykły tekst: 'fake tweak' = pozycja pozorna, nie notatka procesu

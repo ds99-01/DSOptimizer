@@ -1,22 +1,22 @@
-<!-- source: docs/tweaks/net.smb-signing-client-off.md sha256: 15f4fdd90d13610fc911d577ff11048eaa110cebac655407198d072b6bf603ab -->
+<!-- source: docs/tweaks/net.smb-signing-client-off.md sha256: 0541ce8016fc3ca2526d42bf5cd95b7b4ce06d6881a431632cc547b28a8c5ad3 -->
 
 # net.smb-signing-client-off – Don't require SMB signing on the client
 
 ## Verdict for 26H2
-Port with a restriction, as `risk=caution`. New item (the author's decision of 2026-10-18, split of `lan_godmode`): MS describes signing and guest access as separate settings, and on Windows 11 24H2 Pro/Enterprise/Education guest access also requires turning off the signing requirement ("Requiring SMB signing also disables guest access to shares"). At the same time, MS advises against turning off signing. Affects only the SMB client (outgoing connections); the SMB server isn't touched (v3.2 didn't touch it either).
+Port with a restriction, as `risk=caution`. New item (decision of 2026-10-18, split of `lan_godmode`): MS describes signing and guest access as separate settings, and on Windows 11 24H2 Pro/Enterprise/Education guest access also requires turning off the signing requirement ("Requiring SMB signing also disables guest access to shares"). At the same time, MS advises against turning off signing. Affects only the SMB client (outgoing connections); the SMB server isn't touched (the previous version didn't touch it either).
 
 ## What it changes
 - Registry (`registry[]`, written through the C# API): `HKLM\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters`, value `RequireSecuritySignature`, **DWord**, `0`. `scope=machine`, no `requiresReboot` (MS: a change of the signing policy takes effect without a restart; a write through the registry API is visible in `Get-SmbClientConfiguration` without a restart: confirmed by the VM run of 2026-10-18, see "VM test"). The path and type were established by a reading on the VM after a change with the official cmdlet `Set-SmbClientConfiguration -RequireSecuritySignature $false`.
 - Script (`script.detect`): read only, `Get-SmbClientConfiguration` through the helper function `Get-DsoSmbClientSetting`, the Boolean value `RequireSecuritySignature`. It doesn't write anything.
 - Doesn't touch: `EnableSecuritySignature` (applies only to SMB1, MS warns against using it), the SMB server (`Set-SmbServerConfiguration`), policies, `AllowInsecureGuestAuth`.
-- The decision for `registry[]` + `script.detect` is as in `net.smb-guest-access` (aggregation in `StateAggregator`; a mismatch between the registry and the cmdlet gives `Partial`). The behavior under an actual policy (for example Group Policy) hasn't been checked: it wasn't checked whether `Get-SmbClientConfiguration` takes the policy into account; if it doesn't, the item may show a match despite the policy (CARRY: verification on a VM with a policy).
+- The decision for `registry[]` + `script.detect` is as in `net.smb-guest-access` (aggregation in `StateAggregator`; a mismatch between the registry and the cmdlet gives `Partial`). The behavior under an actual policy (for example Group Policy) hasn't been checked: it wasn't checked whether `Get-SmbClientConfiguration` takes the policy into account; if it doesn't, the item may show a match despite the policy This wasn't checked on a VM with a policy set..
 
 ## Sources
 - https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-signing – MS Learn, accessed 2026-10-18 (ms.date 2025-08-13): turning it off through the policy "Microsoft network client: Digitally sign communications (always)" = Disabled or `Set-SmbClientConfiguration -RequireSecuritySignature $false`; verification with `Get-SmbClientConfiguration | FL RequireSecuritySignature` (True/False); "Caution: We don't recommend disabling SMB signing as a workaround for third-party servers. We also don't recommend trying to sign with guest accounts."; "Requiring SMB signing also disables guest access to shares." The page also says that Windows 11 24H2 Home doesn't require signing, which **wasn't confirmed on the VM** (see below).
 - https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-security-hardening – MS Learn, accessed 2026-10-18: since Windows 11 24H2 all outgoing and incoming SMB connections must be signed by default (no distinction between editions).
 - https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/microsoft-network-client-digitally-sign-communications-always – MS (archive), accessed 2026-10-18: the `RequireSecuritySignature` value as the policy's equivalent, change without a restart; the page doesn't give the key path.
 - https://learn.microsoft.com/en-us/powershell/module/smbshare/set-smbclientconfiguration?view=windowsserver2025-ps – MS Learn, accessed 2026-10-18: the `-RequireSecuritySignature` parameter.
-- Reading from 26H2 Home and Pro VMs, 2026-10-18 (`docs/zrodla/2026-10-18-partia-c3-zrodla.md` (in Polish), "Wyniki VM" (VM results), sections 3+4).
+- Reading from 26H2 Home and Pro VMs, 2026-10-18.
 
 ## Defaults on a fresh 26H2
 Read from the VMs DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), build 26300.9457, 2026-10-18 (Home = Pro):
@@ -41,7 +41,7 @@ Undo: journal snapshot (the previous value or none; none comes back as none, the
 - The effect on the local network isn't measured.
 
 ## VM test
-VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports: `tests/vm/out/<date>/<VM>/<RunLabel>/report.json` (folder in `.gitignore`).
+VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports, outside the repository: `tests/vm/out/<date>/<VM>/<RunLabel>/`.
 
 Case `net-smb-signing-client-off` (`Flow=Full`, `Catalog=BuiltIn`, no restart), **Passed** on Home and Pro (Pester main 191/0/17), both editions identical:
 - Checked: `detect-before` = `NotApplied` (no value, cmdlet True), `apply` = `Applied` (`requiresReboot` = false; snapshot after apply: DWORD 0), `detect-after-apply` = `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`. Final state = state before: value absent, the `Parameters` key stays, `SnapshotDiff` empty.

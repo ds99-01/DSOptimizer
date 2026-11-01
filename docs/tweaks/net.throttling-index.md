@@ -1,21 +1,20 @@
 # net.throttling-index – NetworkThrottlingIndex / SystemResponsiveness (nieportowane)
 
 ## Werdykt 26H2
-Nieportowane (decyzja autora z 2026-10-18): `NetworkThrottlingIndex` nie ma dokumentacji MS, a `SystemResponsiveness` = 0 z v3.2 według MS jest traktowane jak 20, więc nic nie zmienia. Alias `net_throttle` z v3.2 nie ma pozycji w katalogu.
+Nieportowane (decyzja z 2026-10-18): `NetworkThrottlingIndex` nie ma dokumentacji MS, a `SystemResponsiveness` = 0 z poprzedniej wersji według MS jest traktowane jak 20, więc nic nie zmienia. Alias `net_throttle` z poprzedniej wersji nie ma pozycji w katalogu.
 
 ## Co zmienia
-Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis (v3.2): `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile`, `NetworkThrottlingIndex` = 0xFFFFFFFF i `SystemResponsiveness` = 0 (oba DWord).
+Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis (poprzednia wersja): `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile`, `NetworkThrottlingIndex` = 0xFFFFFFFF i `SystemResponsiveness` = 0 (oba DWord).
 
 Powody odrzucenia:
-- MS (MMCSS): `SystemResponsiveness` to odsetek CPU gwarantowany zadaniom o niskim priorytecie; wartości poniżej 10 i powyżej 100 są traktowane jak 20. Zero z v3.2 nie daje więc „0%”, a udokumentowanym efektem jest wartość domyślna.
+- MS (MMCSS): `SystemResponsiveness` to odsetek CPU gwarantowany zadaniom o niskim priorytecie; wartości poniżej 10 i powyżej 100 są traktowane jak 20. Zero z poprzedniej wersji nie daje więc „0%”, a udokumentowanym efektem jest wartość domyślna.
 - `NetworkThrottlingIndex` nie występuje w dokumentacji MS (strona MMCSS go nie wymienia). Semantyka (domyślnie 10, 0xFFFFFFFF = wyłączone) pochodzi tylko z anonimowej odpowiedzi społeczności, to nie jest dowód MS.
-- Opis v3.2 („limit 80% przepustowości”) nie ma źródła MS: MS mówi o CPU dla zadań niskiego priorytetu, nie o przepustowości łącza.
+- Opis z poprzedniej wersji („limit 80% przepustowości”) nie ma źródła MS: MS mówi o CPU dla zadań niskiego priorytetu, nie o przepustowości łącza.
 - Skutek sieciowy nie jest mierzalny na VM bez sieci; zapis wartości, której MS nie honoruje albo nie dokumentuje, byłby fałszywym tweakiem.
 
 ## Źródła
 - https://learn.microsoft.com/en-us/windows/win32/procthread/multimedia-class-scheduler-service – MS, dostęp 2026-10-18 (pobrana dwukrotnie): `SystemResponsiveness` (REG_DWORD, zaokrąglanie do wielokrotności 10, wartości poniżej 10 i powyżej 100 traktowane jak 20, 100 wyłącza MMCSS); `NetworkThrottlingIndex` nie jest wymieniony.
 - https://learn.microsoft.com/en-my/answers/questions/4324930/network-throttling-mechanism – odpowiedź społeczności (to NIE jest dokumentacja MS), dostęp 2026-10-18: domyślnie 10, `ffffffff` jako wyłączenie.
-- Research: `docs/zrodla/2026-10-18-partia-c3-zrodla.md`, sekcja 1.
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = Pro, tylko odczyt), klucz `SystemProfile`:
