@@ -78,7 +78,7 @@ function Get-NetPlan {
         NetworkSwitch       = 'Default Switch'
         NetworkWaitSeconds  = 300
         UserName            = 'dso'
-        # Usługi Windows pobierające w tle (nie należą do programu); zatrzymane przed śladem.
+        # Usługi Windows pobierające w tle (nie należą do programu); przed śladem próba zatrzymania, jej wynik trafia do pola services.
         StoppedServices     = @('wuauserv', 'UsoSvc', 'DoSvc', 'BITS')
         WorkDirectory       = 'C:\dso\net'
         ResultDirectory     = 'C:\dso\net\out'
@@ -256,28 +256,47 @@ function Compare-NetProcessAudit {
     if (@($Events | Where-Object { $null -eq $_.PSObject.Properties['newPid'] -or $null -eq $_.PSObject.Properties['parentPid'] }).Count -gt 0) {
         return [pscustomobject]@{ Match = $false; Detail = 'Audyt 4688 zawiera uszkodzone wpisy (brak newPid lub parentPid).'; OnlyInAudit = @(); OnlyInTrace = @() }
     }
+    # Numery PID są ponownie używane po zakończeniu procesu, a audyt 4688 nie ma wpisów o zakończeniu. Każde zdarzenie tworzenia
+    # ustala więc od nowa, czy jego PID jest teraz w drzewie ($Current; z niego bierze się rodzic). Porównanie ze śladem liczy
+    # wcielenia: ile razy dany PID wszedł do drzewa w audycie i ile razy występuje w śladzie. Zgubione w śladzie drugie wcielenie
+    # tego samego PID jest rozbieżnością, tak samo PID, który wrócił do drzewa po użyciu przez obcy proces.
     $Current = New-Object 'System.Collections.Generic.HashSet[int]'
-    $Members = New-Object 'System.Collections.Generic.HashSet[int]'
+    $AuditCount = New-Object 'System.Collections.Generic.Dictionary[int,int]'
     foreach ($Event in $Events) {
         $Leaf = [System.IO.Path]::GetFileName([string](Get-NetItemValue -Item $Event -Name 'image'))
-        # Numery PID są ponownie używane po zakończeniu procesu (audyt 4688 nie ma wpisów o zakończeniu). Każde zdarzenie tworzenia ustala od nowa, czy jego PID jest teraz w drzewie (zbiór bieżący, z niego bierze się rodzic): proces spoza drzewa, który dostał stary PID członka, nie jest potomkiem. Porównanie ze śladem używa wszystkich PID, które kiedykolwiek były w drzewie.
-      if ($Leaf -ieq $RootImage -or $Current.Contains([int]$Event.parentPid)) { [void]$Current.Add([int]$Event.newPid); [void]$Members.Add([int]$Event.newPid) }
-      else { [void]$Current.Remove([int]$Event.newPid) }
+        $NewPid = [int]$Event.newPid
+        if ($Leaf -ieq $RootImage -or $Current.Contains([int]$Event.parentPid)) {
+            [void]$Current.Add($NewPid)
+            $AuditCount[$NewPid] = $(if ($AuditCount.ContainsKey($NewPid)) { $AuditCount[$NewPid] + 1 } else { 1 })
+        }
+        else { [void]$Current.Remove($NewPid) }
     }
-    $TracePids = New-Object 'System.Collections.Generic.HashSet[int]'
-    foreach ($Process in $Tree) { [void]$TracePids.Add([int](Get-NetItemValue -Item $Process -Name 'pid')) }
-    $OnlyAudit = @($Members | Where-Object { -not $TracePids.Contains($_) } | Sort-Object)
-    $OnlyTrace = @($TracePids | Where-Object { -not $Members.Contains($_) } | Sort-Object)
-    if ($Members.Count -eq 0 -and $TracePids.Count -eq 0) { return [pscustomobject]@{ Match = $false; Detail = 'Ani audyt 4688, ani ślad nie zawierają procesu DSOptimizer.exe.'; OnlyInAudit = @(); OnlyInTrace = @() } }
-    if ($OnlyAudit.Count -eq 0 -and $OnlyTrace.Count -eq 0) {
-        return [pscustomobject]@{ Match = $true; Detail = "Drzewo procesów zgodne w audycie 4688 i w śladzie ($($Members.Count) procesów)."; OnlyInAudit = @(); OnlyInTrace = @() }
+    $TraceCount = New-Object 'System.Collections.Generic.Dictionary[int,int]'
+    foreach ($Process in $Tree) {
+        $TracePid = [int](Get-NetItemValue -Item $Process -Name 'pid')
+        $TraceCount[$TracePid] = $(if ($TraceCount.ContainsKey($TracePid)) { $TraceCount[$TracePid] + 1 } else { 1 })
     }
-    $Parts = @()
-    if ($OnlyAudit.Count -gt 0) { $Parts += "tylko w audycie 4688: PID $($OnlyAudit -join ', ')" }
-    if ($OnlyTrace.Count -gt 0) { $Parts += "tylko w śladzie: PID $($OnlyTrace -join ', ')" }
-    return [pscustomobject]@{ Match = $false; Detail = "Rozbieżność drzewa procesów: $($Parts -join ' | ')."; OnlyInAudit = $OnlyAudit; OnlyInTrace = $OnlyTrace }
+    $AuditTotal = 0; foreach ($Count in $AuditCount.Values) { $AuditTotal += $Count }
+    $TraceTotal = 0; foreach ($Count in $TraceCount.Values) { $TraceTotal += $Count }
+    if ($AuditTotal -eq 0 -and $TraceTotal -eq 0) { return [pscustomobject]@{ Match = $false; Detail = 'Ani audyt 4688, ani ślad nie zawierają procesu DSOptimizer.exe.'; OnlyInAudit = @(); OnlyInTrace = @() } }
+    $AllPids = New-Object 'System.Collections.Generic.HashSet[int]'
+    foreach ($Key in $AuditCount.Keys) { [void]$AllPids.Add($Key) }
+    foreach ($Key in $TraceCount.Keys) { [void]$AllPids.Add($Key) }
+    $OnlyAudit = @(); $OnlyTrace = @(); $Parts = @()
+    foreach ($Key in @($AllPids | Sort-Object)) {
+        $InAudit = if ($AuditCount.ContainsKey($Key)) { $AuditCount[$Key] } else { 0 }
+        $InTrace = if ($TraceCount.ContainsKey($Key)) { $TraceCount[$Key] } else { 0 }
+        if ($InAudit -gt $InTrace) { $OnlyAudit += $Key; $Parts += "PID $Key ma w audycie 4688 $InAudit wcieleń, w śladzie $InTrace" }
+        elseif ($InTrace -gt $InAudit) { $OnlyTrace += $Key; $Parts += "PID $Key ma w śladzie $InTrace wcieleń, w audycie 4688 $InAudit" }
+    }
+    if ($Parts.Count -eq 0) {
+        return [pscustomobject]@{ Match = $true; Detail = "Drzewo procesów zgodne w audycie 4688 i w śladzie ($AuditTotal procesów)."; OnlyInAudit = @(); OnlyInTrace = @() }
+    }
+    $Detail = @()
+    if ($OnlyAudit.Count -gt 0) { $Detail += "tylko w audycie 4688: PID $($OnlyAudit -join ', ')" }
+    if ($OnlyTrace.Count -gt 0) { $Detail += "tylko w śladzie: PID $($OnlyTrace -join ', ')" }
+    return [pscustomobject]@{ Match = $false; Detail = "Rozbieżność drzewa procesów: $($Detail -join ' | ') ($($Parts -join '; '))."; OnlyInAudit = $OnlyAudit; OnlyInTrace = $OnlyTrace }
 }
-
 function Resolve-NetArtifact {
     # -ArtifactPath -> opis wydania Folder z Build-Release.ps1 (DSOptimizer-<wersja>.zip obok SHA256SUMS.txt z tą samą sumą; w zipie
     # DSOptimizer\DSOptimizer.exe). Każdy błąd = wyjątek, zanim cokolwiek dotknie VM.

@@ -47,7 +47,7 @@ o `api.github.com`; `start-off` i `cli` – zero zapytań DNS i zero połączeń
 | VM | Scenariusz | Wynik | Połączenia drzewa programu | DNS drzewa programu | Zdarzeń w śladzie | Utracone bufory / zdarzenia | 4688 | Ruch kontrolny |
 |---|---|---|---|---|---|---|---|---|
 | Pro | start-on | zaliczony | 1: TCP 140.82.121.6:443, `api.github.com` | `api.github.com` (A i AAAA) | 53 403 | 0 / 0 | zgodne (26 procesów) | widoczny |
-| Pro | start-off | zaliczony | 0 | 0 | 344 890 | 0 / 0 | zgodne (25 procesów) | widoczny |
+| Pro | start-off | zaliczony | 0 | 0 | 344 890 | 0 / 0 | zgodne (26 procesów, 25 różnych PID) | widoczny |
 | Pro | cli | zaliczony | 0 | 0 | 11 078 | 0 / 0 | zgodne (10 procesów) | widoczny |
 | Home | start-on | zaliczony | 1: TCP 140.82.121.5:443, `api.github.com` | `api.github.com` (A i AAAA) | 300 188 | 0 / 0 | zgodne (26 procesów) | widoczny |
 | Home | start-off | zaliczony | 0 | 0 | 414 969 | 0 / 0 | zgodne (26 procesów) | widoczny |
@@ -65,11 +65,30 @@ pochodzą z tego powtórzenia i z przebiegu na Home.
 
 - Mierzone jest wyłącznie drzewo procesów programu. Ruch zlecony usługom Windows (Windows Update, Delivery Optimization,
   BITS) nie jest liczony.
-- Usługi `wuauserv`, `UsoSvc`, `DoSvc` i `BITS` próbowano zatrzymać na czas pomiaru, bo pobierają w tle i zalewały ślad
-  ruchem, który nie należy do programu. Udało się to dla `wuauserv` i `UsoSvc` (zatrzymane i wyłączone do cofnięcia VM)
-  oraz dla `BITS` na Home w każdym scenariuszu i na Pro w `cli`. Na Pro w `start-on` i `start-off` zatrzymanie `BITS`
-  się nie powiodło, a `DoSvc` na obu edycjach odmówiła zmiany („Odmowa dostępu”), więc działała normalnie. Nie ma to
-  wpływu na wynik, bo liczy się tylko drzewo programu, ale nie można mówić, że wszystkie cztery usługi były wyłączone.
+- Przed śladem próbowano zatrzymać i wyłączyć usługi `wuauserv`, `UsoSvc`, `DoSvc` i `BITS`, bo pobierają w tle i zalewały
+  ślad ruchem, który nie należy do programu. Pole `services` mówi tylko, że polecenia zatrzymania i wyłączenia nie zgłosiły
+  błędu: `wuauserv` i `UsoSvc` w każdym scenariuszu, `BITS` na Home w każdym scenariuszu i na Pro w `cli`. Na Pro
+  w `start-on` i `start-off` zatrzymanie `BITS` się nie powiodło. W `DoSvc` wyłączenie zostało odmówione („Odmowa
+  dostępu”) na obu edycjach we wszystkich scenariuszach.
+- To, że zatrzymanie się powiodło, nie znaczy, że usługa stała: dziennik 4688 pokazuje, że `svchost -k netsvcs -p -s
+  wuauserv` uruchomił się na nowo w każdym z 6 scenariuszy, także w czasie śladu, i miał ruch do hostów Windows Update
+  (7,5–13,3 MiB), a `svchost … -s BITS` uruchomił się na nowo w każdym scenariuszu, w którym pole `services` ma `BITS`
+  jako zatrzymany i wyłączony (Home ×3 i Pro `cli`; 0,2–1,3 MiB). Uruchomienia `UsoSvc` w audycie nie ma. `DoSvc` działała
+  i miała ruch do hostów Delivery Optimization (`*.do.dsp.mp.microsoft.com`) w `start-on` i `start-off` obu edycji oraz
+  w `cli` na Pro; w `cli` na Home takiego ruchu nie było. Zatrzymanie usług nie było więc skuteczne i nie należy go
+  opisywać jako wyłączenia ich ruchu.
+- Pomiar nie wyklucza ruchu, który program zleciłby usługom Windows: taki ruch wyglądałby w śladzie jak ruch systemu i nie
+  zmieniłby wyniku. W tym czasie procesy poza drzewem pobrały 8,7–460,7 MiB, w tym z serwerów certyfikatów. Lista usług
+  jest przykładem, nie zamkniętym zakresem: dotyczy każdego zlecenia przez COM, WMI lub inną usługę.
+- Wniosek z czytania kodu, nie pomiar: sprawdzanie wersji (`UpdateChecker`) pobiera dane wyłącznie przez `WebDownloader`
+  (`HttpWebRequest` z systemowym proxy), a w kodzie programu nie ma wywołań BITS (`Start-BitsTransfer`, interfejs
+  `BackgroundCopyManager`), `bitsadmin` jako pobierania, Delivery Optimization jako zlecenia pobierania (tylko czyszczenie
+  jej pamięci podręcznej w naprawie) ani zapytań COM do WinHTTP. Usługi `wuauserv` i `bits` występują w kodzie jedynie jako
+  usługi zatrzymywane przez naprawy na żądanie użytkownika. Kod tych narzędzi uruchamianych przez program (np. winget)
+  nie jest tu oceniany.
+- Czas obserwacji: około 5 minut dla okna (`start-on`, `start-off`) i około 34 sekund dla `cli`. Ruch odroczony poza ten
+  czas nie jest objęty.
+- `cli` to tylko dwa polecenia, `--list-install` i `--list-apps`; inne polecenia wiersza poleceń nie były mierzone.
 - Komputer w domenie i sieć z serwerem proxy są niezmierzone. Pomiar objął komputer poza domeną z bezpośrednim
   dostępem do internetu.
 - Przejście po stronach nie uruchamia akcji (zastosuj, cofnij, instalacja). Akcje, które z założenia łączą się z siecią

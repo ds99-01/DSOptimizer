@@ -285,6 +285,32 @@ Describe 'Kontrola krzyżowa 4688' {
         $Result.Match | Should -BeTrue
         $Result.OnlyInAudit | Should -HaveCount 0
     }
+    It 'drugie wcielenie tego samego PID zgubione w śladzie to rozbieżność, a oba w śladzie to zgodność' {
+        $Events = @(
+            (New-AuditEvent -NewPid 100 -ParentPid 50 -Image 'C:\dso\app\DSOptimizer.exe')
+            (New-AuditEvent -NewPid 101 -ParentPid 100 -Image 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe')
+            (New-AuditEvent -NewPid 101 -ParentPid 100 -Image 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe')
+        )
+        $Lost = Compare-NetProcessAudit -Audit $Events -TreeProcesses @($script:Tree[0], $script:Tree[1])
+        $Lost.Match | Should -BeFalse
+        $Lost.OnlyInAudit | Should -Be @(101)
+        $Lost.Detail | Should -Match '2 wcieleń'
+        $Both = Compare-NetProcessAudit -Audit $Events -TreeProcesses @($script:Tree[0], $script:Tree[1], $script:Tree[1])
+        $Both.Match | Should -BeTrue
+        $Both.Detail | Should -Match '3 procesów'
+    }
+    It 'PID, który opuścił drzewo na rzecz obcego procesu i wrócił do niego, ma dwa wcielenia' {
+        $Events = @(
+            (New-AuditEvent -NewPid 100 -ParentPid 50 -Image 'C:\dso\app\DSOptimizer.exe')
+            (New-AuditEvent -NewPid 101 -ParentPid 100 -Image 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe')
+            (New-AuditEvent -NewPid 101 -ParentPid 900 -Image 'C:\Windows\System32\UIEOrchestrator.exe')
+            (New-AuditEvent -NewPid 101 -ParentPid 100 -Image 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe')
+        )
+        (Compare-NetProcessAudit -Audit $Events -TreeProcesses @($script:Tree[0], $script:Tree[1], $script:Tree[1])).Match | Should -BeTrue
+        $OneOnly = Compare-NetProcessAudit -Audit $Events -TreeProcesses @($script:Tree[0], $script:Tree[1])
+        $OneOnly.Match | Should -BeFalse
+        $OneOnly.OnlyInAudit | Should -Be @(101)
+    }
     It 'audyt po przejściu przez JSON (jeden wpis nie jest tablicą) też działa' {
         $One = @((New-AuditEvent -NewPid 100 -ParentPid 50 -Image 'C:\x\DSOptimizer.exe')) | ConvertTo-Json -Depth 3 | ConvertFrom-Json
         (Compare-NetProcessAudit -Audit $One -TreeProcesses @($script:Tree[0])).Match | Should -BeTrue
