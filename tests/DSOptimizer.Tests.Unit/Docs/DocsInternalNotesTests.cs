@@ -10,7 +10,7 @@ using Xunit;
 namespace DSOptimizer.Tests.Unit.Docs;
 
 /// <summary>
-/// Strażnik P11: publiczne dokumenty (docs/tweaks, docs/apps, docs/prep, docs/en) nie pokazują znaczników procesu
+/// Strażnik: publiczne dokumenty (docs/tweaks, docs/apps, docs/prep, docs/en) nie pokazują znaczników procesu
 /// (hash, HEAD, gałąź, numer specu, Task N, K1/K2, fake/mock, v3.x, osoba autora), a usunięcie notatki nie gubi zastrzeżeń
 /// o tym, czego nie sprawdzono (<c>docs-caveats-baseline.txt</c>: liczba linii z zastrzeżeniem w pliku nie może spaść).
 /// Wyjątki: <c>docs-internal-notes-allowed.txt</c> (ścieżka TAB fragment TAB powód; nieaktualny wpis = błąd).
