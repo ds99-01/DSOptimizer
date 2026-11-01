@@ -36,7 +36,7 @@ public class DocsInternalNotesTests
         @"\bCARRY\b",
         @"\bK[12]\b",
         @"\b(?:fake|mock|no-op)\b",
-        @"\bv3\.\d",
+        @"\bv3\.[\dx]",
         @"\bPester (?:\d|zaliczy|passed)",
         @"\bthe author\b|\bauthor's\b|\bautor(?:a|em|owi)?\b",
         @"\b(?:Stage|Etap\w*) \d",
@@ -47,7 +47,7 @@ public class DocsInternalNotesTests
     }.Select(p => new Regex(p, RegexOptions.CultureInvariant)).ToArray();
 
     private static readonly Regex CaveatPattern = new(
-        @"nie ?(sprawdz|testowan|potwierdz|zmierz|mierz|przećwicz)|not (checked|tested|confirmed|measured|verified|exercised)|(wasn't|weren't|isn't|aren't|hasn't|haven't) (been )?(checked|tested|confirmed|measured|verified)|unverified|untested",
+        @"nie ?(sprawdz|testowan|potwierdz|zmierz|mierz|przećwicz)|not (checked|tested|confirmed|measured|verified|exercised)|(wasn't|weren't|isn't|aren't|hasn't|haven't) (been )?(checked|tested|confirmed|measured|verified)|unverified|untested|do potwierdzenia|to be confirmed|nie ?wykonan|not done|niepotwierdz",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     /// <summary>Wzorce wewnętrznych notatek znalezione w linii (adresy https:// są pomijane); pusta lista = linia czysta.</summary>
@@ -86,6 +86,24 @@ public class DocsInternalNotesTests
     [InlineData("`vm-run-20261019-002807`")]
     public void FindNotes_LeavesOrdinaryText(string line) => Assert.Empty(FindNotes(line));
 
+    /// <summary>Linia bez fragmentów dozwolonych dla pliku: wyjątek zwalnia tylko ten fragment, nie całą linię.</summary>
+    internal static string WithoutAllowed(string line, string path, IEnumerable<(string Path, string Fragment)> allowed) =>
+        allowed.Where(a => a.Path == path).Aggregate(line, (current, a) => current.Replace(a.Fragment, " "));
+
+    [Fact]
+    public void Allowed_ExemptsOnlyTheFragment()
+    {
+        var allowed = new[] { ("docs/x.md", "WinUtil `config/feature.json` @ `144d516`") };
+        Assert.Empty(FindNotes(WithoutAllowed("- WinUtil `config/feature.json` @ `144d516` (MIT)", "docs/x.md", allowed)));
+        Assert.NotEmpty(FindNotes(WithoutAllowed("- WinUtil `config/feature.json` @ `144d516` (MIT), HEAD `fd320ed`", "docs/x.md", allowed)));
+        Assert.NotEmpty(FindNotes(WithoutAllowed("- WinUtil `config/feature.json` @ `144d516` (MIT)", "docs/y.md", allowed)));
+    }
+
+    [Theory]
+    [InlineData("**Smoke: do potwierdzenia przez autora**. Nie wykonany.")]
+    [InlineData("to be confirmed")]
+    public void CaveatPattern_CountsConfirmationAndNotDone(string line) => Assert.Matches(CaveatPattern, line);
+
     [Theory]
     [InlineData("none")]
     public void Batch_HasNoInternalNotes(string batch)
@@ -104,8 +122,8 @@ public class DocsInternalNotesTests
             var lines = File.ReadAllLines(file.Value, Encoding.UTF8);
             for (var i = 0; i < lines.Length; i++)
             {
-                var notes = FindNotes(lines[i]);
-                if (notes.Count == 0 || allowed.Any(a => a.Path == file.Key && lines[i].Contains(a.Fragment)))
+                var notes = FindNotes(WithoutAllowed(lines[i], file.Key, allowed));
+                if (notes.Count == 0)
                 {
                     continue;
                 }
@@ -125,7 +143,7 @@ public class DocsInternalNotesTests
         foreach (var entry in LoadAllowed())
         {
             if (!files.TryGetValue(entry.Path, out var full)
-                || !File.ReadAllLines(full, Encoding.UTF8).Any(l => l.Contains(entry.Fragment) && FindNotes(l).Count > 0))
+                || !File.ReadAllLines(full, Encoding.UTF8).Any(l => l.Contains(entry.Fragment) && FindNotes(l.Replace(entry.Fragment, " ")).Count < FindNotes(l).Count))
             {
                 stale.Add(entry.Path + " -> " + entry.Fragment);
             }
