@@ -157,7 +157,7 @@
     "title": "Wyłącz Windows Spotlight (zdjęcia dnia)",
     "summary": "Wyłącza Windows Spotlight, czyli codzienne zdjęcia od Microsoftu na pulpicie z podpisami i linkami do Binga.",
     "benefit": "Pulpit dostaje zwykłe tło zamiast codziennego zdjęcia od Microsoftu i znika ikona „Dowiedz się więcej o tym zdjęciu”.",
-    "description": "Polityka DisableWindowsSpotlightFeatures = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, dla zalogowanego użytkownika. Tło pulpitu przełącza się z „W centrum uwagi Windows” na „Obraz” od razu, bez restartu. Nie wiadomo, czy zmiana obejmuje też ekran blokady. Pozycja nie jest sugerowana. Cofnięcie usuwa politykę i klucz CloudContent, ale tło zostaje „Obraz”.",
+    "description": "Polityka DisableWindowsSpotlightFeatures = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, dla zalogowanego użytkownika. Tło pulpitu przełącza się z „W centrum uwagi Windows” na „Obraz” od razu, bez restartu. Opis Microsoftu obejmuje też ekran blokady, ale wymienia tylko Enterprise i Education; na Home i Pro ekranu blokady nie sprawdzono. Pozycja nie jest sugerowana. Cofnięcie usuwa politykę i klucz CloudContent, ale tło zostaje „Obraz”.",
     "risk": "caution",
     "scope": "user",
     "suggested": false,
@@ -217,7 +217,7 @@
     "scope": "machine",
     "suggested": true,
     "warnings": [
-      "Microsoft nie opisuje wyłączania tej usługi, a korzysta z niej też Windows Update – przy kłopotach z aktualizacjami cofnij zmianę.",
+      "Microsoft nie opisuje wyłączania tej usługi, a dane o błędach Windows Update mogą przestać być wysyłane. Przy kłopotach cofnij zmianę.",
       "Nie gwarantuje, że Windows przestanie wysyłać dane diagnostyczne."
     ],
     "services": [

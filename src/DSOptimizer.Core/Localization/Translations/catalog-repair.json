@@ -255,8 +255,8 @@
       "en": "Usually takes under 1 min, but cleaning up Windows components can take half an hour or more; \"Stop\" works only between steps."
     },
     {
-      "pl": "Usuwa tylko pliki tymczasowe starsze niż 24 h – nie rusza Kosza, folderu Pobrane, punktów przywracania ani Windows.old.",
-      "en": "Deletes only temporary files older than 24 h – doesn't touch the Recycle Bin, the Downloads folder, restore points or Windows.old."
+      "pl": "Pliki tymczasowe tylko starsze niż 24 h; pobrane aktualizacje i pamięci podręczne znikają w całości. Kosz i Pobrane zostają.",
+      "en": "Temp files: only those older than 24 h; downloaded updates and caches are cleared whatever their age. Recycle Bin and Downloads stay."
     },
     {
       "pl": "Usuń poprzednią instalację Windows",

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.ntfs-8dot3.md sha256: 61d10ad85e556c14d2c8edb9210acddf1fc89a2092b11b928244a4df42a65e42 -->
+<!-- source: docs/tweaks/disk.ntfs-8dot3.md sha256: 26fee562b2dd77a011d0bc7c9bc792c1f0130a3a083049056b2b64a0d9f2ccde -->
 
 # disk.ntfs-8dot3 – Turn off creating 8.3 short file names
 
@@ -29,7 +29,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 
 ## Risks and warnings
 - `risk=caution`.
-- Warning in the catalog: "Old installers (16-bit, some MSI packages) and programs that use short names may stop working."
+- Warning in the catalog: "Older programs and installers that rely on short names may stop working."
 - Beyond the notes in the program (in the technical details or only here): backups that refer to 8.3 names may stop working too; the change only affects new names, and on a fresh 26H2 it changes nothing for C:.
 - Value 1 also applies to external volumes connected later.
 - `requiresReboot` = false: MS doesn't state a restart requirement for `disable8dot3` (a conclusion from the missing sentence in the documentation, unconfirmed on a VM). It wasn't tested on a VM whether the registry write takes effect on new files without a restart (no files were created, no `dir /x`).

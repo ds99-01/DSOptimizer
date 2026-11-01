@@ -1,7 +1,7 @@
 # privacy.widgets – Wyłącz Widżety
 
 ## Werdykt 26H2
-Portować: test na VM 26H2 (Home i Pro) pokazał realny skutek. Brak dokumentacji MS dla tej wartości w naszym źródle, dowód: test na VM (obserwacja niżej).
+Portować: test na VM 26H2 (Home i Pro) pokazał realny skutek. Opisane przez Microsoft w Policy CSP (Pro i wyższe, bez Home); dla Home dowodem jest test na VM.
 
 ## Co zmienia
 - `HKLM\SOFTWARE\Policies\Microsoft\Dsh`, wartość `AllowNewsAndInterests`, **DWord**, ustawiana na `0`; `scope=machine`.

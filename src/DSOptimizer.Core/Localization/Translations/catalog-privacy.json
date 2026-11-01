@@ -171,8 +171,8 @@
       "en": "The desktop gets a regular background instead of a daily picture from Microsoft, and the \"Learn about this picture\" icon disappears."
     },
     {
-      "pl": "Polityka DisableWindowsSpotlightFeatures = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, dla zalogowanego użytkownika. Tło pulpitu przełącza się z „W centrum uwagi Windows” na „Obraz” od razu, bez restartu. Nie wiadomo, czy zmiana obejmuje też ekran blokady. Pozycja nie jest sugerowana. Cofnięcie usuwa politykę i klucz CloudContent, ale tło zostaje „Obraz”.",
-      "en": "Policy DisableWindowsSpotlightFeatures = 1 in HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, for the signed-in user. The desktop background switches from \"Windows spotlight\" to \"Picture\" right away, without a restart. It isn't known whether the change also covers the lock screen. The item isn't suggested. Undo removes the policy and the CloudContent key, but the background stays \"Picture\"."
+      "pl": "Polityka DisableWindowsSpotlightFeatures = 1 w HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, dla zalogowanego użytkownika. Tło pulpitu przełącza się z „W centrum uwagi Windows” na „Obraz” od razu, bez restartu. Opis Microsoftu obejmuje też ekran blokady, ale wymienia tylko Enterprise i Education; na Home i Pro ekranu blokady nie sprawdzono. Pozycja nie jest sugerowana. Cofnięcie usuwa politykę i klucz CloudContent, ale tło zostaje „Obraz”.",
+      "en": "Policy DisableWindowsSpotlightFeatures = 1 in HKCU\\Software\\Policies\\Microsoft\\Windows\\CloudContent, for the signed-in user. The desktop background switches from \"Windows spotlight\" to \"Picture\" right away, without a restart. Microsoft's description says this also covers the lock screen but lists only Enterprise and Education; on Home and Pro the lock screen wasn't checked. The item isn't suggested. Undo removes the policy and the CloudContent key, but the background stays \"Picture\"."
     },
     {
       "pl": "Cofnięcie nie przywraca zdjęć dnia: wybierz je ponownie w Ustawienia > Personalizacja > Tło.",
@@ -235,8 +235,8 @@
       "en": "DiagTrack service (Connected User Experiences and Telemetry): startup type Disabled, and the service is stopped. The item's state depends on the startup type, not on whether the service is running at the moment. It doesn't change the diagnostic data policy – that's a separate item, \"Limit diagnostic data to required data\". Undo restores the previous startup type and starts the service if it was running."
     },
     {
-      "pl": "Microsoft nie opisuje wyłączania tej usługi, a korzysta z niej też Windows Update – przy kłopotach z aktualizacjami cofnij zmianę.",
-      "en": "Microsoft doesn't document turning off this service, and Windows Update also uses it – if you have trouble with updates, undo the change."
+      "pl": "Microsoft nie opisuje wyłączania tej usługi, a dane o błędach Windows Update mogą przestać być wysyłane. Przy kłopotach cofnij zmianę.",
+      "en": "Microsoft doesn't document turning this off, and Windows Update failure data may stop being sent. If you have trouble with updates, undo."
     },
     {
       "pl": "Nie gwarantuje, że Windows przestanie wysyłać dane diagnostyczne.",

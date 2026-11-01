@@ -19,8 +19,8 @@
       "en": "Runs powercfg /hibernate off. The state is read through the documented power API (CallNtPowerInformation, SYSTEM_POWER_CAPABILITIES) and the HibernateEnabled value, without parsing text. On hardware without hibernation support, the item is unavailable and writes nothing. Without hibernation, hybrid sleep doesn't work either. Undo (powercfg /hibernate on) turns hibernation back on with default settings if it was on before the change."
     },
     {
-      "pl": "Na laptopach znika hibernacja i Szybkie uruchamianie, a rozładowanie baterii w uśpieniu grozi utratą niezapisanych danych.",
-      "en": "On laptops, hibernation and fast startup go away, and if the battery runs out during sleep, unsaved data can be lost."
+      "pl": "Znika hibernacja i Szybkie uruchamianie, a na laptopie rozładowanie baterii w uśpieniu grozi utratą niezapisanych danych.",
+      "en": "Hibernation and fast startup go away; on a laptop, if the battery runs out during sleep, unsaved data can be lost."
     },
     {
       "pl": "CallNtPowerInformation (SystemPowerCapabilities) zwróciło NTSTATUS 0x{0:X8}.",
@@ -159,8 +159,8 @@
       "en": "NtfsDisable8dot3NameCreation = 1 (off for all volumes) instead of the default 2 (set separately for each volume) in HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem. On the C: volume, short names are usually already turned off when Windows is installed (a volume flag), so the change mainly covers new and additional volumes, including drives connected later. It only affects new names – existing 8.3 names stay. Undo restores the previous value."
     },
     {
-      "pl": "Stare instalatory (16-bitowe, część MSI) i programy, które używają krótkich nazw, mogą przestać działać.",
-      "en": "Old installers (16-bit, some MSI packages) and programs that use short names may stop working."
+      "pl": "Starsze programy i instalatory, które używają krótkich nazw, mogą przestać działać.",
+      "en": "Older programs and installers that rely on short names may stop working."
     },
     {
       "pl": "Wyłącz rezerwę miejsca na aktualizacje",

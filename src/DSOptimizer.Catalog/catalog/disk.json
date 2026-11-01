@@ -13,7 +13,7 @@
     "risk": "experimental",
     "scope": "machine",
     "warnings": [
-      "Na laptopach znika hibernacja i Szybkie uruchamianie, a rozładowanie baterii w uśpieniu grozi utratą niezapisanych danych."
+      "Znika hibernacja i Szybkie uruchamianie, a na laptopie rozładowanie baterii w uśpieniu grozi utratą niezapisanych danych."
     ],
     "script": {
       "detect": [
@@ -447,7 +447,7 @@
     "risk": "caution",
     "scope": "machine",
     "warnings": [
-      "Stare instalatory (16-bitowe, część MSI) i programy, które używają krótkich nazw, mogą przestać działać."
+      "Starsze programy i instalatory, które używają krótkich nazw, mogą przestać działać."
     ],
     "registry": [
       {

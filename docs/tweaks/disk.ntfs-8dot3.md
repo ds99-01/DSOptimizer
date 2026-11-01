@@ -27,7 +27,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = 
 
 ## Ryzyka i ostrzeżenia
 - `risk=caution`.
-- Ostrzeżenie w katalogu: „Stare instalatory (16-bitowe, część MSI) i programy, które używają krótkich nazw, mogą przestać działać.”
+- Ostrzeżenie w katalogu: „Starsze programy i instalatory, które używają krótkich nazw, mogą przestać działać.”
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): kopie zapasowe odwołujące się do nazw 8.3 też mogą przestać działać; zmiana dotyczy tylko nowych nazw, a na świeżym 26H2 dla C: nic nie zmienia.
 - Wartość 1 dotyczy też woluminów zewnętrznych podłączonych później.
 - `requiresReboot` = false: MS nie podaje wymogu restartu dla `disable8dot3` (wniosek z braku zdania w dokumentacji, niepotwierdzony na VM). Nie testowano na VM, czy zapis rejestru działa na nowe pliki bez restartu (nie tworzono plików, `dir /x`).

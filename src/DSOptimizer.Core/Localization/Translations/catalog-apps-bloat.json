@@ -307,12 +307,12 @@
       "en": "Remote Desktop Connection: part of the system."
     },
     {
-      "pl": "Rozszerzenie obrazów HEIF: bez niego zdjęcia z telefonów się nie otworzą.",
-      "en": "HEIF Image Extension: without it, photos from phones won't open."
+      "pl": "Rozszerzenie obrazów HEIF: bez niego zdjęcia HEIC/HEIF się nie otworzą.",
+      "en": "HEIF Image Extension: without it, HEIC/HEIF photos won't open."
     },
     {
       "pl": "Rozszerzenie wideo HEVC: bez niego część filmów się nie odtworzy.",
-      "en": "HEVC Video Extensions: without it, some videos won't play."
+      "en": "HEVC Video Extensions: without them, some videos won't play."
     },
     {
       "pl": "Rozszerzenie obrazów WebP: bez niego część obrazów z internetu się nie otworzy.",
@@ -335,8 +335,8 @@
       "en": "VP9 Video Extensions: without it, some videos from the internet won't play."
     },
     {
-      "pl": "Rozszerzenie obrazów RAW: bez niego zdjęcia z aparatów się nie otworzą.",
-      "en": "Raw Image Extension: without it, photos from cameras won't open."
+      "pl": "Rozszerzenie obrazów RAW: bez niego pliki RAW z aparatów się nie otworzą.",
+      "en": "Raw Image Extension: without it, RAW files from cameras won't open."
     },
     {
       "pl": "Rozszerzenia multimediów sieci Web: bez nich część filmów i muzyki z internetu się nie odtworzy.",

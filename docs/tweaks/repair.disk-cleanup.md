@@ -31,7 +31,7 @@ Nie rusza: Kosza, folderu Pobrane, punktów przywracania, zrzutów pamięci (`*.
 Nie dotyczy: `kind=action` bez detekcji i cofnięcia. Odczytem zwrotnym są liczniki usuwania przez uchwyt (usunięte, młode, w użyciu, bajty), znacznik skryptu DO, kod wyjścia DISM, stan usług po przywróceniu i wolne miejsce przed/po. Usuniętych plików nie da się przywrócić (to pliki tymczasowe i pamięci podręczne, które Windows odtwarza).
 
 ## Ryzyka i ostrzeżenia
-- `risk=safe`: tylko pliki tymczasowe starsze niż 24 h, pamięci podręczne i składniki zastąpione nowszymi; ustawień nie zmienia.
+- `risk=safe`: pliki tymczasowe tylko starsze niż 24 h, ale pobrane aktualizacje i pamięci podręczne w całości (bez względu na wiek) oraz składniki zastąpione nowszymi; ustawień nie zmienia.
 - Czas: zwykle poniżej 1 min na VM (DISM ok. 12 s); limit czekania na DISM 20 min, po nim DISM pracuje dalej w tle.
 - „Zatrzymaj” działa tylko między krokami.
 - Na czas kroku 4 usługi `wuauserv` i `bits` są zatrzymane; aktualizacja pobierana w tej chwili może pobrać się od nowa (niezmierzone).

@@ -41,7 +41,7 @@
     "category": "ux",
     "kind": "tweak",
     "title": "Przywróć klasyczne menu prawego przycisku myszy",
-    "summary": "Prawy przycisk myszy na pulpicie otwiera klasyczne menu Win32 zamiast menu z Windows 11.",
+    "summary": "Prawy przycisk myszy w Eksploratorze i na pulpicie otwiera klasyczne menu Win32 zamiast menu z Windows 11.",
     "benefit": "Prawy klik na pulpicie znowu otwiera klasyczne menu, takie jak w starszych wersjach Windows.",
     "description": "Tworzy klucz HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32 z pustą wartością domyślną (REG_SZ), dla zalogowanego użytkownika. Wpis przesłania dla tego konta rejestrację menu Windows 11; po zmianie prawy klik otwiera okno menu Win32 (klasa #32768). DSOptimizer sam nie restartuje Eksploratora. Cofnięcie usuwa klucz {86ca1aa0-34aa-4e8b-a509-50c905bae2a2} razem z podkluczem InprocServer32, a po restarcie Eksploratora wraca menu Windows 11.",
     "risk": "caution",

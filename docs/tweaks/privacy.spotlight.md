@@ -23,7 +23,7 @@ Odczyt z VM, 2026-10-21: klucz `...\Policies\Microsoft\Windows\CloudContent` uż
 ## Ryzyka i ostrzeżenia
 - `risk=caution` (cofnięcie nie przywraca całego skutku), `suggested=false`.
 - Ostrzeżenie w katalogu: „Cofnięcie nie przywraca zdjęć dnia: wybierz je ponownie w Ustawienia > Personalizacja > Tło.”
-- Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): skutku na ekranie blokady nie sprawdzano.
+- Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): skutku na ekranie blokady na Home i Pro nie sprawdzono; opis Microsoftu obejmuje też ekran blokady, ale wymienia tylko Enterprise i Education.
 - Ponownego wyboru „W centrum uwagi Windows” po cofnięciu nie sprawdzano: nieaktywowany Windows na VM blokuje personalizację.
 
 ## Test VM

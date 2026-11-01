@@ -23,7 +23,7 @@
     "category": "perf",
     "kind": "tweak",
     "title": "Trzymaj kod jądra i sterowników w pamięci",
-    "summary": "Kod systemu i sterowników zostaje zawsze w pamięci RAM, zamiast trafiać do pliku stronicowania.",
+    "summary": "Kod systemu i sterowników zostaje zawsze w pamięci RAM, zamiast być odkładany na dysk.",
     "benefit": "Kod systemu i sterowników nie jest odkładany na dysk, więc nie trzeba go z niego doczytywać. Nie ma dowodu, że na Windows 11 daje to odczuwalną różnicę.",
     "description": "Ustawia DisablePagingExecutive = 1 w HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management: kod systemowy i sterowniki nie są stronicowane na dysk, tylko zostają w pamięci fizycznej. Domyślnie wartość wynosi 0. Microsoft opisuje to ustawienie tylko w archiwalnej dokumentacji (Windows Server 2003 i blog z 2007 roku): zysk na komputerach z dużą ilością pamięci, zależny od aplikacji. Cofnięcie przywraca poprzednią wartość – ona także zadziała dopiero po restarcie.",
     "risk": "experimental",

@@ -32,7 +32,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457, eksploracja partii C
 
 ## Ryzyka i ostrzeżenia
 - `risk=caution`.
-- Ostrzeżenia w katalogu: „Dysk bez szyfrowania nie chroni danych po kradzieży lub zgubieniu komputera; polityka firmy lub szkoły może wymagać szyfrowania.” oraz „Według Microsoftu wyłączanie szyfrowania przez kogoś innego niż producent sprzętu narusza licencję Windows 11; odradza je też przy Recall.”
+- Ostrzeżenia w katalogu: „Dysk bez szyfrowania nie chroni danych po kradzieży lub zgubieniu komputera; polityka firmy lub szkoły może wymagać szyfrowania.” oraz „Poradnik Microsoftu dla producentów sprzętu nazywa wyłączanie szyfrowania poza ich scenariuszem naruszeniem licencji; odradza przy Recall.”
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): pełne cytaty MS w sekcji „Źródła” (licencja poza scenariuszem OEM; brak zalecenia przy funkcji Recall); pozycja nie odszyfrowuje dysku (do tego `sec.bitlocker-decrypt-c`); MS opisuje wartość jako blokadę auto-szyfrowania przy pierwszym uruchomieniu (OOBE), a skutek na działającym systemie nie jest opisany.
 - Bez obietnic ochrony ani wydajności.
 

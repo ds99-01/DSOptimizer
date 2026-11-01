@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.bitlocker-prevent-auto.md sha256: 6af0ea3ca3fe115279ea2561332404c361a13bb45327a960b7c9c23e62e736d8 -->
+<!-- source: docs/tweaks/sec.bitlocker-prevent-auto.md sha256: 4f01086a48fd22a4045c4765cfba3aa87e4a227be17aa62a4326c199e2efb2ed -->
 
 # sec.bitlocker-prevent-auto – Block automatic drive encryption (BitLocker)
 
@@ -34,7 +34,7 @@ Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, round C4 exp
 
 ## Risks and warnings
 - `risk=caution`.
-- Warnings in the catalog: "An unencrypted drive doesn't protect data if the computer is stolen or lost; a company or school policy may require encryption." and "Microsoft says only the hardware manufacturer may turn off encryption under the Windows 11 license and advises against it if Recall is on."
+- Warnings in the catalog: "An unencrypted drive doesn't protect data if the computer is stolen or lost; a company or school policy may require encryption." and "Microsoft's guide for device makers calls disabling encryption outside their case a license violation and advises against it with Recall."
 - Beyond the notes in the program (in the technical details or only here): full MS quotes in the "Sources" section (license outside the OEM scenario; not recommended with the Recall feature); the item doesn't decrypt the drive (that's what `sec.bitlocker-decrypt-c` is for); MS describes the value as a block on automatic encryption at the first start (OOBE), and the effect on a running system isn't described.
 - No promises of protection or performance.
 

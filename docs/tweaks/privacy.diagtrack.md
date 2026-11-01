@@ -22,7 +22,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: `DiagTrack` typ startu **A
 
 ## Ryzyka i ostrzeżenia
 - `risk=caution`, `suggested=true`.
-- Ostrzeżenia w katalogu: „Microsoft nie opisuje wyłączania tej usługi, a korzysta z niej też Windows Update – przy kłopotach z aktualizacjami cofnij zmianę.” oraz „Nie gwarantuje, że Windows przestanie wysyłać dane diagnostyczne.”
+- Ostrzeżenia w katalogu: „Microsoft nie opisuje wyłączania tej usługi, a dane o błędach Windows Update mogą przestać być wysyłane. Przy kłopotach cofnij zmianę.” oraz „Nie gwarantuje, że Windows przestanie wysyłać dane diagnostyczne.”
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): na VM (Home i Pro) wyszukiwanie Windows Update po restarcie z wyłączoną usługą działało (WUA `Search`: ResultCode=2, 4 aktualizacje, bez błędu). To jedna obserwacja, nie gwarancja.
 - Znane ograniczenie silnika (odroczone): usługę zatrzymuje tylko wtedy, gdy jest `Running`; usługa jeszcze startująca w chwili apply może działać do restartu. Typ startu to `Disabled` w obu przypadkach.
 - Restart komputera nie jest wymagany (skutek od razu, trwały po restarcie).

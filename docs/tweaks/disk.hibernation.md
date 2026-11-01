@@ -40,7 +40,7 @@ Reguły (w tej kolejności):
 
 ## Ryzyka i ostrzeżenia
 - `risk=experimental` (decyzja projektowa): nie sprawdzone na sprzęcie z obsługą hibernacji.
-- Ostrzeżenia w katalogu: „Na laptopach znika hibernacja i Szybkie uruchamianie, a rozładowanie baterii w uśpieniu grozi utratą niezapisanych danych.”
+- Ostrzeżenia w katalogu: „Znika hibernacja i Szybkie uruchamianie, a na laptopie rozładowanie baterii w uśpieniu grozi utratą niezapisanych danych.”
 - Podstawa (dokumentacja MS, **nie wynik testu na VM**): Szybkie uruchamianie korzysta z pliku hibernacji (zdanie „powercfg /h off wyłącza Fast Startup” dosłownie nie występuje w źródłach MS); bez hibernacji nie działa hybrydowy stan uśpienia (ostrzeżenie MS o utracie danych przy zaniku zasilania).
 - `HiberbootEnabled` = 1 na VM mimo „Fast Startup: Hibernation is not available”: ta wartość nie dowodzi, że Szybkie uruchamianie działa.
 - Nie testowano na VM: apply i undo na maszynie z obsługą hibernacji, usunięcie `hiberfil.sys`, skutek dla czasu rozruchu, domyślny typ pliku (full/reduced) i to, czy `on` po `off` przywraca poprzedni typ i rozmiar. Undo włącza hibernację domyślnymi ustawieniami `powercfg /h on`, nie odtwarza `/type` ani `/size` sprzed zmiany.

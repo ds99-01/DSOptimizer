@@ -63,7 +63,7 @@ public class SecCatalogTests
         // w uwagach ich sens po polsku, a ograniczenia pozycji w szczegółach technicznych.
         var def = Get(PreventId);
         var warnings = string.Join(" ", def.Warnings);
-        Assert.Contains("licencję Windows 11", warnings, StringComparison.Ordinal);
+        Assert.Contains("naruszeniem licencji", warnings, StringComparison.Ordinal);
         Assert.Contains("Recall", warnings, StringComparison.Ordinal);
         Assert.Contains("kradzieży", warnings, StringComparison.Ordinal);
         Assert.Contains("polityka", warnings, StringComparison.OrdinalIgnoreCase);

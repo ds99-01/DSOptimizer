@@ -12,7 +12,7 @@
     "scope": "machine",
     "warnings": [
       "Dysk bez szyfrowania nie chroni danych po kradzieży lub zgubieniu komputera; polityka firmy lub szkoły może wymagać szyfrowania.",
-      "Według Microsoftu wyłączanie szyfrowania przez kogoś innego niż producent sprzętu narusza licencję Windows 11; odradza je też przy Recall."
+      "Poradnik Microsoftu dla producentów sprzętu nazywa wyłączanie szyfrowania poza ich scenariuszem naruszeniem licencji; odradza przy Recall."
     ],
     "registry": [
       { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\BitLocker", "name": "PreventDeviceEncryption", "type": "DWord", "value": 1, "original": "<RemoveEntry>" }

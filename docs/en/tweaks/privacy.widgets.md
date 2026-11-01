@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/privacy.widgets.md sha256: 7aa5646c68c6b04473f4d1bcbda40b51824a6a0e749182b8ea64326bb6022f7c -->
+<!-- source: docs/tweaks/privacy.widgets.md sha256: a01108b15e97b8dde803967a8a68ecd7ab9fbd5e9cf67d469b0af2f4252d40ee -->
 
 # privacy.widgets – Turn off Widgets
 
 ## Verdict for 26H2
-Port: a test on a 26H2 VM (Home and Pro) showed a real effect. No Microsoft documentation for this value in our source; evidence: VM test (observation below).
+Port: a test on a 26H2 VM (Home and Pro) showed a real effect. Documented by Microsoft in Policy CSP (Pro and higher, Home isn't listed); on Home the evidence is the VM test.
 
 ## What it changes
 - `HKLM\SOFTWARE\Policies\Microsoft\Dsh`, value `AllowNewsAndInterests`, **DWord**, set to `0`; `scope=machine`.

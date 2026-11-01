@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.hibernation.md sha256: 68120069a8f37796b85c80b9ec531d9f1c03c607d2b8a0758ff0cb5d8dfff13e -->
+<!-- source: docs/tweaks/disk.hibernation.md sha256: 9c1aa5fc654d755a624a92d460beea607579ea969191c736b4543a9c9d6fb2e1 -->
 
 # disk.hibernation – Turn off hibernation
 
@@ -42,7 +42,7 @@ Rules (in this order):
 
 ## Risks and warnings
 - `risk=experimental` (design decision): not checked on hardware with hibernation support.
-- Warnings in the catalog: "On laptops, hibernation and fast startup go away, and if the battery runs out during sleep, unsaved data can be lost."
+- Warnings in the catalog: "Hibernation and fast startup go away; on a laptop, if the battery runs out during sleep, unsaved data can be lost."
 - Basis (MS documentation, **not a VM test result**): fast startup uses the hibernation file (the sentence "powercfg /h off turns off Fast Startup" doesn't appear literally in MS sources); without hibernation, hybrid sleep doesn't work (MS warning about data loss on power failure).
 - `HiberbootEnabled` = 1 on the VM despite "Fast Startup: Hibernation is not available": this value doesn't prove that fast startup works.
 - Not tested on a VM: apply and undo on a machine with hibernation support, deletion of `hiberfil.sys`, the effect on boot time, the default file type (full/reduced), and whether `on` after `off` restores the previous type and size. Undo turns hibernation on with the default settings of `powercfg /h on`; it doesn't restore the `/type` or `/size` from before the change.

@@ -1181,7 +1181,7 @@ public class RepairCatalogTests
         Assert.Contains("24 h", text, StringComparison.Ordinal);
         Assert.Contains("Kosz", text, StringComparison.Ordinal);
         Assert.Contains("Pobrane", text, StringComparison.Ordinal);
-        Assert.Contains("Windows.old", text, StringComparison.Ordinal);
+        Assert.Contains("znikają w całości", text, StringComparison.Ordinal); // pobrane aktualizacje i pamięci podręczne bez limitu wieku
         var details = def.Description;
         Assert.Contains("20 min", details, StringComparison.Ordinal);
         // Osobny limit 1200 s skryptu Optymalizacji dostarczania + 1200 s DISM = najgorzej ok. 40 min czekania.

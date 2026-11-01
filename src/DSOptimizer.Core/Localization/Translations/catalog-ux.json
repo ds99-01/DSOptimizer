@@ -51,8 +51,8 @@
       "en": "Bring back the classic right-click menu"
     },
     {
-      "pl": "Prawy przycisk myszy na pulpicie otwiera klasyczne menu Win32 zamiast menu z Windows 11.",
-      "en": "Right-clicking the desktop opens the classic Win32 menu instead of the Windows 11 menu."
+      "pl": "Prawy przycisk myszy w Eksploratorze i na pulpicie otwiera klasyczne menu Win32 zamiast menu z Windows 11.",
+      "en": "Right-clicking in File Explorer and on the desktop opens the classic Win32 menu instead of the Windows 11 menu."
     },
     {
       "pl": "Prawy klik na pulpicie znowu otwiera klasyczne menu, takie jak w starszych wersjach Windows.",

@@ -23,8 +23,8 @@
       "en": "An unencrypted drive doesn't protect data if the computer is stolen or lost; a company or school policy may require encryption."
     },
     {
-      "pl": "Według Microsoftu wyłączanie szyfrowania przez kogoś innego niż producent sprzętu narusza licencję Windows 11; odradza je też przy Recall.",
-      "en": "Microsoft says only the hardware manufacturer may turn off encryption under the Windows 11 license and advises against it if Recall is on."
+      "pl": "Poradnik Microsoftu dla producentów sprzętu nazywa wyłączanie szyfrowania poza ich scenariuszem naruszeniem licencji; odradza przy Recall.",
+      "en": "Microsoft's guide for device makers calls disabling encryption outside their case a license violation and advises against it with Recall."
     },
     {
       "pl": "Wyłącz szyfrowanie BitLocker na dysku C:",

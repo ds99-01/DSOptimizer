@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.classic-context-menu.md sha256: 990424706d1273f9bc2d3fbd339acaebf76c26cc6b7abffd4000e512a1c78d27 -->
+<!-- source: docs/tweaks/ux.classic-context-menu.md sha256: b92e7a7cd32477c7f52f745bc337f52eea95016c8ed93f0f9558ecba227d0fff -->
 
 # ux.classic-context-menu – Bring back the classic right-click menu
 
@@ -33,3 +33,4 @@ Case `ux-classic-context-menu` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyAbsen
 ## Observed effect
 - **Home** (`DSO-26H2-Home`, EditionID `Core`), 2026-10-21. Method: right-click on the desktop in the `dso` session after File Explorer restarted, reading the class of the opened menu window. Result: with the key, a right-click on the desktop opens a window of class `#32768` (Win32 menu); without the key, `Microsoft.UI.Content.PopupWindowSiteBridge` opens (Windows 11 menu). After undo (both keys deleted) and a File Explorer restart, the Windows 11 menu comes back.
 - **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-10-21. Same method and same result.
+- **Pro** (`DSO-26H2-Pro`, EditionID `Professional`), 2026-11-01, build 26300.9457. Method: a regular `.txt` file on the `dso` desktop, right-click on its icon after File Explorer restarted, reading the classes of the new windows (the screenshot confirms the file menu: Open, Edit, Properties). Result: before the change `Microsoft.UI.Content.PopupWindowSiteBridge` windows open (Windows 11 menu); with the key a window of class `#32768` opens (classic Win32 menu); after undo (both keys deleted) and a File Explorer restart the Windows 11 menu comes back. Not checked: a right-click inside a File Explorer window (a folder, empty space in a folder) and on Home.

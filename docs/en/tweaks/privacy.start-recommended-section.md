@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.start-recommended-section.md sha256: 9d74c1ef551f982ce61c7c0d0e4c6f9b499f595e1b37a8b2e2cc576b06661b61 -->
+<!-- source: docs/tweaks/privacy.start-recommended-section.md sha256: b8af0a63a43a41122854d51a7c51ee87584249b5536b6fbbdf09c0c78542a6fa -->
 
 # privacy.start-recommended-section – Hide the "Recommended" section in the Start menu
 
@@ -14,7 +14,7 @@ Port: the `HideRecommendedSection` policy hides the "Recommended" section in Sta
 ## Sources
 - Test on 26H2 Home and Pro VMs, 2026-10-21 (build 26300.9457, Windows not activated, local account): write through the registry API (.NET `RegistryKey`) and observation in Settings (UI Automation, screenshots).
 - Research: `docs/zrodla/2026-10-20-etap4a-zrodla.md` (in Polish), section "Wyniki VM 26H2 (partia 1)" (26H2 VM results, round 1).
-- No Microsoft documentation for this value; evidence: VM test (observation below).
+- Documented by Microsoft in Policy CSP (Pro and higher, Home isn't listed); on Home the evidence is the VM test.
 
 ## Defaults on a fresh 26H2
 Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: value `HideRecommendedSection` **none** and the `...\Policies\Microsoft\Windows\Explorer` **key missing** (the parent key `...\Policies\Microsoft\Windows` exists).

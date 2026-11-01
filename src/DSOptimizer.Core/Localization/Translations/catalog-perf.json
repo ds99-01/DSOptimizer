@@ -27,8 +27,8 @@
       "en": "Keep kernel and driver code in memory"
     },
     {
-      "pl": "Kod systemu i sterowników zostaje zawsze w pamięci RAM, zamiast trafiać do pliku stronicowania.",
-      "en": "System and driver code always stays in RAM instead of going to the paging file."
+      "pl": "Kod systemu i sterowników zostaje zawsze w pamięci RAM, zamiast być odkładany na dysk.",
+      "en": "System and driver code always stays in RAM instead of being paged out to disk."
     },
     {
       "pl": "Kod systemu i sterowników nie jest odkładany na dysk, więc nie trzeba go z niego doczytywać. Nie ma dowodu, że na Windows 11 daje to odczuwalną różnicę.",

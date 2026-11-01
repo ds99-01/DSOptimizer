@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.spotlight.md sha256: 2220b9764dbafc0dbc745e14c22cc1379038491d23498cd518923ff544a5e361 -->
+<!-- source: docs/tweaks/privacy.spotlight.md sha256: 50381bb52df5f481c98f5fbdf8621a37a24903c2e00afeabe18af84ed11cdfea -->
 
 # privacy.spotlight – Turn off Windows spotlight (pictures of the day)
 
@@ -25,7 +25,7 @@ Reading from the VMs, 2026-10-21: neither the user's `...\Policies\Microsoft\Win
 ## Risks and warnings
 - `risk=caution` (undo doesn't restore the whole effect), `suggested=false`.
 - Warning in the catalog: "Undo doesn't bring back the pictures of the day: choose them again in Settings > Personalization > Background."
-- Beyond the notes in the program (in the technical details or only here): the effect on the lock screen wasn't checked.
+- Beyond the notes in the program (in the technical details or only here): the effect on the lock screen on Home and Pro wasn't checked; Microsoft's description also covers the lock screen but lists only Enterprise and Education.
 - Choosing "Windows spotlight" again after undo wasn't checked: Windows on the VM isn't activated, and that blocks personalization.
 
 ## VM test

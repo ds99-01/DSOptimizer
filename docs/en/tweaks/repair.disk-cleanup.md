@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.disk-cleanup.md sha256: 73f0b6b8f5aa98b225025ebae11cdfaefcd6a9bf5738be613f7f65d27a4aa98e -->
+<!-- source: docs/tweaks/repair.disk-cleanup.md sha256: de7a341d49a08e493adc13b27e296c5edded8d02a7985716f3def30bb59fa685 -->
 
 # repair.disk-cleanup – Clean up the disk
 
@@ -33,7 +33,7 @@ Doesn't touch: the Recycle Bin, the Downloads folder, restore points, memory dum
 Not applicable: `kind=action` without detection and undo. The verification is the counters of the deletion through handles (deleted, recent, in use, bytes), the DO script marker, the DISM exit code, the state of the services after the restore and the free space before/after. Deleted files can't be restored (they're temporary files and caches that Windows recreates).
 
 ## Risks and warnings
-- `risk=safe`: only temporary files older than 24 h, caches and components replaced by newer ones; doesn't change settings.
+- `risk=safe`: temporary files only if older than 24 h, but downloaded updates and caches in full (whatever their age), and components replaced by newer ones; doesn't change settings.
 - Time: usually under 1 min on a VM (DISM about 12 s); the wait limit for DISM is 20 min, after it DISM keeps working in the background.
 - "Stop" works only between steps.
 - During step 4 the `wuauserv` and `bits` services are stopped; an update being downloaded at that moment may download again (not measured).

@@ -230,7 +230,7 @@
     "timeoutSeconds": 1200,
     "warnings": [
       "Trwa zwykle poniżej 1 min, ale czyszczenie składników Windows może potrwać kilkadziesiąt minut; „Zatrzymaj” działa tylko między krokami.",
-      "Usuwa tylko pliki tymczasowe starsze niż 24 h – nie rusza Kosza, folderu Pobrane, punktów przywracania ani Windows.old."
+      "Pliki tymczasowe tylko starsze niż 24 h; pobrane aktualizacje i pamięci podręczne znikają w całości. Kosz i Pobrane zostają."
     ],
     "handler": "disk-cleanup"
   },
