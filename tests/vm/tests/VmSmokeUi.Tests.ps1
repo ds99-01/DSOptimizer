@@ -29,7 +29,7 @@
     function script:New-UiProbe([hashtable]$Override) {
         $Probe = [ordered]@{
             Ok = $true; Error = $null; HistoryMenuFound = $true; HistoryPageOpened = $true; ApplyError = $null; HistoryError = $null
-            EntryNames = @('Szybsze otwieranie podmenu, Explorer i wygoda, Aktywna, 20.10.2026 21:00'); HitTestError = $null
+            EntryNames = @('Szybsze otwieranie podmenu, Eksplorator i wygoda, Aktywna, 20.10.2026 21:00'); HitTestError = $null
             FilterRiskOpened = $true; FilterRiskSelected = $true; FilterHistoryOpened = $true; FilterHistorySelected = $true; FilterError = $null
             RowClickPreview = $true; RowDoubleClickToggles = $true; RunIconRuns = $true; RunIconDoubleClickOnce = $true; RowError = $null
             PrivacyButtonFound = $true; PrivacyApplyCountOnEntry = 0; PrivacyApplyCount = 2; PrivacyApplyText = 'Zastosuj (2)'; PrivacyError = $null
@@ -147,9 +147,9 @@ Describe 'VmSmokeUi (plik i skrypt sondy)' {
         $Text = Get-GuiUiProbeScript
         foreach ($Name in '$T.HistoryPage', '$T.ApplyOne', '$T.HistoryFilter', '$T.Minimize', '$T.Menu', '$T.TweakTitle', '$T.ProbeCategory') { $Text | Should -Match ([regex]::Escape($Name)) }
     }
-    It 'cel sondy to pozycja bezpieczna bez potwierdzenia: ux.menu-delay w kategorii „Explorer i wygoda”' {
+    It 'cel sondy to pozycja bezpieczna bez potwierdzenia: ux.menu-delay w kategorii „Eksplorator i wygoda”' {
         $Pl = Get-GuiProbeTexts -Language pl
-        $Pl.ProbeCategory | Should -Be 'Explorer i wygoda'
+        $Pl.ProbeCategory | Should -Be 'Eksplorator i wygoda'
         $Pl.TweakTitle | Should -Be 'Szybsze otwieranie podmenu'
     }
 }
@@ -877,7 +877,7 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
         $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{}) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
         @($Checks.Name) | Should -Be @('HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage')
         @($Checks | Where-Object { -not $_.Passed }).Count | Should -Be 0
-        (Get-Check $Checks 'HistoryEntryActive').Detail | Should -Be 'wiersz: Szybsze otwieranie podmenu, Explorer i wygoda, Aktywna, 20.10.2026 21:00'
+        (Get-Check $Checks 'HistoryEntryActive').Detail | Should -Be 'wiersz: Szybsze otwieranie podmenu, Eksplorator i wygoda, Aktywna, 20.10.2026 21:00'
         (Get-Check $Checks 'CaptionHitTest').Detail | Should -BeLike '*przekrój x=8: 42..43: 2; 44..44: 1*'
     }
     It 'brak sondy ($null): wszystkie szesnaście niezaliczone' {
@@ -888,8 +888,8 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
     It '<Nazwa> nie przechodzi, gdy <Powod>' -ForEach @(
         @{ Nazwa = 'HistoryMenu'; Powod = 'nie ma pozycji menu'; Override = @{ HistoryMenuFound = $false } }
         @{ Nazwa = 'HistoryMenu'; Powod = 'strona się nie otworzyła (brak listy albo filtra)'; Override = @{ HistoryPageOpened = $false } }
-        @{ Nazwa = 'HistoryEntryActive'; Powod = 'wiersz ma inny stan'; Override = @{ EntryNames = @('Szybsze otwieranie podmenu, Explorer i wygoda, Cofnięta, 20.10.2026 21:00') } }
-        @{ Nazwa = 'HistoryEntryActive'; Powod = 'aktywny jest inny wpis'; Override = @{ EntryNames = @('Inna pozycja, Explorer i wygoda, Aktywna, 20.10.2026 21:00') } }
+        @{ Nazwa = 'HistoryEntryActive'; Powod = 'wiersz ma inny stan'; Override = @{ EntryNames = @('Szybsze otwieranie podmenu, Eksplorator i wygoda, Cofnięta, 20.10.2026 21:00') } }
+        @{ Nazwa = 'HistoryEntryActive'; Powod = 'aktywny jest inny wpis'; Override = @{ EntryNames = @('Inna pozycja, Eksplorator i wygoda, Aktywna, 20.10.2026 21:00') } }
         @{ Nazwa = 'HistoryEntryActive'; Powod = 'lista jest pusta'; Override = @{ EntryNames = @() } }
         @{ Nazwa = 'HistoryEntryActive'; Powod = 'nazwa ma stary kształt bez rodzaju wpisu'; Override = @{ EntryNames = @('Szybsze otwieranie podmenu, Aktywna, 20.10.2026 21:00') } }
         @{ Nazwa = 'CaptionHitTest'; Powod = 'brak pomiaru'; Override = @{ HitTest = @(); HitTestError = 'UIA' } }

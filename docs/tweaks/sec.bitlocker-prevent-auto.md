@@ -28,7 +28,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457, eksploracja partii C
 ## Detekcja i undo
 - Detekcja: tylko rejestr, przez równość: dokładnie DWORD `1` -> `Applied`, inna wartość lub brak -> `NotApplied`. To uczciwe, bo pozycja obiecuje tylko zapis wartości; realny skutek (czy szyfrowanie się włączy) nie jest wykrywany.
 - Undo z journala przywraca snapshot sprzed zmiany: wartość, która istniała (np. `0`), wraca; jeśli wartości nie było, jest usuwana (nie zapisuje `0`).
-- Jeśli `PreventDeviceEncryption` = 1 istniało już przed apply (np. ustawione przez OEM), detekcja pokazuje `Applied`, a apply kończy się `AlreadyApplied` bez zapisu i bez wpisu w journalu: narzędzie nie przejmuje tej wartości. Undo **bez wpisu w journalu** (undo z wartości domyślnych) usuwa wartość (fallback `original` = `<RemoveEntry>`), także tę ustawioną poza narzędziem.
+- Jeśli `PreventDeviceEncryption` = 1 istniało już przed apply (np. ustawione przez OEM), detekcja pokazuje `Applied`, a apply kończy się `AlreadyApplied` bez zapisu i bez wpisu w historii zmian: narzędzie nie przejmuje tej wartości. Undo **bez wpisu w historii zmian** (undo z wartości domyślnych) usuwa wartość (fallback `original` = `<RemoveEntry>`), także tę ustawioną poza narzędziem.
 
 ## Ryzyka i ostrzeżenia
 - `risk=caution`.

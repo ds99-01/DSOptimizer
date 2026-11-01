@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.smb-signing-client-off.md sha256: 0d8f6c97d6f3cd13a2b1e0ac96a17307ed1ede4577e91fd718cf44a6fd020e16 -->
+<!-- source: docs/tweaks/net.smb-signing-client-off.md sha256: 98de092400f96f776cbff739ec64bf3b1541472df42fff6c653f5842cb8e580f -->
 
 # net.smb-signing-client-off – Don't require SMB signing on the client
 
@@ -33,7 +33,7 @@ The state is made up of two signals, both Boolean, without parsing language-depe
 
 On a fresh 26H2 (Home and Pro): registry `Mismatch` + cmdlet `True` → `NotApplied`; after apply `Applied`. Registry 0 but cmdlet `True` → `Partial` (intended design; whether a policy causes such a mismatch wasn't checked); apply in that situation isn't reported as a success.
 
-Undo: journal snapshot (the previous value or none; none comes back as none, the `Parameters` key stays). `original` = `<RemoveEntry>`. **Without a journal entry** the item deletes the `RequireSecuritySignature` value, so the default comes back (on a fresh 26H2 Home and Pro, the reading with no value is True, meaning signing required); we assume this restores the default state, so protection doesn't drop below the factory level. Confirmed on the VMs on 2026-10-18 (Home and Pro, "VM test"): a write through the registry API in C# is immediately visible in `Get-SmbClientConfiguration` without a restart, and after the value is deleted the reading goes back to the default (True). **Not checked:** behavior under a policy or after a restart.
+Undo: journal snapshot (the previous value or none; none comes back as none, the `Parameters` key stays). `original` = `<RemoveEntry>`. **Without an entry in the change history** the item deletes the `RequireSecuritySignature` value, so the default comes back (on a fresh 26H2 Home and Pro, the reading with no value is True, meaning signing required); we assume this restores the default state, so protection doesn't drop below the factory level. Confirmed on the VMs on 2026-10-18 (Home and Pro, "VM test"): a write through the registry API in C# is immediately visible in `Get-SmbClientConfiguration` without a restart, and after the value is deleted the reading goes back to the default (True). **Not checked:** behavior under a policy or after a restart.
 
 ## Risks and warnings
 - `risk=caution`. Word for word from MS: "We don't recommend disabling SMB signing as a workaround for third-party servers. We also don't recommend trying to sign with guest accounts." and "Requiring SMB signing also disables guest access to shares."

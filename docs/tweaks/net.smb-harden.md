@@ -22,7 +22,7 @@ Akcja nie ma detekcji, journala ani undo (`TweakEngine.Execute` uruchamia tylko 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), build 26300.9457, 2026-10-18:
 
-| | Home | Pro |
+| Odczyt | Home | Pro |
 |---|---|---|
 | `EnableInsecureGuestLogons` (`Get-SmbClientConfiguration`) | **True** | **False** |
 | `RequireSecuritySignature` (`Get-SmbClientConfiguration`) | True | True |
@@ -40,7 +40,7 @@ Brak detekcji (`kind=action`): w UI nie ma wiersza stanu, a ponowne uruchomienie
 
 ## Ryzyka i ostrzeżenia
 - `risk=caution`. Ostrzeżenia (zgodne z polem `warnings` w katalogu): „Stare NAS-y i dyski sieciowe bez podpisywania albo wpuszczające tylko gościa mogą przestać się łączyć.” oraz „Późniejsze cofnięcie pozycji logowania gościa albo podpisywania SMB zdejmie to zabezpieczenie.”
-- Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): brak cofnięcia z poleceniem ręcznego cofnięcia; Microsoft „Windows disables insecure guest logons by default” + „We recommend that you don't enable insecure guest logons.” i zmiana względem stanu domyślnego Home; podpisywanie (już True na obu edycjach, ale wymuszenie może zablokować połączenia z urządzeniami bez podpisywania: `STATUS_INVALID_SIGNATURE`, „security policies block unauthenticated guest access”); nadpisanie stanu tweaków SMB z journala; zakres tylko klient; zachowanie pod polityką (GPO) nie sprawdzone: zamierzenie to `Failed`, gdy odczyt zwrotny się nie zgadza, ale nie sprawdzono, czy `Get-SmbClientConfiguration` uwzględnia politykę; jeśli nie, akcja może zgłosić `Executed` (odczyt zwrotny zgodny) mimo polityki, która nadal przesłania ustawienie. Ograniczenie; weryfikacja na VM z polityką ustawioną oficjalnym narzędziem to CARRY do kolejnej partii.
+- Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): brak cofnięcia z poleceniem ręcznego cofnięcia; Microsoft „Windows disables insecure guest logons by default” + „We recommend that you don't enable insecure guest logons.” i zmiana względem stanu domyślnego Home; podpisywanie (już True na obu edycjach, ale wymuszenie może zablokować połączenia z urządzeniami bez podpisywania: `STATUS_INVALID_SIGNATURE`, „security policies block unauthenticated guest access”); nadpisanie stanu tweaków SMB z journala; zakres tylko klient; zachowanie pod polityką (GPO) niesprawdzone: zamierzenie to `Failed`, gdy odczyt zwrotny się nie zgadza, ale nie sprawdzono, czy `Get-SmbClientConfiguration` uwzględnia politykę; jeśli nie, akcja może zgłosić `Executed` (odczyt zwrotny zgodny) mimo polityki, która nadal przesłania ustawienie. Ograniczenie; weryfikacja na VM z polityką ustawioną oficjalnym narzędziem to CARRY do kolejnej partii.
 - Skutek w sieci lokalnej nie jest zmierzony.
 
 ## Test VM

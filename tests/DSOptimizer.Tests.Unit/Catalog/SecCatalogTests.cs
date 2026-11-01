@@ -93,7 +93,7 @@ public class SecCatalogTests
         Assert.DoesNotContain("do uzupełnienia po eksploracji VM", doc, StringComparison.Ordinal);
         Assert.Contains("`Exists=false`", doc, StringComparison.Ordinal);
         Assert.Contains("ConversionStatus` = 2", doc, StringComparison.Ordinal);
-        Assert.Contains("bez wpisu w journalu", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("bez wpisu w historii zmian", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("usuwa wartość", doc, StringComparison.Ordinal);
         Assert.DoesNotContain("Task", doc, StringComparison.Ordinal);
         Assert.Contains("vm-run-20261019-002807", doc, StringComparison.Ordinal);

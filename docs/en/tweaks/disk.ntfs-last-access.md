@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.ntfs-last-access.md sha256: 2be2b9ec5b698f15e093f4a3f7da186be4315865b88889aa3000158fcbe4a957 -->
+<!-- source: docs/tweaks/disk.ntfs-last-access.md sha256: cd36e07c1bfa100701fef6f7d54ceebd23218103f0308bcf8fb4d2ecb68eef2c -->
 
 # disk.ntfs-last-access – Turn off recording the last access time of files
 
@@ -26,7 +26,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - Why a script: the engine compares whole values in `registry[]` and doesn't support a mask, so with a comparison against the exact `0x80000001`, a user who already has updates turned off in mode 3 (or a bare `1`) would see the item as "to be applied". The C# API alone isn't enough; switching to a script (in line with the rule "scripts only when the API isn't enough") is the only way to get the mask. The registry matches `query` for the observed 0/1/2.
 - Apply: when the state is already `Applied` (also mode 3), it writes nothing; otherwise it writes `0x80000001` (DWord, like `fsutil behavior set disablelastaccess 1`) and checks with detection that the result is `Applied`.
 - Snapshot (capture): `DWord:<unsigned decimal value>` (for example `DWord:2147483650`) or `Absent` when there is no value; a type other than DWord makes capture fail before anything is changed.
-- Undo: restores exactly the snapshot: `DWord:<n>` -> writes that value, `Absent` -> deletes the value; when the state already equals the snapshot, it ends with code 0 without writing (idempotent), and after writing or deleting it checks the effect. An invalid snapshot is an error without changes. There is no `original` fallback from the catalog (no `registry[]`); the snapshot from the journal is the only source, and the 26H2 default state is `0x80000002` (confirmed by a VM reading). Undo without a journal entry (apply done outside the tool) therefore ends with `UndoIncomplete` (CLI code 4) with a message about the missing valid snapshot and changes nothing; the default value isn't restored from the catalog.
+- Undo: restores exactly the snapshot: `DWord:<n>` -> writes that value, `Absent` -> deletes the value; when the state already equals the snapshot, it ends with code 0 without writing (idempotent), and after writing or deleting it checks the effect. An invalid snapshot is an error without changes. There is no `original` fallback from the catalog (no `registry[]`); the snapshot from the journal is the only source, and the 26H2 default state is `0x80000002` (confirmed by a VM reading). Undo without an entry in the change history (apply done outside the tool) therefore ends with `UndoIncomplete` (CLI code 4) with a message about the missing valid snapshot and changes nothing; the default value isn't restored from the catalog.
 
 ## Risks and warnings
 - `risk=safe` (reversible value, doesn't delete data).

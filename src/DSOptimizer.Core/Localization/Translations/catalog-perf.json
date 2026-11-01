@@ -87,8 +87,8 @@
       "en": "No changes on the script side; the registry entry writes Enabled = 0, and memory integrity will stop running after a restart."
     },
     {
-      "pl": "Brak wpisu w journalu – nie wiadomo, czy memory integrity było włączone; nic nie zmieniono. Ustaw ręcznie w Windows Security.",
-      "en": "No journal entry – it's unknown whether memory integrity was on; nothing was changed. Set it by hand in Windows Security."
+      "pl": "Brak wpisu w historii zmian – nie wiadomo, czy memory integrity było włączone; nic nie zmieniono. Ustaw ręcznie w Windows Security.",
+      "en": "No entry in the change history – it's unknown whether memory integrity was on; nothing was changed. Set it by hand in Windows Security."
     },
     {
       "pl": "Nic do przywrócenia po stronie skryptu; Enabled przywraca snapshot rejestru, efekt po restarcie.",

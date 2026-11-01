@@ -10,7 +10,7 @@ Portować z ostrzeżeniem: mechanizm jest udokumentowany przez MS (Policy CSP / 
 **Zmiana semantyki względem v3.2:** `ux_gamedvr` w v3.2 było przełącznikiem użytkownika (klucze HKCU). Alias wskazuje teraz na tę pozycję, czyli politykę maszynową dla wszystkich użytkowników. Odpowiednik użytkownika (`GameDVR_Enabled`) nie został zportowany (patrz `ux.game-dvr.md`: brak źródła MS).
 
 ## Źródła
-- https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-applicationmanagement – MS, dostęp 2026-10-17 (strona z updated_at 2026-02-28), sekcja AllowGameDVR: typ `int`, 0 = Not allowed, 1 = Allowed (domyślnie); mapowanie GP: `Software\Policies\Microsoft\Windows\GameDVR`, wartość `AllowGameDVR`, plik GameDVR.admx; edycje: Pro, Enterprise, Education, IoT Enterprise (Home nie wymieniony); uwaga MS „The policy is only enforced in Windows 10 for desktop”.
+- https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-applicationmanagement – MS, dostęp 2026-10-17 (strona z updated_at 2026-02-28), sekcja AllowGameDVR: typ `int`, 0 = Not allowed, 1 = Allowed (domyślnie); mapowanie GP: `Software\Policies\Microsoft\Windows\GameDVR`, wartość `AllowGameDVR`, plik GameDVR.admx; edycje: Pro, Enterprise, Education, IoT Enterprise (Home niewymieniony); uwaga MS „The policy is only enforced in Windows 10 for desktop”.
 - Odczyt VM 26H2 Home i Pro, 2026-10-18 (stan domyślny: brak klucza i wartości).
 - Research: `docs/zrodla/2026-10-17-partia-c1-zrodla.md`, sekcja 2.
 

@@ -1,4 +1,4 @@
-<!-- source: docs/apps/README.md sha256: 2434df509152e5fde80d48e8fa344ed6047ec761982b4caef2759921fa2351f9 -->
+<!-- source: docs/apps/README.md sha256: 8068b779a5e3ba8da6777d838bdf29e533622a5003ecbcdc599e1e4547b4a37c -->
 
 # Apps – classification file `apps-bloat.json`
 

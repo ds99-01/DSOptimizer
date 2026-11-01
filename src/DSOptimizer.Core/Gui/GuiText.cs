@@ -21,7 +21,7 @@ public static class GuiText
         "disk" => L.T("Dysk i system plików"),
         "net" => L.T("Sieć i LAN"),
         "sec" => L.T("Bezpieczeństwo i szyfrowanie"),
-        "ux" => L.T("Explorer i wygoda"),
+        "ux" => L.T("Eksplorator i wygoda"),
         "panels" => L.T("Panele systemowe"),
         "repair" => L.T("Naprawy"),
         "tools" => L.T("Narzędzia"),

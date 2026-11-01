@@ -12,7 +12,7 @@ i sprawdzenie sterowników. Każda zmiana ustawień trafia do historii i można 
 ## Co jest w programie
 
 - **Ustawienia systemu** – strony „Prywatność i AI”, „Wydajność”, „Dysk i system plików”, „Sieć i LAN”,
-  „Bezpieczeństwo i szyfrowanie” oraz „Explorer i wygoda”. Przy każdej pozycji program pokazuje, czy jest już
+  „Bezpieczeństwo i szyfrowanie” oraz „Eksplorator i wygoda”. Przy każdej pozycji program pokazuje, czy jest już
   ustawiona na tym komputerze, co zmienia i co na tym zyskasz. Zaznaczasz, co chcesz, i klikasz „Zastosuj”.
 - **Panele systemowe** – szybkie otwieranie paneli Windows, których szuka się zwykle najdłużej.
 - **Naprawy** – m.in. reset Windows Update, sprawdzenie i naprawa plików systemowych, czyszczenie dysku,
@@ -24,11 +24,11 @@ i sprawdzenie sterowników. Każda zmiana ustawień trafia do historii i można 
 - **Aplikacje** – lista zainstalowanych aplikacji z sugestiami, co można usunąć. Aplikacje ważne dla systemu
   są chronione i nie da się ich zaznaczyć.
 - **Instalacja** – instalacja popularnych programów przez winget (Microsoft) oraz RustDesk z GitHuba jego autorów.
-- **Historia zmian** – wszystko, co program zmienił, z przyciskiem „Cofnij” tam, gdzie da się cofnąć.
+- **Historia zmian** – zmiany ustawień, usunięcia i instalacje aplikacji w jednym miejscu. Zmiany ustawień można tu cofnąć; usunięcia i instalacje aplikacji nie mają „Cofnij”.
 
 ## Wymagania
 
-- Windows 11, wersja 64-bitowa. Program sprawdzano na Windows 11 26H2 (Home i Pro); na innych wersjach może działać,
+- Windows 11 x64 (na ARM64 nietestowane). Program sprawdzano na Windows 11 26H2 (Home i Pro); na innych wersjach może działać,
   ale nie był na nich sprawdzany.
 - Konto z uprawnieniami administratora – przy starcie Windows zapyta o zgodę (okno UAC).
 - Nic nie trzeba instalować. .NET Framework 4.8.1, którego program potrzebuje, jest już w Windows 11.

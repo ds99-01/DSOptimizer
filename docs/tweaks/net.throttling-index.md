@@ -1,7 +1,7 @@
-# net.throttling-index – NetworkThrottlingIndex / SystemResponsiveness (nie portowane)
+# net.throttling-index – NetworkThrottlingIndex / SystemResponsiveness (nieportowane)
 
 ## Werdykt 26H2
-Nie portowane (decyzja autora z 2026-10-18): `NetworkThrottlingIndex` nie ma dokumentacji MS, a `SystemResponsiveness` = 0 z v3.2 według MS jest traktowane jak 20, więc nic nie zmienia. Alias `net_throttle` z v3.2 nie ma pozycji w katalogu.
+Nieportowane (decyzja autora z 2026-10-18): `NetworkThrottlingIndex` nie ma dokumentacji MS, a `SystemResponsiveness` = 0 z v3.2 według MS jest traktowane jak 20, więc nic nie zmienia. Alias `net_throttle` z v3.2 nie ma pozycji w katalogu.
 
 ## Co zmienia
 Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis (v3.2): `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile`, `NetworkThrottlingIndex` = 0xFFFFFFFF i `SystemResponsiveness` = 0 (oba DWord).

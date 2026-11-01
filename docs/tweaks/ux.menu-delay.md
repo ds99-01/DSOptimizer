@@ -20,7 +20,7 @@ Wartość docelowa `"10"` pochodzi z v3.2 (`ux_menu`). Dokumentacja MS (archiwum
 Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18, konto `dso`:
 - `HKU\<SID>\Control Panel\Desktop\MenuShowDelay` = **REG_SZ `"400"`** (Home i Pro identycznie).
 
-Nie rozstrzygnięte (nie testowano): zachowanie systemu po usunięciu wartości.
+Nierozstrzygnięte (nie testowano): zachowanie systemu po usunięciu wartości.
 
 ## Detekcja i undo
 - Detekcja: wartość `MenuShowDelay` (String) równa `"10"` = `Applied`; `"400"` albo brak wartości = `NotApplied`.

@@ -282,7 +282,7 @@ public class PerfVbsHvciTests
         // Brak wpisu w journalu: nie wiadomo, czy memory integrity było włączone, więc skrypt undo odmawia (C-1).
         var run = PowerShellHarness.Run(Get().Script!.Undo!, VbsMocks("@(2)", NoLock), string.Empty);
         Assert.NotEqual(0, run.ExitCode);
-        Assert.Contains("journal", run.Error, StringComparison.Ordinal);
+        Assert.Contains("historii zmian", run.Error, StringComparison.Ordinal);
         Assert.Contains("nic nie zmieniono", run.Error, StringComparison.Ordinal);
     }
 

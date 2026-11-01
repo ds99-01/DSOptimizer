@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.take-ownership-menu.md sha256: 7bb7f5c8d26dc409237b8a159f01b006c8343a54854eb4fd502df45ec4c99dec -->
+<!-- source: docs/tweaks/sec.take-ownership-menu.md sha256: 70abe9b65de69616a5fceaf758c8aee603d472fc74566bfc7aa0952fbbb15d3f -->
 
 # sec.take-ownership-menu – Add "Take ownership" to the context menu
 

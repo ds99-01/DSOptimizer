@@ -95,7 +95,7 @@ public class GuiTextTests
     [InlineData("disk", "Dysk i system plików")]
     [InlineData("net", "Sieć i LAN")]
     [InlineData("sec", "Bezpieczeństwo i szyfrowanie")]
-    [InlineData("ux", "Explorer i wygoda")]
+    [InlineData("ux", "Eksplorator i wygoda")]
     [InlineData("panels", "Panele systemowe")]
     [InlineData("repair", "Naprawy")]
     [InlineData("tools", "Narzędzia")]

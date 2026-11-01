@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.smb-harden.md sha256: 0d0ba29f799cb385533ca4df8a6bcfacc235b1591a968e218277844b4e787394 -->
+<!-- source: docs/tweaks/net.smb-harden.md sha256: 37ec037856055c60dff4933cfda69d9d059a1816fc0f983c0b893b88bc84d45c -->
 
 # net.smb-harden – Turn off guest logons and require SMB signing
 
@@ -24,7 +24,7 @@ The action has no detection, journal or undo (`TweakEngine.Execute` runs only `s
 ## Defaults on a fresh 26H2
 Read from the VMs DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), build 26300.9457, 2026-10-18:
 
-| | Home | Pro |
+| Reading | Home | Pro |
 |---|---|---|
 | `EnableInsecureGuestLogons` (`Get-SmbClientConfiguration`) | **True** | **False** |
 | `RequireSecuritySignature` (`Get-SmbClientConfiguration`) | True | True |

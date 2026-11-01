@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.game-dvr.md sha256: a9d794f779ed1c1ff6740d116c8c7db2f9b9f1d203c7ff0851610a5f0cd16497 -->
+<!-- source: docs/tweaks/ux.game-dvr.md sha256: 092e1de6cb117ae80154c55cb05b020958919aac2594e564dd362dc3177b8f38 -->
 
 # ux.game-dvr – Game DVR background recording (per user)
 

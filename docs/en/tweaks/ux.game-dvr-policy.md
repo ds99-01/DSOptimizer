@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.game-dvr-policy.md sha256: c0681969f4ed933633c83a99ccf7d5d56c12d25f82fdf651cc7f19c0d07746cb -->
+<!-- source: docs/tweaks/ux.game-dvr-policy.md sha256: 66c9f37fa6f0fed700e28d29c58774a67bce99f02578c330cf8c48cae71336c4 -->
 
 # ux.game-dvr-policy – Block game recording and broadcasting on the whole computer
 

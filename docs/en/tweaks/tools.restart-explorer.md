@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/tools.restart-explorer.md sha256: d017d81f99c26defe3f7dc4d1a0b9d5a4e4e0b69c70635538707d8844ffc7e96 -->
+<!-- source: docs/tweaks/tools.restart-explorer.md sha256: 2770c79ed7f5fb0e7cd65898ea67e0876ac2f79129cbaaf1b5122aaadbe99fb9 -->
 
 # tools.restart-explorer – Restart the taskbar and File Explorer
 

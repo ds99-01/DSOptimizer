@@ -80,7 +80,7 @@
     },
     {
       "pl": "Włącza przełącznik „Zakończ zadanie” (System > Zaawansowane): TaskbarEndTask = 1 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings, dla zalogowanego użytkownika. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie usuwa wartość i klucz utworzony przez zmianę; po restarcie Eksploratora pozycja znika z menu.",
-      "en": "Turns on the \"End Task\" toggle (System > Advanced): TaskbarEndTask = 1 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings, for the signed-in user. DSOptimizer doesn't restart File Explorer by itself. Undo removes the value and the key created by the change; after File Explorer restarts, the entry disappears from the menu."
+      "en": "Turns on the \"End task\" toggle (System > Advanced): TaskbarEndTask = 1 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings, for the signed-in user. DSOptimizer doesn't restart File Explorer by itself. Undo removes the value and the key created by the change; after File Explorer restarts, the entry disappears from the menu."
     },
     {
       "pl": "Pozycja pojawi się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).",

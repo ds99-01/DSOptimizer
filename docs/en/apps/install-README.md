@@ -1,4 +1,4 @@
-<!-- source: docs/apps/install-README.md sha256: c010dc4ff5a56cfcb48fa59b24fc59d2da86732cffeeca602c12404961bc50d1 -->
+<!-- source: docs/apps/install-README.md sha256: 031da64c715a7386aa626df508baba1349252249cfcf8e3a2e25c9fc6d4d9eec -->
 
 # App install – list `apps.json`
 
@@ -202,7 +202,7 @@ process start), not `startedAt` → `finishedAt` of the CLI report. `msiexec` ti
   12:16:16.8 → 12:16:20.5 local VM time (UTC+2) = 3.7 s), CLI code 0, whole process 27.7 s (`Seconds` from `raw/cli-install.result.json`;
   CLI report `startedAt` → `finishedAt` = 25.3 s). `--list-install`: `install.rustdesk` `installed = true`,
   `source = github`, `gitHub = rustdesk/rustdesk`. Second batch (`-CliRepeat`): both items `AlreadyInstalled` "Była już
-  zainstalowana – nic nie uruchomiono." (It was already installed – nothing was run.), code 0, 4.6 s (`Seconds` from `raw/cli-install-again.result.json`; no new journal entry and no new MSI log; that there's no GitHub query on this path is checked by the test
+  zainstalowana – nic nie uruchomiono." (It was already installed – nothing was run.), code 0, 4.6 s (`Seconds` from `raw/cli-install-again.result.json`; no new entry in the change history and no new MSI log; that there's no GitHub query on this path is checked by the test
   `AppInstallEngineGitHubTests.MatchedBeforeRun_AlreadyInstalled_NoHttp` – the VM's network traffic wasn't measured).
 - **Home – `install.rustdesk` alone:** `Installed` (`msiCode` 0, 1.5.0, 7.2 s; `msiexec` 12:13:53.8 → 12:13:57.3 local VM time
   = 3.5 s), CLI code 0, process 17 s (`Seconds` from `raw/cli-install.result.json`; CLI report `startedAt` → `finishedAt` = 12.9 s);

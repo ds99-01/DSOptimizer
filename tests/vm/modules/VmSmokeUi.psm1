@@ -6,7 +6,7 @@ Opis działania:
     Część smoke GUI, która dotyka okna (partia D Etapu 3): skrypt sondy UI uruchamiany W VM w sesji użytkownika 'dso'
     (UI Automation + user32, w kroku 5 mysz) oraz czysta agregacja jego wyniku na hoście. Sonda:
       1. szuka pozycji menu „Historia zmian” (UIA, po nazwie);
-      2. stosuje jedną bezpieczną pozycję jak użytkownik: kategoria „Explorer i wygoda” → pole wyboru „Szybsze otwieranie podmenu”
+      2. stosuje jedną bezpieczną pozycję jak użytkownik: kategoria „Eksplorator i wygoda” → pole wyboru „Szybsze otwieranie podmenu”
          (ux.menu-delay, safe, bez restartu, bez okna potwierdzenia) → „Zastosuj (1)”, czeka na koniec operacji;
       3. otwiera „Historia zmian” i czyta nazwy wierszy listy (AutomationName wiersza = „Tytuł, rodzaj wpisu (kategoria), Stan[ – powód], data”; sonda szuka „Tytuł, *, Aktywna, *”);
       4. mierzy WM_NCHITTEST na pasku marki (44 DIP) w stanie normalnym i po maksymalizacji: punkt w środku paska, 2 px nad
@@ -57,7 +57,7 @@ $script:ProbeTextsPolish = [ordered]@{
     HistoryPage = 'Historia zmian'                    # HistoryText.PageTitle: pozycja menu i nazwa listy wpisów
     HistoryFilter = 'Filtr'                           # HistoryText.FilterLabel
     HistoryActive = 'Aktywna'                         # HistoryText.StateText(Active): stan w nazwie wiersza historii
-    ProbeCategory = 'Explorer i wygoda'               # GuiText.CategoryName("ux"): kategoria pozycji ux.menu-delay
+    ProbeCategory = 'Eksplorator i wygoda'               # GuiText.CategoryName("ux"): kategoria pozycji ux.menu-delay
     PanelsCategory = 'Panele systemowe'               # GuiText.CategoryName("panels")
     PrivacyCategory = 'Prywatność i AI'               # GuiText.CategoryName("privacy")
     RepairCategory = 'Naprawy'                        # GuiText.CategoryName("repair")

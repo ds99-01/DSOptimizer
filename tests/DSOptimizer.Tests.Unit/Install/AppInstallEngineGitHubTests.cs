@@ -826,7 +826,7 @@ public class AppInstallEngineGitHubTests
         Assert.Equal(WingetState.NotRegistered, batch.Winget.State);
         Assert.Empty(f.Runner.Calls);
         Assert.Equal(TweakOutcome.Installed, Assert.Single(batch.Items).Outcome);
-        Assert.DoesNotContain(f.Log.Lines, line => line.Contains("Pozycje winget nie rozpoczęte"));
+        Assert.DoesNotContain(f.Log.Lines, line => line.Contains("Pozycje winget nierozpoczęte"));
     }
 
     [Fact]
@@ -837,7 +837,7 @@ public class AppInstallEngineGitHubTests
 
         f.Install(RustDesk, Zip);
 
-        Assert.Single(f.Log.Lines, line => line.StartsWith("WARN", StringComparison.Ordinal) && line.Contains("Pozycje winget nie rozpoczęte"));
+        Assert.Single(f.Log.Lines, line => line.StartsWith("WARN", StringComparison.Ordinal) && line.Contains("Pozycje winget nierozpoczęte"));
     }
 
     [Fact]

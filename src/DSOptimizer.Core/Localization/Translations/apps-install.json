@@ -530,11 +530,11 @@
       "en": "{0} of {1} installed"
     },
     {
-      "pl": "Instalacja nie rozpoczęta: {0}",
+      "pl": "Instalacja nierozpoczęta: {0}",
       "en": "Installation not started: {0}"
     },
     {
-      "pl": "Pozycje winget nie rozpoczęte: {0}",
+      "pl": "Pozycje winget nierozpoczęte: {0}",
       "en": "winget items not started: {0}"
     },
     {

@@ -200,7 +200,7 @@ startem procesu), nie `startedAt` → `finishedAt` raportu CLI. Czasy `msiexec` 
   12:16:16,8 → 12:16:20,5 czasu lokalnego VM (UTC+2) = 3,7 s), kod CLI 0, cały proces 27,7 s (`Seconds` z `raw/cli-install.result.json`;
   raport CLI `startedAt` → `finishedAt` = 25,3 s). `--list-install`: `install.rustdesk` `installed = true`,
   `source = github`, `gitHub = rustdesk/rustdesk`. Druga seria (`-CliRepeat`): obie pozycje `AlreadyInstalled` „Była już
-  zainstalowana – nic nie uruchomiono.”, kod 0, 4,6 s (`Seconds` z `raw/cli-install-again.result.json`; bez nowego wpisu journala i nowego logu MSI; brak zapytania do GitHuba na tej ścieżce pilnuje test
+  zainstalowana – nic nie uruchomiono.”, kod 0, 4,6 s (`Seconds` z `raw/cli-install-again.result.json`; bez nowego wpisu w historii zmian i nowego logu MSI; brak zapytania do GitHuba na tej ścieżce pilnuje test
   `AppInstallEngineGitHubTests.MatchedBeforeRun_AlreadyInstalled_NoHttp` – ruchu sieciowego VM nie mierzono).
 - **Home – sam `install.rustdesk`:** `Installed` (`msiCode` 0, 1.5.0, 7,2 s; `msiexec` 12:13:53,8 → 12:13:57,3 czasu lokalnego VM
   = 3,5 s), kod CLI 0, proces 17 s (`Seconds` z `raw/cli-install.result.json`; raport CLI `startedAt` → `finishedAt` = 12,9 s);

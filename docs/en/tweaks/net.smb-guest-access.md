@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.smb-guest-access.md sha256: 3721aa3f04572c7b35dd028b5f5663f363f22f1fe60f1de48164ebdb85560965 -->
+<!-- source: docs/tweaks/net.smb-guest-access.md sha256: 94a8663d842b1e95691b44ad13a705948de42fedf3863ee7e7091ddcd5b38577 -->
 
 # net.smb-guest-access – Allow guest logons to network shares
 
@@ -24,7 +24,7 @@ The tweak's state is made up of all the operations that take part in detection (
 ## Defaults on a fresh 26H2
 Read from the VMs DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), build 26300.9457, 2026-10-18:
 
-| | Home | Pro |
+| Reading | Home | Pro |
 |---|---|---|
 | `Get-SmbClientConfiguration`: `EnableInsecureGuestLogons` | **True** | **False** |
 | `Get-SmbClientConfiguration`: `RequireSecuritySignature` | True | True |
@@ -48,7 +48,7 @@ Result on a fresh system (not an error, just a consequence of the edition defaul
 
 Undo: the engine restores `AllowInsecureGuestAuth` from the journal snapshot (the previous value or its absence); if there was no value, it deletes it (`<RemoveEntry>`), and the `Parameters` key existed before apply and stays. `original` in the catalog = `<RemoveEntry>`.
 
-**Without a journal entry** (undo to defaults) the item deletes the `AllowInsecureGuestAuth` value, so the edition's default comes back (Home: `EnableInsecureGuestLogons` True, Pro: False; these are factory-state readings from the VMs, with no value in the registry). This doesn't lower protection below the Windows default and doesn't guess one value for both editions. Deleting the value restores the edition's default: confirmed by the VM run of 2026-10-18 (`CheckAfterUndo`, see "VM test"; discriminating evidence only on Pro, because on Home both no value and the value 1 give the reading True). The conclusion "no value = the edition's default" is based on the factory-state reading from the VMs (there was no value, the cmdlet gave Home True, Pro False) and on this run. **Not checked:** apply/undo behavior under Group Policy or after a restart (only the policy's effect on the cmdlet reading was measured, probe 7 above).
+**Without an entry in the change history** (undo to defaults) the item deletes the `AllowInsecureGuestAuth` value, so the edition's default comes back (Home: `EnableInsecureGuestLogons` True, Pro: False; these are factory-state readings from the VMs, with no value in the registry). This doesn't lower protection below the Windows default and doesn't guess one value for both editions. Deleting the value restores the edition's default: confirmed by the VM run of 2026-10-18 (`CheckAfterUndo`, see "VM test"; discriminating evidence only on Pro, because on Home both no value and the value 1 give the reading True). The conclusion "no value = the edition's default" is based on the factory-state reading from the VMs (there was no value, the cmdlet gave Home True, Pro False) and on this run. **Not checked:** apply/undo behavior under Group Policy or after a restart (only the policy's effect on the cmdlet reading was measured, probe 7 above).
 
 ## Risks and warnings
 - `risk=caution`. Warnings in the catalog: "Microsoft advises against this: a fake server on the network can take over the connection without a password, and traffic isn't encrypted." and "You usually also need to apply "Don't require SMB signing on the client" – without it, Windows still blocks the guest."

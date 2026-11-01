@@ -54,7 +54,7 @@ public class UxCatalogTests
         var ids = CatalogLoader.Load(BuiltInCatalog.Sources).Definitions.Select(d => d.Id);
         Assert.DoesNotContain("ux.game-dvr", ids);
         var docs = File.ReadAllText(RepoRoot.Combine("docs", "tweaks", "ux.game-dvr.md"), Encoding.UTF8);
-        Assert.Contains("nie portowane", docs, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("nieportowane", docs, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

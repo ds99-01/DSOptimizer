@@ -71,19 +71,19 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 | `https://support.norton.com/sp/en/us/home/current/solutions/v60392881` | 2026-10-21 | działa; tytuł „Download and run the Norton 360 Remover tool for Windows”, opis: usuwa lub usuwa i instaluje ponownie aplikację Norton device security |
 | `https://www.mcafee.com/support/s/article/000002766?language=pl` | 2026-10-21 | artykuł McAfee o narzędziu usuwania (MCPR); pobranie strony: timeout, curl: 403 (blokada botów) – adres podał i sprawdził ręcznie autor. Przypisany do LiveSafe, Total Protection, AntiVirus Plus, Internet Security i Personal Security |
 
-### Nie dopisane, bo nie dało się potwierdzić
+### Niedopisane, bo nie dało się potwierdzić
 
 - Trial Adobe, Office trial, Spotify, Dropbox, ExpressVPN, LastPass, Amazon: brak ustalonych nazw wpisów Uninstall; część z nich ludzie kupują
   i używają, więc bez nazwy z prawdziwego sprzętu wpisu nie ma. Booking.com jest (wzorzec po nazwie, źródło: Which? i borncity.com); jeśli na laptopie
   istnieje tylko skrót w menu Start, a nie wpis Uninstall, program go nie zobaczy.
 - Acer Quick Access, Acer Jumpstart, Dell SupportAssist w wersji Sklep, `AD2F1837.myHP`: nazwy pakietów bez wiarygodnego źródła.
-- LinkedIn (`7EE7776C.LinkedInforWindows`) i stary Teams osobisty (`MicrosoftTeams`): nazwy nie potwierdzone, wpisy usunięte ze szkicu.
+- LinkedIn (`7EE7776C.LinkedInforWindows`) i stary Teams osobisty (`MicrosoftTeams`): nazwy niepotwierdzone, wpisy usunięte ze szkicu.
 
 ## Decyzje na granicy
 
 | Pozycja | Decyzja | Dlaczego |
 |---|---|---|
-| Uzyskaj pomoc (`Microsoft.GetHelp`) | Pozostałe (nie sugerowane) | Aplikacja kontaktu z pomocą; nie jest reklamą, a research proponował „sugerowany” jako odpowiednik Porad |
+| Uzyskaj pomoc (`Microsoft.GetHelp`) | Pozostałe (niesugerowane) | Aplikacja kontaktu z pomocą; nie jest reklamą, a research proponował „sugerowany” jako odpowiednik Porad |
 | Microsoft Bing (`Microsoft.BingSearch`) | Pozostałe | Brak w specu; niejednoznaczny |
 | Dev Home (`Microsoft.Windows.DevHome`) | Pozostałe | Narzędzie dla programistów, może być używane |
 | Family (`MicrosoftCorporationII.MicrosoftFamily`) | Pozostałe | Kontrola rodzicielska, może być w użyciu |

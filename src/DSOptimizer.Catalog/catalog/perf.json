@@ -136,8 +136,8 @@
         "Get-DsoText 'Brak zmian po stronie skryptu; Enabled = 0 zapisuje wpis rejestru, memory integrity przestanie działać po restarcie.'"
       ],
       "undo": [
-        "# Pusty $Snapshot = ścieżka bez wpisu w journalu (fallback `original` z katalogu): nie wiadomo, czy memory integrity było włączone. Odmowa, zanim silnik dotknie rejestru (undo idzie od końca: skrypt, potem Enabled).",
-        "if ([string]::IsNullOrWhiteSpace($Snapshot)) { throw (Get-DsoText 'Brak wpisu w journalu – nie wiadomo, czy memory integrity było włączone; nic nie zmieniono. Ustaw ręcznie w Windows Security.') }",
+        "# Pusty $Snapshot = ścieżka bez wpisu w historii zmian (fallback `original` z katalogu): nie wiadomo, czy memory integrity było włączone. Odmowa, zanim silnik dotknie rejestru (undo idzie od końca: skrypt, potem Enabled).",
+        "if ([string]::IsNullOrWhiteSpace($Snapshot)) { throw (Get-DsoText 'Brak wpisu w historii zmian – nie wiadomo, czy memory integrity było włączone; nic nie zmieniono. Ustaw ręcznie w Windows Security.') }",
         "# Wartość Enabled przywraca silnik ze snapshotu rejestru (a klucz utworzony przez apply usuwa); skrypt niczego nie zmienia.",
         "Get-DsoText 'Nic do przywrócenia po stronie skryptu; Enabled przywraca snapshot rejestru, efekt po restarcie.'"
       ]

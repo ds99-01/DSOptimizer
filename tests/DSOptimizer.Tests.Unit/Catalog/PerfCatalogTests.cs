@@ -49,7 +49,7 @@ public class PerfCatalogTests
         Assert.DoesNotContain(definitions, d => d.Id == "perf.spectre-mitigations");
         Assert.DoesNotContain(definitions, d => d.Aliases.Contains("cpu_spectre"));
         var doc = Doc("perf.spectre-mitigations");
-        Assert.Contains("nie portowane", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("nieportowane", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("FeatureSettingsOverride", doc, StringComparison.Ordinal);
     }
 

@@ -15,7 +15,7 @@ public static class AppsPageText
     public static string Reading => L.T("Odczyt listy w toku");
     public static string ProtectedTooltip => L.T("Chroniona – DSOptimizer jej nie usuwa");
     public static string SelectedLine => L.T("Zaznaczona do usunięcia");
-    public static string NotSelectedLine => L.T("Nie zaznaczona – kliknij dwukrotnie wiersz, żeby dodać");
+    public static string NotSelectedLine => L.T("Niezaznaczona – kliknij dwukrotnie wiersz, żeby dodać");
     public static string TechnicalHeader => L.T("Szczegóły techniczne");
     public static string EmptyGroup => L.T("Brak aplikacji w tej grupie.");
     public static string EmptySearch => L.T("Żadna aplikacja w tej grupie nie pasuje do wyszukiwania.");

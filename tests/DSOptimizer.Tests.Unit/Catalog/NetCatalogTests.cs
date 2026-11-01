@@ -62,7 +62,7 @@ public class NetCatalogTests
         Assert.DoesNotContain(definitions, d => d.Id == "net.throttling-index");
         Assert.DoesNotContain(definitions, d => d.Aliases.Contains("net_throttle"));
         var doc = Doc("net.throttling-index");
-        Assert.Contains("nie portowane", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("nieportowane", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("NetworkThrottlingIndex", doc, StringComparison.Ordinal);
         Assert.Contains("SystemResponsiveness", doc, StringComparison.Ordinal);
     }

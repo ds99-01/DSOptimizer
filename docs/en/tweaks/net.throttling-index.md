@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.throttling-index.md sha256: a34b4e4451124b95dfc95a3240d5b1f86238c6da3b75b6efa614123e2515d18b -->
+<!-- source: docs/tweaks/net.throttling-index.md sha256: 13c333af8435547de4581185c72f37bd6bcb13300b96eca0509c0c9aaabada95 -->
 
 # net.throttling-index – NetworkThrottlingIndex / SystemResponsiveness (not ported)
 

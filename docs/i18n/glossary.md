@@ -76,7 +76,7 @@ How to read the tables:
 | Dysk i system plików | Disk and file system | Category; English README |
 | Sieć i LAN | Network and LAN | Category; LAN is a common word, kept |
 | Bezpieczeństwo i szyfrowanie | Security and encryption | Category; English README |
-| Explorer i wygoda | Explorer and convenience | Category; English README. Short form of File Explorer, kept as in Polish |
+| Eksplorator i wygoda | Explorer and convenience | Category; English README. Short form of File Explorer, kept as in Polish |
 | Panele systemowe | System panels | Category; English README |
 | Naprawy | Repairs | Category and log component; English README |
 | Narzędzia | Tools | Category; English README |

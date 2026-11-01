@@ -21,7 +21,7 @@ BeforeAll {
     # Sonda UI z kompletem: menu i strona historii, wiersz „Aktywna”, HTCAPTION w pasku i HTCLIENT pod nim (po maksymalizacji i normalnie).
     $script:GoodUiProbe = [pscustomobject]@{
         Ok = $true; Error = $null; HistoryMenuFound = $true; HistoryPageOpened = $true; ApplyError = $null; HistoryError = $null
-        EntryNames = @('Szybsze otwieranie podmenu, Explorer i wygoda, Aktywna, 20.10.2026 21:00'); HitTestError = $null
+        EntryNames = @('Szybsze otwieranie podmenu, Eksplorator i wygoda, Aktywna, 20.10.2026 21:00'); HitTestError = $null
         FilterRiskOpened = $true; FilterRiskSelected = $true; FilterHistoryOpened = $true; FilterHistorySelected = $true; FilterError = $null
         RowClickPreview = $true; RowDoubleClickToggles = $true; RunIconRuns = $true; RunIconDoubleClickOnce = $true; RowError = $null
         PrivacyButtonFound = $true; PrivacyApplyCountOnEntry = 0; PrivacyApplyCount = 2; PrivacyApplyText = 'Zastosuj (2)'; PrivacyError = $null
@@ -561,7 +561,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         $Saved.appsExpected.Count | Should -Be 1
         @($Saved.appsListing.Report.apps.id) | Should -Contain 'appx:Microsoft.GamingApp_8wekyb3d8bbwe'
         $Saved.uiScreenshotPath | Should -Be (Join-Path $script:Out 'gui-smoke-DSO-26H2-Home-historia.png')
-        $Saved.uiProbe.EntryNames | Should -Be @('Szybsze otwieranie podmenu, Explorer i wygoda, Aktywna, 20.10.2026 21:00')
+        $Saved.uiProbe.EntryNames | Should -Be @('Szybsze otwieranie podmenu, Eksplorator i wygoda, Aktywna, 20.10.2026 21:00')
     }
     It 'sonda UI idzie po pierwszym zrzucie i przed sondą stanu (zdarzenia i log obejmują operację z sondy UI)' {
         $script:Order = New-Object System.Collections.Generic.List[string]

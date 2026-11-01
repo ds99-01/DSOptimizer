@@ -22,7 +22,7 @@ Stan tweaka składa się z wszystkich operacji biorących udział w detekcji (`S
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), build 26300.9457, 2026-10-18:
 
-| | Home | Pro |
+| Odczyt | Home | Pro |
 |---|---|---|
 | `Get-SmbClientConfiguration`: `EnableInsecureGuestLogons` | **True** | **False** |
 | `Get-SmbClientConfiguration`: `RequireSecuritySignature` | True | True |
@@ -46,7 +46,7 @@ Wynik na świeżym systemie (nie błąd, tylko konsekwencja domyślnych edycji):
 
 Undo: silnik przywraca `AllowInsecureGuestAuth` ze snapshotu z journala (poprzednia wartość albo jej brak); gdy wartości nie było, usuwa ją (`<RemoveEntry>`), a klucz `Parameters` istniał przed apply i zostaje. `original` w katalogu = `<RemoveEntry>`.
 
-**Bez wpisu w journalu** (undo z wartości domyślnych) pozycja usuwa wartość `AllowInsecureGuestAuth`, czyli wraca wartość domyślna edycji (Home: `EnableInsecureGuestLogons` True, Pro: False; to odczyty stanu fabrycznego z VM, przy braku wartości w rejestrze). Nie obniża to ochrony poniżej stanu domyślnego Windows i nie zgaduje jednej wartości dla obu edycji. Usunięcie wartości przywraca domyślną edycji: potwierdził przebieg VM 2026-10-18 (`CheckAfterUndo`, zob. „Test VM”; dowód rozróżniający tylko na Pro, bo na Home zarówno brak wartości, jak i wartość 1 dają odczyt True). Wniosek „brak wartości = domyślna edycji” opiera się na odczycie stanu fabrycznego z VM (wartości nie było, cmdlet dawał Home True, Pro False) i na tym przebiegu. **Nie sprawdzono:** zachowania apply/undo pod polityką Group Policy ani po restarcie (zmierzony został tylko wpływ polityki na odczyt cmdletu, sonda 7 wyżej).
+**Bez wpisu w historii zmian** (undo z wartości domyślnych) pozycja usuwa wartość `AllowInsecureGuestAuth`, czyli wraca wartość domyślna edycji (Home: `EnableInsecureGuestLogons` True, Pro: False; to odczyty stanu fabrycznego z VM, przy braku wartości w rejestrze). Nie obniża to ochrony poniżej stanu domyślnego Windows i nie zgaduje jednej wartości dla obu edycji. Usunięcie wartości przywraca domyślną edycji: potwierdził przebieg VM 2026-10-18 (`CheckAfterUndo`, zob. „Test VM”; dowód rozróżniający tylko na Pro, bo na Home zarówno brak wartości, jak i wartość 1 dają odczyt True). Wniosek „brak wartości = domyślna edycji” opiera się na odczycie stanu fabrycznego z VM (wartości nie było, cmdlet dawał Home True, Pro False) i na tym przebiegu. **Nie sprawdzono:** zachowania apply/undo pod polityką Group Policy ani po restarcie (zmierzony został tylko wpływ polityki na odczyt cmdletu, sonda 7 wyżej).
 
 ## Ryzyka i ostrzeżenia
 - `risk=caution`. Ostrzeżenia w katalogu: „Microsoft odradza tę zmianę: podstawiony serwer w sieci może przejąć połączenie bez pytania o hasło, a ruch nie jest szyfrowany.” oraz „Zwykle trzeba też zastosować „Nie wymagaj podpisywania SMB po stronie klienta” – bez tego Windows i tak zablokuje gościa.”
@@ -59,7 +59,7 @@ Undo: silnik przywraca `AllowInsecureGuestAuth` ze snapshotu z journala (poprzed
 Przebieg VM z 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba bez błędów (278 zaliczonych / 0 błędów / 17 pominiętych na każdej VM). Raporty lokalne: `tests/vm/out/<data>/<VM>/<RunLabel>/report.json` (katalog w `.gitignore`).
 
 Przypadek `net-smb-guest-access` (`Flow=Full`, `Catalog=BuiltIn`, bez restartu), **Passed** na Home i Pro (Pester main 191/0/17):
-- Sprawdzono (Pro): `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = false; snapshot po apply: DWORD 1), `detect-after-apply` = `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`. **Home:** `detect-before` = `Partial` (rejestr bez wartości, cmdlet już True), po apply `Applied`, po undo `Partial` (zgodnie z sekcją „Detekcja i undo”). Stan końcowy = stan przed: wartość nieobecna, klucz `Parameters` zostaje (`KeyPresentAfterUndo`), `SnapshotDiff` pusty.
+- Sprawdzono (Pro): `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = false; snapshot po apply: DWORD 1), `detect-after-apply` = `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`. **Home:** `detect-before` = `Partial` (rejestr bez wartości, cmdlet już True), po apply `Applied`, po undo `Partial` (zgodnie z sekcją o wykrywaniu i cofaniu). Stan końcowy = stan przed: wartość nieobecna, klucz `Parameters` zostaje (`KeyPresentAfterUndo`), `SnapshotDiff` pusty.
 - `CheckAfterApply` (`(Get-SmbClientConfiguration).EnableInsecureGuestLogons -eq $true`, zaraz po apply, bez restartu): **Passed** na Home i Pro. Zapis przez API rejestru w C# jest więc widoczny w cmdlecie bez restartu. Rozstrzygający jest wynik na **Pro** (przed apply False, po apply True); na Home odczyt był True także przed apply, więc sam ten wynik na Home niczego nie dowodzi.
 - `CheckAfterUndo` (odczyt cmdletu równy domyślnej edycji, edycja z `EditionID`: Home True, Pro False): **Passed** na obu. Po usunięciu wartości (undo ze snapshotu bez wartości) cmdlet wraca do domyślnej edycji. Rozstrzygający jest **Pro** (po apply True, po undo False); na Home brak rozróżnienia (True w obu stanach).
 - `net-smb-lan-effect`: **Skipped** („brak sieci i serwera SMB na VM”), raportowane jako pominięte, nie zaliczone.

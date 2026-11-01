@@ -16,6 +16,8 @@ public class AppsPageTextTests
     public void SelectionBarTitle_CountsApps(int selected, string expected)
         => Assert.Equal(expected, AppsPageText.SelectionBarTitle(selected));
 
+    [Fact] public void AppsPageText_NotSelectedLine_IsOneWord() => Assert.StartsWith("Niezaznaczona", AppsPageText.NotSelectedLine, StringComparison.Ordinal);
+
     [Fact]
     public void SelectionBarTitle_Negative_Throws()
         => Assert.Throws<ArgumentOutOfRangeException>(() => AppsPageText.SelectionBarTitle(-1));

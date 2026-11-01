@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.bitlocker-prevent-auto.md sha256: 4f01086a48fd22a4045c4765cfba3aa87e4a227be17aa62a4326c199e2efb2ed -->
+<!-- source: docs/tweaks/sec.bitlocker-prevent-auto.md sha256: 824f5cd4044e716b9f5c013e28551706a296dd2af2fd30a06097b6efd5194d75 -->
 
 # sec.bitlocker-prevent-auto – Block automatic drive encryption (BitLocker)
 
@@ -30,7 +30,7 @@ Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, round C4 exp
 ## Detection and undo
 - Detection: registry only, by equality: exactly DWORD `1` -> `Applied`, another value or none -> `NotApplied`. This is honest, because the item promises only writing the value; the real effect (whether encryption turns on) isn't detected.
 - Undo from the journal restores the snapshot from before the change: a value that existed (for example `0`) comes back; if there was no value, it's deleted (it doesn't write `0`).
-- If `PreventDeviceEncryption` = 1 already existed before apply (for example set by the OEM), detection shows `Applied`, and apply ends with `AlreadyApplied` without writing and without a journal entry: the tool doesn't take over this value. Undo **without a journal entry** (undo to defaults) deletes the value (fallback `original` = `<RemoveEntry>`), including one set outside the tool.
+- If `PreventDeviceEncryption` = 1 already existed before apply (for example set by the OEM), detection shows `Applied`, and apply ends with `AlreadyApplied` without writing and without an entry in the change history: the tool doesn't take over this value. Undo **without an entry in the change history** (undo to defaults) deletes the value (fallback `original` = `<RemoveEntry>`), including one set outside the tool.
 
 ## Risks and warnings
 - `risk=caution`.

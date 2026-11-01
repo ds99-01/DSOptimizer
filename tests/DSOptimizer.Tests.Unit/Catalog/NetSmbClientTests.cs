@@ -137,7 +137,7 @@ public class NetSmbClientTests
         Assert.Contains("brak wartości", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Get-SmbClientConfiguration", doc, StringComparison.Ordinal);
         Assert.Contains("Set-SmbClientConfiguration", doc, StringComparison.Ordinal);
-        Assert.Contains("bez wpisu w journalu", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("bez wpisu w historii zmian", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("wartość domyślna", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Partial", doc, StringComparison.Ordinal);
         Assert.Contains("nie testowane na VM", doc, StringComparison.OrdinalIgnoreCase);

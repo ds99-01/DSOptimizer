@@ -1,7 +1,7 @@
 # ux.game-dvr – nagrywanie w tle Game DVR (użytkownik)
 
 ## Werdykt 26H2
-Nie portowane: brak źródła MS dla skutku `GameDVR_Enabled = 0` (VM potwierdziła tylko istnienie klucza, typ DWORD i wartość domyślną 1), a spec wymaga udokumentowanego przez MS mechanizmu; zamiast tego alias `ux_gamedvr` z v3.2 wskazuje na `ux.game-dvr-policy`.
+Nieportowane: brak źródła MS dla skutku `GameDVR_Enabled = 0` (VM potwierdziła tylko istnienie klucza, typ DWORD i wartość domyślną 1), a spec wymaga udokumentowanego przez MS mechanizmu; zamiast tego alias `ux_gamedvr` z v3.2 wskazuje na `ux.game-dvr-policy`.
 
 ## Co zmienia
 Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis: `HKCU\System\GameConfigStore`, wartość `GameDVR_Enabled`, DWord, `1` -> `0` (`scope=user`).
@@ -31,4 +31,4 @@ Nie dotyczy (pozycja nie jest w katalogu).
 Nie dotyczy. Pozycja odrzucona w partii C1. Powrót możliwy, gdy pojawi się źródło MS albo pomiar skutku na VM oficjalnym narzędziem (np. przełącznik w Ustawieniach -> odczyt `GameDVR_Enabled`).
 
 ## Test VM
-Nie dotyczy (nie portowane): pozycji nie ma w katalogu, więc nie było przypadku VM.
+Nie dotyczy (nieportowane): pozycji nie ma w katalogu, więc nie było przypadku VM.

@@ -95,7 +95,7 @@ public sealed class AppInstallEngine
         {
             if (targets.Count > 0)
             {
-                _log.Warn(Component, L.F("Instalacja nie rozpoczęta: {0}", winget.Text));
+                _log.Warn(Component, L.F("Instalacja nierozpoczęta: {0}", winget.Text));
             }
 
             var refused = targets.Select(target => Unstarted(target, TweakOutcome.Refused, winget.Text)).ToList();
@@ -104,7 +104,7 @@ public sealed class AppInstallEngine
 
         if (!wingetReady && targets.Any(target => target.Origin == InstallOrigin.Winget))
         {
-            _log.Warn(Component, L.F("Pozycje winget nie rozpoczęte: {0}", winget.Text));
+            _log.Warn(Component, L.F("Pozycje winget nierozpoczęte: {0}", winget.Text));
         }
 
         var items = new List<(InstallItemReport Item, TweakResult Result)>(targets.Count);

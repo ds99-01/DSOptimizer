@@ -38,11 +38,11 @@ DISM and SFC) is shown in the language of Windows.
   the system are protected and cannot be selected.
 - **"Install"** – installing popular programs through winget (Microsoft) and RustDesk from its
   authors' GitHub.
-- **"Change history"** – everything the program has changed, with an "Undo" button wherever undo is possible.
+- **"Change history"** – Settings changes, app removals and app installs, in one place. Settings changes can be undone here; app removals and installs have no "Undo".
 
 ## Requirements
 
-- Windows 11, 64-bit. The program was tested on Windows 11 26H2 (Home and Pro); it may work on other versions,
+- Windows 11 x64 (not tested on ARM64). The program was tested on Windows 11 26H2 (Home and Pro); it may work on other versions,
   but it has not been tested on them.
 - An account with administrator rights – Windows asks for consent at startup (UAC prompt).
 - Nothing to install. The .NET Framework 4.8.1 the program needs is already part of Windows 11.
