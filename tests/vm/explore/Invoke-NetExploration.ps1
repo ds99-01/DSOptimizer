@@ -15,7 +15,7 @@ Opis działania:
     Port metody z audytu sieci: ślad ETW w VM (logman) z dostawcami Microsoft-Windows-Kernel-Network, Microsoft-Windows-Kernel-Process
     i Microsoft-Windows-DNS-Client, parser net\Parse-NetTrace.ps1 przypisuje ruch do drzewa procesów DSOptimizer.exe (PID rodzica,
     potomkowie dowolnej głębokości) i do zapytań DNS z tego drzewa. Sieć: Default Switch, podłączona dopiero po starcie VM i na czas
-    scenariusza. W VM zatrzymane wuauserv, UsoSvc, DoSvc i BITS (usługi Windows pobierające w tle zalewały ślad i nie należą do programu).
+    scenariusza. W VM próba zatrzymania wuauserv, UsoSvc, DoSvc i BITS (wynik każdej w polu services; DoSvc odmawia zmiany: Odmowa dostępu) (usługi Windows pobierające w tle zalewały ślad i nie należą do programu).
     Scenariusze (każdy: revert do checkpointu, start VM bez sieci, wydanie z -ArtifactPath rozpakowane do C:\dso\app, konto 'dso'):
       start-on  - settings.json z {"schemaVersion":1,"language":"pl"} (pole checkUpdatesAtStart nieobecne = test wartości domyślnej),
                   start okna i net\NavProbe.ps1 po wszystkich stronach bez klikania przycisków;
@@ -34,8 +34,8 @@ Opis działania:
     uruchomieniem programu, i czekamy tylko na łączność (bez rozwiązywania nazw, żeby nie rozgrzewać pamięci podręcznej DNS).
     Audyt 4688 (tworzenie procesów) jest włączany w VM; po scenariuszu drzewo DSOptimizer.exe z audytu jest porównywane z dsoTreeProcesses.
     Zakres: wynik dotyczy drzewa procesów programu (DSOptimizer.exe i jego potomkowie), nie całego komputera. Ruch zlecony usługom
-    Windows (Windows Update, Delivery Optimization, BITS) nie jest liczony; ich usługi (wuauserv, UsoSvc, DoSvc, BITS) są zatrzymane
-    na czas pomiaru, jak w metodzie archiwalnej. Pomiar mówi z kim i ile bajtów, nie co (patrz audyt sieci).
+    Windows (Windows Update, Delivery Optimization, BITS) nie jest liczony; usługi (wuauserv, UsoSvc, DoSvc, BITS) próbowano zatrzymać
+    na czas pomiaru, jak w metodzie archiwalnej (wynik prób w polu services; DoSvc odmawia zmiany). Pomiar mówi z kim i ile bajtów, nie co (patrz audyt sieci).
     RISK: skrypt przywraca VM do checkpointu 'czysta-26H2' przed każdym scenariuszem i po nim (zmiany w VM przepadają) oraz na czas
     scenariusza podłącza kartę VM do Default Switch (ruch NAT na hoście); po pracy karta jest odłączona, a VM wyłączona. Nie usuwa VM.
     Wynik: <OutDirectory>\<VmName>\net.json (UTF-8), surowe pliki scenariusza (ślad sieci w JSON, wynik sondy, raporty --out)
@@ -73,7 +73,7 @@ function Get-NetPlan {
         CanaryTimeoutSeconds = 30
         # Podkategoria audytu 'Process Creation' (GUID, niezależny od języka).
         AuditSubcategory    = '{0CCE922B-69AE-11D9-BED3-505054503030}'
-        Scope               = 'Drzewo procesów programu (DSOptimizer.exe i potomkowie). Ruch zlecony usługom Windows (Windows Update, Delivery Optimization, BITS) nie jest liczony; ich usługi zatrzymano na czas pomiaru.'
+        Scope               = 'Drzewo procesów programu (DSOptimizer.exe i potomkowie). Ruch zlecony usługom Windows (Windows Update, Delivery Optimization, BITS) nie jest liczony; usługi wuauserv, UsoSvc, DoSvc i BITS próbowano zatrzymać na czas pomiaru, wynik każdej próby jest w polu services.'
         NetworkName         = 'api.github.com'
         NetworkSwitch       = 'Default Switch'
         NetworkWaitSeconds  = 300
