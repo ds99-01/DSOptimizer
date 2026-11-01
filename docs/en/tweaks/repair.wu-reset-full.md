@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.wu-reset-full.md sha256: f07a646013f0e23ee5449201f944db604448d466332a867f67bd7da4c0b2ce29 -->
+<!-- source: docs/tweaks/repair.wu-reset-full.md sha256: b664acfe543baa9636b14fc97384208da5b062b5a1fef3cb8f7ab6f7309cfaeb -->
 
 # repair.wu-reset-full – Reset Windows Update and remove blocks
 
@@ -30,7 +30,7 @@ Table of startup types (the same on Home and Pro):
 `msiserver`, `WaaSMedicSvc` and `DoSvc` are never changed: writing the startup type ends with refusal 5 even for the Administrator (measurement), and `DoSvc` has different values on Home and Pro. The result mentions one of them only when it's disabled (`Disabled`). No DLL registration (`regsvr32`), no modules from outside the system, no touching `WaaSMedicSvc`.
 
 ## Sources
-- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: measurements 3, 3h and 4 (policies: test write, the Settings view with all of them and with each one separately, `reg export`/`delete`/`import`).
+- Test on 26H2 Home and Pro VMs (build 26300.9457), 2026-10-22: default service start types (Home and Pro; `DoSvc` differs between editions), the update history after a reset (Pro with a network) and the policies (test write, the Settings view with all of them and with each one separately, `reg export`/`delete`/`import`).
 - No MS documentation checked in this task (the Windows Update policy pages weren't fetched); evidence: the VM test described below. The effect of the policies on the scan itself (offline) wasn't measured, so the diagnosis and the description don't promise that every value blocks updates.
 
 ## Defaults on a fresh 26H2

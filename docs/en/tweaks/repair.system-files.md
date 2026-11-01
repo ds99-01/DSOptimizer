@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.system-files.md sha256: 08df7c84a8fbb7494336afaeec803511a25505b0299d109ca1ff2eeee73e1b1a -->
+<!-- source: docs/tweaks/repair.system-files.md sha256: 0d12adfbc653a7e7f68126c7eb27718605a82466b50f11c49cf91472164c33c6 -->
 
 # repair.system-files – Check and repair system files
 
@@ -14,12 +14,12 @@ C# handler `system-files` (`SystemFilesHandler`), without a script:
 5. Step 2 of 2 "SFC": `%SystemRoot%\System32\sfc.exe /scannow` the same way (UTF-16LE output without BOM, the percentage with a bare `\r`). The key `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending` is read before and after SFC.
 6. SFC verdict (`SfcOutcome`) from the `[SR]` markers in the `CBS.log` segment of this run: `Cannot repair member file` → not everything repaired; `Repairing corrupted file … from store` / `Repaired file … by copying from backup` → repaired; a repair trace (these markers or `[SR] Repairing N components` with N > 0) together with a `RebootPending` key that didn't exist before SFC → repair after a restart; `[SR] Verify complete` without a repair trace and code 0 → no violations; anything else (no segment, no `[SR]`, code ≠ 0) → ambiguous.
 7. Overall result: `Executed` only when DISM ∈ {healthy, repaired, healthy or repaired, restart} and SFC ∈ {no violations, repaired, repair after a restart}. DISM source missing / error or SFC "not everything" → `Failed`. SFC ambiguous → `NotConfirmed` with the `CBS.log` path. `RequiresReboot` with DISM 3010 or SFC "repair after a restart". Message: the DISM line, the SFC line and "Logs: %SystemRoot%\Logs\DISM\dism.log, %SystemRoot%\Logs\CBS\CBS.log.".
-8. Time limit: DISM after 45 min → `NotConfirmed` "DISM is still running in the background after 45 min – the program stopped waiting. You can check the result in %SystemRoot%\Logs\DISM\dism.log.", SFC doesn't start (it would wait for DISM to finish anyway – measured on the VM). SFC after 45 min → `NotConfirmed` "SFC is still running in the background after 45 min – …" with the `CBS.log` path. The tool keeps working, the progress window moves on to the result, and the next long repair gets `Refused`.
+8. Time limit: DISM after 45 min → `NotConfirmed` "DISM is still running in the background after 45 min – the program stopped waiting. You can check the result in %SystemRoot%\Logs\DISM\dism.log.", SFC doesn't start (it would wait for DISM to finish anyway – on the VM a second DISM and an SFC started during `RestoreHealth` waited for it to finish). SFC after 45 min → `NotConfirmed` "SFC is still running in the background after 45 min – …" with the `CBS.log` path. The tool keeps working, the progress window moves on to the result, and the next long repair gets `Refused`.
 
 The full sentences of the tools (without the progress bar lines) go to the program log, and all lines go to the action output.
 
 ## Sources
-- Test on 26H2 Home and Pro VMs (build 26300.9457, pl-PL), 2026-10-22: VM measurements; samples of the output and of `CBS.log` segments in `tests/DSOptimizer.Tests.Unit/Repair/Samples/`.
+- Test on 26H2 Home and Pro VMs (build 26300.9457, pl-PL), 2026-10-22: DISM and SFC, exit codes, time, an ongoing servicing operation; samples of the output and of `CBS.log` segments in `tests/DSOptimizer.Tests.Unit/Repair/Samples/`.
 - DISM, the DISM → SFC order and the SFC messages: https://support.microsoft.com/en-us/topic/use-the-system-file-checker-tool-to-repair-missing-or-corrupted-system-files-79aa86cb-ca52-166a-92a3-966e85d4094e (accessed 2026-10-22, MS Support).
 - The `CBS.log` summary block and the source-missing codes: https://learn.microsoft.com/en-us/troubleshoot/windows-server/installing-updates-features-roles/fix-windows-update-errors (KB 947821), https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/configure-a-windows-repair-source (accessed 2026-10-22, MS Learn).
 - `[SR]` markers: https://learn.microsoft.com/en-us/troubleshoot/windows-client/deployment/analyze-sfc-program-log-file-entries (KB 928228, accessed 2026-10-22, MS Learn).
@@ -35,7 +35,7 @@ Not applicable: `kind=action` without detection and undo. The verification of th
 - Time: usually 2–3 min on a VM, with Windows Update active DISM about 10 min, with real damage longer (not measured). Wait limit 45 min per tool; after it, the tool keeps working in the background.
 - "Stop" works only between steps.
 - Without an internet connection, DISM may report missing source files (not measured – a healthy store doesn't reach for a source).
-- Known limitation of the guard: it doesn't detect updates being installed by Windows Update (`TiWorker` is excluded – false alarms); a second servicing tool in that situation waits for the first one to finish (measured on the VM), so the repair takes longer, but doesn't break.
+- Known limitation of the guard: it doesn't detect updates being installed by Windows Update (`TiWorker` is excluded – false alarms); a second servicing tool in that situation waits for the first one to finish (on the VM a second DISM and an SFC waited for the first one), so the repair takes longer, but doesn't break.
 - Closing the program after the time limit doesn't interrupt DISM or SFC (measured – "VM test" section); not measured: DSOptimizer started by another program inside a Job Object with `KILL_ON_JOB_CLOSE`.
 
 ## VM test

@@ -28,7 +28,7 @@ Tabela typów startu (ta sama na Home i Pro):
 `msiserver`, `WaaSMedicSvc` i `DoSvc` nigdy nie są zmieniane: zapis typu startu kończy się odmową 5 także dla Administratora (pomiar), a `DoSvc` ma różne wartości na Home i Pro. Wynik wspomina o którejś tylko, gdy jest wyłączona (`Disabled`). Bez rejestracji DLL (`regsvr32`), bez modułów spoza systemu, bez ruszania `WaaSMedicSvc`.
 
 ## Źródła
-- Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22: pomiary 3, 3h i 4 (polityki: zapis testowy, widok Ustawień razem i osobno, `reg export`/`delete`/`import`).
+- Test na VM 26H2 Home i Pro (build 26300.9457), 2026-10-22: domyślne typy startu usług (Home i Pro; `DoSvc` różni się między edycjami), historia aktualizacji po resecie (Pro z siecią) oraz polityki (zapis testowy, widok Ustawień razem i osobno, `reg export`/`delete`/`import`).
 - Brak dokumentacji MS sprawdzonej w tym zadaniu (strony polityk Windows Update nie były pobierane); dowód: test na VM opisany niżej. Skutku polityk na sam skan (offline) nie zmierzono, więc diagnoza i opis nie obiecują, że każda wartość blokuje aktualizacje.
 
 ## Wartości domyślne na świeżym 26H2

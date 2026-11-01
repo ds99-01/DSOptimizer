@@ -1,10 +1,10 @@
-<!-- source: docs/tweaks/repair.windows-old.md sha256: 5421c7fadf18c8d1636367aebde23dd3375007a110fafa437255c3ce9fe737ec -->
+<!-- source: docs/tweaks/repair.windows-old.md sha256: 3590cdd04aea9abce76909624c7077d28f89e24f7db92457cc739c6e7fa16637 -->
 
 # repair.windows-old – Remove the previous Windows installation
 
 ## Verdict for 26H2
 Port as `kind=action`, `risk=caution` ("Repairs" category, a long repair with a progress window). Mechanism
-measured on 26H2 Home and Pro VMs (VM measurements): the
+measured on 26H2 Home and Pro VMs: the
 "Previous Installations" handler of Disk Cleanup (`cleanmgr /sagerun`) recognizes a prepared `C:\Windows.old` folder and deletes it.
 Only mechanism A – no taking ownership and no ACL changes in C# (an adopted decision). The prepared folder is ordinary
 files owned by `BUILTIN\Administratorzy` (BUILTIN\Administrators on English Windows); a real `Windows.old` after a feature update has files with a `TrustedInstaller` ACL and
@@ -51,7 +51,7 @@ The handler doesn't delete anything itself, doesn't take ownership and doesn't c
 
 ## Sources
 - Test on 26H2 Home and Pro VMs (build 26300.9457, pl-PL), 2026-10-22:
-  VM measurements (script `tests/vm/explore/Invoke-E4B2Exploration.ps1`, `Invoke-E4B2WindowsOldProbe`).
+  deletion of a prepared `C:\Windows.old` by cleanmgr, `StateFlags`, times and limits (script `tests/vm/explore/Invoke-E4B2Exploration.ps1`, `Invoke-E4B2WindowsOldProbe`).
 - `cleanmgr` (`/sageset:n`, `/sagerun:n`, n = 0–9999): https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/cleanmgr
   (MS Learn, as cited in the measurement of 2026-10-22).
 - `StateFlagsNNNN` under `VolumeCaches\<handler>` (0 = not selected, 2 = selected):

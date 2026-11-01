@@ -58,6 +58,7 @@ public class DocsInternalNotesTests
         @"\b(?:decyzj\w*|decision) [DS]\d+\b",
         // oznaczenia przebiegów, reguł i sond tylko w zwrotach, które naprawdę wystąpiły (nie S0-S5 stanów uśpienia ani nazw sprzętu)
         @"\b(?:przebieg\w*|runs?|reguł\w*|rules?|mechanizm\w*|mechanisms?|przypadkach|sonda|probe|from|z) [CDTAHPN]\d+\b|\b[CDTAHPN]\d+ (?:run|cases)\b|\(S\d+,|\([CDTAHPN]\d+\)|\bA[1-4] (?:plik|file|folder)\b|; A[1-4] ",
+        @"\bpomiar\w* \d+[a-z]?\b(?!-)|\bmeasurements? \d+[a-z]?\b(?!-)",
         @"\bw tej partii\b|\bz wcześniejszych partii\b|\bin this batch\b|\bearlier rounds\b",
         @"\beksploracj\w*|\bexploration\b",
     }.Select(p => new Regex(p, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)).ToArray();
@@ -116,6 +117,9 @@ public class DocsInternalNotesTests
     [InlineData("not in this batch")]
     [InlineData("Skips from earlier rounds")]
     [InlineData("Eksploracja w sesji użytkownika")]
+    [InlineData("pomiary 3, 3h i 4")]
+    [InlineData("measurement 3h")]
+    [InlineData("z pomiaru 5f")]
     [InlineData("(H1: brak okna w 71 s; P1: otwiera się Eksplorator)")]
     [InlineData("Z siecią (N1, Pro): 3 wpisy")]
     [InlineData("jak Home (P1, N1); nowy")]
@@ -140,6 +144,8 @@ public class DocsInternalNotesTests
     [InlineData("klucz `C5` w spanie kodu i `decyzja D2` też")]
     [InlineData("testy jednostkowe, bez prawdziwego polecenia")]
     [InlineData("Test na VM, zebrane na VM")]
+    [InlineData("pomiar 2026-10-24 na VM, measurement 2026-10-24")]
+    [InlineData("VM measurement of 26H2")]
     [InlineData("Pomiar na VM (Home: brak okna; Pro: Dokumenty)")]
     [InlineData("pomiar na Pro z siecią, measurement on Pro")]
     public void FindNotes_LeavesOrdinaryText(string line) => Assert.Empty(FindNotes(line));

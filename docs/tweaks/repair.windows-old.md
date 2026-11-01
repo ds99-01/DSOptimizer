@@ -2,7 +2,7 @@
 
 ## Werdykt 26H2
 Portować jako `kind=action`, `risk=caution` (kategoria „Naprawy”, długa naprawa z oknem postępu). Mechanizm
-zmierzony na VM 26H2 Home i Pro (pomiary na VM): program obsługi
+zmierzony na VM 26H2 Home i Pro: program obsługi
 „Previous Installations” Oczyszczania dysku (`cleanmgr /sagerun`) rozpoznaje przygotowany folder `C:\Windows.old` i go usuwa.
 Tylko mechanizm A – bez przejmowania własności i zmiany ACL w C# (przyjęta decyzja). Przygotowany folder to zwykłe
 pliki z właścicielem `BUILTIN\Administratorzy`; prawdziwy `Windows.old` po aktualizacji funkcji ma pliki z ACL `TrustedInstaller` i
@@ -49,7 +49,7 @@ Handler niczego sam nie usuwa, nie przejmuje własności i nie zmienia ACL (test
 
 ## Źródła
 - Test na VM 26H2 Home i Pro (build 26300.9457, pl-PL), 2026-10-22:
-  pomiary na VM (skrypt `tests/vm/explore/Invoke-E4B2Exploration.ps1`, `Invoke-E4B2WindowsOldProbe`).
+  usunięcie przygotowanego `C:\Windows.old` przez cleanmgr, `StateFlags`, czasy i limity (skrypt `tests/vm/explore/Invoke-E4B2Exploration.ps1`, `Invoke-E4B2WindowsOldProbe`).
 - `cleanmgr` (`/sageset:n`, `/sagerun:n`, n = 0–9999): https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/cleanmgr
   (MS Learn, za pomiarem z 2026-10-22).
 - `StateFlagsNNNN` pod `VolumeCaches\<program obsługi>` (0 = niezaznaczone, 2 = zaznaczone):
