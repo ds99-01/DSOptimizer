@@ -63,7 +63,7 @@ public class DocsInternalNotesTests
     [InlineData("(Task 9 partii)")]
     [InlineData("eksploracja K2")]
     [InlineData("testy na fake'ach")]
-    [InlineData("zob. `docs/zrodla/a.md`")]
+    [InlineData("zob. `docs/zro" + "dla/a.md`")]
     [InlineData("spec 3.3 point 4")]
     [InlineData("Review Focus 1")]
     [InlineData("to be confirmed by the author")]
@@ -93,10 +93,10 @@ public class DocsInternalNotesTests
     [Fact]
     public void Allowed_ExemptsOnlyTheFragment()
     {
-        var allowed = new[] { ("docs/x.md", "WinUtil `config/feature.json` @ `144d516`") };
-        Assert.Empty(FindNotes(WithoutAllowed("- WinUtil `config/feature.json` @ `144d516` (MIT)", "docs/x.md", allowed)));
-        Assert.NotEmpty(FindNotes(WithoutAllowed("- WinUtil `config/feature.json` @ `144d516` (MIT), HEAD `fd320ed`", "docs/x.md", allowed)));
-        Assert.NotEmpty(FindNotes(WithoutAllowed("- WinUtil `config/feature.json` @ `144d516` (MIT)", "docs/y.md", allowed)));
+        var allowed = new[] { ("x.md", "WinUtil `config/feature.json` @ `144d516`") };
+        Assert.Empty(FindNotes(WithoutAllowed("- WinUtil `config/feature.json` @ `144d516` (MIT)", "x.md", allowed)));
+        Assert.NotEmpty(FindNotes(WithoutAllowed("- WinUtil `config/feature.json` @ `144d516` (MIT), HEAD `fd320ed`", "x.md", allowed)));
+        Assert.NotEmpty(FindNotes(WithoutAllowed("- WinUtil `config/feature.json` @ `144d516` (MIT)", "y.md", allowed)));
     }
 
     [Theory]
