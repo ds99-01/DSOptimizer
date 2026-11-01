@@ -63,7 +63,7 @@ public sealed class ItemViewModel : ObservableObject
     /// <summary>Podpowiedź i nazwa dla czytnika ekranu wskaźnika ryzyka w wierszu i w panelu: „Ryzyko: bezpieczne”.</summary>
     public string RiskToolTip => GuiText.RiskToolTip(Definition.Risk);
 
-    /// <summary>Pozycja z <c>suggested</c> w katalogu: tylko oznaczenie; zaznacza ją dopiero przycisk 
+    /// <summary>Pozycja z <c>suggested</c> w katalogu: tylko oznaczenie; zaznacza ją dopiero przycisk „Zaznacz sugerowane”; nic nie zaznacza się samo.</summary>
     public bool IsSuggested => Definition.Suggested;
 
     public bool HasEditions => EditionsText is not null;
