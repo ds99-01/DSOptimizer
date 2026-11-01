@@ -1,40 +1,39 @@
-<!-- source: docs/tweaks/panels.visual-effects.md sha256: 07dc94a7bb30f8cc1ecd55a0a629062372015a88aaacd9952b99f0bb1aeb85fe -->
+<!-- source: docs/tweaks/panels.visual-effects.md sha256: fc5c848b3a72ce3f3c803f3778a6739cb4150d693fdfcb0756c1689181e485fd -->
 
 # panels.visual-effects – Visual effects (Performance Options)
 
 ## Verdict for 26H2
-Port as `kind=panel`, `risk=safe` (v3.2 alias `tool_vis`): on the 26H2 Home and Pro VMs the command opens the classic Performance Options window, not Settings. The item only starts a program and changes nothing.
+Port as `kind=panel`, `risk=safe` (alias from the previous version `tool_vis`): on the 26H2 Home and Pro VMs the command opens the classic Performance Options window, not Settings. The item only starts a program and changes nothing.
 
 ## What it changes
 Nothing: `kind=panel` opens a window and doesn't write to the registry, services or files. `launch` field: `file` = `SystemPropertiesPerformance.exe`, `arguments` = empty.
 The launcher starts `C:\Windows\System32\SystemPropertiesPerformance.exe` through CreateProcess (the file only from System32, never from the current directory or `PATH`), outside the scripts' Job Object and without waiting for the window.
 
 Rejected variants (not separate items; VM data in the "Sources" section):
-- `control.exe sysdm.cpl,,3` (v3.2 `tool_vis`): `control.exe` exits with code 1, and the window belongs to `SystemPropertiesAdvanced.exe` (title "System Properties", `#32770`) – this is the System Properties window, not Performance Options. The Advanced tab is an inference from the process name (MS calls `SystemPropertiesAdvanced.exe` "Advanced system properties"). In this variant, visual effects are one click further away, so the variant is dropped for this item.
+- `control.exe sysdm.cpl,,3` (previous version `tool_vis`): `control.exe` exits with code 1, and the window belongs to `SystemPropertiesAdvanced.exe` (title "System Properties", `#32770`) – this is the System Properties window, not Performance Options. The Advanced tab is an inference from the process name (MS calls `SystemPropertiesAdvanced.exe` "Advanced system properties"). In this variant, visual effects are one click further away, so the variant is dropped for this item.
 
 ## Sources
-- WinUtil: no row for this item (v3.2 `core_models.py`: `sysdm.cpl,,3`, rejected, see above).
+- WinUtil: no row for this item (previous version, `core_models.py`: `sysdm.cpl,,3`, rejected, see above).
 - https://learn.microsoft.com/en-us/windows/win32/shell/executing-control-panel-items – MS "Executing Control Panel Items" (accessed 2026-10-19): "Performance: %windir%\system32\SystemPropertiesPerformance.exe".
-- Reading from 26H2 VMs (build 26300.9457), Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), 2026-10-19, K1 = PS Direct as Administrator (session 0), K2 = elevated interactive task in the session of user `dso`: the Performance Options window from the `SystemPropertiesPerformance.exe` process (user session, elevated). The automation didn't read the effect switches; according to a visual check in the VM (the author, 2026-10-19), the window shows "Visual Effects".
-  - K1: after 10 s, `SystemPropertiesPerformance.exe` is running (session 0; K1 doesn't show the user's window, only that the process started).
-  - K2: the Performance Options window (`#32770`). Home = Pro in all fields except the PIDs.
-- Research and results: `docs/zrodla/2026-10-19-partia-c5-zrodla.md` (in Polish), sections "Wyniki VM" (VM results) and "Sonda uzupełniająca" (follow-up probe).
+- Reading from 26H2 VMs (build 26300.9457), Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), 2026-10-19: the Performance Options window from the `SystemPropertiesPerformance.exe` process (user session, elevated). The automation didn't read the effect switches; according to a visual check in the VM (2026-10-19), the window shows "Visual Effects".
+  - The Administrator account over PowerShell Direct (session 0): after 10 s, `SystemPropertiesPerformance.exe` is running (this session doesn't show the user's window, only that the process started).
+  - The `dso` user session (elevated task): the Performance Options window (`#32770`). Home = Pro in all fields except the PIDs.
 
 ## Defaults on a fresh 26H2
 Not applicable: the item doesn't read or write any settings. The only system state after running it is the window's process (VM reading, 2026-10-19, above).
 
 ## Detection and undo
-Not applicable: `kind=panel` has no detection and no undo. `Executed` only means that the process started; whether the window appeared is judged by the VM test (K2; smoke test with the real DSOptimizer.exe in the dso session – to be confirmed by the author).
+Not applicable: `kind=panel` has no detection and no undo. `Executed` only means that the process started; whether the window appeared is judged by the VM test in the `dso` user session (elevated task; smoke test with the real DSOptimizer.exe in the dso session – not checked manually in the app).
 
 ## Risks and warnings
 - `risk=safe`: the item changes nothing in the system; you close the window yourself (DSOptimizer doesn't wait for it and doesn't close it).
 - Measured on a VM with Polish regional settings; the window title may differ in another culture.
 
 ## VM test
-VM run `20261019-110405` (2026-10-19, HEAD `fd320ed`, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in the C5 cases.
-- `panels-visual-effects` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: within 15 s (polling every 0.5 s) the `SystemPropertiesPerformance.exe` process is running; `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (K1, PS Direct as Administrator, session 0), not that the window appeared for the user.**
-- K2 exploration (interactive task in the `dso` session, `Limited` token): the "Opcje wydajności" (Performance Options) window ("Efekty wizualne" (Visual Effects) tab). Home = Pro. Research and K2 exploration results: `docs/zrodla/2026-10-19-partia-c5-zrodla.md` (in Polish), sections "Wyniki VM" (VM results) and "Sonda uzupełniająca" (follow-up probe).
-- The author's manual click (Pro VM, `dso` session, Win+R, 2026-10-19): `SystemPropertiesPerformance.exe` opens the window with the "Efekty wizualne" (Visual Effects) tab. Win+R with just `sysdm.cpl,,3` gives the error "nie można odnaleźć pliku" (cannot find the file) (v3.2 called `control.exe sysdm.cpl,,3`, not `sysdm.cpl,,3` alone).
-- The `control.exe sysdm.cpl,,3` variant was rejected based on the VM exploration (K1/K2, not the author's click): it opens System Properties (`SystemPropertiesAdvanced.exe`), not visual effects.
-- `SystemPropertiesPerformance.exe` clicked from Win+R isn't exactly the same as the item's `launch` (CreateProcess with the full path from System32): the click confirms the panel, while the item's `launch` is confirmed only by the K2 exploration.
-- **Smoke test with the real `DSOptimizer.exe` in the `dso` session: to be confirmed by the author**. Not done because the author was away; the item goes into `main` with this caveat (like D2 in round C4). A mismatch between "the process is running" (Check) and a window visible to the user will show up only on first use from the app.
+VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in these cases.
+- `panels-visual-effects` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: within 15 s (polling every 0.5 s) the `SystemPropertiesPerformance.exe` process is running; `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (the Administrator account over PowerShell Direct, session 0), not that the window appeared for the user.**
+- Exploration in the `dso` user session (elevated task, `Limited` token): the "Opcje wydajności" (Performance Options) window ("Efekty wizualne" (Visual Effects) tab). Home = Pro.
+- The manual click (Pro VM, `dso` session, Win+R, 2026-10-19): `SystemPropertiesPerformance.exe` opens the window with the "Efekty wizualne" (Visual Effects) tab. Win+R with just `sysdm.cpl,,3` gives the error "nie można odnaleźć pliku" (cannot find the file) (the previous version called `control.exe sysdm.cpl,,3`, not `sysdm.cpl,,3` alone).
+- The `control.exe sysdm.cpl,,3` variant was rejected based on the VM exploration (sessions: the Administrator account over PowerShell Direct and the `dso` user session, not the manual click): it opens System Properties (`SystemPropertiesAdvanced.exe`), not visual effects.
+- `SystemPropertiesPerformance.exe` clicked from Win+R isn't exactly the same as the item's `launch` (CreateProcess with the full path from System32): the click confirms the panel, while the item's `launch` is confirmed only by the exploration in the `dso` user session (elevated task).
+- **Smoke test with the real `DSOptimizer.exe` in the `dso` session: not checked manually in the app**. Not done; the item goes into `main` with this caveat. A mismatch between "the process is running" (Check) and a window visible to the user will show up only on first use from the app.

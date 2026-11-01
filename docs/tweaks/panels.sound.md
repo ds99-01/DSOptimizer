@@ -1,7 +1,7 @@
 # panels.sound – Dźwięk
 
 ## Werdykt 26H2
-Portować jako `kind=panel`, `risk=safe`: w VM 26H2 Home i Pro polecenie otwiera klasyczne okno „Dźwięk”, a nie Ustawienia. Okno potwierdzone odczytem VM; ręczne Win+R autora bez odpowiedzi – do potwierdzenia: smoke z prawdziwym DSOptimizer.exe w sesji dso – do potwierdzenia przez autora.
+Portować jako `kind=panel`, `risk=safe`: w VM 26H2 Home i Pro polecenie otwiera klasyczne okno „Dźwięk”, a nie Ustawienia. Okno potwierdzone odczytem VM; ręczne Win+R bez odpowiedzi – do potwierdzenia: smoke z prawdziwym DSOptimizer.exe w sesji dso (nie sprawdzono ręcznie w programie).
 
 ## Co zmienia
 Nic: `kind=panel` otwiera okno i nie zapisuje ani rejestru, ani usług, ani plików. Pole `launch`: `file` = `control.exe`, `arguments` = `/name Microsoft.Sound`.
@@ -13,16 +13,15 @@ Odrzucone warianty (nie osobne pozycje; dane z VM w sekcji „Źródła”):
 ## Źródła
 - WinUtil `config/feature.json` @ `144d516` (MIT, 2026-07-31): WPFPanelSound = „Sound Settings”, `InvokeScript`: `mmsys.cpl`. Hint co do listy i polecenia, nie dowód skutku – https://raw.githubusercontent.com/ChrisTitusTech/winutil/144d51675190ffcb2553b7ba5313f8d602c8ecf9/config/feature.json
 - https://learn.microsoft.com/en-us/windows/win32/shell/controlpanel-canonical-names – MS „Canonical Names of Control Panel Items”: `Microsoft.Sound` (`mmsys.cpl,-300`).
-- Odczyt VM 26H2 (build 26300.9457), Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), 2026-10-19, K1 = PS Direct jako Administrator (sesja 0), K2 = zadanie interaktywne podniesione w sesji użytkownika `dso`: Okno „Dźwięk” (`#32770`) w `rundll32.exe` (podniesionym); `control.exe` kończy się kodem 1 mimo otwartego okna. Rozbieżność: przy ręcznym Win+R autor nie dostał odpowiedzi – do potwierdzenia: smoke z prawdziwym DSOptimizer.exe w sesji dso – do potwierdzenia przez autora.
-  - K1: po 10 s żyje `rundll32.exe` (`…\mmsys.cpl`) (sesja 0; K1 nie pokazuje okna użytkownika, tylko start procesu).
-  - K2: okno „Dźwięk” (`#32770`). Home = Pro we wszystkich polach poza PID-ami.
-- Research i wyniki: `docs/zrodla/2026-10-19-partia-c5-zrodla.md` (sekcje „Wyniki VM”, „Sonda uzupełniająca”).
+- Odczyt VM 26H2 (build 26300.9457), Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), 2026-10-19: Okno „Dźwięk” (`#32770`) w `rundll32.exe` (podniesionym); `control.exe` kończy się kodem 1 mimo otwartego okna. Rozbieżność: przy ręcznym Win+R nie było odpowiedzi – do potwierdzenia: smoke z prawdziwym DSOptimizer.exe w sesji dso (nie sprawdzono ręcznie w programie).
+  - Konto Administrator przez PowerShell Direct (sesja 0): po 10 s żyje `rundll32.exe` (`…\mmsys.cpl`) (ta sesja nie pokazuje okna użytkownika, tylko start procesu).
+  - Sesja użytkownika `dso` (zadanie podniesione): okno „Dźwięk” (`#32770`). Home = Pro we wszystkich polach poza PID-ami.
 
 ## Wartości domyślne na świeżym 26H2
 Nie dotyczy: pozycja nie czyta ani nie zapisuje ustawień. Stan systemu po uruchomieniu to tylko proces okna (odczyt VM, 2026-10-19, wyżej).
 
 ## Detekcja i undo
-Nie dotyczy: `kind=panel` nie ma detekcji ani cofnięcia. `Executed` oznacza tylko, że proces wystartował; czy okno się pokazało, ocenia test VM (K2; smoke z prawdziwym DSOptimizer.exe w sesji dso – do potwierdzenia przez autora).
+Nie dotyczy: `kind=panel` nie ma detekcji ani cofnięcia. `Executed` oznacza tylko, że proces wystartował; czy okno się pokazało, ocenia test VM w sesji użytkownika `dso` (zadanie podniesione; smoke z prawdziwym DSOptimizer.exe w sesji dso – nie sprawdzono ręcznie w programie).
 
 ## Ryzyka i ostrzeżenia
 - `risk=safe`: pozycja niczego nie zmienia w systemie; okno zamykasz sam (DSOptimizer nie czeka na nie i go nie zamyka).
@@ -30,8 +29,8 @@ Nie dotyczy: `kind=panel` nie ma detekcji ani cofnięcia. `Executed` oznacza tyl
 - Scenariusz „DSOptimizer podniesiony innym kontem administratora niż zalogowany użytkownik” nie był mierzony na VM dla tego panelu (host `control.exe`/`explorer.exe` sam używa asocjacji i COM w procesie podniesionym; DSOptimizer kontroluje tylko ścieżkę uruchamianego pliku).
 
 ## Test VM
-Przebieg VM `20261019-110405` (2026-10-19, HEAD `fd320ed`, build 26300.9457): Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Raporty lokalne poza gitem. Przebieg łącznie: Home 401 zaliczonych / 0 błędów / 29 pominiętych, Pro 401 / 0 / 29 (`main` 313/0/29 + przebiegi Reboot); w przypadkach C5 `CleanupError` puste.
-- `panels-sound` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** na Home i Pro (`ExecuteExit=0`, `Executed`). `Check` odpytuje w pętli: żyje `rundll32.exe` z linią poleceń zawierającą `mmsys.cpl`; `Cleanup` zamyka tylko procesy pasujące do `Check`. **Check dowodzi, że proces z polecenia żyje (K1, PS Direct jako Administrator, sesja 0), nie że okno pojawiło się u użytkownika.**
-- Eksploracja K2 (zadanie interaktywne w sesji `dso`, token `Limited`): okno „Dźwięk” (`#32770`, w podniesionym `rundll32.exe`). Home = Pro. Research i wyniki eksploracji K2: `docs/zrodla/2026-10-19-partia-c5-zrodla.md` (sekcje „Wyniki VM”, „Sonda uzupełniająca”).
-- Klik ręczny autora (VM Pro, sesja `dso`, Win+R, 2026-10-19): `mmsys.cpl` bez odpowiedzi - autor pominął tę pozycję. Okno „Dźwięk” potwierdza więc tylko odczyt VM (K2); ręczny klik nie potwierdza ani nie obala tej pozycji. Do potwierdzenia przy pierwszym użyciu z DSOptimizer.
-- **Smoke z prawdziwym `DSOptimizer.exe` w sesji `dso`: do potwierdzenia przez autora**. Nie wykonany, bo autor wyjechał; pozycja wchodzi do `main` z tym zastrzeżeniem (jak D2 w partii C4). Rozbieżność między „proces żyje” (Check) a oknem widocznym dla użytkownika wyjdzie dopiero przy pierwszym użyciu z aplikacji.
+Przebieg VM `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Raporty lokalne poza gitem. Przebieg łącznie: Home 401 zaliczonych / 0 błędów / 29 pominiętych, Pro 401 / 0 / 29 (`main` 313/0/29 + przebiegi Reboot); w tych przypadkach `CleanupError` puste.
+- `panels-sound` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** na Home i Pro (`ExecuteExit=0`, `Executed`). `Check` odpytuje w pętli: żyje `rundll32.exe` z linią poleceń zawierającą `mmsys.cpl`; `Cleanup` zamyka tylko procesy pasujące do `Check`. **Check dowodzi, że proces z polecenia żyje (konto Administrator przez PowerShell Direct, sesja 0), nie że okno pojawiło się u użytkownika.**
+- Eksploracja w sesji użytkownika `dso` (zadanie podniesione, token `Limited`): okno „Dźwięk” (`#32770`, w podniesionym `rundll32.exe`). Home = Pro.
+- Klik ręczny (VM Pro, sesja `dso`, Win+R, 2026-10-19): `mmsys.cpl` bez odpowiedzi - pozycję pominięto. Okno „Dźwięk” potwierdza więc tylko odczyt VM w sesji użytkownika `dso` (zadanie podniesione); ręczny klik nie potwierdza ani nie obala tej pozycji. Do potwierdzenia przy pierwszym użyciu z DSOptimizer.
+- **Smoke z prawdziwym `DSOptimizer.exe` w sesji `dso`: nie sprawdzono ręcznie w programie**. Niewykonany; pozycja wchodzi do `main` z tym zastrzeżeniem. Rozbieżność między „proces żyje” (Check) a oknem widocznym dla użytkownika wyjdzie dopiero przy pierwszym użyciu z aplikacji.

@@ -10,21 +10,20 @@ Launcher uruchamia przez CreateProcess `C:\Windows\System32\control.exe sysdm.cp
 Odrzucone warianty (nie osobne pozycje; dane z VM w sekcji „Źródła”):
 - `sysdm.cpl` przez ShellExecute (WinUtil): w głównej sondzie bez nowego procesu i okna – nierozstrzygnięte, bo wcześniejszy wariant `control.exe sysdm.cpl,,3` zostawił otwarte `SystemPropertiesAdvanced.exe` (okno jednoinstancyjne – hipoteza, bez bezpośredniego odczytu). Sonda uzupełniająca w czystym stanie potwierdziła okno dla `control.exe sysdm.cpl`.
 - `control.exe sysdm.cpl,,3`: otwiera `SystemPropertiesAdvanced.exe` (karta Zaawansowane wg nazwy procesu); zbędny wariant.
-- `control.exe /name Microsoft.System`: w K2 powstaje tylko nowy `explorer.exe /factory` bez okna – odrzucony.
+- `control.exe /name Microsoft.System`: w sesji użytkownika `dso` (zadanie podniesione) powstaje tylko nowy `explorer.exe /factory` bez okna – odrzucony.
 
 ## Źródła
 - WinUtil `config/feature.json` @ `144d516` (MIT, 2026-07-31): WPFPanelSystem = „System Properties”, `InvokeScript`: `sysdm.cpl`. Hint co do listy i polecenia, nie dowód skutku – https://raw.githubusercontent.com/ChrisTitusTech/winutil/144d51675190ffcb2553b7ba5313f8d602c8ecf9/config/feature.json
 - https://learn.microsoft.com/en-us/windows/win32/shell/executing-control-panel-items – MS „Executing Control Panel Items”: przykład `control.exe sysdm.cpl,,3` (zakładki; numeracja zmieniała się między wersjami).
-- Odczyt VM 26H2 (build 26300.9457), Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), 2026-10-19, K1 = PS Direct jako Administrator (sesja 0), K2 = zadanie interaktywne podniesione w sesji użytkownika `dso`: Sonda uzupełniająca (CreateProcess `control.exe sysdm.cpl`, czysty stan): okno „Właściwości systemu” (`#32770`) w procesie `SystemPropertiesComputerName.exe` (sesja użytkownika). Którą kartę pokazuje, jest wnioskiem z nazwy procesu (domyślna: „Nazwa komputera”); tytuł okna tego nie rozstrzyga, a cytatu MS o tym pliku brak.
-  - K1: po 10 s żyje `SystemPropertiesComputerName.exe` (sesja 0; K1 nie pokazuje okna użytkownika, tylko start procesu).
-  - K2: okno „Właściwości systemu” (`#32770`). Home = Pro we wszystkich polach poza PID-ami.
-- Research i wyniki: `docs/zrodla/2026-10-19-partia-c5-zrodla.md` (sekcje „Wyniki VM”, „Sonda uzupełniająca”).
+- Odczyt VM 26H2 (build 26300.9457), Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), 2026-10-19: Sonda uzupełniająca (CreateProcess `control.exe sysdm.cpl`, czysty stan): okno „Właściwości systemu” (`#32770`) w procesie `SystemPropertiesComputerName.exe` (sesja użytkownika). Którą kartę pokazuje, jest wnioskiem z nazwy procesu (domyślna: „Nazwa komputera”); tytuł okna tego nie rozstrzyga, a cytatu MS o tym pliku brak.
+  - Konto Administrator przez PowerShell Direct (sesja 0): po 10 s żyje `SystemPropertiesComputerName.exe` (ta sesja nie pokazuje okna użytkownika, tylko start procesu).
+  - Sesja użytkownika `dso` (zadanie podniesione): okno „Właściwości systemu” (`#32770`). Home = Pro we wszystkich polach poza PID-ami.
 
 ## Wartości domyślne na świeżym 26H2
 Nie dotyczy: pozycja nie czyta ani nie zapisuje ustawień. Stan systemu po uruchomieniu to tylko proces okna (odczyt VM, 2026-10-19, wyżej).
 
 ## Detekcja i undo
-Nie dotyczy: `kind=panel` nie ma detekcji ani cofnięcia. `Executed` oznacza tylko, że proces wystartował; czy okno się pokazało, ocenia test VM (K2; smoke z prawdziwym DSOptimizer.exe w sesji dso – do potwierdzenia przez autora).
+Nie dotyczy: `kind=panel` nie ma detekcji ani cofnięcia. `Executed` oznacza tylko, że proces wystartował; czy okno się pokazało, ocenia test VM w sesji użytkownika `dso` (zadanie podniesione; smoke z prawdziwym DSOptimizer.exe w sesji dso – nie sprawdzono ręcznie w programie).
 
 ## Ryzyka i ostrzeżenia
 - `risk=safe`: pozycja niczego nie zmienia w systemie; okno zamykasz sam (DSOptimizer nie czeka na nie i go nie zamyka).
@@ -33,9 +32,9 @@ Nie dotyczy: `kind=panel` nie ma detekcji ani cofnięcia. `Executed` oznacza tyl
 - Scenariusz „DSOptimizer podniesiony innym kontem administratora niż zalogowany użytkownik” nie był mierzony na VM dla tego panelu (host `control.exe`/`explorer.exe` sam używa asocjacji i COM w procesie podniesionym; DSOptimizer kontroluje tylko ścieżkę uruchamianego pliku).
 
 ## Test VM
-Przebieg VM `20261019-110405` (2026-10-19, HEAD `fd320ed`, build 26300.9457): Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Raporty lokalne poza gitem. Przebieg łącznie: Home 401 zaliczonych / 0 błędów / 29 pominiętych, Pro 401 / 0 / 29 (`main` 313/0/29 + przebiegi Reboot); w przypadkach C5 `CleanupError` puste.
-- `panels-system-properties` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** na Home i Pro (`ExecuteExit=0`, `Executed`). `Check` odpytuje w pętli: żyje `SystemPropertiesComputerName.exe` (Setup zamyka przed startem wszystkie `SystemProperties*.exe`, żeby stary proces nie zaliczył Check); `Cleanup` zamyka tylko procesy pasujące do `Check`. **Check dowodzi, że proces z polecenia żyje (K1, PS Direct jako Administrator, sesja 0), nie że okno pojawiło się u użytkownika.**
-- Eksploracja K2 (zadanie interaktywne w sesji `dso`, token `Limited`): okno „Właściwości systemu”. Home = Pro. Research i wyniki eksploracji K2: `docs/zrodla/2026-10-19-partia-c5-zrodla.md` (sekcje „Wyniki VM”, „Sonda uzupełniająca”).
-- Klik ręczny autora (VM Pro, sesja `dso`, Win+R, 2026-10-19): `sysdm.cpl` otwiera klasyczne okno „Właściwości systemu”.
-- Kliknięte polecenie (`sysdm.cpl`) nie jest tym samym co `launch` pozycji (`control.exe sysdm.cpl`): klik potwierdza panel, a `launch` pozycji potwierdza dopiero eksploracja K2.
-- **Smoke z prawdziwym `DSOptimizer.exe` w sesji `dso`: do potwierdzenia przez autora**. Nie wykonany, bo autor wyjechał; pozycja wchodzi do `main` z tym zastrzeżeniem (jak D2 w partii C4). Rozbieżność między „proces żyje” (Check) a oknem widocznym dla użytkownika wyjdzie dopiero przy pierwszym użyciu z aplikacji.
+Przebieg VM `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Raporty lokalne poza gitem. Przebieg łącznie: Home 401 zaliczonych / 0 błędów / 29 pominiętych, Pro 401 / 0 / 29 (`main` 313/0/29 + przebiegi Reboot); w tych przypadkach `CleanupError` puste.
+- `panels-system-properties` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** na Home i Pro (`ExecuteExit=0`, `Executed`). `Check` odpytuje w pętli: żyje `SystemPropertiesComputerName.exe` (Setup zamyka przed startem wszystkie `SystemProperties*.exe`, żeby stary proces nie zaliczył Check); `Cleanup` zamyka tylko procesy pasujące do `Check`. **Check dowodzi, że proces z polecenia żyje (konto Administrator przez PowerShell Direct, sesja 0), nie że okno pojawiło się u użytkownika.**
+- Eksploracja w sesji użytkownika `dso` (zadanie podniesione, token `Limited`): okno „Właściwości systemu”. Home = Pro.
+- Klik ręczny (VM Pro, sesja `dso`, Win+R, 2026-10-19): `sysdm.cpl` otwiera klasyczne okno „Właściwości systemu”.
+- Kliknięte polecenie (`sysdm.cpl`) nie jest tym samym co `launch` pozycji (`control.exe sysdm.cpl`): klik potwierdza panel, a `launch` pozycji potwierdza dopiero eksploracja w sesji użytkownika `dso` (zadanie podniesione).
+- **Smoke z prawdziwym `DSOptimizer.exe` w sesji `dso`: nie sprawdzono ręcznie w programie**. Niewykonany; pozycja wchodzi do `main` z tym zastrzeżeniem. Rozbieżność między „proces żyje” (Check) a oknem widocznym dla użytkownika wyjdzie dopiero przy pierwszym użyciu z aplikacji.
