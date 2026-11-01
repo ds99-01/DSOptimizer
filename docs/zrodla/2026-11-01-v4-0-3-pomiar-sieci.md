@@ -2,7 +2,7 @@
 
 Stan: 2026-11-01. Pomiar odpowiada na jedno pytanie: z kim łączy się sam program, gdy okno się otwiera, gdy sprawdzanie
 wersji jest wyłączone i w trybie wiersza poleceń. Skrypt: `tests/vm/explore/Invoke-NetExploration.ps1 -Scenario start-on,start-off,cli`
-(kod programu z HEAD `4a210c0`; plik wydania zbudowany z `tools/release/Build-Release.ps1 -Variant Folder -Tag v4.0.3`).
+(kod programu z HEAD `492e4fa`, czyli po zmianie, w której sprawdzanie wersji łączy się bezpośrednio, bez proxy systemowego; plik wydania zbudowany z `tools/release/Build-Release.ps1 -Variant Folder -Tag v4.0.3`).
 
 ## Warunki pomiaru
 
@@ -12,7 +12,7 @@ wersji jest wyłączone i w trybie wiersza poleceń. Skrypt: `tests/vm/explore/I
   czas scenariusza, a po nim następuje cofnięcie, VM `Off` i karta bez przełącznika.
 - Konto lokalne `dso`, okno programu uruchamiane w jego sesji interaktywnej. Komputer poza domeną, bez proxy,
   z siecią tylko przez `Default Switch`.
-- Artefakt: `DSOptimizer-4.0.3.zip`, 3 792 569 B, SHA256 `a57c0741…ffca5`, suma sprawdzana na hoście i w VM.
+- Artefakt: `DSOptimizer-4.0.3.zip`, 3 792 513 B, SHA256 `ec780f1c…221e6`, suma sprawdzana na hoście i w VM.
 - Ustawienia: `settings.json` z językiem polskim (okno wyboru języka się nie pojawia). W `start-on` bez pola
   `checkUpdatesAtStart` (domyślnie włączone), w `start-off` z `"checkUpdatesAtStart": false`, w `cli` jak w `start-on`.
 
@@ -46,20 +46,21 @@ o `api.github.com`; `start-off` i `cli` – zero zapytań DNS i zero połączeń
 
 | VM | Scenariusz | Wynik | Połączenia drzewa programu | DNS drzewa programu | Zdarzeń w śladzie | Utracone bufory / zdarzenia | 4688 | Ruch kontrolny |
 |---|---|---|---|---|---|---|---|---|
-| Pro | start-on | zaliczony | 1: TCP 140.82.121.6:443, `api.github.com` | `api.github.com` (A i AAAA) | 53 403 | 0 / 0 | zgodne (26 procesów) | widoczny |
-| Pro | start-off | zaliczony | 0 | 0 | 344 890 | 0 / 0 | zgodne (26 procesów, 25 różnych PID) | widoczny |
-| Pro | cli | zaliczony | 0 | 0 | 11 078 | 0 / 0 | zgodne (10 procesów) | widoczny |
-| Home | start-on | zaliczony | 1: TCP 140.82.121.5:443, `api.github.com` | `api.github.com` (A i AAAA) | 300 188 | 0 / 0 | zgodne (26 procesów) | widoczny |
-| Home | start-off | zaliczony | 0 | 0 | 414 969 | 0 / 0 | zgodne (26 procesów) | widoczny |
-| Home | cli | zaliczony | 0 | 0 | 11 125 | 0 / 0 | zgodne (10 procesów) | widoczny |
+| Pro | start-on | zaliczony | 1: TCP 140.82.121.5:443, `api.github.com` | `api.github.com` (A i AAAA) | 424 578 | 0 / 0 | zgodne (26 procesów, 25 różnych PID) | widoczny |
+| Pro | start-off | zaliczony | 0 | 0 | 71 842 | 0 / 0 | zgodne (26 procesów, 25 różnych PID) | widoczny |
+| Pro | cli | zaliczony | 0 | 0 | 152 771 | 0 / 0 | zgodne (10 procesów) | widoczny |
+| Home | start-on | zaliczony | 1: TCP 140.82.121.6:443, `api.github.com` | `api.github.com` (A i AAAA) | 53 281 | 0 / 0 | zgodne (26 procesów) | widoczny |
+| Home | start-off | zaliczony | 0 | 0 | 355 338 | 0 / 0 | zgodne (26 procesów) | widoczny |
+| Home | cli | zaliczony | 0 | 0 | 12 431 | 0 / 0 | zgodne (10 procesów) | widoczny |
 
 W `start-on` jedyne połączenie drzewa programu: jedno otwarcie TCP na 443 do GitHuba, około 0,7 kB wysłanych i 14,6 kB
-odebranych. Nie było innego hosta, innego portu ani serwera certyfikatów w drzewie programu. W `cli` oba polecenia
-zakończyły się kodem 0 i zapisały niepuste raporty.
+odebranych. Nie było innego hosta, innego portu ani serwera certyfikatów w drzewie programu. Sprawdzanie wersji łączy się
+bezpośrednio, bez proxy systemowego. W `cli` oba polecenia zakończyły się kodem 0 i zapisały niepuste raporty.
 
-Pierwszy przebieg na Pro został odrzucony przez błąd samego narzędzia (kontrola 4688 brała ponownie użyte numery
-procesów za potomków programu). Po poprawce narzędzia wszystkie trzy scenariusze na Pro powtórzono od nowa; wyniki powyżej
-pochodzą z tego powtórzenia i z przebiegu na Home.
+Pomiar powtórzono w całości na końcowym kodzie (poprzedni dotyczył wcześniejszego kodu połączenia). Pierwsza próba `cli`
+na Pro skończyła się błędem narzędzia przy zbieraniu surowych plików („Nie można odnaleźć określonego pliku”; w śladzie
+tylko jeden proces drzewa) i nie została policzona; `cli` na Pro uruchomiono ponownie osobno na świeżym cofnięciu i tylko
+ten przebieg jest w tabeli. Kryterium nie zmieniono.
 
 ## Ograniczenia
 
@@ -67,27 +68,28 @@ pochodzą z tego powtórzenia i z przebiegu na Home.
   BITS) nie jest liczony.
 - Przed śladem próbowano zatrzymać i wyłączyć usługi `wuauserv`, `UsoSvc`, `DoSvc` i `BITS`, bo pobierają w tle i zalewały
   ślad ruchem, który nie należy do programu. Pole `services` mówi tylko, że polecenia zatrzymania i wyłączenia nie zgłosiły
-  błędu: `wuauserv` i `UsoSvc` w każdym scenariuszu, `BITS` na Home w każdym scenariuszu i na Pro w `cli`. Na Pro
-  w `start-on` i `start-off` zatrzymanie `BITS` się nie powiodło. W `DoSvc` wyłączenie zostało odmówione („Odmowa
+  błędu: `wuauserv` i `UsoSvc` w każdym scenariuszu, `BITS` na Home w każdym scenariuszu i na Pro w `start-on`. Na Pro
+  w `start-off` i `cli` zatrzymanie `BITS` się nie powiodło. W `DoSvc` wyłączenie zostało odmówione („Odmowa
   dostępu”) na obu edycjach we wszystkich scenariuszach.
 - To, że zatrzymanie się powiodło, nie znaczy, że usługa stała: dziennik 4688 pokazuje, że `svchost -k netsvcs -p -s
   wuauserv` uruchomił się na nowo w każdym z 6 scenariuszy, także w czasie śladu, i miał ruch do hostów Windows Update
-  (7,5–13,3 MiB), a `svchost … -s BITS` uruchomił się na nowo w każdym scenariuszu, w którym pole `services` ma `BITS`
-  jako zatrzymany i wyłączony (Home ×3 i Pro `cli`; 0,2–1,3 MiB). Uruchomienia `UsoSvc` w audycie nie ma. `DoSvc` działała
-  i miała ruch do hostów Delivery Optimization (`*.do.dsp.mp.microsoft.com`) w `start-on` i `start-off` obu edycji oraz
-  w `cli` na Pro; w `cli` na Home takiego ruchu nie było. Zatrzymanie usług nie było więc skuteczne i nie należy go
+  (7,6–17,9 MiB), a `svchost … -s BITS` uruchomił się na nowo w czterech scenariuszach, w których pole `services` ma `BITS`
+  jako zatrzymany i wyłączony (Home ×3: 0,2–0,7 MiB; Pro `start-on`: 149,9 MiB). Uruchomienia `UsoSvc` w audycie nie ma.
+  `svchost` miał ruch do hostów Delivery Optimization (`*.do.dsp.mp.microsoft.com`, od 0 do 0,3 MiB) w pięciu scenariuszach;
+  w `cli` na Home takiego ruchu nie było. Zatrzymanie usług nie było więc skuteczne i nie należy go
   opisywać jako wyłączenia ich ruchu.
 - Pomiar nie wyklucza ruchu, który program zleciłby usługom Windows: taki ruch wyglądałby w śladzie jak ruch systemu i nie
-  zmieniłby wyniku. W tym czasie procesy poza drzewem pobrały 8,7–460,7 MiB, w tym z serwerów certyfikatów. Lista usług
+  zmieniłby wyniku. W tym czasie procesy poza drzewem wymieniły przez TCP 13,3–559,6 MiB (wysłane i odebrane razem; w pięciu
+  z sześciu scenariuszy także z serwerami certyfikatów). Lista usług
   jest przykładem, nie zamkniętym zakresem: dotyczy każdego zlecenia przez COM, WMI lub inną usługę.
 - Wniosek z czytania kodu, nie pomiar: sprawdzanie wersji (`UpdateChecker`) pobiera dane wyłącznie przez `WebDownloader`
-  (`HttpWebRequest` z systemowym proxy), a w kodzie programu nie ma wywołań BITS (`Start-BitsTransfer`, interfejs
+  (`HttpWebRequest` bez proxy systemowego i bez poświadczeń Windows), a w kodzie programu nie ma wywołań BITS (`Start-BitsTransfer`, interfejs
   `BackgroundCopyManager`), `bitsadmin` jako pobierania, Delivery Optimization jako zlecenia pobierania (tylko czyszczenie
   jej pamięci podręcznej w naprawie) ani zapytań COM do WinHTTP. Usługi `wuauserv` i `bits` występują w kodzie jedynie jako
   usługi zatrzymywane przez naprawy na żądanie użytkownika. Kod tych narzędzi uruchamianych przez program (np. winget)
   nie jest tu oceniany.
-- Czas obserwacji: około 5 minut dla okna (`start-on`, `start-off`) i około 34 sekund dla `cli`. Ruch odroczony poza ten
-  czas nie jest objęty.
+- Czas obserwacji (sieć podłączona): od 5,5 do 8 minut dla okna (`start-on`, `start-off`) i od 44 do 98 sekund dla `cli`.
+  Ruch odroczony poza ten czas nie jest objęty.
 - `cli` to tylko dwa polecenia, `--list-install` i `--list-apps`; inne polecenia wiersza poleceń nie były mierzone.
 - Komputer w domenie i sieć z serwerem proxy są niezmierzone. Pomiar objął komputer poza domeną z bezpośrednim
   dostępem do internetu.
