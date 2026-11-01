@@ -188,6 +188,7 @@ public class AppsRemovalEnglishTests
             Assert.Equal("Suggested for removal (trial version)", AppsPageText.GroupDetail(AppGroup.Suggested, "trial"));
             Assert.Equal("Suggested for removal (Microsoft)", AppsPageText.GroupDetail(AppGroup.Suggested, "microsoft"));
             Assert.Equal("Other (computer manufacturer)", AppsPageText.GroupDetail(AppGroup.Other, "producent"));
+            Assert.Equal("Other", AppsPageText.GroupDetail(AppGroup.Other, "trial"));
 
             Assert.Equal("Double-click a row or checkbox to select it for removal.", AppsPageText.SelectionBarTitle(0));
             Assert.Equal("1 app selected for removal", AppsPageText.SelectionBarTitle(1));

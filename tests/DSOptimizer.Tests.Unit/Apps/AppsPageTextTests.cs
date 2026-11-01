@@ -48,6 +48,7 @@ public class AppsPageTextTests
     [InlineData(AppGroup.Suggested, "trial", "Sugerowane do usunięcia (wersja próbna)")]
     [InlineData(AppGroup.Suggested, "microsoft", "Sugerowane do usunięcia (Microsoft)")]
     [InlineData(AppGroup.Other, "producent", "Pozostałe (producent komputera)")]
+    [InlineData(AppGroup.Other, "trial", "Pozostałe")]
     [InlineData(AppGroup.Other, null, "Pozostałe")]
     [InlineData(AppGroup.Other, "inna", "Pozostałe")]
     [InlineData(AppGroup.Protected, null, "Chronione")]

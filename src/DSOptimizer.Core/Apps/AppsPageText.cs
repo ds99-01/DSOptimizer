@@ -97,7 +97,7 @@ public static class AppsPageText
         {
             "microsoft" => "Microsoft",
             "producent" => L.T("producent komputera"),
-            "trial" => L.T("wersja próbna"),
+            "trial" when group == AppGroup.Suggested => L.T("wersja próbna"),
             _ => null,
         };
         return suffix is null ? GroupName(group) : $"{GroupName(group)} ({suffix})";
