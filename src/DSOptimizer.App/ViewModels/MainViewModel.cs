@@ -55,7 +55,6 @@ public sealed class MainViewModel : ObservableObject
     private readonly ListCollectionView _searchView;
     private object? _selectedPage;
     private CategoryViewModel? _lastCategory;
-    private readonly SuggestedSelection _suggestedSelection = new();
     private string _searchText = string.Empty;
     private RiskFilter _riskFilter = RiskFilter.All;
     private bool _isBusy;
@@ -122,6 +121,7 @@ public sealed class MainViewModel : ObservableObject
         ApplySelectedCommand = new AsyncRelayCommand(() => RunBatchAsync(GuiOperation.Apply), () => !IsBusy && ApplicableCount > 0);
         UndoSelectedCommand = new AsyncRelayCommand(() => RunBatchAsync(GuiOperation.Undo), () => !IsBusy && UndoableCount > 0);
         ClearSelectionCommand = new RelayCommand(ClearSelection, () => !IsBusy && SelectedCount > 0);
+        SelectSuggestedCommand = new RelayCommand(SelectSuggested, CanSelectSuggested);
         ShowAllCommand = new RelayCommand(() => RiskFilter = RiskFilter.All);
         ClearSearchCommand = new RelayCommand(() => SearchText = string.Empty);
         RestartCommand = new AsyncRelayCommand(RestartFromBannerAsync, () => !IsBusy && !IsConfirming);
@@ -300,9 +300,7 @@ public sealed class MainViewModel : ObservableObject
         }
 
         SearchText = string.Empty;
-
-        // Pierwsze wejście na kategorię w tym uruchomieniu zaznacza jej sugestie; po wyczyszczeniu frazy, żeby guard IsSearching nie blokował wejścia z wyszukiwania.
-        ApplySuggestionsForCurrentPage();
+        RefreshSelectSuggested();
     }
 
     /// <summary>
@@ -334,9 +332,6 @@ public sealed class MainViewModel : ObservableObject
             if (SetProperty(ref _searchText, value ?? string.Empty))
             {
                 RefreshSearch();
-
-                // Fraza wyczyszczona na kategorii z odłożonymi sugestiami (odświeżenie skończyło się w trakcie wyszukiwania).
-                ApplySuggestionsForCurrentPage();
             }
         }
     }
@@ -484,6 +479,12 @@ public sealed class MainViewModel : ObservableObject
 
     public IRelayCommand ClearSelectionCommand { get; }
 
+    /// <summary>„Zaznacz sugerowane”: dodaje do zaznaczenia widoczne, sugerowane i niezastosowane ustawienia; nic nie wykonuje i niczego nie odznacza.</summary>
+    public IRelayCommand SelectSuggestedCommand { get; }
+
+    /// <summary>Przycisk „Zaznacz sugerowane” jest widoczny na stronie kategorii, gdy w widoku (kategoria albo wyniki wyszukiwania) jest pozycja sugerowana.</summary>
+    public bool IsSelectSuggestedVisible => IsCategorySelected && SuggestionViewItems().Any(item => item.IsSuggested);
+
     public bool IsBusy
     {
         get => _isBusy;
@@ -502,6 +503,7 @@ public sealed class MainViewModel : ObservableObject
                 UndoSelectedCommand.NotifyCanExecuteChanged();
                 ClearSelectionCommand.NotifyCanExecuteChanged();
                 RestartCommand.NotifyCanExecuteChanged();
+                RefreshSelectSuggested();
                 Settings.IsEditable = !value;
                 History.IsBusy = value;
                 Apps.IsBusy = value;
@@ -1514,6 +1516,8 @@ public sealed class MainViewModel : ObservableObject
         {
             RefreshSearch();
         }
+
+        RefreshSelectSuggested();
     }
 
     private bool IsVisible(ItemViewModel item) => ItemFilter.IsVisible(item.Definition, item.KnownState, _searchText, _riskFilter);
@@ -1533,6 +1537,45 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(EmptyText));
         OnPropertyChanged(nameof(DetailItem));
         OnHiddenChanged();
+        RefreshSelectSuggested();
+    }
+
+    /// <summary>Ustawienia widoczne teraz na liście: wyniki wyszukiwania albo bieżąca kategoria, po filtrze ryzyka i frazie.</summary>
+    private IEnumerable<ItemViewModel> SuggestionViewItems()
+    {
+        var source = IsSearching ? _allItems : SelectedCategory?.Items ?? (IEnumerable<ItemViewModel>)Array.Empty<ItemViewModel>();
+        return source.Where(item => item.IsTweak && IsVisible(item));
+    }
+
+    private List<ItemViewModel> SuggestedToSelect()
+    {
+        var view = SuggestionViewItems().ToList();
+        var ids = new HashSet<string>(
+            SuggestedPick.Settings(view.Select(item => new SuggestionCandidate(item.Id, item.IsSuggested, item.KnownState)).ToList()),
+            StringComparer.Ordinal);
+        return view.Where(item => ids.Contains(item.Id)).ToList();
+    }
+
+    private bool CanSelectSuggested() => !IsBusy && SuggestedToSelect().Count > 0;
+
+    // RelayCommand.Execute nie sprawdza CanExecute, więc warunek jest też tutaj.
+    private void SelectSuggested()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        foreach (var item in SuggestedToSelect())
+        {
+            item.IsSelected = true;
+        }
+    }
+
+    private void RefreshSelectSuggested()
+    {
+        OnPropertyChanged(nameof(IsSelectSuggestedVisible));
+        SelectSuggestedCommand.NotifyCanExecuteChanged();
     }
 
     private void OnHiddenChanged()
@@ -1600,35 +1643,6 @@ public sealed class MainViewModel : ObservableObject
         foreach (var pair in states)
         {
             ApplyState(pair.Key, pair.Value);
-        }
-
-        // Odświeżenie stanów skończone: kategoria otwarta w trakcie detekcji dostaje sugestie dopiero teraz.
-        ApplySuggestionsForCurrentPage();
-    }
-
-    /// <summary>
-    /// Zaznacza do serii sugerowane, niezastosowane pozycje bieżącej kategorii - raz na kategorię i uruchomienie
-    /// (<see cref="SuggestedSelection"/>); czeka, aż wszystkie sugerowane pozycje mają znany stan. Poza kategorią nic nie robi.
-    /// </summary>
-    private void ApplySuggestionsForCurrentPage()
-    {
-        // Wyniki wyszukiwania nie wyzwalają sugestii; kategoria pod spodem dostanie je po wyczyszczeniu frazy.
-        if (_selectedPage is not CategoryViewModel category || IsSearching)
-        {
-            return;
-        }
-
-        var candidates = category.Items
-            .Where(item => item.IsTweak)
-            .Select(item => new SuggestionCandidate(
-                item.Id,
-                // Sugestia ukryta przez filtr ryzyka nie jest zaznaczana (zaznaczenie niewidoczne dla użytkownika); kategoria i tak liczy się jako obsłużona.
-                item.IsSuggested && ItemFilter.PassesRisk(item.Definition, item.KnownState, _riskFilter),
-                item.KnownState))
-            .ToList();
-        foreach (var id in _suggestedSelection.TakeFor(category.Id, candidates))
-        {
-            _items[id].IsSelected = true;
         }
     }
 

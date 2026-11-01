@@ -114,12 +114,16 @@
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
           <StackPanel>
             <TextBlock Style="{StaticResource PageTitleText}" Text="{Binding Name}" />
             <TextBlock Style="{StaticResource SubText}" Text="{Binding Subtitle}" ToolTip="{Binding Subtitle}" />
           </StackPanel>
           <Button Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
+                  Content="{l:T 'Zaznacz sugerowane'}" Command="{Binding SelectSuggestedCommand}" KeyboardNavigation.TabIndex="2"
+                  Visibility="{Binding IsSelectSuggestedVisible, Converter={StaticResource BoolToVisibility}}" />
+          <Button Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
                   Content="{x:Static apps:AppsPageText.RefreshButton}" Tag="Refresh" Command="{Binding RefreshCommand}" KeyboardNavigation.TabIndex="2" />
         </Grid>
 

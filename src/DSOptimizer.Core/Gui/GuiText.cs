@@ -29,7 +29,7 @@ public static class GuiText
     };
 
     /// <summary>Podpowiedź przy żarówce na pozycji sugerowanej (wariant C, wybór autora 2026-10-21).</summary>
-    public static string SuggestedTooltip => L.T("Sugerowane. Przy pierwszym wejściu na stronę program sam zaznacza tę pozycję, jeśli nie jest jeszcze zastosowana. Możesz ją odznaczyć.");
+    public static string SuggestedTooltip => L.T("Sugerowane. Program sam tego nie zaznacza: użyj przycisku „Zaznacz sugerowane” albo zaznacz pozycję ręcznie.");
 
     /// <summary>Wiersz „Działa w edycjach: …” dla pozycji z polem editions.</summary>
     public static string EditionsLine(IReadOnlyList<EditionFamily> editions)

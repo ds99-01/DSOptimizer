@@ -692,7 +692,7 @@ public class GuiEnglishTests
             Assert.Equal("Restart required.", GuiText.RebootTitle);
             Assert.Equal("The computer will restart. Save your work in open programs.", GuiText.RestartConfirmText);
             Assert.Equal("Search all categories", GuiText.SearchPlaceholder);
-            Assert.StartsWith("Suggested. ", GuiText.SuggestedTooltip, StringComparison.Ordinal);
+            Assert.Equal("Suggested. The program doesn't select this on its own: use \"Select suggested\" or select the item yourself.", GuiText.SuggestedTooltip);
             Assert.Equal("Further window errors go only to the log file (more than 5 within 10 s).", GuiText.WindowErrorsMuted);
         }
     }

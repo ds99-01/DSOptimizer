@@ -200,6 +200,7 @@ How to read the tables:
 | plik logu | log file | |
 | Wysokość dziennika | Log height | Settings |
 | Sugerowane / Sugerowane do usunięcia | Suggested / Suggested for removal | |
+| Zaznacz sugerowane | Select suggested | Przycisk dodaje do zaznaczenia widoczne sugerowane pozycje; program nie zaznacza ich sam. |
 | Chronione / Pozostałe | Protected / Other | App groups |
 | Wymagany restart. | Restart required. | Banner title |
 | `Wymagany restart. ` | `Restart required. ` | Trailing space kept (sentence continues) |

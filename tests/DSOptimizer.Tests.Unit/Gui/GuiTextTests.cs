@@ -104,9 +104,9 @@ public class GuiTextTests
         => Assert.Equal(expected, GuiText.CategoryName(id));
 
     [Fact]
-    public void SuggestedTooltip_ExplainsAutoSelectionAndUndo()
+    public void SuggestedTooltip_SaysNothingSelectsItself()
         => Assert.Equal(
-            "Sugerowane. Przy pierwszym wejściu na stronę program sam zaznacza tę pozycję, jeśli nie jest jeszcze zastosowana. Możesz ją odznaczyć.",
+            "Sugerowane. Program sam tego nie zaznacza: użyj przycisku „Zaznacz sugerowane” albo zaznacz pozycję ręcznie.",
             GuiText.SuggestedTooltip);
 
     [Fact]

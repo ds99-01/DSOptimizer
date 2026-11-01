@@ -16,8 +16,8 @@ namespace DSOptimizer.App.ViewModels;
 /// <summary>
 /// Strona „Aplikacje” (wariant B: przełącznik grup z licznikami nad listą). Odczyt i nazwy kont poza wątkiem UI
 /// (<see cref="AppsSession.Load"/> + <see cref="IAccountNames"/> w Task.Run), własne zaznaczenie i pasek „Usuń (N)”, który
-/// zawsze idzie przez okno serii (<c>MainViewModel</c>). Sugerowane (<see cref="AppGroup.Suggested"/> + usuwalne) zaznaczają się
-/// raz na Id aplikacji w tym uruchomieniu (<see cref="AppSuggestionTracker"/>); F5 i ponowne wejście nie zaznaczają ich ponownie.
+/// zawsze idzie przez okno serii (<c>MainViewModel</c>). Nic nie zaznacza się samo: sugerowane (<see cref="AppGroup.Suggested"/> + usuwalne)
+/// zaznacza dopiero przycisk „Zaznacz sugerowane” (<see cref="SuggestedPick.Apps"/>), tylko spośród widocznych wierszy.
 /// </summary>
 public sealed class AppsViewModel : ObservableObject
 {
@@ -39,7 +39,6 @@ public sealed class AppsViewModel : ObservableObject
     private DateTime? _readAt;
     private bool _isLoading;
     private bool _isBusy;
-    private readonly AppSuggestionTracker _suggestions = new();
     private bool _rebuilding;
     private int _selectedCount;
     private int _version;
@@ -69,6 +68,7 @@ public sealed class AppsViewModel : ObservableObject
         RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => !IsBusy && !IsLoading);
         RemoveCommand = new AsyncRelayCommand(RemoveAsync, () => !IsBusy && !IsLoading && SelectedCount > 0);
         ClearSelectionCommand = new RelayCommand(ClearSelection, () => !IsBusy && SelectedCount > 0);
+        SelectSuggestedCommand = new RelayCommand(SelectSuggested, CanSelectSuggested);
         ClearSearchCommand = new RelayCommand(() => SearchText = string.Empty);
         SelectGroupCommand = new RelayCommand<AppGroupOption>(option =>
         {
@@ -114,6 +114,7 @@ public sealed class AppsViewModel : ObservableObject
                     option.IsSelected = option.Value == value;
                 }
 
+                OnPropertyChanged(nameof(IsSelectSuggestedVisible));
                 ApplyFilter();
             }
         }
@@ -161,6 +162,7 @@ public sealed class AppsViewModel : ObservableObject
                 OnPropertyChanged(nameof(Subtitle));
                 RefreshCommand.NotifyCanExecuteChanged();
                 RemoveCommand.NotifyCanExecuteChanged();
+                SelectSuggestedCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -176,6 +178,7 @@ public sealed class AppsViewModel : ObservableObject
                 RefreshCommand.NotifyCanExecuteChanged();
                 RemoveCommand.NotifyCanExecuteChanged();
                 ClearSelectionCommand.NotifyCanExecuteChanged();
+                SelectSuggestedCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -199,6 +202,12 @@ public sealed class AppsViewModel : ObservableObject
     public IAsyncRelayCommand RemoveCommand { get; }
 
     public IRelayCommand ClearSelectionCommand { get; }
+
+    /// <summary>„Zaznacz sugerowane”: dodaje do zaznaczenia widoczne, sugerowane i usuwalne aplikacje; nic nie usuwa i niczego nie odznacza.</summary>
+    public IRelayCommand SelectSuggestedCommand { get; }
+
+    /// <summary>Przycisk jest widoczny tylko na liście „Sugerowane do usunięcia”.</summary>
+    public bool IsSelectSuggestedVisible => _selectedGroup == AppGroup.Suggested;
 
     public IRelayCommand ClearSearchCommand { get; }
 
@@ -281,8 +290,7 @@ public sealed class AppsViewModel : ObservableObject
         var keep = _selectedRow?.Id;
         var userName = loaded.Names.TryGetValue(_session.UserSid, out var user) ? user : null;
         var scope = _session.StoreScope;
-        // Sugestie raz na Id aplikacji w tym uruchomieniu (R16); reszta zaznaczenia sprzed odświeżenia.
-        var suggested = new HashSet<string>(_suggestions.TakeNew(loaded.Page.Rows), StringComparer.Ordinal);
+
         _rebuilding = true;
         try
         {
@@ -297,7 +305,7 @@ public sealed class AppsViewModel : ObservableObject
                 .ToList();
             foreach (var row in _rows)
             {
-                row.IsSelected = selected.Contains(row.Id) || suggested.Contains(row.Id);
+                row.IsSelected = selected.Contains(row.Id);
             }
         }
         finally
@@ -311,6 +319,40 @@ public sealed class AppsViewModel : ObservableObject
         OnPropertyChanged(nameof(NavToolTip));
         OnPropertyChanged(nameof(Subtitle));
         ApplyFilter(keep);
+        RefreshSelection();
+    }
+
+    private IReadOnlyList<string> SuggestedToSelect() => SuggestedPick.Apps(_visibleRows.Select(row => row.Row).ToList());
+
+    private bool CanSelectSuggested() => !IsBusy && !IsLoading && SuggestedToSelect().Count > 0;
+
+    // RelayCommand.Execute nie sprawdza CanExecute, więc warunek jest też tutaj.
+    private void SelectSuggested()
+    {
+        if (IsBusy || IsLoading)
+        {
+            return;
+        }
+
+        var ids = new HashSet<string>(SuggestedToSelect(), StringComparer.Ordinal);
+        if (ids.Count == 0)
+        {
+            return;
+        }
+
+        _rebuilding = true;
+        try
+        {
+            foreach (var row in _rows.Where(row => ids.Contains(row.Id)))
+            {
+                row.IsSelected = true;
+            }
+        }
+        finally
+        {
+            _rebuilding = false;
+        }
+
         RefreshSelection();
     }
 
@@ -330,6 +372,7 @@ public sealed class AppsViewModel : ObservableObject
         VisibleRows = visible;
         SelectedRow = visible.FirstOrDefault(row => row.Id == keep) ?? visible.FirstOrDefault();
         OnPropertyChanged(nameof(EmptyText));
+        SelectSuggestedCommand.NotifyCanExecuteChanged();
     }
 
     private async Task RemoveAsync()

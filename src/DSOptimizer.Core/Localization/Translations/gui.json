@@ -278,8 +278,8 @@
       "en": "Tools"
     },
     {
-      "pl": "Sugerowane. Przy pierwszym wejściu na stronę program sam zaznacza tę pozycję, jeśli nie jest jeszcze zastosowana. Możesz ją odznaczyć.",
-      "en": "Suggested. The first time you open the page, the program selects this item if it isn't applied yet. You can clear its checkbox."
+      "pl": "Sugerowane. Program sam tego nie zaznacza: użyj przycisku „Zaznacz sugerowane” albo zaznacz pozycję ręcznie.",
+      "en": "Suggested. The program doesn't select this on its own: use \"Select suggested\" or select the item yourself."
     },
     {
       "pl": "Enterprise i Education",

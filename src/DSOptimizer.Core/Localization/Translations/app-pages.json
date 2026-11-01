@@ -2,6 +2,10 @@
   "language": "en",
   "entries": [
     {
+      "pl": "Zaznacz sugerowane",
+      "en": "Select suggested"
+    },
+    {
       "pl": "Szukaj aplikacji",
       "en": "Search apps"
     },
