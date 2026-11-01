@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/repair.disk-cleanup.md sha256: 77aeb69c6a09fcb3a06c81c57e72c73ad3eefc322650e4f4df0bb2670557ff07 -->
+<!-- source: docs/tweaks/repair.disk-cleanup.md sha256: 011ba33a2b8e3699f6b61b4eaa1cae84c36317798485f1e51bb3e1f4d25a0142 -->
 
 # repair.disk-cleanup – Clean up the disk
 
 ## Verdict for 26H2
-Port as `kind=action`, `risk=safe` ("Repairs" category, a long repair with a progress window). A fixed set of steps, with the mechanism of each step chosen by measurement on 26H2 Home and Pro VMs: direct deletion in C# for files, a cmdlet for Delivery Optimization, DISM for the component store. **No `cleanmgr`** (on the Home and Pro VMs: "Temporary Files" from PowerShell Direct didn't finish within the 1,200 s limit, freed about 18 MB net and deleted only the 10-day-old file, not the 2-day-old one; direct deletion in C# deleted both). The gain from Delivery Optimization on the VM is small (files being downloaded at that moment stay) – a large gain after finished downloads is **to be confirmed on hardware**.
+Port as `kind=action`, `risk=safe` ("Repairs" category, a long repair with a progress window). A fixed set of steps, with the mechanism of each step chosen by measurement on 26H2 Home and Pro VMs: direct deletion in C# for files, a cmdlet for Delivery Optimization, DISM for the component store. **No `cleanmgr`** (on the Home and Pro VMs: "Temporary Files" from PowerShell Direct didn't finish within the 1,200 s limit, freed about 18 MB net and deleted only the 10-day-old file, not the 2-day-old one; direct deletion in C# deleted the old files). The gain from Delivery Optimization on the VM is small (files being downloaded at that moment stay) – a large gain after finished downloads is **to be confirmed on hardware**.
 
 ## What it changes
 C# handler `disk-cleanup` (`DiskCleanupHandler`), without a catalog script:

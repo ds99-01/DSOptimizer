@@ -1,7 +1,7 @@
 # repair.disk-cleanup – Wyczyść dysk
 
 ## Werdykt 26H2
-Portować jako `kind=action`, `risk=safe` (kategoria „Naprawy”, długa naprawa z oknem postępu). Stały zestaw kroków, mechanizm każdego kroku wybrany pomiarem na VM 26H2 Home i Pro: bezpośrednie usuwanie w C# dla plików, cmdlet dla Optymalizacji dostarczania, DISM dla magazynu składników. **Bez `cleanmgr`** (na VM Home i Pro: „Temporary Files” z PowerShell Direct nie zakończyło się w limicie 1200 s, zwolniło netto ok. 18 MB i usunęło tylko plik sprzed 10 dni, nie ten sprzed 2 dni; bezpośrednie usuwanie w C# usunęło oba). Zysk z Optymalizacji dostarczania na VM mały (pliki pobierane w tej chwili zostają) – duży zysk po zakończonych pobraniach **do potwierdzenia na sprzęcie**.
+Portować jako `kind=action`, `risk=safe` (kategoria „Naprawy”, długa naprawa z oknem postępu). Stały zestaw kroków, mechanizm każdego kroku wybrany pomiarem na VM 26H2 Home i Pro: bezpośrednie usuwanie w C# dla plików, cmdlet dla Optymalizacji dostarczania, DISM dla magazynu składników. **Bez `cleanmgr`** (na VM Home i Pro: „Temporary Files” z PowerShell Direct nie zakończyło się w limicie 1200 s, zwolniło netto ok. 18 MB i usunęło tylko plik sprzed 10 dni, nie ten sprzed 2 dni; bezpośrednie usuwanie w C# usunęło stare pliki). Zysk z Optymalizacji dostarczania na VM mały (pliki pobierane w tej chwili zostają) – duży zysk po zakończonych pobraniach **do potwierdzenia na sprzęcie**.
 
 ## Co zmienia
 Handler C# `disk-cleanup` (`DiskCleanupHandler`), bez skryptu katalogu:
