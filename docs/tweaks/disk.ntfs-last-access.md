@@ -12,7 +12,7 @@ Portować: wartość rejestru istnieje na świeżym 26H2 i zmienia się dokładn
 - https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-behavior – MS, dostęp 2026-10-17 (updated_at 2026-02-16): `disablelastaccess {1|0}`, parametr aktualizuje `NtfsDisableLastAccessUpdate`, „You must restart your computer for this parameter to take effect”; narzędzia (Backup, Remote Storage) mogą być dotknięte. Dokumentacja opisuje tylko 0 i 1.
 - https://learn.microsoft.com/en-us/archive/blogs/embedded/preventing-last-access-chatter – MS-archiwum (2006), dostęp 2026-10-17.
 - https://winaero.com/disable-ntfs-last-access-time-updates-in-windows-10 – hint, dostęp 2026-10-17: tryby 0-3 i `0x8000000N` (poza dokumentacją MS).
-- Odczyt VM 26H2 Home i Pro, 2026-10-18 (`docs/zrodla/2026-10-17-partia-c1-zrodla.md`, „Wyniki VM”, sekcja 4).
+- Odczyt VM 26H2 Home i Pro, 2026-10-18.
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = Pro):
@@ -35,10 +35,10 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = 
 - Zysku wydajności nie mierzono (opis w programie od 2026-10-26 mówi tylko o mniejszej liczbie drobnych zapisów).
 
 ## Test VM
-Przebieg VM z 2026-10-18 (13:51, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba bez błędów (212 zaliczonych / 0 błędów / 10 pominiętych na każdej VM; pominięte to wyłącznie `disk-hibernation`). Raporty lokalne: `tests/vm/out/20261018-135146/<VM>/<RunLabel>/report.json` (katalog w `.gitignore`). Przebieg odświeżony po zmianie detekcji w partii C2 (Task 2: maska bitów zamiast porównania dokładnej wartości `0x80000001`); wcześniejszy przebieg C1 (2026-10-18 08:04, 13/13 w przebiegu Reboot) dotyczył poprzedniej detekcji.
+Przebieg VM z 2026-10-18 (13:51, build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba bez błędów (212 zaliczonych / 0 błędów / 10 pominiętych na każdej VM; pominięte to wyłącznie `disk-hibernation`). Raporty lokalne, poza repozytorium. Przebieg odświeżony po zmianie detekcji (maska bitów zamiast porównania dokładnej wartości `0x80000001`); wcześniejszy przebieg (2026-10-18 08:04, 13/13 w przebiegu Reboot) dotyczył poprzedniej detekcji.
 
-Przypadek `disk-ntfs-last-access` (`Flow=Reboot`, przebieg `reboot-disk-ntfs-last-access`, osobny przebieg od czystego checkpointu; Pester 14/14 na Home i Pro), Home i Pro identycznie:
+Przypadek `disk-ntfs-last-access` (`Flow=Reboot`, przebieg `reboot-disk-ntfs-last-access`, osobny przebieg od czystego checkpointu; testy na VM 14/14 na Home i Pro), Home i Pro identycznie:
 - Sprawdzono: `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = true), `detect-after-apply` = `Applied`, **prawdziwy restart** (potwierdzony), `detect-after-reboot` = `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`. Restart nie cofnął ustawienia na VM.
-- Przypadek `disk-ntfs-last-access-mode3` (`DetectOnly`, w przebiegu `main`): Setup zapisał `0x80000003` przez API .NET, detekcja = `Applied` (zgodnie z maską z Taska 2).
+- Przypadek `disk-ntfs-last-access-mode3` (`DetectOnly`, w przebiegu `main`): Setup zapisał `0x80000003` przez API .NET, detekcja = `Applied` (zgodnie z maską bitów).
 - Check: brak.
 - **Nie sprawdzono:** skutku na `LastAccessTime` plików i zachowania na sprzęcie. Szczegółowe wartości snapshotu z odświeżonego przebiegu nie były tu analizowane (ostatnia analiza `SnapshotDiff` pochodzi z przebiegu C1: undo przywróciło wartość ze snapshotu, nie fallback).

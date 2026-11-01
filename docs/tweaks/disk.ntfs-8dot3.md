@@ -12,7 +12,7 @@ Portować z ostrzeżeniem: wartość polityki jest udokumentowana przez MS i na 
 ## Źródła
 - https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-8dot3name – MS, dostęp 2026-10-17 (updated_at 2026-02-16): wartości 0-3, klucz `NtfsDisable8dot3NameCreation`, ustawienie per wolumin wymaga wartości 2; ostrzeżenie o trwałym usuwaniu nazw i uszkodzeniu aplikacji.
 - https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-behavior – MS, dostęp 2026-10-17: `disable8dot3`; w odróżnieniu od `disablelastaccess` brak zdania o wymaganym restarcie.
-- Odczyt VM 26H2 Home i Pro, 2026-10-18 (`docs/zrodla/2026-10-17-partia-c1-zrodla.md`, „Wyniki VM”, sekcja 5).
+- Odczyt VM 26H2 Home i Pro, 2026-10-18.
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = Pro):
@@ -34,7 +34,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = 
 - Zysku wydajności nie mierzono (wcześniej w programie: „zysku wydajności nie zmierzono”; od 2026-10-26 opis mówi tylko, co się zmienia).
 
 ## Test VM
-Przebieg VM z 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba **Passed**. Raporty lokalne: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (katalog w `.gitignore`); w przebiegu `main` Pester zaliczył 140, 0 błędów, 10 pominiętych (Home i Pro identycznie).
+Przebieg VM z 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba **Passed**. Raporty lokalne, poza repozytorium; w przebiegu `main` testy na VM zaliczyły 140, 0 błędów, 10 pominiętych (Home i Pro identycznie).
 
 Przypadek `disk-ntfs-8dot3` (`Flow=Full`, przebieg `main`), Home i Pro:
 - Sprawdzono: `detect-before` = `NotApplied` (Setup ustawił 0, inaczej niż `original` 2), `apply` kod 0, `detect-after-apply` = `Applied` (rejestr = 1), `undo` kod 0, `detect-after-undo` = `NotApplied`. `SnapshotBefore` `NtfsDisable8dot3NameCreation` DWORD 0, `SnapshotDiff` pusty, więc undo przywróciło wartość ze snapshotu, nie fallback 2.

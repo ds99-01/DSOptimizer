@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.game-dvr-policy.md sha256: 66c9f37fa6f0fed700e28d29c58774a67bce99f02578c330cf8c48cae71336c4 -->
+<!-- source: docs/tweaks/ux.game-dvr-policy.md sha256: fc8faa2e720bbf3ece827c1fc5456f1fe28f1e91a745c19d80b54fd5ea2bc247 -->
 
 # ux.game-dvr-policy – Block game recording and broadcasting on the whole computer
 
@@ -9,12 +9,11 @@ Port with a warning: the mechanism is documented by MS (Policy CSP / ADMX), but 
 - `HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR`, value `AllowGameDVR`, **DWord**, set to `0` (Not allowed); `scope=machine`.
 - On a fresh 26H2 neither the value nor the `GameDVR` key exists. Apply creates the key; undo deletes the value **and** the empty `GameDVR` key created by apply (mechanism A1 for `registry[]`), and the parent key `...\Policies\Microsoft\Windows` stays.
 
-**Change of meaning compared to v3.2:** `ux_gamedvr` in v3.2 was a per-user switch (HKCU keys). The alias now points to this item, that is, a machine policy for all users. The per-user equivalent (`GameDVR_Enabled`) wasn't ported (see `ux.game-dvr.md`: no MS source).
+**Change of meaning compared to the previous version:** `ux_gamedvr` in the previous version was a per-user switch (HKCU keys). The alias now points to this item, that is, a machine policy for all users. The per-user equivalent (`GameDVR_Enabled`) wasn't ported (see `ux.game-dvr.md`: no MS source).
 
 ## Sources
 - https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-applicationmanagement – MS, accessed 2026-10-17 (page with updated_at 2026-02-28), section AllowGameDVR: type `int`, 0 = Not allowed, 1 = Allowed (default); GP mapping: `Software\Policies\Microsoft\Windows\GameDVR`, value `AllowGameDVR`, file GameDVR.admx; editions: Pro, Enterprise, Education, IoT Enterprise (Home not listed); MS note "The policy is only enforced in Windows 10 for desktop".
 - Reading from 26H2 Home and Pro VMs, 2026-10-18 (default state: key and value missing).
-- Research: `docs/zrodla/2026-10-17-partia-c1-zrodla.md` (in Polish), section 2.
 
 ## Defaults on a fresh 26H2
 Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-18:
@@ -32,7 +31,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - The gain in games wasn't measured (since 2026-10-26 the description in the program doesn't mention it; previously: "The gain in games wasn't measured").
 
 ## VM test
-VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (folder in `.gitignore`); in the `main` run Pester passed 140, 0 failed, 10 skipped (Home and Pro identical).
+VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports, kept outside the repository; in the `main` run VM tests passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 Two `Flow=Full` cases (`main` run), Home and Pro, in both: `detect-before` = `NotApplied`, `apply` code 0, `detect-after-apply` = `Applied`, `undo` code 0, `detect-after-undo` = `NotApplied`, `SnapshotDiff` empty.
 - `ux-game-dvr-policy` (no `AllowGameDVR` before apply, `SnapshotBefore` `Exists=false`): the case's expectation (Pester green) = after undo the key `...\Policies\Microsoft\Windows\GameDVR` doesn't exist, and `...\Policies\Microsoft\Windows` stays; after apply `AllowGameDVR` = DWORD 0.

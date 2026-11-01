@@ -1,9 +1,9 @@
-<!-- source: docs/tweaks/perf.vbs-hvci.md sha256: e09f254ba531405163247fef7321d98756208ee33a6d54aff2658d29b8c7db1a -->
+<!-- source: docs/tweaks/perf.vbs-hvci.md sha256: c708f3fcdc34415fd27ee82cc85c069fa46d7dc441d3a6be76a7cb37abc83c35 -->
 
 # perf.vbs-hvci – Turn off memory integrity (HVCI)
 
 ## Verdict for 26H2
-Port with a restriction, as `risk=experimental`: only the narrow variant (memory integrity, `Scenarios\HypervisorEnforcedCodeIntegrity\Enabled` = 0), whose "off" value Microsoft gives. The v3.2 variant (additionally `EnableVirtualizationBasedSecurity` = 0) doesn't go in: MS doesn't confirm this value as "off", and it would also turn off the foundation of Credential Guard. Turning off memory integrity lowers kernel protection, so this is a conscious decision by the user, not an "optimization".
+Port with a restriction, as `risk=experimental`: only the narrow variant (memory integrity, `Scenarios\HypervisorEnforcedCodeIntegrity\Enabled` = 0), whose "off" value Microsoft gives. The previous version's variant (additionally `EnableVirtualizationBasedSecurity` = 0) doesn't go in: MS doesn't confirm this value as "off", and it would also turn off the foundation of Credential Guard. Turning off memory integrity lowers kernel protection, so this is a conscious decision by the user, not an "optimization".
 
 ## What it changes
 - Registry (`registry[]`, written through the C# API): `HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity`, value `Enabled`, **DWord**, `0`. `scope=machine`, `requiresReboot=true`. On a fresh 26H2 the key and the value don't exist, so `original` = `<RemoveEntry>`.
@@ -22,7 +22,7 @@ Refusing on a UEFI lock requires an operation whose `Capture` can throw. The `Ca
 - https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-hvci-enablement – MS Learn, accessed 2026-10-18 (updated_at 2026-06-12): memory integrity on by default on clean installations of Windows 11 on compatible hardware; Windows 11 22H2 and later shows a warning in Windows Security when it is off.
 - https://learn.microsoft.com/en-us/windows/security/identity-protection/credential-guard/configure – MS Learn, accessed 2026-10-18 (updated_at 2026-10-08): a separate Credential Guard switch (`LsaCfgFlags`); the reason why we don't set `EnableVirtualizationBasedSecurity` to zero.
 - https://techcommunity.microsoft.com/blog/windows-itpro-blog/expanding-memory-integrity-protection-across-windows-devices/4551984 – MS post (Windows IT Pro Blog), accessed 2026-10-18: only the title and address are confirmed (announcement of extending the protection to more devices); the page content wasn't downloaded. The date "from October 2026" comes from press reports (research, section 4), not from Microsoft; the catalog doesn't give the criteria.
-- Reading from 26H2 Home and Pro VMs, 2026-10-18 (`docs/zrodla/2026-10-18-partia-c2-zrodla.md` (in Polish), "Wyniki VM" (VM results), point 4).
+- Reading from 26H2 Home and Pro VMs, 2026-10-18.
 
 ## Defaults on a fresh 26H2
 Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-18 (Home = Pro), Gen2:
@@ -33,7 +33,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 ## Detection and undo
 The state consists of two signals (see "Decision" above), both numeric, without parsing language-dependent text:
 1. Configuration (`registry[]`): `Enabled` = DWORD 0 → `Match`; missing value, 1 or another type → `Mismatch`.
-2. Real state (`script.detect`), in this order (change E3-P2, 2026-10-21):
+2. Real state (`script.detect`), in this order (change of 2026-10-21):
    - First, reading `Enabled` (helper `Get-DsoHvciEnabled`, .NET, 64-bit view, read-only). Missing value, a type other than DWord or a value ≠ 0 → the script returns `NotApplied` and **doesn't query CIM**: without the configuration `Enabled` = 0 the tool hasn't applied anything, so the service state doesn't matter.
    - Only with `Enabled` = DWord 0: `Get-CimInstance Win32_DeviceGuard` (namespace `root\Microsoft\Windows\DeviceGuard`); the `SecurityServicesRunning` field is an array, so the check is whether it contains the value 2 (not equality). Contains 2 → `NotApplied`, otherwise `Applied`. A CIM error, and also no answer (`$null` instead of an instance, an instance without `SecurityServicesRunning` or an empty array), ends the script with a code ≠ 0 (state unknown), never `Applied`.
 
@@ -53,17 +53,17 @@ Lock and policies: when VBS is locked (`Control\DeviceGuard\Locked`) or memory i
 - `risk=experimental`.
 - Warnings in the catalog: "Requires a computer restart; until then memory integrity keeps running." and "Undo works only after a change made in DSOptimizer – otherwise turn the protection on by hand in Windows Security."
 - Beyond the notes in the program (in the technical details or only here): turning it off lowers kernel protection; MS turns memory integrity on by default on clean installations on compatible hardware and has announced extending this to more devices (Windows IT Pro Blog post; the date "from October 2026" comes from press reports, not from Microsoft); Windows Security will show a warning; with a UEFI lock the item refuses, and turning it off requires turning off Secure Boot.
-- No claims about WSL2/Hyper-V/Docker (no downloaded MS source says this) and no performance numbers (the "10-25% CPU" description from v3.2 has no MS source).
+- No claims about WSL2/Hyper-V/Docker (no downloaded MS source says this) and no performance numbers (the "10-25% CPU" description from the previous version has no MS source).
 - The impact on performance wasn't measured (previously in the program: "there was no measurement"; since 2026-10-26 the description says that Microsoft doesn't give the gain).
 
 ## VM test
 Case `perf-vbs-hvci` (`Flow=Reboot`, `Catalog=BuiltIn`) in `tests/vm/cases.psd1`: `Snapshot` of the `Enabled` value, the initial and final state is no value and no key (`KeyAbsentAfterUndo`), `CheckAfterApply`/`CheckAfterUndo` from `Win32_DeviceGuard` (`Get-CimInstance` with `-ErrorAction Stop` and an explicit check that the instance isn't `$null`).
 
-VM run of 2026-10-18 (13:51, state from before the E3-P2 fix: `detect-before` and `detect-after-undo` = `Partial`, today `NotApplied`, see below, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (212 passed / 0 failed / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports: `tests/vm/out/20261018-135146/<VM>/<RunLabel>/report.json` (folder in `.gitignore`).
+VM run of 2026-10-18 (13:51, state from before the detection fix of 2026-10-21: `detect-before` and `detect-after-undo` = `Partial`, today `NotApplied`, see below, build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (212 passed / 0 failed / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports, kept outside the repository.
 
-Case `perf-vbs-hvci` (`Flow=Reboot`, run `reboot-perf-vbs-hvci`, a separate run from a clean checkpoint; Pester 16/16 on Home and Pro), Home and Pro identical:
+Case `perf-vbs-hvci` (`Flow=Reboot`, run `reboot-perf-vbs-hvci`, a separate run from a clean checkpoint; VM tests 16/16 on Home and Pro), Home and Pro identical:
 - Checked: `detect-before` = `Partial` (no `Enabled` value, memory integrity not running), `apply` = `Applied` (`requiresReboot` = true), `detect-after-apply` = `Applied`, **real restart** (confirmed), `detect-after-reboot` = `Applied`, `undo` = `Undone` (`requiresReboot` = true, `finalState` = `Partial`), `detect-after-undo` = `Partial`. `CheckAfterApply` and `CheckAfterUndo` Passed (configuration and `Win32_DeviceGuard.SecurityServicesRunning` without 2); the `HypervisorEnforcedCodeIntegrity` key created by apply doesn't exist after undo.
 
-Run after the E3-P2 fix (2026-10-21, `Flow=Reboot`): `detect-before` = `NotApplied`, `apply` = `Applied`, after the restart `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`, code 0.
+Run after the detection fix (2026-10-21, `Flow=Reboot`): `detect-before` = `NotApplied`, `apply` = `Applied`, after the restart `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`, code 0.
 
-**Real state not tested on a VM:** on a fresh Gen2 VM memory integrity isn't running (`VirtualizationBasedSecurityStatus` = 0). So the VM case checks the configuration (write, restart, undo, disappearance of the key) and that `Win32_DeviceGuard` still doesn't report 2 in `SecurityServicesRunning`. The scenario "configuration off, memory integrity still running" (`PendingReboot`, then `Applied` after the restart), the refusal on `Locked` = 1 and detection from different `SecurityServicesRunning` arrays are covered by unit tests on mocks and fakes (`PerfVbsHvciTests`). Not checked: whether VBS starts after being turned on on a Gen2 VM, the behavior with a real UEFI lock, the effect on hardware with memory integrity running.
+**Real state not tested on a VM:** on a fresh Gen2 VM memory integrity isn't running (`VirtualizationBasedSecurityStatus` = 0). So the VM case checks the configuration (write, restart, undo, disappearance of the key) and that `Win32_DeviceGuard` still doesn't report 2 in `SecurityServicesRunning`. The scenario "configuration off, memory integrity still running" (`PendingReboot`, then `Applied` after the restart), the refusal on `Locked` = 1 and detection from different `SecurityServicesRunning` arrays are covered by unit tests, without the real command (`PerfVbsHvciTests`). Not checked: whether VBS starts after being turned on on a Gen2 VM, the behavior with a real UEFI lock, the effect on hardware with memory integrity running.

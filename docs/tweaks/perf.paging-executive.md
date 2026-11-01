@@ -12,7 +12,7 @@ Portować jako eksperymentalne: wartość jest udokumentowana przez MS, ale tylk
 - https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2003/cc757875(v=ws.10) – MS, archiwum (Windows Server 2003), dostęp 2026-10-18: typ REG_DWORD, zakres 0/1, domyślnie 0, wymagany restart; ustawienie 1 przydaje się przy debugowaniu sterowników i „improves performance on machines with a lot of memory”.
 - https://learn.microsoft.com/en-us/archive/blogs/irenak/sysk-318-registry-key-that-controls-device-driver-and-system-code-pagination-to-disk – MS, archiwalny blog (SYSK 318, 2007-03-30), dostęp 2026-10-18: ten sam opis; na maszynach z dużą ilością pamięci może poprawić wydajność, ale „would depend on the installed applications and their resource utilization”.
 - Brak źródła MS dla Windows 10, 11 i 26H2 (nie wiadomo, czy współczesne jądro wartość honoruje ani jak działa przy VBS/HVCI).
-- Odczyt VM 26H2 Home i Pro, 2026-10-18 (`docs/zrodla/2026-10-18-partia-c2-zrodla.md`, „Wyniki VM”, sekcja 2).
+- Odczyt VM 26H2 Home i Pro, 2026-10-18.
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = Pro):
@@ -27,12 +27,12 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = 
 - `risk=experimental`.
 - Ostrzeżenia w katalogu: „Wymaga restartu komputera.” oraz „Część pamięci RAM zostaje zajęta na stałe.”
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): kod jądra i sterowników zostaje w pamięci fizycznej; źródła MS są tylko archiwalne (2003/2007) i mówią o zysku jedynie na maszynach z dużą ilością pamięci i zależnie od aplikacji; brak dowodu korzyści na 26H2.
-- Opis v3.2 („drastycznie przyspiesza syscalle”) i próg „32 GB RAM” nie mają źródła MS, więc nie wchodzą do katalogu.
+- Opis z poprzedniej wersji („drastycznie przyspiesza syscalle”) i próg „32 GB RAM” nie mają źródła MS, więc nie wchodzą do katalogu.
 
 ## Test VM
-Przebieg VM z 2026-10-18 (13:51, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba bez błędów (212 zaliczonych / 0 błędów / 10 pominiętych na każdej VM; pominięte to wyłącznie `disk-hibernation`). Raporty lokalne: `tests/vm/out/20261018-135146/<VM>/<RunLabel>/report.json` (katalog w `.gitignore`).
+Przebieg VM z 2026-10-18 (13:51, build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba bez błędów (212 zaliczonych / 0 błędów / 10 pominiętych na każdej VM; pominięte to wyłącznie `disk-hibernation`). Raporty lokalne, poza repozytorium.
 
-Przypadek `perf-paging-executive` (`Flow=Reboot`, przebieg `reboot-perf-paging-executive`, osobny przebieg od czystego checkpointu; Pester 14/14 na Home i Pro), Home i Pro identycznie:
+Przypadek `perf-paging-executive` (`Flow=Reboot`, przebieg `reboot-perf-paging-executive`, osobny przebieg od czystego checkpointu; testy na VM 14/14 na Home i Pro), Home i Pro identycznie:
 - Sprawdzono: `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = true), `detect-after-apply` = `Applied`, **prawdziwy restart** (potwierdzony późniejszym `LastBootUpTime` i zniknięciem ulotnego znacznika), `detect-after-reboot` = `Applied`, `undo` = `Undone` (`requiresReboot` = true, `finalState` = `NotApplied`), `detect-after-undo` = `NotApplied`. Stan końcowy = stan przed (DWORD 0).
-- Przypadku „wartości brak na starcie” nie ma, bo na Home i Pro wartość istnieje; ścieżkę `<RemoveEntry>` pokrywa test jednostkowy na fake'ach.
+- Przypadku „wartości brak na starcie” nie ma, bo na Home i Pro wartość istnieje; ścieżkę `<RemoveEntry>` pokrywa test jednostkowy, bez prawdziwego polecenia.
 - **Nie sprawdzono:** skutku `DisablePagingExecutive` (system nie daje wskaźnika, a pozycja nie ma dowodu korzyści na 26H2), zachowania pod obciążeniem pamięci ani na sprzęcie. Sprawdzana jest tylko wartość rejestru i jej trwałość po restarcie.

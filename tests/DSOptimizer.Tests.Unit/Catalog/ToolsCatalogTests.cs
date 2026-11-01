@@ -412,7 +412,7 @@ public class ToolsWinUtilCatalogTests
         Assert.Contains("releases/latest", text, StringComparison.Ordinal);
         Assert.Contains("digest", text, StringComparison.Ordinal);
         Assert.Contains("RemoteSigned", text, StringComparison.Ordinal);
-        Assert.Contains("2026-10-26-etap5-pomiar-winutil.md", text, StringComparison.Ordinal);
+        Assert.Contains("Pomiar na VM (2026-10-26", text, StringComparison.Ordinal);
         Assert.Contains("tools-winutil-offline", text, StringComparison.Ordinal);
         Assert.Contains("uruchamiasz cudzy kod z internetu jako admin", text, StringComparison.Ordinal);
     }

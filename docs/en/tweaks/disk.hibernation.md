@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.hibernation.md sha256: e96fb4eeafcad42fcaf7508658c81fb09e13375695f11f74b00ba6b6fd0d095d -->
+<!-- source: docs/tweaks/disk.hibernation.md sha256: baa99286c62d18f3d19828309375f553f9fab6427397eeb44251d836afa7b027 -->
 
 # disk.hibernation – Turn off hibernation
 
@@ -17,7 +17,7 @@ Port as `risk=experimental`: the mechanism (`powercfg /hibernate off|on`) is doc
 - https://learn.microsoft.com/en-us/windows/win32/power/system-power-states – MS, accessed 2026-10-17: hibernation file sizes, fast startup as hibernation after signing out.
 - https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_power_capabilities – MS, accessed 2026-10-18 (page with updated_at 2024-02-22): `SystemS4` = "the operating system supports sleep state S4 (hibernation)", `HiberFilePresent` = "the system hibernation file is present".
 - https://learn.microsoft.com/en-us/windows/win32/api/powerbase/nf-powerbase-callntpowerinformation – MS, accessed 2026-10-18: `CallNtPowerInformation` (PowrProf.dll), level `SystemPowerCapabilities` (4) returns `SYSTEM_POWER_CAPABILITIES`; "represents the currently supported power capabilities. It may change as drivers are installed".
-- Reading from 26H2 Home and Pro VMs, 2026-10-18 (`docs/zrodla/2026-10-17-partia-c1-zrodla.md` (in Polish), "Wyniki VM" (VM results), section 3).
+- Reading from 26H2 Home and Pro VMs, 2026-10-18.
 - Reading from the development host (Windows 11 Pro 26200, not a VM), 2026-10-18, read-only: `SystemS4` = TRUE, `HiberFilePresent` = FALSE, `HibernateEnabled` = 0 (hibernation turned off by the owner), the `detect` and `capture` scripts returned `Applied` / `Disabled`.
 
 ## Defaults on a fresh 26H2
@@ -38,7 +38,7 @@ Rules (in this order):
 
 `capture` saves the state from before the change only with evidence: `Enabled` requires a hibernation file (`HiberFilePresent` = TRUE, a field documented by MS) and `HibernateEnabled` not equal to 0; `Disabled` = an explicit `HibernateEnabled` = 0 and no file (`Applied`); `Unsupported` = `NotSupported`. `SystemS4` = TRUE alone, without a hibernation file and without an explicit `HibernateEnabled` = 0 (a computer with S4 support on which hibernation is off by default), is ambiguous: `capture` fails, so the engine stops apply before any change, and undo will never turn on hibernation that wasn't there. Detection (`NotApplied`) shares the same inputs, but it is apply that is gated by `capture`. `original` doesn't apply (script tweak).
 
-**Uncertainty (MS doesn't describe this):** the MS documentation doesn't say how `SystemS4` behaves after `powercfg /h off`, so rule 1 doesn't rely on `SystemS4`: the "off" state is an explicit `HibernateEnabled` = 0 and no file. On one machine (the development host, hibernation off) `SystemS4` stays TRUE, but that is one observation, not a guarantee. The value `HibernateEnabled` = 0 without hardware support (as on the VM after `/h off`) is reported as `Applied` (hibernation really is off); that's why apply first requires the `NotApplied` state. Unit tests check the whole matrix on mocks (`DiskCatalogTests`), not on the real `powercfg`.
+**Uncertainty (MS doesn't describe this):** the MS documentation doesn't say how `SystemS4` behaves after `powercfg /h off`, so rule 1 doesn't rely on `SystemS4`: the "off" state is an explicit `HibernateEnabled` = 0 and no file. On one machine (the development host, hibernation off) `SystemS4` stays TRUE, but that is one observation, not a guarantee. The value `HibernateEnabled` = 0 without hardware support (as on the VM after `/h off`) is reported as `Applied` (hibernation really is off); that's why apply first requires the `NotApplied` state. Unit tests check the whole matrix, without the real command (`DiskCatalogTests`), not on the real `powercfg`.
 
 ## Risks and warnings
 - `risk=experimental` (design decision): not checked on hardware with hibernation support.
@@ -49,7 +49,7 @@ Rules (in this order):
 - Restart: MS doesn't state a requirement; `requiresReboot` = false, unconfirmed.
 
 ## VM test
-VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (folder in `.gitignore`); in the `main` run Pester passed 140, 0 failed, 10 skipped (Home and Pro identical).
+VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports, kept outside the repository; in the `main` run VM tests passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 - `disk-hibernation-unsupported` (`Flow=DetectOnly`, `main` run): **Passed** on Home and Pro. `detect-before` code 0, result `Success`, state **`NotSupported`**. This confirms detection rule 3 for a clean VM with a run; `SystemS4` = FALSE is an indirect conclusion here (the script returned `NotSupported`), not a separate reading. The `DetectOnly` case has no `Snapshot`, so the absence of registry changes wasn't checked separately here.
 - `disk-hibernation` (`Flow=Full`): **Skipped** on Home and Pro. Reason from `cases.psd1`: "VM Hyper-V bez obsługi S4 – apply/undo do weryfikacji na sprzęcie" (Hyper-V VM without S4 support – apply/undo to be verified on hardware). All tests of this case were skipped (10 of 10 skipped in `main`); none of them passed.

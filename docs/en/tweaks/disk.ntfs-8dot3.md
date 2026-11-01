@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.ntfs-8dot3.md sha256: 26fee562b2dd77a011d0bc7c9bc792c1f0130a3a083049056b2b64a0d9f2ccde -->
+<!-- source: docs/tweaks/disk.ntfs-8dot3.md sha256: f7d0fd5066cd2524d43529e9ad2d280c40019ff6a94a99368e5f1419cd6e3128 -->
 
 # disk.ntfs-8dot3 – Turn off creating 8.3 short file names
 
@@ -14,7 +14,7 @@ Port with a warning: the policy value is documented by MS and is 2 (per volume) 
 ## Sources
 - https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-8dot3name – MS, accessed 2026-10-17 (updated_at 2026-02-16): values 0-3, key `NtfsDisable8dot3NameCreation`, the per-volume setting requires value 2; warning about permanently removing names and breaking applications.
 - https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-behavior – MS, accessed 2026-10-17: `disable8dot3`; unlike `disablelastaccess`, no sentence about a required restart.
-- Reading from 26H2 Home and Pro VMs, 2026-10-18 (`docs/zrodla/2026-10-17-partia-c1-zrodla.md` (in Polish), "Wyniki VM" (VM results), section 5).
+- Reading from 26H2 Home and Pro VMs, 2026-10-18.
 
 ## Defaults on a fresh 26H2
 Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-18 (Home = Pro):
@@ -36,7 +36,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - The performance gain wasn't measured (previously in the program: "the performance gain wasn't measured"; since 2026-10-26 the description only says what changes).
 
 ## VM test
-VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (folder in `.gitignore`); in the `main` run Pester passed 140, 0 failed, 10 skipped (Home and Pro identical).
+VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports, kept outside the repository; in the `main` run VM tests passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 Case `disk-ntfs-8dot3` (`Flow=Full`, `main` run), Home and Pro:
 - Checked: `detect-before` = `NotApplied` (Setup set 0, unlike the `original` 2), `apply` code 0, `detect-after-apply` = `Applied` (registry = 1), `undo` code 0, `detect-after-undo` = `NotApplied`. `SnapshotBefore` `NtfsDisable8dot3NameCreation` DWORD 0, `SnapshotDiff` empty, so undo restored the value from the snapshot, not the fallback 2.

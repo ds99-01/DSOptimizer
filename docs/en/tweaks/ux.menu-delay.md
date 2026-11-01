@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.menu-delay.md sha256: d0ddcaf1c18254018db16dc3c104babf395261e907dacdbf61520ee434aacff8 -->
+<!-- source: docs/tweaks/ux.menu-delay.md sha256: c0143b50c599b7369d6de7d22c8ca2ee574c5763d5cecbe3f6435bf07c960bea -->
 
 # ux.menu-delay – Open submenus faster
 
@@ -9,14 +9,13 @@ Port: the `MenuShowDelay` value exists on a fresh 26H2 as `REG_SZ "400"` (VM), s
 - `HKCU\Control Panel\Desktop`, value `MenuShowDelay`, type **String** (REG_SZ, text with a number of milliseconds), `400` -> `10`.
 - Scope `scope=user`: the catalog writes to the hive of the signed-in interactive user, not to the HKCU of the Administrator account.
 
-The target value `"10"` comes from v3.2 (`ux_menu`). The MS documentation (TechNet archive) describes the value only as "milliseconds in decimal notation", default 400, **without giving the lower and upper limits of the range**. So the MS source doesn't confirm that `10` is the "right" value; it's a deliberate choice (practically instant submenus, but non-zero, because the value 0 is sometimes described as a cause of submenus opening by accident – hint). WinUtil (hint) uses 200. Changing the value means changing one field in `ux.json`.
+The target value `"10"` comes from the previous version (`ux_menu`). The MS documentation (TechNet archive) describes the value only as "milliseconds in decimal notation", default 400, **without giving the lower and upper limits of the range**. So the MS source doesn't confirm that `10` is the "right" value; it's a deliberate choice (practically instant submenus, but non-zero, because the value 0 is sometimes described as a cause of submenus opening by accident – hint). WinUtil (hint) uses 200. Changing the value means changing one field in `ux.json`.
 
 ## Sources
 - https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-2000-server/cc978617(v=technet.10) – MS archive, accessed 2026-10-17: type REG_SZ, range "milliseconds in decimal", default 400, description of the value.
 - https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfow – MS, accessed 2026-10-17 (only a summary from a search): `SPI_GETMENUSHOWDELAY`/`SPI_SETMENUSHOWDELAY`, value in ms. The catalog doesn't use this API.
 - https://raw.githubusercontent.com/ChristitusTech/winutil/main/config/tweaks.json – hint (WinUtil: 200, String, original 400), accessed 2026-10-17.
-- Reading from 26H2 Home and Pro VMs, 2026-10-18 (`docs/zrodla/2026-10-17-partia-c1-zrodla.md` (in Polish), "Wyniki VM" (VM results)).
-- Research: `docs/zrodla/2026-10-17-partia-c1-zrodla.md` (in Polish), section 1.
+- Reading from 26H2 Home and Pro VMs, 2026-10-18.
 
 ## Defaults on a fresh 26H2
 Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-18, account `dso`:
@@ -34,7 +33,7 @@ Not settled (not tested): the system's behavior after the value is deleted.
 - Some Win32 applications may ignore the value (hint).
 
 ## VM test
-VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (folder in `.gitignore`); in the `main` run Pester passed 140, 0 failed, 10 skipped (Home and Pro identical).
+VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports, kept outside the repository; in the `main` run VM tests passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 Case `ux-menu-delay` (`Flow=Full`, `main` run), Home and Pro:
 - Checked: `detect-before` = `NotApplied` (Setup set `MenuShowDelay` = `"250"`, unlike the `original` `"400"`), `apply` code 0, `detect-after-apply` = `Applied`, `undo` code 0, `detect-after-undo` = `NotApplied`. `SnapshotBefore` contains `HKU\<SID>\Control Panel\Desktop\MenuShowDelay` String `"250"`, and `SnapshotDiff` (before vs. after undo) is empty, so undo restored the value from the snapshot, not from the `"400"` fallback. Snapshot after apply = `"10"`. `NotWrittenToDiff` empty: apply didn't touch the `HKCU` of the Administrator account.

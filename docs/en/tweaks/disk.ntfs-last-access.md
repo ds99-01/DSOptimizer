@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.ntfs-last-access.md sha256: cd36e07c1bfa100701fef6f7d54ceebd23218103f0308bcf8fb4d2ecb68eef2c -->
+<!-- source: docs/tweaks/disk.ntfs-last-access.md sha256: eefdfba5a84bdd46560e5139a0740dfcf34842b00747f832d67482e11c02ed37 -->
 
 # disk.ntfs-last-access – Turn off recording the last access time of files
 
@@ -14,7 +14,7 @@ Port: the registry value exists on a fresh 26H2 and changes exactly as `fsutil` 
 - https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-behavior – MS, accessed 2026-10-17 (updated_at 2026-02-16): `disablelastaccess {1|0}`, the parameter updates `NtfsDisableLastAccessUpdate`, "You must restart your computer for this parameter to take effect"; tools (Backup, Remote Storage) may be affected. The documentation describes only 0 and 1.
 - https://learn.microsoft.com/en-us/archive/blogs/embedded/preventing-last-access-chatter – MS archive (2006), accessed 2026-10-17.
 - https://winaero.com/disable-ntfs-last-access-time-updates-in-windows-10 – hint, accessed 2026-10-17: modes 0-3 and `0x8000000N` (outside the MS documentation).
-- Reading from 26H2 Home and Pro VMs, 2026-10-18 (`docs/zrodla/2026-10-17-partia-c1-zrodla.md` (in Polish), "Wyniki VM" (VM results), section 4).
+- Reading from 26H2 Home and Pro VMs, 2026-10-18.
 
 ## Defaults on a fresh 26H2
 Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-18 (Home = Pro):
@@ -37,10 +37,10 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - The performance gain wasn't measured (since 2026-10-26 the description in the program only mentions fewer small writes).
 
 ## VM test
-VM run of 2026-10-18 (13:51, build 26300.9457, HEAD `da78bd7`), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (212 passed / 0 failed / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports: `tests/vm/out/20261018-135146/<VM>/<RunLabel>/report.json` (folder in `.gitignore`). The run was refreshed after the detection change in round C2 (Task 2: bit mask instead of comparing the exact value `0x80000001`); the earlier C1 run (2026-10-18 08:04, 13/13 in the Reboot run) covered the previous detection.
+VM run of 2026-10-18 (13:51, build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (212 passed / 0 failed / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports, kept outside the repository. The run was refreshed after the detection change (bit mask instead of comparing the exact value `0x80000001`); the earlier run (2026-10-18 08:04, 13/13 in the Reboot run) covered the previous detection.
 
-Case `disk-ntfs-last-access` (`Flow=Reboot`, run `reboot-disk-ntfs-last-access`, a separate run from a clean checkpoint; Pester 14/14 on Home and Pro), Home and Pro identical:
+Case `disk-ntfs-last-access` (`Flow=Reboot`, run `reboot-disk-ntfs-last-access`, a separate run from a clean checkpoint; VM tests 14/14 on Home and Pro), Home and Pro identical:
 - Checked: `detect-before` = `NotApplied`, `apply` = `Applied` (`requiresReboot` = true), `detect-after-apply` = `Applied`, **real restart** (confirmed), `detect-after-reboot` = `Applied`, `undo` = `Undone`, `detect-after-undo` = `NotApplied`. The restart didn't revert the setting on the VM.
-- Case `disk-ntfs-last-access-mode3` (`DetectOnly`, in the `main` run): Setup wrote `0x80000003` through the .NET API, detection = `Applied` (consistent with the mask from Task 2).
+- Case `disk-ntfs-last-access-mode3` (`DetectOnly`, in the `main` run): Setup wrote `0x80000003` through the .NET API, detection = `Applied` (consistent with the bit mask).
 - Check: none.
 - **Not checked:** the effect on the `LastAccessTime` of files and the behavior on real hardware. The detailed snapshot values from the refreshed run weren't analyzed here (the last `SnapshotDiff` analysis comes from the C1 run: undo restored the value from the snapshot, not the fallback).

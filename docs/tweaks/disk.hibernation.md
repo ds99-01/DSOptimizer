@@ -15,7 +15,7 @@ Portować jako `risk=experimental`: mechanizm (`powercfg /hibernate off|on`) jes
 - https://learn.microsoft.com/en-us/windows/win32/power/system-power-states – MS, dostęp 2026-10-17: rozmiary pliku hibernacji, Szybkie uruchamianie jako hibernacja po wylogowaniu.
 - https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_power_capabilities – MS, dostęp 2026-10-18 (strona z updated_at 2024-02-22): `SystemS4` = „the operating system supports sleep state S4 (hibernation)”, `HiberFilePresent` = „the system hibernation file is present”.
 - https://learn.microsoft.com/en-us/windows/win32/api/powerbase/nf-powerbase-callntpowerinformation – MS, dostęp 2026-10-18: `CallNtPowerInformation` (PowrProf.dll), poziom `SystemPowerCapabilities` (4) zwraca `SYSTEM_POWER_CAPABILITIES`; „represents the currently supported power capabilities. It may change as drivers are installed”.
-- Odczyt VM 26H2 Home i Pro, 2026-10-18 (`docs/zrodla/2026-10-17-partia-c1-zrodla.md`, „Wyniki VM”, sekcja 3).
+- Odczyt VM 26H2 Home i Pro, 2026-10-18.
 - Odczyt hosta deweloperskiego (Windows 11 Pro 26200, nie VM), 2026-10-18, tylko do odczytu: `SystemS4` = TRUE, `HiberFilePresent` = FALSE, `HibernateEnabled` = 0 (hibernacja wyłączona przez właściciela), skrypty `detect` i `capture` zwróciły `Applied` / `Disabled`.
 
 ## Wartości domyślne na świeżym 26H2
@@ -36,7 +36,7 @@ Reguły (w tej kolejności):
 
 `capture` zapisuje stan przed zmianą tylko z dowodem: `Enabled` wymaga pliku hibernacji (`HiberFilePresent` = TRUE, pole udokumentowane przez MS) i `HibernateEnabled` różnego od 0; `Disabled` = jawne `HibernateEnabled` = 0 i brak pliku (`Applied`); `Unsupported` = `NotSupported`. Samo `SystemS4` = TRUE bez pliku hibernacji i bez jawnego `HibernateEnabled` = 0 (komputer z obsługą S4, na którym hibernacja jest domyślnie wyłączona) jest niejednoznaczne: `capture` kończy się błędem, więc silnik przerywa apply przed jakąkolwiek zmianą i undo nigdy nie włączy hibernacji, której nie było. Detekcja (`NotApplied`) dzieli te same dane wejściowe, ale to apply jest bramkowane przez `capture`. `original` nie dotyczy (tweak skryptowy).
 
-**Niepewność (MS tego nie opisuje):** dokumentacja MS nie mówi, jak `SystemS4` zachowuje się po `powercfg /h off`, więc reguła 1 nie opiera się na `SystemS4`: stan „wyłączona” to jawne `HibernateEnabled` = 0 i brak pliku. Na jednej maszynie (host deweloperski, hibernacja wyłączona) `SystemS4` pozostaje TRUE, ale to jedna obserwacja, nie gwarancja. Wartość `HibernateEnabled` = 0 bez obsługi sprzętowej (jak na VM po `/h off`) jest raportowana jako `Applied` (hibernacja faktycznie jest wyłączona); dlatego apply najpierw wymaga stanu `NotApplied`. Testy jednostkowe sprawdzają całą macierz na mockach (`DiskCatalogTests`), nie na prawdziwym `powercfg`.
+**Niepewność (MS tego nie opisuje):** dokumentacja MS nie mówi, jak `SystemS4` zachowuje się po `powercfg /h off`, więc reguła 1 nie opiera się na `SystemS4`: stan „wyłączona” to jawne `HibernateEnabled` = 0 i brak pliku. Na jednej maszynie (host deweloperski, hibernacja wyłączona) `SystemS4` pozostaje TRUE, ale to jedna obserwacja, nie gwarancja. Wartość `HibernateEnabled` = 0 bez obsługi sprzętowej (jak na VM po `/h off`) jest raportowana jako `Applied` (hibernacja faktycznie jest wyłączona); dlatego apply najpierw wymaga stanu `NotApplied`. Testy jednostkowe sprawdzają całą macierz, bez prawdziwego polecenia (`DiskCatalogTests`), nie na prawdziwym `powercfg`.
 
 ## Ryzyka i ostrzeżenia
 - `risk=experimental` (decyzja projektowa): niesprawdzone na sprzęcie z obsługą hibernacji.
@@ -47,7 +47,7 @@ Reguły (w tej kolejności):
 - Restart: MS nie podaje wymogu; `requiresReboot` = false, niepotwierdzone.
 
 ## Test VM
-Przebieg VM z 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba **Passed**. Raporty lokalne: `tests/vm/out/20261018-080435/<VM>/<RunLabel>/report.json` (katalog w `.gitignore`); w przebiegu `main` Pester zaliczył 140, 0 błędów, 10 pominiętych (Home i Pro identycznie).
+Przebieg VM z 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba **Passed**. Raporty lokalne, poza repozytorium; w przebiegu `main` testy na VM zaliczyły 140, 0 błędów, 10 pominiętych (Home i Pro identycznie).
 
 - `disk-hibernation-unsupported` (`Flow=DetectOnly`, przebieg `main`): **Passed** na Home i Pro. `detect-before` kod 0, wynik `Success`, stan **`NotSupported`**. To potwierdza przebiegiem regułę 3 detekcji dla czystej VM; `SystemS4` = FALSE jest tu wnioskiem pośrednim (skrypt zwrócił `NotSupported`), nie osobnym odczytem. Przypadek `DetectOnly` nie ma `Snapshot`, więc brak zmian w rejestrze nie był tu osobno sprawdzany.
 - `disk-hibernation` (`Flow=Full`): **Skipped** na Home i Pro. Powód z `cases.psd1`: „VM Hyper-V bez obsługi S4 – apply/undo do weryfikacji na sprzęcie”. Pominięte to wszystkie testy tego przypadku (10 z 10 pominiętych w `main`), nigdy zaliczone.

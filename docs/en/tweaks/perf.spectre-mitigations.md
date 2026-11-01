@@ -1,12 +1,12 @@
-<!-- source: docs/tweaks/perf.spectre-mitigations.md sha256: a9989e314924d67124917d9b17c93d58f9a49e9aa573322cc951fe0f06077b19 -->
+<!-- source: docs/tweaks/perf.spectre-mitigations.md sha256: 0bb2ee3b1b6898aba1d4d62e7c2cf2436789800b37c1d1488ebd34c500cbf6b2 -->
 
 # perf.spectre-mitigations – turning off Spectre/Meltdown mitigations (not ported)
 
 ## Verdict for 26H2
-Not ported: the MS client page (KB4073119) ends at Windows 11 23H2, turning off the mitigations lowers protection on someone else's computer with no measured benefit, and detection sees only the registry, not the real state of the mitigations. The author's decision of 2026-10-18. The `cpu_spectre` alias from v3.2 has no item in the catalog.
+Not ported: the MS client page (KB4073119) ends at Windows 11 23H2, turning off the mitigations lowers protection on someone else's computer with no measured benefit, and detection sees only the registry, not the real state of the mitigations. The decision of 2026-10-18. The `cpu_spectre` alias from the previous version has no item in the catalog.
 
 ## What it changes
-The item isn't in the catalog and changes nothing. Entry considered (v3.2 and MS): `HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`, values `FeatureSettingsOverride` = 3 and `FeatureSettingsOverrideMask` = 3 (both DWord), restart required.
+The item isn't in the catalog and changes nothing. Entry considered (previous version and MS): `HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`, values `FeatureSettingsOverride` = 3 and `FeatureSettingsOverrideMask` = 3 (both DWord), restart required.
 
 Reasons for rejection:
 - The MS client page "Windows client guidance…" (KB4073119) covers Windows 11 up to 23H2 under "Applies to"; the last change-log entry is 2024-04-16; 24H2, 25H2 and 26H2 aren't listed.
@@ -14,13 +14,13 @@ Reasons for rejection:
 - No measured or documented benefit on a modern processor; MS doesn't say how much turning them off gains. A result from a VM wouldn't be evidence for real hardware (the processor is virtualized).
 - Registry detection doesn't see the real state of the mitigations (that's what the `SpeculationControl` module from the PowerShell Gallery does, and it needs a network connection).
 - The Intel/AMD variants from the spec don't exist for turning them off: MS gives one pair 3/3 (or 1/3 for variant 2 only); vendor-specific variants are about turning on additional mitigations.
-- The v3.2 description ("restores full branch prediction speed") and the warnings about corporate hypervisors have no MS source.
+- The previous version's description ("restores full branch prediction speed") and the warnings about corporate hypervisors have no MS source.
 
 ## Sources
 - https://support.microsoft.com/help/4073119 – MS (KB4073119, Windows client guidance for IT Pros), accessed 2026-10-18: disabling values 3/3 and 1/3, restart, warnings, Applies-to up to Windows 11 23H2, change-log up to 2024-04-16.
 - https://support.microsoft.com/en-us/topic/windows-server-guidance-to-protect-against-speculative-execution-side-channel-vulnerabilities-2f965763-00e2-8f98-b632-0d96f30c8c8e – MS (server version), accessed 2026-10-18: "To disable…" sections, warnings for Hyper-V, RDS and untrusted code.
 - KB4074629 (output of `Get-SpeculationControlSettings`) – referenced by the MS page, not downloaded separately.
-- Research: `docs/zrodla/2026-10-18-partia-c2-zrodla.md` (in Polish), section 3. The values 3/3 and 1/3 come from downloads made with a summarizing tool; before any port, they must be compared by hand with the original KB4073119.
+- The values 3/3 and 1/3 come from downloads made with a summarizing tool; before any port, they must be compared by hand with the original KB4073119.
 
 ## Defaults on a fresh 26H2
 Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-18 (Home = Pro, read-only):

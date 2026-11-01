@@ -1,10 +1,10 @@
 # perf.spectre-mitigations – wyłączenie mitygacji Spectre/Meltdown (nieportowane)
 
 ## Werdykt 26H2
-Nieportowane: strona kliencka MS (KB4073119) kończy się na Windows 11 23H2, wyłączenie mitygacji obniża ochronę na cudzym komputerze bez zmierzonej korzyści, a detekcja widzi tylko rejestr, nie rzeczywisty stan mitygacji. Decyzja autora z 2026-10-18. Alias `cpu_spectre` z v3.2 nie ma pozycji w katalogu.
+Nieportowane: strona kliencka MS (KB4073119) kończy się na Windows 11 23H2, wyłączenie mitygacji obniża ochronę na cudzym komputerze bez zmierzonej korzyści, a detekcja widzi tylko rejestr, nie rzeczywisty stan mitygacji. Decyzja z 2026-10-18. Alias `cpu_spectre` z poprzedniej wersji nie ma pozycji w katalogu.
 
 ## Co zmienia
-Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis (v3.2 i MS): `HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`, wartości `FeatureSettingsOverride` = 3 i `FeatureSettingsOverrideMask` = 3 (oba DWord), wymagany restart.
+Pozycji nie ma w katalogu, nic nie zmienia. Rozważany wpis (poprzednia wersja i MS): `HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`, wartości `FeatureSettingsOverride` = 3 i `FeatureSettingsOverrideMask` = 3 (oba DWord), wymagany restart.
 
 Powody odrzucenia:
 - Strona kliencka MS „Windows client guidance…” (KB4073119) w „Applies to” obejmuje Windows 11 do 23H2, ostatni wpis w change-logu to 2024-04-16; 24H2, 25H2 i 26H2 nie są wymienione.
@@ -12,13 +12,13 @@ Powody odrzucenia:
 - Brak zmierzonej ani udokumentowanej korzyści na współczesnym procesorze; MS nie podaje, ile daje wyłączenie. Wynik z VM nie byłby dowodem dla żelaza (procesor jest wirtualizowany).
 - Detekcja rejestrowa nie widzi realnego stanu mitygacji (to robi moduł `SpeculationControl` z PowerShell Gallery, który wymaga sieci).
 - Warianty Intel/AMD ze specu nie istnieją dla wyłączania: MS podaje jedną parę 3/3 (albo 1/3 tylko dla wariantu 2); warianty zależne od dostawcy dotyczą włączania dodatkowych mitygacji.
-- Opis v3.2 („przywraca pełną prędkość predykcji gałęzi”) i ostrzeżenia o korporacyjnych hypervisorach nie mają źródła MS.
+- Opis z poprzedniej wersji („przywraca pełną prędkość predykcji gałęzi”) i ostrzeżenia o korporacyjnych hypervisorach nie mają źródła MS.
 
 ## Źródła
 - https://support.microsoft.com/help/4073119 – MS (KB4073119, Windows client guidance for IT Pros), dostęp 2026-10-18: wartości wyłączające 3/3 i 1/3, restart, ostrzeżenia, Applies-to do Windows 11 23H2, change-log do 2024-04-16.
 - https://support.microsoft.com/en-us/topic/windows-server-guidance-to-protect-against-speculative-execution-side-channel-vulnerabilities-2f965763-00e2-8f98-b632-0d96f30c8c8e – MS (wersja serwerowa), dostęp 2026-10-18: sekcje „To disable…”, ostrzeżenia dla Hyper-V, RDS i niezaufanego kodu.
 - KB4074629 (wyjście `Get-SpeculationControlSettings`) – wskazane przez stronę MS, niepobierane osobno.
-- Research: `docs/zrodla/2026-10-18-partia-c2-zrodla.md`, sekcja 3. Wartości 3/3 i 1/3 pochodzą z pobrań narzędziem streszczającym; przed ewentualnym portem trzeba je ręcznie porównać z oryginałem KB4073119.
+- Wartości 3/3 i 1/3 pochodzą z pobrań narzędziem streszczającym; przed ewentualnym portem trzeba je ręcznie porównać z oryginałem KB4073119.
 
 ## Wartości domyślne na świeżym 26H2
 Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = Pro, tylko odczyt):
