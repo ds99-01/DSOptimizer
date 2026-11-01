@@ -10,7 +10,7 @@ public class AppSettingsSerializerTests
     public void Serialize_Default_IsStableJson()
     {
         Assert.Equal(
-            "{\"schemaVersion\":1,\"createRestorePoint\":true,\"theme\":\"system\"}",
+            "{\"schemaVersion\":1,\"createRestorePoint\":true,\"theme\":\"system\",\"checkUpdatesAtStart\":true}",
             AppSettingsSerializer.Serialize(AppSettings.Default));
     }
 
@@ -81,7 +81,7 @@ public class AppSettingsSerializerTests
         var json = AppSettingsSerializer.Serialize(new AppSettings { Language = null });
 
         Assert.DoesNotContain("language", json, System.StringComparison.Ordinal);
-        Assert.Equal("{\"schemaVersion\":1,\"createRestorePoint\":true,\"theme\":\"system\"}", json);
+        Assert.Equal("{\"schemaVersion\":1,\"createRestorePoint\":true,\"theme\":\"system\",\"checkUpdatesAtStart\":true}", json);
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class AppSettingsSerializerTests
     {
         var json = AppSettingsSerializer.Serialize(new AppSettings { Language = UiLanguage.English });
 
-        Assert.Equal("{\"schemaVersion\":1,\"createRestorePoint\":true,\"theme\":\"system\",\"language\":\"en\"}", json);
+        Assert.Equal("{\"schemaVersion\":1,\"createRestorePoint\":true,\"theme\":\"system\",\"checkUpdatesAtStart\":true,\"language\":\"en\"}", json);
     }
 
     [Fact]
@@ -130,4 +130,38 @@ public class AppSettingsSerializerTests
     {
         Assert.Null(AppSettingsSerializer.Deserialize("{\"schemaVersion\":1,\"language\":\"EN\"}").Language);
     }
+
+    [Fact]
+    public void Deserialize_FileFrom402_ChecksAtStart_AndKeepsOtherSettings()
+    {
+        var s = AppSettingsSerializer.Deserialize("{\"schemaVersion\":1,\"createRestorePoint\":false,\"theme\":\"dark\",\"language\":\"pl\"}");
+
+        Assert.True(s.CheckUpdatesAtStart);
+        Assert.False(s.CreateRestorePoint);
+        Assert.Equal(ThemePreference.Dark, s.Theme);
+        Assert.Equal(UiLanguage.Polish, s.Language);
+    }
+
+    [Fact]
+    public void RoundTrip_SwitchOff_StaysOff()
+    {
+        var settings = new AppSettings { CheckUpdatesAtStart = false };
+
+        var restored = AppSettingsSerializer.Deserialize(AppSettingsSerializer.Serialize(settings));
+
+        Assert.False(restored.CheckUpdatesAtStart);
+        Assert.Equal(settings, restored);
+    }
+
+    [Fact]
+    public void Deserialize_WrongType_NamesThatField()
+    {
+        var ex = Assert.Throws<SettingsFormatException>(() => AppSettingsSerializer.Deserialize("{\"schemaVersion\":1,\"checkUpdatesAtStart\":\"tak\"}"));
+
+        Assert.Contains("checkUpdatesAtStart", ex.Message);
+        Assert.DoesNotContain("createRestorePoint", ex.Message);
+    }
+
+    [Fact]
+    public void SchemaVersion_StaysOne_SoProgram402ReadsTheFile() => Assert.Equal(1, AppSettings.SchemaVersion);
 }

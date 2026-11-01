@@ -12,6 +12,9 @@ public sealed record AppSettings
 
     public ThemePreference Theme { get; init; } = ThemePreference.System;
 
+    /// <summary>Czy program przy starcie sprawdza, czy jest nowsza wersja.</summary>
+    public bool CheckUpdatesAtStart { get; init; } = true;
+
     /// <summary>Wybrany język interfejsu; <c>null</c> = jeszcze nie wybrano.</summary>
     public UiLanguage? Language { get; init; }
 }

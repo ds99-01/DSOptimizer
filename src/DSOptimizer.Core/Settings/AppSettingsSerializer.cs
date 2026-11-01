@@ -20,6 +20,7 @@ public static class AppSettingsSerializer
             ["schemaVersion"] = AppSettings.SchemaVersion,
             ["createRestorePoint"] = settings.CreateRestorePoint,
             ["theme"] = ThemeToText(settings.Theme),
+            ["checkUpdatesAtStart"] = settings.CheckUpdatesAtStart,
         };
         if (settings.Language is { } language)
         {
@@ -76,7 +77,8 @@ public static class AppSettingsSerializer
 
         return new AppSettings
         {
-            CreateRestorePoint = ReadBoolean(document["createRestorePoint"], AppSettings.Default.CreateRestorePoint),
+            CreateRestorePoint = ReadBoolean(document["createRestorePoint"], AppSettings.Default.CreateRestorePoint, L.T("Pole createRestorePoint musi być wartością true lub false.")),
+            CheckUpdatesAtStart = ReadBoolean(document["checkUpdatesAtStart"], AppSettings.Default.CheckUpdatesAtStart, L.T("Pole checkUpdatesAtStart musi być wartością true lub false.")),
             Theme = ReadTheme(document["theme"], AppSettings.Default.Theme),
             Language = ReadLanguage(document["language"]),
         };
@@ -111,7 +113,7 @@ public static class AppSettingsSerializer
         }
     }
 
-    private static bool ReadBoolean(JToken? token, bool fallback)
+    private static bool ReadBoolean(JToken? token, bool fallback, string typeError)
     {
         if (token is null)
         {
@@ -120,7 +122,7 @@ public static class AppSettingsSerializer
 
         if (token.Type != JTokenType.Boolean)
         {
-            throw new SettingsFormatException(L.T("Pole createRestorePoint musi być wartością true lub false."));
+            throw new SettingsFormatException(typeError);
         }
 
         return token.Value<bool>();

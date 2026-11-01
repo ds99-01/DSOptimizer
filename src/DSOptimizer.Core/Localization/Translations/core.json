@@ -726,6 +726,10 @@
       "en": "The createRestorePoint field must be true or false."
     },
     {
+      "pl": "Pole checkUpdatesAtStart musi być wartością true lub false.",
+      "en": "The checkUpdatesAtStart field must be true or false."
+    },
+    {
       "pl": "Pole theme musi być tekstem: system, light albo dark.",
       "en": "The theme field must be text: system, light or dark."
     },
