@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.smb-guest-access.md sha256: 2fb7ddf1d57136f451b4fd29f9685edd0a2367d1f8b60bc353a5c6d4dee5559d -->
+<!-- source: docs/tweaks/net.smb-guest-access.md sha256: 1454409ad2db57edfb5cfdcf8cc1cad010ade5a93281c3c6355aec141b5a84fa -->
 
 # net.smb-guest-access – Allow guest logons to network shares
 
@@ -11,7 +11,7 @@ Port with a restriction, as `risk=caution`: the mechanism is documented by Micro
 - Doesn't touch: policies (`Software\Policies\...`), `RequireSecuritySignature`, discovery services, NetBIOS, the network profile, the SMB server.
 
 ### Decision: `registry[]` + `script.detect`, not a script alone
-The tweak's state is made up of all the operations that take part in detection (`StateAggregator.Aggregate`): `Applied` only when each gives `Match`, `NotApplied` when none does, `Partial` in the other cases. The registry entry expresses what the tool wrote (and what the journal can undo), and the cmdlet reading is the effective state. Intended design: a mismatch between the registry and the cmdlet gives `Partial`, and an apply after which the state isn't `Applied` isn't reported as a success (the registry is rolled back). The behavior under an actual policy (for example Group Policy) hasn't been checked: it wasn't checked whether `Get-SmbClientConfiguration` takes the policy into account; if it doesn't, the item may show a match despite the policy This wasn't checked on a VM with a policy set..
+The tweak's state is made up of all the operations that take part in detection (`StateAggregator.Aggregate`): `Applied` only when each gives `Match`, `NotApplied` when none does, `Partial` in the other cases. The registry entry expresses what the tool wrote (and what the journal can undo), and the cmdlet reading is the effective state. Intended design: a mismatch between the registry and the cmdlet gives `Partial`, and an apply after which the state isn't `Applied` isn't reported as a success (the registry is rolled back). The behavior under an actual policy (for example Group Policy) hasn't been checked: it wasn't checked whether `Get-SmbClientConfiguration` takes the policy into account; if it doesn't, the item may show a match despite the policy; this wasn't checked on a VM with a policy set.
 
 ## Sources
 - https://learn.microsoft.com/en-us/windows-server/storage/file-server/enable-insecure-guest-logons-smb2-and-smb3 – MS Learn, accessed 2026-10-18 (ms.date 2025-08-13): by default the SMB2/3 client doesn't allow guest access; enabling it: the "Enable insecure guest logons" policy or `Set-SmbClientConfiguration -EnableInsecureGuestLogons $true -Force`; warnings: spoofed server without a credentials prompt, ransomware, AitM attacks, "We recommend that you don't enable insecure guest logons", "Guest logons don't support standard security features such as SMB signing and SMB encryption". The page **doesn't give** the name or path of the registry key and doesn't say what the Windows 11 Home default is.
