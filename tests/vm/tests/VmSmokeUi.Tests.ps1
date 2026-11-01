@@ -177,7 +177,7 @@ Describe 'Sonda: sugestie „Prywatność i AI” (krok 7)' {
     It 'nazwa kategorii z pliku tekstów występuje w skrypcie dokładnie raz' {
         ([regex]::Matches($script:ProbeText, [regex]::Escape($script:PrivacyName))).Count | Should -Be 1
     }
-Prywatność„Prywatność i AI” dopiero po ścieżce ux.menu-delay („Zastosuj (1)”) i po sprzątaniu kroku 6 (Review Focus 1)' {
+    It 'sonda wchodzi do „Prywatność i AI” po ścieżce ux.menu-delay („Zastosuj (1)”) i po sprzątaniu kroku 6' {
         $Privacy = $script:ProbeText.IndexOf($script:PrivacyName)
         $Privacy | Should -BeGreaterThan $script:ProbeText.IndexOf('$T.ApplyOne')
         $Privacy | Should -BeGreaterThan $script:ProbeText.IndexOf('$Out.RowDoubleClickToggles =')
