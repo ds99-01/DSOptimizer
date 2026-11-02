@@ -124,6 +124,16 @@ public class HistoryTextTests
         Assert.Equal(expected, HistoryText.Event(action, outcome, "Wyłączona – zadziała od następnego logowania.", null));
     }
 
+    [Theory]
+    [InlineData("disable-autostart", "FailedRolledBack", "odmowa dostępu", "Nie wykonano – przywrócono poprzedni stan – odmowa dostępu")]
+    [InlineData("enable-autostart", "FailedRollbackIncomplete", "Nie wykonano – odmowa dostępu", "Nie wykonano – poprzedniego stanu nie przywrócono – odmowa dostępu")]
+    [InlineData("disable-autostart", "FailedRolledBack", null, "Nie wykonano – przywrócono poprzedni stan")]
+    [InlineData("disable-autostart", "Started", "odmowa dostępu", "Wyłączanie rozpoczęte")]
+    [InlineData("apply", "Applied", "odmowa dostępu", "Zastosowano – komunikat")]
+    [InlineData("undo", "Undone", "odmowa dostępu", "Cofnięto – komunikat")]
+    public void Event_AutostartResultWithReason_ShowsShortReason(string action, string outcome, string? reason, string expected)
+        => Assert.Equal(expected, HistoryText.Event(action, outcome, "komunikat", reason));
+
     [Fact]
     public void Event_External()
     {

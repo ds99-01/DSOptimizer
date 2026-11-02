@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Journal;
@@ -890,6 +891,7 @@ public class ChangeHistoryTests
         Assert.Equal(HistoryText.UndoOtherAccount("Konto-" + Other), items[theirs.EntryId].UndoBlockedReason);
     }
 
+    /// <summary>Odczyt po zapisie inny niż cel (bez wyjątku zapisu): silnik zapisuje tylko tekst wyniku w <c>Message</c>, bez <c>Reason</c>.</summary>
     [Fact]
     public void Autostart_Aborted_ReasonFromLastMessage()
     {
@@ -899,16 +901,76 @@ public class ChangeHistoryTests
             JournalEntryStatus.Aborted,
             Before,
             ("disable-autostart", "Started", null),
-            ("disable-autostart", "FailedRolledBack", "Nie wykonano – odczyt po zapisie inny"));
+            ("disable-autostart", "FailedRolledBack", AutostartText.NotConfirmed));
 
         var item = Assert.Single(Build(Doc(entry), Cats(Plain("a"))));
 
         Assert.Equal(HistoryState.Aborted, item.State);
-        Assert.Equal("odczyt po zapisie inny", item.Reason);
+        Assert.Equal(AutostartText.NotConfirmed, item.Reason);
         Assert.False(item.IsActive);
         Assert.Null(item.UndoBlockedReason);
         Assert.Equal("Nie wykonano – przywrócono poprzedni stan", item.Events[1].Text);
         Assert.True(item.Events[1].IsFailure);
+    }
+
+    /// <summary>Wyjątek zapisu: silnik zapisuje tekst wyniku w <c>Message</c>, a prawdziwy błąd w <c>Reason</c> – Historia pokazuje błąd.</summary>
+    [Fact]
+    public void Autostart_Aborted_WriteError_ReasonFromEventReason()
+    {
+        var entry = Startup(
+            "run:user:OneDrive",
+            Me,
+            JournalEntryStatus.Aborted,
+            Before,
+            ("disable-autostart", "Started", null),
+            ("disable-autostart", "FailedRollbackIncomplete", AutostartText.RollbackIncomplete));
+        entry.Events[1].Reason = "Odmowa dostępu do klucza StartupApproved.";
+
+        var item = Assert.Single(Build(Doc(entry), Cats(Plain("a"))));
+
+        Assert.Equal(HistoryState.Aborted, item.State);
+        Assert.Equal("Odmowa dostępu do klucza StartupApproved.", item.Reason);
+        Assert.Equal("Nie wykonano – poprzedniego stanu nie przywrócono – Odmowa dostępu do klucza StartupApproved.", item.Events[1].Text);
+        Assert.Equal("Wyłączanie rozpoczęte", item.Events[0].Text);
+    }
+
+    [Fact]
+    public void Autostart_UndoEvents_MessageOnlyForUndoIncomplete()
+    {
+        var toggled = Startup(
+            "run:user:OneDrive",
+            Me,
+            JournalEntryStatus.Undone,
+            Before,
+            ("disable-autostart", "Started", null),
+            ("disable-autostart", "Applied", AutostartText.Disabled),
+            ("undo", "Started", null),
+            ("undo", "Undone", AutostartText.UndoneByToggle));
+        var incomplete = Startup(
+            "run:user:Teams",
+            Me,
+            JournalEntryStatus.Active,
+            Before,
+            ("disable-autostart", "Started", null),
+            ("disable-autostart", "Applied", AutostartText.Disabled),
+            ("undo", "Started", null),
+            ("undo", "UndoIncomplete", @"HKU\S\Run\Teams = (brak)"));
+
+        var items = Build(Doc(toggled, incomplete), Cats(Plain("a"))).ToDictionary(e => e.EntryId);
+
+        Assert.Equal("Cofnięto", items[toggled.EntryId].Events[3].Text);
+        Assert.Equal(@"Cofnięcie: Cofnięcie niepełne – HKU\S\Run\Teams = (brak)", items[incomplete.EntryId].Events[3].Text);
+    }
+
+    [Fact]
+    public void Tweak_UndoEvent_MessageStillAppended()
+    {
+        var entry = Entry("a", Me, JournalEntryStatus.Undone, Before, ("apply", "Applied", Before), ("undo", "Undone", Before));
+        entry.Events[1].Message = "przywrócono z journala";
+
+        var item = Assert.Single(Build(Doc(entry), Cats(Plain("a"))));
+
+        Assert.Equal("Cofnięto – przywrócono z journala", item.Events[1].Text);
     }
 
     [Fact]

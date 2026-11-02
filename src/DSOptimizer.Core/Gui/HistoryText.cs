@@ -132,12 +132,13 @@ public static class HistoryText
     }
 
     /// <summary>
-    /// Tekst zdarzenia journala z powodem: wynik instalacji aplikacji (<c>install-app</c>, wynik ≠ <c>Started</c>) z <paramref name="reason"/>
-    /// pokazuje powód zamiast źródła z <paramref name="message"/> („Nie wykonano – brak połączenia z GitHubem”); inaczej jak
-    /// <see cref="Event(string, string, string?)"/>.
+    /// Tekst zdarzenia journala z powodem: wynik instalacji aplikacji (<c>install-app</c>) albo wyłączenia/włączenia autostartu
+    /// (wynik ≠ <c>Started</c>) z <paramref name="reason"/> pokazuje powód zamiast <paramref name="message"/> („Nie wykonano – brak połączenia
+    /// z GitHubem”, „Nie wykonano – przywrócono poprzedni stan – odmowa dostępu”); inaczej jak <see cref="Event(string, string, string?)"/>.
     /// </summary>
     public static string Event(string action, string outcome, string? message, string? reason)
-        => action == "install-app" && outcome != "Started" && ShortReason(reason) is { } shortReason
+        => (action is "install-app" or AutostartEngine.DisableAction or AutostartEngine.EnableAction)
+           && outcome != "Started" && ShortReason(reason) is { } shortReason
             ? $"{BaseEventText(action, outcome)} – {shortReason}"
             : Event(action, outcome, message);
 

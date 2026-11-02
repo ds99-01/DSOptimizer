@@ -263,11 +263,13 @@ public static class ChangeHistory
             }
         }
 
-        var reason = state == HistoryState.Aborted && entry.Events.Count > 0
-            ? HistoryText.ShortReason(entry.Events[entry.Events.Count - 1].Message)
+        // Wyjątek zapisu silnik zapisuje w Reason (Message ma wtedy ogólny tekst wyniku), więc Reason wygrywa.
+        var last = entry.Events.Count == 0 ? null : entry.Events[entry.Events.Count - 1];
+        var reason = state == HistoryState.Aborted && last is not null
+            ? HistoryText.ShortReason(last.Reason) ?? HistoryText.ShortReason(last.Message)
             : null;
         var events = entry.Events
-            .Select(e => new HistoryEvent(e.At, HistoryText.Event(e.Action, e.Outcome, e.Message), IsFailure(e.Outcome)))
+            .Select(e => new HistoryEvent(e.At, AutostartEventText(e), IsFailure(e.Outcome)))
             .ToList();
         var name = string.IsNullOrWhiteSpace(entry.Title) ? entry.TweakId : entry.Title!;
         return new HistoryEntry(
@@ -285,6 +287,16 @@ public static class ChangeHistory
             HistoryKind.Autostart,
             GuiIcons.Autostart,
             reason);
+    }
+
+    /// <summary>
+    /// Tekst zdarzenia wpisu autostartu. Przy cofnięciu komunikat jest dopisywany tylko dla <c>UndoIncomplete</c> (lista niezgodności); przy
+    /// <c>Undone</c> komunikat silnika powtórzyłby „Cofnięto”. Zdarzenia cofania tweaków i aplikacji idą przez <see cref="HistoryText.Event(string, string, string?)"/> bez zmian.
+    /// </summary>
+    private static string AutostartEventText(JournalEvent e)
+    {
+        var message = e.Action == AutostartEngine.UndoAction && e.Outcome != nameof(TweakOutcome.UndoIncomplete) ? null : e.Message;
+        return HistoryText.Event(e.Action, e.Outcome, message, e.Reason);
     }
 
     private static HistoryEntry AppEntry(JournalEntry entry, string account, HistoryState state, string category, string? undoBlocked, HistoryKind kind, string iconKind, string? reason)
