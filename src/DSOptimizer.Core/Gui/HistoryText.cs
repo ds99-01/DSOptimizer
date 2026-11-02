@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Localization;
 
@@ -27,6 +28,9 @@ public static class HistoryText
     public static string UnknownAccount => L.T("nieznane");
     public static string AppsCategory => L.T("Aplikacje");
     public static string InstallCategory => L.T("Instalacja");
+
+    /// <summary>Druga linia wpisu autostartu (nazwa strony).</summary>
+    public static string AutostartCategory => L.T("Autostart");
     public static string OutOfCatalog => L.T("pozycja spoza tego katalogu");
 
     public static string UndoOutOfCatalog => L.T("Tej pozycji nie ma w katalogu tej wersji programu, więc nie da się jej cofnąć.");
@@ -40,6 +44,14 @@ public static class HistoryText
 
     public static string UndoOtherAccount(string name)
         => L.F("Ta zmiana dotyczy konta {0}. Żeby ją cofnąć, uruchom program na tym koncie.", name);
+
+    /// <summary>Tytuł wpisu autostartu z kierunku zmiany; kierunek nieznany (uszkodzony wpis) = sama nazwa pozycji.</summary>
+    public static string AutostartTitle(AutostartState target, string name) => target switch
+    {
+        AutostartState.Disabled => L.F("Autostart: wyłączono {0}", name),
+        AutostartState.Enabled => L.F("Autostart: włączono {0}", name),
+        _ => name,
+    };
 
     public static string LoadFailed(string message)
         => L.F("Nie udało się odczytać historii zmian: {0}", message);
@@ -86,11 +98,12 @@ public static class HistoryText
     public static string StateWithReason(HistoryState state, string? reason)
         => string.IsNullOrEmpty(reason) ? State(state) : $"{State(state)} – {reason}";
 
-    /// <summary>Wiersz „rodzaj” wpisu: instalacja, usunięcie albo nazwa kategorii (spoza katalogu: <see cref="OutOfCatalog"/>).</summary>
+    /// <summary>Wiersz „rodzaj” wpisu: instalacja, usunięcie, autostart albo nazwa kategorii (spoza katalogu: <see cref="OutOfCatalog"/>).</summary>
     public static string KindLine(HistoryKind kind, string? categoryName) => kind switch
     {
         HistoryKind.AppInstall => L.T("Instalacja aplikacji"),
         HistoryKind.AppRemoval => L.T("Usunięcie aplikacji"),
+        HistoryKind.Autostart => AutostartCategory,
         _ => categoryName ?? OutOfCatalog,
     };
 
@@ -105,12 +118,15 @@ public static class HistoryText
 
     /// <summary>
     /// Tekst zdarzenia journala; <paramref name="message"/> dopisywany po „ – ”. Komunikat silnika o zmianie aktywnej po restarcie
-    /// (zapisany w dowolnym języku interfejsu) nie jest dopisywany – mówi to już sam tekst zdarzenia.
+    /// (zapisany w dowolnym języku interfejsu) nie jest dopisywany – mówi to już sam tekst zdarzenia. Zdarzenia wyłączenia, włączenia
+    /// i zmiany poza programem w autostarcie też są bez komunikatu: silnik zapisuje w nim tekst wyniku, który powtarza tekst zdarzenia.
     /// </summary>
     public static string Event(string action, string outcome, string? message)
     {
         var text = BaseEventText(action, outcome);
-        return string.IsNullOrEmpty(message) || L.AllLanguages(() => L.T("Zmiana aktywna po restarcie.")).Contains(message!, StringComparer.Ordinal)
+        return string.IsNullOrEmpty(message)
+               || action is AutostartEngine.DisableAction or AutostartEngine.EnableAction or AutostartEngine.ExternalAction
+               || L.AllLanguages(() => L.T("Zmiana aktywna po restarcie.")).Contains(message!, StringComparer.Ordinal)
             ? text
             : $"{text} – {message}";
     }
@@ -148,9 +164,24 @@ public static class HistoryText
             return L.T("Zastosowanie rozpoczęte");
         }
 
+        if (action == AutostartEngine.UndoAction && outcome == "Started")
+        {
+            return L.T("Cofanie rozpoczęte");
+        }
+
         var known = TryParseOutcome(outcome, out var parsed);
         switch (action)
         {
+            case AutostartEngine.DisableAction:
+                return outcome == "Started" ? L.T("Wyłączanie rozpoczęte")
+                    : outcome == "Applied" ? L.T("Wyłączono i sprawdzono")
+                    : AutostartFailureText(action, outcome);
+            case AutostartEngine.EnableAction:
+                return outcome == "Started" ? L.T("Włączanie rozpoczęte")
+                    : outcome == "Applied" ? L.T("Włączono i sprawdzono")
+                    : AutostartFailureText(action, outcome);
+            case AutostartEngine.ExternalAction:
+                return L.T("Zmieniono poza programem");
             case "remove-app":
                 return outcome switch
                 {
@@ -186,4 +217,13 @@ public static class HistoryText
                 return $"{action}: {outcome}";
         }
     }
+
+    /// <summary>Wynik wyłączenia/włączenia autostartu inny niż sukces; nieznany wynik = surowy zapis jak przy innych akcjach.</summary>
+    private static string AutostartFailureText(string action, string outcome) => outcome switch
+    {
+        "FailedRolledBack" => L.T("Nie wykonano – przywrócono poprzedni stan"),
+        "FailedRollbackIncomplete" => L.T("Nie wykonano – poprzedniego stanu nie przywrócono"),
+        "Failed" => L.T("Nie wykonano"),
+        _ => $"{action}: {outcome}",
+    };
 }

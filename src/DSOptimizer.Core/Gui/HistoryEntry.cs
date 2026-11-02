@@ -31,12 +31,15 @@ public enum HistoryState
     InstallNotDone,
 }
 
-/// <summary>Rodzaj wpisu historii: zmiana z katalogu (tweak, akcja, panel), instalacja albo usunięcie aplikacji.</summary>
+/// <summary>Rodzaj wpisu historii: zmiana z katalogu (tweak, akcja, panel), instalacja albo usunięcie aplikacji, zmiana autostartu.</summary>
 public enum HistoryKind
 {
     Change,
     AppInstall,
     AppRemoval,
+
+    /// <summary>Wyłączenie albo włączenie pozycji autostartu (wpis <c>autostart</c>), z „Cofnij”.</summary>
+    Autostart,
 }
 
 /// <summary>Filtr listy historii zmian.</summary>
@@ -56,7 +59,7 @@ public sealed record HistoryEvent(DateTimeOffset At, string Text, bool IsFailure
 /// (wpis instalacji niesie tu stałą podpowiedź <see cref="HistoryText.InstallUndoBlocked"/>).
 /// <c>CategoryName</c> = nazwa kategorii GUI, null dla pozycji spoza katalogu.
 /// <c>Kind</c> = rodzaj wpisu, <c>IconKind</c> = klucz ikony (<see cref="GuiIcons"/>), <c>Reason</c> = krótki powód porażki
-/// (tylko stany „nie wykonano”/„nie potwierdzono” instalacji i usunięcia; null dla starych journali i sukcesów).
+/// (tylko stany „nie wykonano”/„nie potwierdzono” instalacji i usunięcia oraz przerwana zmiana autostartu; null dla starych journali i sukcesów).
 /// </summary>
 public sealed record HistoryEntry(
     Guid EntryId,

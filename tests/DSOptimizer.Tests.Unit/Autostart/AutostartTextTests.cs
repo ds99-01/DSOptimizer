@@ -65,6 +65,8 @@ public class AutostartTextTests
         Assert.Equal("Zmieniono poza programem.", AutostartText.ChangedOutside);
         Assert.Equal("Nie udało się zapisać journala – nic nie zmieniono: dysk", AutostartText.JournalFailed("dysk"));
         Assert.Equal("Zapis stanu zmienił się od odczytu listy – nic nie zmieniono. Odśwież listę.", AutostartText.FormatChanged);
+        Assert.Equal("Przywrócono stan sprzed zmiany – zadziała od następnego logowania.", AutostartText.UndoneFromHistory);
+        Assert.Equal("Brak aktywnej zmiany tej pozycji w Historii zmian.", AutostartText.NoActiveEntry);
     }
 
     [Fact]

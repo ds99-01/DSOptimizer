@@ -114,7 +114,7 @@ public class AutostartEngineTests
         Assert.Equal(RegValue.Absent, _registry.Get(ApprovedKey, Name));
         var entry = Assert.Single(_journal.Current.Entries);
         Assert.Equal(JournalEntryStatus.Undone, entry.Status);
-        Assert.Equal(new[] { ("disable-autostart", "Started"), ("disable-autostart", "Applied"), ("undo", "Undone") }, Events(entry));
+        Assert.Equal(new[] { ("disable-autostart", "Started"), ("disable-autostart", "Applied"), ("undo", "Started"), ("undo", "Undone") }, Events(entry));
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public class AutostartEngineTests
         Assert.Equal(original, _registry.Get(ApprovedKey, Name));
         var entry = Assert.Single(_journal.Current.Entries);
         Assert.Equal(JournalEntryStatus.Undone, entry.Status);
-        Assert.Equal(new[] { ("enable-autostart", "Started"), ("enable-autostart", "Applied"), ("undo", "Undone") }, Events(entry));
+        Assert.Equal(new[] { ("enable-autostart", "Started"), ("enable-autostart", "Applied"), ("undo", "Started"), ("undo", "Undone") }, Events(entry));
     }
 
     [Fact]

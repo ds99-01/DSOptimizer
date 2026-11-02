@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Apps;
 using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Journal;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
@@ -15,6 +17,7 @@ namespace DSOptimizer.Core.Autostart;
 /// Wyłączanie i włączanie pozycji autostartu. Jedna pozycja: świeży odczyt przełącznika (format i bramka zapisu od zera), journal z regułą
 /// jednego aktywnego wpisu, wpis zapisany przed zmianą, zapis, świeży odczyt po zapisie, a przy niezgodności przywrócenie baseline.
 /// Sukces wyłącznie po świeżym odczycie; moduł niczego nie usuwa (wartości Run i pliki z folderu Autostart zostają).
+/// Cofanie (przełączenie w drugą stronę i Historia zmian) zapisuje zdarzenie <c>undo</c>/<c>Started</c> przed przywróceniem baseline.
 /// </summary>
 public sealed class AutostartEngine
 {
@@ -153,27 +156,16 @@ public sealed class AutostartEngine
         }
 
         // 2. Journal i reguła jednego aktywnego wpisu.
-        JournalDocument document;
-        try
+        if (!TryLoad(row.Id, warnings, out var loaded, out var loadFailure))
         {
-            var load = _journal.Load();
-            if (load.Warning is not null)
-            {
-                _log.Warn(Component, load.Warning);
-                warnings.Add(load.Warning);
-            }
-
-            document = load.Document;
-        }
-        catch (Exception ex)
-        {
-            return JournalFailure(row.Id, ex, warnings);
+            return loadFailure!;
         }
 
+        var document = loaded!;
         var active = AutostartJournal.FindActive(document, row.Id, context.UserSid);
         if (active is not null && AutostartJournal.TargetOf(active) == Opposite(target))
         {
-            return UndoActive(row.Id, document, active, warnings);
+            return UndoEntry(row.Id, document, active, AutostartText.UndoneByToggle, warnings);
         }
 
         if (active is not null)
@@ -248,16 +240,148 @@ public sealed class AutostartEngine
         return Finish(row.Id, outcome, message, warnings, notRestored);
     }
 
-    /// <summary>Aktywny wpis z kierunkiem przeciwnym: przywrócenie jego baseline zamiast nowego wpisu.</summary>
-    private TweakResult UndoActive(string id, JournalDocument document, JournalEntry active, List<string> warnings)
+    /// <summary>
+    /// Cofa wpis autostartu z Historii zmian: przywraca jego baseline i sprawdza go świeżym odczytem. Odmowa (bez zapisu): wpis nieznany,
+    /// innego rodzaju, nieaktywny albo nie najnowszy aktywny dla pozycji; dla pozycji konta także niepewny użytkownik, inny SID wpisu
+    /// i brak gałęzi konta przy innym koncie procesu. Zdarzenie <c>undo</c>/<c>Started</c> jest zapisywane przed przywróceniem.
+    /// </summary>
+    public TweakResult Undo(Guid entryId, AutostartContext context)
     {
+        if (context is null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        var warnings = new List<string>();
+        return TryLoad(entryId.ToString(), warnings, out var document, out var failure)
+            ? UndoIn(document!, entryId, context, warnings)
+            : failure!;
+    }
+
+    /// <summary>Cofa aktywny wpis pozycji (<see cref="AutostartJournal.FindActive"/> z SID kontekstu); brak wpisu = <see cref="TweakOutcome.Refused"/>.</summary>
+    public TweakResult UndoActive(string itemId, AutostartContext context)
+    {
+        if (itemId is null)
+        {
+            throw new ArgumentNullException(nameof(itemId));
+        }
+
+        if (context is null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        var warnings = new List<string>();
+        if (!TryLoad(itemId, warnings, out var document, out var failure))
+        {
+            return failure!;
+        }
+
+        var entry = AutostartJournal.FindActive(document!, itemId, context.UserSid);
+        return entry is null
+            ? Finish(itemId, TweakOutcome.Refused, AutostartText.NoActiveEntry, warnings)
+            : UndoIn(document!, entry.EntryId, context, warnings);
+    }
+
+    /// <summary>Odmowy i cofnięcie wpisu w już wczytanym journalu (jeden odczyt na wywołanie, ostrzeżenie odczytu w wyniku).</summary>
+    private TweakResult UndoIn(JournalDocument document, Guid entryId, AutostartContext context, List<string> warnings)
+    {
+        var entry = document.Entries.FirstOrDefault(candidate =>
+            candidate.EntryId == entryId && string.Equals(candidate.Kind, JournalEntry.AutostartKind, StringComparison.Ordinal));
+        if (entry is null || !entry.IsActive)
+        {
+            return Finish(entry?.TweakId ?? entryId.ToString(), TweakOutcome.Refused, AutostartText.NoActiveEntry, warnings);
+        }
+
+        if (!ReferenceEquals(entry, AutostartJournal.FindActive(document, entry.TweakId, entry.UserSid)))
+        {
+            return Finish(entry.TweakId, TweakOutcome.Refused, HistoryText.UndoNotNewest, warnings);
+        }
+
+        if (AccountRefusal(entry, context) is { } refusal)
+        {
+            return Finish(entry.TweakId, TweakOutcome.Refused, refusal, warnings);
+        }
+
+        return UndoEntry(entry.TweakId, document, entry, AutostartText.UndoneFromHistory, warnings);
+    }
+
+    /// <summary>Powód odmowy cofnięcia wpisu pozycji konta; null = wolno cofać (także każda pozycja maszyny).</summary>
+    private static string? AccountRefusal(JournalEntry entry, AutostartContext context)
+    {
+        if (!AutostartIds.TryParse(entry.TweakId, out var source, out _, out _))
+        {
+            return AutostartText.NoActiveEntry;
+        }
+
+        var scope = AutostartSources.ScopeOf(source);
+        if (scope == AutostartScope.Machine)
+        {
+            return null;
+        }
+
+        if (!context.UserCertain)
+        {
+            return AppsText.UserUncertain;
+        }
+
+        if (!string.Equals(entry.UserSid, context.UserSid, StringComparison.OrdinalIgnoreCase))
+        {
+            return HistoryText.UndoOtherAccount(entry.UserSid);
+        }
+
+        // Ta sama reguła co blokada wiersza (AutostartClassifier): gałąź konta musi być dostępna, gdy proces działa innym kontem.
+        var otherAccount = !string.Equals(context.ProcessSid, context.UserSid, StringComparison.OrdinalIgnoreCase);
+        var hiveLoaded = scope == AutostartScope.User ? context.UserHiveLoaded : context.ClassesHiveLoaded;
+        return otherAccount && !hiveLoaded ? AutostartText.Blocked(AutostartBlocker.UserHiveMissing) : null;
+    }
+
+    private bool TryLoad(string id, List<string> warnings, out JournalDocument? document, out TweakResult? failure)
+    {
+        try
+        {
+            var load = _journal.Load();
+            if (load.Warning is not null)
+            {
+                _log.Warn(Component, load.Warning);
+                warnings.Add(load.Warning);
+            }
+
+            document = load.Document;
+            failure = null;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            document = null;
+            failure = JournalFailure(id, ex, warnings);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Przywrócenie baseline aktywnego wpisu (przełączenie w drugą stronę albo Historia zmian). Najpierw zapis zdarzenia
+    /// <c>undo</c>/<c>Started</c> (błąd = <see cref="TweakOutcome.Failed"/>, rejestr nietknięty), potem przywrócenie i zdarzenie wyniku.
+    /// </summary>
+    private TweakResult UndoEntry(string id, JournalDocument document, JournalEntry active, string undoneMessage, List<string> warnings)
+    {
+        AddEvent(active, UndoAction, "Started", null);
+        try
+        {
+            _journal.Save(document);
+        }
+        catch (Exception ex)
+        {
+            return JournalFailure(id, ex, warnings);
+        }
+
         var notRestored = AutostartJournal.RestoreBaseline(_registry, active);
         var outcome = notRestored.Count == 0 ? TweakOutcome.Undone : TweakOutcome.UndoIncomplete;
         string? message = null;
         if (outcome == TweakOutcome.Undone)
         {
             active.Status = JournalEntryStatus.Undone;
-            message = AutostartText.UndoneByToggle;
+            message = undoneMessage;
         }
 
         AddEvent(active, UndoAction, outcome.ToString(), message ?? string.Join("; ", notRestored));

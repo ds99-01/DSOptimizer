@@ -1,5 +1,7 @@
 using System;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 using Xunit;
 
 namespace DSOptimizer.Tests.Unit.Gui;
@@ -101,6 +103,71 @@ public class HistoryTextTests
         Assert.Equal("Prywatność i AI", HistoryText.KindLine(HistoryKind.Change, "Prywatność i AI"));
         Assert.Equal(HistoryText.OutOfCatalog, HistoryText.KindLine(HistoryKind.Change, null));
         Assert.Equal("Przejdź do: Aplikacje", HistoryText.GoToAppsLink);
+    }
+
+    [Theory]
+    [InlineData("disable-autostart", "Started", "Wyłączanie rozpoczęte")]
+    [InlineData("disable-autostart", "Applied", "Wyłączono i sprawdzono")]
+    [InlineData("enable-autostart", "Started", "Włączanie rozpoczęte")]
+    [InlineData("enable-autostart", "Applied", "Włączono i sprawdzono")]
+    [InlineData("disable-autostart", "FailedRolledBack", "Nie wykonano – przywrócono poprzedni stan")]
+    [InlineData("enable-autostart", "FailedRolledBack", "Nie wykonano – przywrócono poprzedni stan")]
+    [InlineData("disable-autostart", "FailedRollbackIncomplete", "Nie wykonano – poprzedniego stanu nie przywrócono")]
+    [InlineData("enable-autostart", "FailedRollbackIncomplete", "Nie wykonano – poprzedniego stanu nie przywrócono")]
+    [InlineData("disable-autostart", "Failed", "Nie wykonano")]
+    [InlineData("enable-autostart", "Failed", "Nie wykonano")]
+    [InlineData("disable-autostart", "Cokolwiek", "disable-autostart: Cokolwiek")]
+    public void Event_AutostartActions_Texts(string action, string outcome, string expected)
+    {
+        Assert.Equal(expected, HistoryText.Event(action, outcome, null));
+        // Komunikat wyniku silnika powtarza tekst zdarzenia, więc nie jest dopisywany.
+        Assert.Equal(expected, HistoryText.Event(action, outcome, "Wyłączona – zadziała od następnego logowania.", null));
+    }
+
+    [Fact]
+    public void Event_External()
+    {
+        Assert.Equal("Zmieniono poza programem", HistoryText.Event("external", "Undone", "Zmieniono poza programem."));
+        Assert.Equal("Zmieniono poza programem", HistoryText.Event("external", "Undone", null));
+    }
+
+    [Fact]
+    public void Event_UndoStarted()
+        => Assert.Equal("Cofanie rozpoczęte", HistoryText.Event("undo", "Started", null));
+
+    [Fact]
+    public void Event_Undo_AsToday_AppendsMessage()
+        => Assert.Equal(
+            "Cofnięto – Przywrócono stan sprzed zmiany – zadziała od następnego logowania.",
+            HistoryText.Event("undo", "Undone", "Przywrócono stan sprzed zmiany – zadziała od następnego logowania."));
+
+    [Fact]
+    public void KindLine_Autostart()
+    {
+        Assert.Equal("Autostart", HistoryText.KindLine(HistoryKind.Autostart, null));
+        Assert.Equal("Autostart", HistoryText.KindLine(HistoryKind.Autostart, "x"));
+        Assert.Equal("Autostart", HistoryText.AutostartCategory);
+    }
+
+    [Fact]
+    public void AutostartTitle_ByDirection()
+    {
+        Assert.Equal("Autostart: wyłączono OneDrive", HistoryText.AutostartTitle(AutostartState.Disabled, "OneDrive"));
+        Assert.Equal("Autostart: włączono OneDrive", HistoryText.AutostartTitle(AutostartState.Enabled, "OneDrive"));
+        Assert.Equal("OneDrive", HistoryText.AutostartTitle(AutostartState.Unknown, "OneDrive"));
+    }
+
+    [Fact]
+    public void AutostartTexts_Translated()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("Startup apps", HistoryText.AutostartCategory);
+            Assert.Equal("Startup apps: disabled OneDrive", HistoryText.AutostartTitle(AutostartState.Disabled, "OneDrive"));
+            Assert.Equal("Startup apps: enabled OneDrive", HistoryText.AutostartTitle(AutostartState.Enabled, "OneDrive"));
+            Assert.Equal("Not done", HistoryText.Event("disable-autostart", "Failed", null));
+            Assert.Equal("Changed outside the program", HistoryText.Event("external", "Undone", "Changed outside the program."));
+        }
     }
 }
 

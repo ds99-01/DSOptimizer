@@ -152,6 +152,58 @@
     {
       "pl": "Zapis stanu zmienił się od odczytu listy – nic nie zmieniono. Odśwież listę.",
       "en": "The state changed since the list was read – nothing was changed. Refresh the list."
+    },
+    {
+      "pl": "Przywrócono stan sprzed zmiany – zadziała od następnego logowania.",
+      "en": "Restored the state from before the change – takes effect at the next sign-in."
+    },
+    {
+      "pl": "Brak aktywnej zmiany tej pozycji w Historii zmian.",
+      "en": "There's no active change of this item in Change history."
+    },
+    {
+      "pl": "Autostart",
+      "en": "Startup apps"
+    },
+    {
+      "pl": "Autostart: wyłączono {0}",
+      "en": "Startup apps: disabled {0}"
+    },
+    {
+      "pl": "Autostart: włączono {0}",
+      "en": "Startup apps: enabled {0}"
+    },
+    {
+      "pl": "Wyłączanie rozpoczęte",
+      "en": "Disabling started"
+    },
+    {
+      "pl": "Wyłączono i sprawdzono",
+      "en": "Disabled and verified"
+    },
+    {
+      "pl": "Włączanie rozpoczęte",
+      "en": "Enabling started"
+    },
+    {
+      "pl": "Włączono i sprawdzono",
+      "en": "Enabled and verified"
+    },
+    {
+      "pl": "Nie wykonano – przywrócono poprzedni stan",
+      "en": "Not done – the previous state was restored"
+    },
+    {
+      "pl": "Nie wykonano – poprzedniego stanu nie przywrócono",
+      "en": "Not done – the previous state wasn't restored"
+    },
+    {
+      "pl": "Zmieniono poza programem",
+      "en": "Changed outside the program"
+    },
+    {
+      "pl": "Cofanie rozpoczęte",
+      "en": "Undo started"
     }
   ]
 }

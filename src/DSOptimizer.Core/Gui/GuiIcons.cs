@@ -20,6 +20,9 @@ public static class GuiIcons
     /// <summary>Strona „Przygotowanie” (I1: lista z ptaszkami, wybór autora 2026-10-21).</summary>
     public const string Prep = "Prep";
 
+    /// <summary>Strona „Autostart” i jej wpisy w Historii zmian (przycisk zasilania, z renderu strony).</summary>
+    public const string Autostart = "Autostart";
+
     /// <summary>Kłódka aplikacji chronionej (zamiast pola wyboru).</summary>
     public const string Lock = "Lock";
 

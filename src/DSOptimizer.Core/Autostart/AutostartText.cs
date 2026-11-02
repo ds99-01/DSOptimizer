@@ -43,7 +43,13 @@ public static class AutostartText
     /// <summary>Przełączenie w drugą stronę cofnęło aktywny wpis tej pozycji (bez nowego wpisu).</summary>
     public static string UndoneByToggle => L.T("Cofnięto wcześniejszą zmianę z Historii zmian – zadziała od następnego logowania.");
 
-    public static string NotConfirmed => L.T("Odczyt po zapisie nie potwierdził zmiany – przywrócono poprzedni stan.");
+    /// <summary>Cofnięcie wpisu z Historii zmian potwierdzone świeżym odczytem.</summary>
+    public static string UndoneFromHistory => L.T("Przywrócono stan sprzed zmiany – zadziała od następnego logowania.");
+
+    /// <summary>Cofnięcie pozycji bez aktywnego wpisu autostartu (także wpis nieznany albo już cofnięty).</summary>
+    public static string NoActiveEntry => L.T("Brak aktywnej zmiany tej pozycji w Historii zmian.");
+
+    public static string NotConfirmed =>L.T("Odczyt po zapisie nie potwierdził zmiany – przywrócono poprzedni stan.");
 
     public static string RollbackIncomplete => L.T("Odczyt po zapisie nie potwierdził zmiany, a poprzedniego stanu nie udało się przywrócić.");
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Journal;
 using DSOptimizer.Core.Model;
@@ -94,6 +95,12 @@ public static class ChangeHistory
             if (entry.Kind == JournalEntry.AppInstallKind)
             {
                 result.Add((BuildInstall(entry, pendingInstalls.Contains(entry), ResolveAccount(entry.UserSid)), index));
+                continue;
+            }
+
+            if (entry.Kind == JournalEntry.AutostartKind)
+            {
+                result.Add((BuildAutostart(entry, journal, currentSid, ResolveAccount), index));
                 continue;
             }
 
@@ -230,6 +237,54 @@ public static class ChangeHistory
             ? HistoryText.ShortReason(entry.Events[entry.Events.Count - 1].Reason)
             : null;
         return AppEntry(entry, account, state, HistoryText.InstallCategory, HistoryText.InstallUndoBlocked, HistoryKind.AppInstall, GuiIcons.Install, reason);
+    }
+
+    /// <summary>
+    /// Wpis autostartu: tytuł „Autostart: wyłączono/włączono &lt;nazwa&gt;” (kierunek z pierwszego zdarzenia), druga linia „Autostart”,
+    /// z „Cofnij” dla wpisu aktywnego. Nigdy nie czeka na restart. Pozycja konta: nazwa konta i blokada dla innego SID; pozycja maszyny:
+    /// „cały komputer”. Najnowszy aktywny wpis pozycji wg reguły modułu (id bez rozróżniania wielkości liter, SID tylko dla pozycji konta).
+    /// </summary>
+    private static HistoryEntry BuildAutostart(JournalEntry entry, JournalDocument journal, string currentSid, Func<string, string> resolveAccount)
+    {
+        var userScoped = AutostartIds.IsUserScoped(entry.TweakId);
+        var account = userScoped ? resolveAccount(entry.UserSid) : HistoryText.WholeComputer;
+        var state = StateOf(entry.Status, pending: false);
+
+        string? blocked = null;
+        if (entry.IsActive)
+        {
+            if (userScoped && !string.Equals(entry.UserSid, currentSid, StringComparison.OrdinalIgnoreCase))
+            {
+                blocked = HistoryText.UndoOtherAccount(account);
+            }
+            else if (!ReferenceEquals(entry, AutostartJournal.FindActive(journal, entry.TweakId, entry.UserSid)))
+            {
+                blocked = HistoryText.UndoNotNewest;
+            }
+        }
+
+        var reason = state == HistoryState.Aborted && entry.Events.Count > 0
+            ? HistoryText.ShortReason(entry.Events[entry.Events.Count - 1].Message)
+            : null;
+        var events = entry.Events
+            .Select(e => new HistoryEvent(e.At, HistoryText.Event(e.Action, e.Outcome, e.Message), IsFailure(e.Outcome)))
+            .ToList();
+        var name = string.IsNullOrWhiteSpace(entry.Title) ? entry.TweakId : entry.Title!;
+        return new HistoryEntry(
+            entry.EntryId,
+            entry.TweakId,
+            HistoryText.AutostartTitle(AutostartJournal.TargetOf(entry), name),
+            true,
+            HistoryText.AutostartCategory,
+            entry.AppliedAt,
+            account,
+            state,
+            events,
+            entry.IsActive,
+            blocked,
+            HistoryKind.Autostart,
+            GuiIcons.Autostart,
+            reason);
     }
 
     private static HistoryEntry AppEntry(JournalEntry entry, string account, HistoryState state, string category, string? undoBlocked, HistoryKind kind, string iconKind, string? reason)

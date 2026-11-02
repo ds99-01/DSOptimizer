@@ -12,7 +12,7 @@ public class GuiIconsTests
     private static readonly string[] AllKinds =
     {
         "Specification", "Performance", "Disk", "Network", "Security", "Explorer", "Panels", "Tools", "Settings",
-        "Refresh", "Copy", "SaveReport", "Search", "Info", "Warning", "OpenLocation", "History", "Privacy", "Suggested", "Apps", "Lock", "Prep", "Repair",
+        "Refresh", "Copy", "SaveReport", "Search", "Info", "Warning", "OpenLocation", "History", "Privacy", "Suggested", "Apps", "Lock", "Prep", "Repair", "Autostart",
     };
 
     [Fact]
@@ -53,6 +53,7 @@ public class GuiIconsTests
         Assert.Equal("Lock", GuiIcons.Lock);
         Assert.Equal("Prep", GuiIcons.Prep);
         Assert.Equal("Repair", GuiIcons.Repair);
+        Assert.Equal("Autostart", GuiIcons.Autostart);
     }
 
     [Fact]

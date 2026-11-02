@@ -180,6 +180,11 @@ How to read the tables:
 | Nie udało się | Failed | App removal result status (`Failed`; the removal page says this instead of "Error"); also as a prefix: `Nie udało się – ` → `Failed – ` |
 | Niemożliwe | Not possible | "Undo" fact and detail line for app removal (removal can't be undone) |
 | Zastosowanie: {0} / Cofnięcie: {0} | Apply: {0} / Undo: {0} | Change history event with a result name |
+| Autostart: wyłączono {0} / Autostart: włączono {0} | Startup apps: disabled {0} / Startup apps: enabled {0} | Change history title of a Startup apps change; `{0}` = item name. Second line "Autostart" → "Startup apps" (see Pages and menu) |
+| Wyłączanie rozpoczęte / Włączanie rozpoczęte / Cofanie rozpoczęte | Disabling started / Enabling started / Undo started | Change history events (Startup apps), like "Apply started" |
+| Wyłączono i sprawdzono / Włączono i sprawdzono | Disabled and verified / Enabled and verified | Change history events (Startup apps); "sprawdzono" = verified |
+| Nie wykonano – przywrócono poprzedni stan / Nie wykonano – poprzedniego stanu nie przywrócono | Not done – the previous state was restored / Not done – the previous state wasn't restored | Change history events (Startup apps), prefix as in "Nie wykonano" |
+| Zmieniono poza programem | Changed outside the program | Change history event: the item was changed back outside DSOptimizer (for example in Task Manager) |
 
 ## Concepts
 

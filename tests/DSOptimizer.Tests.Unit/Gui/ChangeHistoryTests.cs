@@ -723,4 +723,226 @@ public class ChangeHistoryTests
             Assert.True(item.InCatalog);
         }
     }
+
+    // --- autostart (Kind="autostart") ---
+
+    private const string Other = "S-1-5-21-2";
+
+    private static JournalEntry Startup(
+        string id,
+        string sid,
+        JournalEntryStatus status,
+        TimeSpan appliedOffset,
+        params (string Action, string Outcome, string? Message)[] events)
+    {
+        var entry = new JournalEntry
+        {
+            EntryId = Guid.NewGuid(),
+            Kind = JournalEntry.AutostartKind,
+            Title = "Microsoft OneDrive",
+            TweakId = id,
+            UserSid = sid,
+            Status = status,
+            AppliedAt = Boot + appliedOffset,
+        };
+        foreach (var (action, outcome, message) in events)
+        {
+            entry.Events.Add(new JournalEvent { At = Boot + appliedOffset, Action = action, Outcome = outcome, Message = message });
+        }
+
+        return entry;
+    }
+
+    private static (string, string, string?)[] Disabled()
+        => new (string, string, string?)[]
+        {
+            ("disable-autostart", "Started", null),
+            ("disable-autostart", "Applied", "Wyłączona – zadziała od następnego logowania."),
+        };
+
+    [Fact]
+    public void Autostart_ActiveDisable_TitleKindIconUndoAllowed()
+    {
+        var item = Assert.Single(Build(Doc(Startup("run:user:OneDrive", Me, JournalEntryStatus.Active, Before, Disabled())), Cats(Plain("a"))));
+
+        Assert.Equal("Autostart: wyłączono Microsoft OneDrive", item.Title);
+        Assert.Equal("run:user:OneDrive", item.TweakId);
+        Assert.Equal(HistoryKind.Autostart, item.Kind);
+        Assert.Equal(GuiIcons.Autostart, item.IconKind);
+        Assert.Equal("Autostart", item.CategoryName);
+        Assert.Equal("Autostart", HistoryText.KindLine(item.Kind, item.CategoryName));
+        Assert.True(item.InCatalog);
+        Assert.Equal(HistoryState.Active, item.State);
+        Assert.True(item.IsActive);
+        Assert.Null(item.UndoBlockedReason);
+        Assert.Null(item.Reason);
+        Assert.Equal("Konto-" + Me, item.AccountText);
+        Assert.Equal(new[] { "Wyłączanie rozpoczęte", "Wyłączono i sprawdzono" }, item.Events.Select(e => e.Text));
+        Assert.All(item.Events, e => Assert.False(e.IsFailure));
+    }
+
+    [Fact]
+    public void Autostart_EnableEntry_TitleEnabled()
+    {
+        var entry = Startup(
+            "appx:Microsoft.WindowsTerminal_8wekyb3d8bbwe!StartTerminalOnLoginTask",
+            Me,
+            JournalEntryStatus.Active,
+            Before,
+            ("enable-autostart", "Started", null),
+            ("enable-autostart", "Applied", "Włączona – zadziała od następnego logowania."));
+        entry.Title = "Terminal";
+
+        var item = Assert.Single(Build(Doc(entry), Cats(Plain("a"))));
+
+        Assert.Equal("Autostart: włączono Terminal", item.Title);
+        Assert.Equal(new[] { "Włączanie rozpoczęte", "Włączono i sprawdzono" }, item.Events.Select(e => e.Text));
+        Assert.Null(item.UndoBlockedReason);
+    }
+
+    [Fact]
+    public void Autostart_NoTitle_UsesId()
+    {
+        var entry = Startup("run:user:OneDrive", Me, JournalEntryStatus.Active, Before, Disabled());
+        entry.Title = " ";
+
+        Assert.Equal("Autostart: wyłączono run:user:OneDrive", Assert.Single(Build(Doc(entry), Cats(Plain("a")))).Title);
+    }
+
+    [Fact]
+    public void Autostart_Undone_InactiveFilter()
+    {
+        var entry = Startup(
+            "run:user:OneDrive",
+            Me,
+            JournalEntryStatus.Undone,
+            Before,
+            ("disable-autostart", "Started", null),
+            ("disable-autostart", "Applied", null),
+            ("undo", "Started", null),
+            ("undo", "Undone", null));
+
+        var item = Assert.Single(Build(Doc(entry), Cats(Plain("a"))));
+
+        Assert.Equal(HistoryState.Undone, item.State);
+        Assert.True(ChangeHistory.Matches(item.State, HistoryFilter.Inactive));
+        Assert.False(ChangeHistory.Matches(item.State, HistoryFilter.Active));
+        Assert.False(item.IsActive);
+        Assert.Null(item.UndoBlockedReason);
+        Assert.Equal("Autostart: wyłączono Microsoft OneDrive", item.Title);
+        Assert.Equal(new[] { "Cofanie rozpoczęte", "Cofnięto" }, item.Events.Skip(2).Select(e => e.Text));
+    }
+
+    [Fact]
+    public void Autostart_MachineScope_WholeComputer()
+    {
+        var item = Assert.Single(Build(Doc(Startup("run:machine:Teams", Other, JournalEntryStatus.Active, Before, Disabled())), Cats(Plain("a"))));
+
+        Assert.Equal(HistoryText.WholeComputer, item.AccountText);
+        Assert.True(item.IsActive);
+        Assert.Null(item.UndoBlockedReason);
+    }
+
+    [Theory]
+    [InlineData("run:user:OneDrive")]
+    [InlineData("folder:user:OneDrive.lnk")]
+    [InlineData("appx:Microsoft.WindowsTerminal_8wekyb3d8bbwe!StartTerminalOnLoginTask")]
+    public void Autostart_UserScopeOtherAccount_UndoBlocked(string id)
+    {
+        Assert.True(DSOptimizer.Core.Autostart.AutostartIds.IsUserScoped(id));
+
+        var item = Assert.Single(Build(Doc(Startup(id, Other, JournalEntryStatus.Active, Before, Disabled())), Cats(Plain("a"))));
+
+        Assert.Equal("Konto-" + Other, item.AccountText);
+        Assert.True(item.IsActive);
+        Assert.Equal(HistoryText.UndoOtherAccount("Konto-" + Other), item.UndoBlockedReason);
+    }
+
+    [Fact]
+    public void Autostart_UserScopeSameSidDifferentCase_Undoable()
+    {
+        var item = Assert.Single(Build(Doc(Startup("run:user:OneDrive", Me.ToLowerInvariant(), JournalEntryStatus.Active, Before, Disabled())), Cats(Plain("a"))));
+
+        Assert.Null(item.UndoBlockedReason);
+    }
+
+    [Fact]
+    public void Autostart_NotNewestActive_IdCaseInsensitive_UndoNotNewest()
+    {
+        var older = Startup("run:machine:Teams", Me, JournalEntryStatus.Active, Before, Disabled());
+        var newer = Startup("RUN:MACHINE:teams", Other, JournalEntryStatus.Active, After, Disabled());
+
+        var items = Build(Doc(older, newer), Cats(Plain("a"))).ToDictionary(e => e.EntryId);
+
+        Assert.Equal(HistoryText.UndoNotNewest, items[older.EntryId].UndoBlockedReason);
+        Assert.Null(items[newer.EntryId].UndoBlockedReason);
+    }
+
+    [Fact]
+    public void Autostart_UserScope_NewestPerAccount()
+    {
+        var mine = Startup("run:user:OneDrive", Me, JournalEntryStatus.Active, Before, Disabled());
+        var theirs = Startup("run:user:OneDrive", Other, JournalEntryStatus.Active, After, Disabled());
+
+        var items = Build(Doc(mine, theirs), Cats(Plain("a"))).ToDictionary(e => e.EntryId);
+
+        Assert.Null(items[mine.EntryId].UndoBlockedReason);
+        Assert.Equal(HistoryText.UndoOtherAccount("Konto-" + Other), items[theirs.EntryId].UndoBlockedReason);
+    }
+
+    [Fact]
+    public void Autostart_Aborted_ReasonFromLastMessage()
+    {
+        var entry = Startup(
+            "run:user:OneDrive",
+            Me,
+            JournalEntryStatus.Aborted,
+            Before,
+            ("disable-autostart", "Started", null),
+            ("disable-autostart", "FailedRolledBack", "Nie wykonano – odczyt po zapisie inny"));
+
+        var item = Assert.Single(Build(Doc(entry), Cats(Plain("a"))));
+
+        Assert.Equal(HistoryState.Aborted, item.State);
+        Assert.Equal("odczyt po zapisie inny", item.Reason);
+        Assert.False(item.IsActive);
+        Assert.Null(item.UndoBlockedReason);
+        Assert.Equal("Nie wykonano – przywrócono poprzedni stan", item.Events[1].Text);
+        Assert.True(item.Events[1].IsFailure);
+    }
+
+    [Fact]
+    public void Autostart_AbortedWithoutEventsOrActive_NoReason()
+    {
+        var entry = Startup("run:user:OneDrive", Me, JournalEntryStatus.Aborted, Before);
+        Assert.Null(Assert.Single(Build(Doc(entry), Cats(Plain("a")))).Reason);
+        Assert.Null(Assert.Single(Build(Doc(Startup("run:user:OneDrive", Me, JournalEntryStatus.Active, Before, Disabled())), Cats(Plain("a")))).Reason);
+    }
+
+    [Fact]
+    public void Autostart_NeverPendingReboot()
+    {
+        var entry = Startup("run:user:OneDrive", Me, JournalEntryStatus.Active, After, Disabled());
+        var undone = Startup("run:user:Teams", Me, JournalEntryStatus.Undone, After, ("disable-autostart", "Applied", null), ("undo", "Undone", null));
+        var doc = Doc(entry, undone);
+        var cats = Cats(Reboot("run:user:OneDrive"), Reboot("run:user:Teams"));
+
+        var states = Build(doc, cats).ToDictionary(e => e.EntryId, e => e.State);
+
+        Assert.Equal(HistoryState.Active, states[entry.EntryId]);
+        Assert.Equal(HistoryState.Undone, states[undone.EntryId]);
+        Assert.Empty(RebootPending.Compute(doc, cats[0].Items.ToDictionary(t => t.Id), Boot));
+    }
+
+    [Fact]
+    public void Autostart_CountsInActiveCount()
+    {
+        var doc = Doc(
+            Startup("run:user:OneDrive", Me, JournalEntryStatus.Active, Before, Disabled()),
+            Startup("run:user:Teams", Me, JournalEntryStatus.Undone, Before),
+            Startup("run:user:Spotify", Me, JournalEntryStatus.Aborted, Before),
+            Entry("a", Me, JournalEntryStatus.Active, Before, ("apply", "Applied", Before)));
+
+        Assert.Equal(2, ChangeHistory.ActiveCount(Build(doc, Cats(Plain("a")))));
+    }
 }
