@@ -6,7 +6,9 @@ Opis działania:
     Dla każdego przypadku z cases.psd1 wykonuje przebieg (Full: detect -> apply -> detect -> undo -> detect; ApplyOnly; DetectOnly; Execute: --execute + Check + Cleanup;
     Reboot: Full z prawdziwym restartem VM po apply i po undo; opcjonalnie CheckAfterApply/CheckAfterUndo, KeyAbsentAfterUndo i KeyPresentAfterUndo;
     AppRemove: --list-apps -> --remove-app <AppId> -> --list-apps + Check i Cleanup;
-    AppInstall: --install-apps <AppIds> albo --list-install [--apps-catalog] + Check i Cleanup) przeciw VM
+    AppInstall: --install-apps <AppIds> albo --list-install [--apps-catalog] + Check i Cleanup;
+    Autostart: --list-autostart (+ ListDoesNotWrite), z Set: --set-autostart, restart, start/brak startu sond i procesów,
+    przywrócenie, restart, plik StartupInfo, --list-autostart + Check i Cleanup) przeciw VM
     (Invoke-VmCase), zapisuje rekord do <RecordDirectory>\<Name>.json i sprawdza wyniki. Każdy brak raportu CLI,
     niezaładowany hive użytkownika albo wyjątek przebiegu to czerwony test z czytelnym komunikatem - nigdy zielony "na pusto".
 #>
@@ -28,6 +30,7 @@ BeforeDiscovery {
             # Tytuł bloku: id tweaka albo aplikacji (Flow AppRemove ma AppId, AppInstall polecenie i AppIds zamiast TweakId).
             $Item.Id = if ($_.ContainsKey('AppId')) { [string]$_.AppId }
             elseif ($_.ContainsKey('Command')) { $Ids = if ($_.ContainsKey('AppIds')) { @($_.AppIds) -join ',' } else { '' }; ([string]$_.Command + ' ' + $Ids).Trim() }
+            elseif ($_.Flow -eq 'Autostart') { if ($_.ContainsKey('Items')) { 'set-autostart ' + (@($_.Items | ForEach-Object { [string]$_.Id }) -join ',') } else { 'list-autostart' } }
             else { [string]$_.TweakId }
             $Item.IsSkipped = $_.ContainsKey('Skip')
             $Item.SkipReason = if ($_.ContainsKey('Skip')) { [string]$_.Skip } else { $null }
@@ -97,6 +100,45 @@ BeforeAll {
         return $Property.Value
     }
 
+    function Get-DsoAutostartRows {
+        # Wiersze raportu --list-autostart; brak pola autostartRows = porażka (Get-DsoReportProperty).
+        param($Step)
+        return @(Get-DsoReportProperty -Step $Step -Name 'autostartRows' | Where-Object { $null -ne $_ })
+    }
+
+    function Assert-DsoAutostartSteps {
+        # Kroki <Prefix>-N (set-N, restore-N): po jednym na pozycję Items, w kolejności, z id pozycji; kod wyjścia i wynik z Expect.
+        param([hashtable]$Case, [string]$Prefix, $AllowedExit, $AllowedOutcome)
+        $Items = @($Case.Items)
+        $Items.Count | Should -BeGreaterThan 0 -Because 'przypadek bez Items - nic nie zostało sprawdzone'
+        for ($Index = 0; $Index -lt $Items.Count; $Index++) {
+            $Name = "$Prefix-$($Index + 1)"
+            $Id = [string]$Items[$Index].Id
+            $Step = Get-DsoStepResult -StepName $Name -AllowNoReport
+            [string]$Step.ItemId | Should -BeExactly $Id -Because "krok '$Name' dotyczy innej pozycji niż '$Id'"
+            (@($AllowedExit) -contains $Step.ExitCode) | Should -BeTrue -Because "krok '$Name' ($Id): exit $($Step.ExitCode), dozwolone: $(@($AllowedExit) -join ', '), ReportError '$($Step.ReportError)', timeout $($Step.TimedOut)"
+            $Step = Get-DsoStepResult -StepName $Name
+            Assert-DsoValueIn -Actual $Step.Report.outcome -Allowed $AllowedOutcome -What "wynik kroku '$Name' ($Id, komunikat '$($Step.Report.message)')"
+        }
+    }
+
+    function Assert-DsoAutostartStarts {
+        # Obserwacja rozruchu (Wait-VmAutostartStart): każda sonda kontrolna wystartowała, a każda pozycja wystartowała albo nie
+        # zgodnie z fazą (Get-VmAutostartExpectedStart).
+        param([hashtable]$Case, $Observation, [ValidateSet('Set', 'Restore')][string]$Phase)
+        $Label = if ($Phase -eq 'Set') { 'rozruch po set-autostart' } else { 'rozruch po przywróceniu' }
+        if ($null -eq $Observation) { throw "$Label : brak obserwacji startu - nic nie zostało sprawdzone." }
+        foreach ($Control in @($Case.Controls)) {
+            (@($Observation.ControlsStarted) -contains $Control) | Should -BeTrue -Because "$Label : sonda kontrolna '$Control' nie wystartowała (rozruch $($Observation.BootUtc))"
+        }
+        $Expected = Get-VmAutostartExpectedStart -Case $Case -Phase $Phase
+        foreach ($Item in @($Case.Items)) {
+            $Found = @($Observation.Items | Where-Object { $null -ne $_ -and [string]$_.Id -ceq [string]$Item.Id })
+            $Found.Count | Should -Be 1 -Because "$Label : brak oceny startu pozycji '$($Item.Id)' - nic nie zostało sprawdzone"
+            ([bool]$Found[0].Started) | Should -Be $Expected -Because "$Label : pozycja '$($Item.Id)' wystartowała=$([bool]$Found[0].Started), oczekiwano $Expected ($($Found[0].Evidence))"
+        }
+    }
+
     function Get-DsoListedApp {
         # Wiersze listy aplikacji (raport --list-apps) o danym id (bez rozróżniania wielkości liter, jak CLI).
         param($Step, [string]$AppId)
@@ -122,7 +164,7 @@ Describe '<Name> (<Id>)' -ForEach $script:CaseData {
             }
             if (-not $script:HiveProblem) {
                 $CaseArgs = @{ Session = $Session; Case = $Case; Layout = $Layout }
-                if ($Case.Flow -eq 'Reboot') { $CaseArgs.Reconnect = $Reconnect }
+                if ($Case.Flow -eq 'Reboot' -or ($Case.Flow -eq 'Autostart' -and $Case.ContainsKey('Set'))) { $CaseArgs.Reconnect = $Reconnect }
                 $script:Record = Invoke-VmCase @CaseArgs
                 $SafeName = $Case.Name -replace '[^A-Za-z0-9._-]', '_'
                 $Json = $script:Record | ConvertTo-Json -Depth 20
@@ -295,6 +337,95 @@ Describe '<Name> (<Id>)' -ForEach $script:CaseData {
                 $Items = $Step.Report.PSObject.Properties['installItems']
                 if ($null -ne $Items) { foreach ($Item in @($Items.Value | Where-Object { $null -ne $_ })) { $Texts.Add([string]$Item.message) } }
                 @($Texts | Where-Object { $_ -like "*$($Expect.MessageContains)*" }).Count | Should -BeGreaterThan 0 -Because "krok '$($Case.Command)': brak komunikatu '$($Expect.MessageContains)' (są: $(@($Texts | Where-Object { $_ }) -join ' | '))"
+            }
+        }
+    }
+
+    if ($Case.Flow -eq 'Autostart') {
+        It 'list-autostart przed: kod wyjścia i wiersze z Expect.Listed' -Skip:$IsSkipped {
+            $Step = Get-DsoStepResult -StepName 'list-before'
+            $Step.ExitCode | Should -Be 0 -Because "krok 'list-before' (list-autostart) zakończył się kodem $($Step.ExitCode)"
+            $Rows = @(Get-DsoAutostartRows -Step $Step)
+            $Rows.Count | Should -BeGreaterThan 0 -Because "krok 'list-before': pusta lista autostartu - nic nie zostało sprawdzone"
+            if ($Expect.ContainsKey('Listed')) {
+                foreach ($Id in $Expect.Listed.Keys) {
+                    $Want = $Expect.Listed[$Id]
+                    $Found = @($Rows | Where-Object { [string]$_.id -ieq $Id })
+                    $Found.Count | Should -Be 1 -Because "krok 'list-before': '$Id' znaleziono $($Found.Count) raz(y) (są: $(@($Rows | ForEach-Object { [string]$_.id }) -join ', '))"
+                    $Row = $Found[0]
+                    Assert-DsoValueIn -Actual $Row.state -Allowed $Want.State -What "stan '$Id' w kroku 'list-before'"
+                    ($Row.canToggle -is [bool] -and $Row.canToggle -eq [bool]$Want.CanToggle) | Should -BeTrue -Because "krok 'list-before': '$Id' canToggle='$($Row.canToggle)', oczekiwano $($Want.CanToggle)"
+                    if ($Want.ContainsKey('MissingFile')) {
+                        ($Row.missingFile -is [bool] -and $Row.missingFile -eq [bool]$Want.MissingFile) | Should -BeTrue -Because "krok 'list-before': '$Id' missingFile='$($Row.missingFile)', oczekiwano $($Want.MissingFile)"
+                    }
+                    if ($Want.ContainsKey('Verdict')) { Assert-DsoValueIn -Actual $Row.verdict -Allowed $Want.Verdict -What "ocena '$Id' w kroku 'list-before'" }
+                }
+            }
+        }
+        if ($Expect.ContainsKey('ListDoesNotWrite')) {
+            It 'list-autostart niczego nie zapisał (istnienie kluczy przed i po odczycie bez zmian)' -Skip:$IsSkipped {
+                $Record = Get-DsoCaseRecord
+                $Before = @($Record.KeysBeforeList | Where-Object { $null -ne $_ })
+                $After = @($Record.KeysAfterList | Where-Object { $null -ne $_ })
+                foreach ($Wanted in @($Expect.ListDoesNotWrite)) {
+                    $Old = @($Before | Where-Object { $_.Key -ceq $Wanted })
+                    $New = @($After | Where-Object { $_.Key -ceq $Wanted })
+                    ($Old.Count -eq 1 -and $New.Count -eq 1) | Should -BeTrue -Because "brak odczytu klucza '$Wanted' przed albo po list-autostart - nic nie zostało sprawdzone"
+                    [bool]$New[0].Exists | Should -Be ([bool]$Old[0].Exists) -Because "klucz '$Wanted': przed list-autostart Exists=$($Old[0].Exists), po Exists=$($New[0].Exists) - odczyt listy zapisał rejestr"
+                }
+            }
+        }
+        if ($Case.ContainsKey('Set')) {
+            It 'set-autostart: kod wyjścia i wynik każdej pozycji' -Skip:$IsSkipped {
+                $null = Get-DsoCaseRecord
+                Assert-DsoAutostartSteps -Case $Case -Prefix 'set' -AllowedExit $Expect.SetExit -AllowedOutcome $Expect.SetOutcome
+            }
+            It 'restart po set-autostart i po przywróceniu faktycznie nastąpił (późniejszy LastBootUpTime)' -Skip:$IsSkipped {
+                $Record = Get-DsoCaseRecord
+                $Reboots = @($Record.Reboots)
+                $Reboots.Count | Should -Be 2 -Because 'brak dwóch potwierdzonych restartów w rekordzie - restart nie nastąpił albo nic nie zostało sprawdzone'
+                @($Reboots.Step) | Should -Be @('reboot-after-set', 'reboot-after-restore')
+                foreach ($Reboot in $Reboots) {
+                    ([datetime]$Reboot.BootAfter) | Should -BeGreaterThan ([datetime]$Reboot.BootBefore) -Because "restart '$($Reboot.Step)' nie zmienił LastBootUpTime"
+                    $Reboot.MarkerGone | Should -BeTrue -Because "restart '$($Reboot.Step)': ulotny znacznik restartu nie zniknął albo nie został zweryfikowany"
+                }
+            }
+            It 'rozruch po set-autostart: sondy kontrolne wystartowały, pozycje zgodnie z Set' -Skip:$IsSkipped {
+                $Record = Get-DsoCaseRecord
+                Assert-DsoAutostartStarts -Case $Case -Observation $Record.StartAfterSet -Phase Set
+            }
+            It 'przywrócenie: kod wyjścia i wynik każdej pozycji' -Skip:$IsSkipped {
+                $null = Get-DsoCaseRecord
+                Assert-DsoAutostartSteps -Case $Case -Prefix 'restore' -AllowedExit $Expect.RestoreExit -AllowedOutcome $Expect.RestoreOutcome
+            }
+            It 'rozruch po przywróceniu: sondy kontrolne wystartowały, pozycje zgodnie z Restore' -Skip:$IsSkipped {
+                $Record = Get-DsoCaseRecord
+                Assert-DsoAutostartStarts -Case $Case -Observation $Record.StartAfterRestore -Phase Restore
+            }
+            It 'list-autostart po: stan pozycji po przywróceniu' -Skip:$IsSkipped {
+                $Record = Get-DsoCaseRecord
+                $Record.StartupInfo | Should -Not -BeNullOrEmpty -Because 'brak pliku StartupInfo tego rozruchu w rekordzie - lista po nie ma pomiaru'
+                $Step = Get-DsoStepResult -StepName 'list-after'
+                $Step.ExitCode | Should -Be 0 -Because "krok 'list-after' (list-autostart) zakończył się kodem $($Step.ExitCode)"
+                $Rows = @(Get-DsoAutostartRows -Step $Step)
+                $Want = if (Get-VmAutostartExpectedStart -Case $Case -Phase Restore) { 'Enabled' } else { 'Disabled' }
+                foreach ($Item in @($Case.Items)) {
+                    $Found = @($Rows | Where-Object { [string]$_.id -ieq [string]$Item.Id })
+                    $Found.Count | Should -Be 1 -Because "krok 'list-after': '$($Item.Id)' znaleziono $($Found.Count) raz(y)"
+                    Assert-DsoValueIn -Actual $Found[0].state -Allowed $Want -What "stan '$($Item.Id)' w kroku 'list-after'"
+                }
+            }
+            if ($Expect.ContainsKey('MeasuredAfter')) {
+                It 'list-autostart po: pomiar Windows z drugiego rozruchu (cpuMs >= 1000)' -Skip:$IsSkipped {
+                    $Step = Get-DsoStepResult -StepName 'list-after'
+                    $Rows = @(Get-DsoAutostartRows -Step $Step)
+                    foreach ($Id in @($Expect.MeasuredAfter)) {
+                        $Found = @($Rows | Where-Object { [string]$_.id -ieq $Id })
+                        $Found.Count | Should -Be 1 -Because "krok 'list-after': '$Id' znaleziono $($Found.Count) raz(y)"
+                        $Cpu = $Found[0].cpuMs
+                        ($null -ne $Cpu -and [long]$Cpu -ge 1000) | Should -BeTrue -Because "krok 'list-after': '$Id' cpuMs='$Cpu', oczekiwano >= 1000 (sonda zużywa ok. 1,5 s CPU)"
+                    }
+                }
             }
         }
     }

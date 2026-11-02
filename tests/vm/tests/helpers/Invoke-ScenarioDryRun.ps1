@@ -10,7 +10,7 @@ Opis działania:
     Wypisuje linię 'DSORESULT:{json}' z passed, failed, messages, cases.
 #>
 param(
-    [Parameter(Mandatory)][ValidateSet('Good', 'NoReport', 'HiveMissing', 'WrittenToHkcu', 'EmptyNotWrittenTo', 'StateDiff', 'RunThrows', 'WrongState', 'ArrayOk', 'ArrayBad', 'EmptyAllowed', 'EmptyActual', 'RealCases', 'Skipped', 'Execute', 'ExecuteCheckFails', 'ExecuteCleanupFails', 'ExecuteFailedMessage', 'ExecuteFailedMessageWrong', 'ExecuteRequiresReboot', 'ExecuteNoRequiresReboot', 'ExecuteNoRequiresRebootField', 'SkippedLiveIt', 'Reboot', 'RebootKeyPresent', 'RebootNoRestart', 'RebootNoKeyCheck', 'RebootWrongAfterReboot', 'ReconnectReal', 'FullChecks', 'FullCheckAfterApplyFails', 'FullCheckAfterUndoEmpty', 'RebootKeyPresentMissing', 'RebootMarkerNotGone', 'RebootNoRequiresReboot', 'NoSnapshot', 'AppRemove', 'AppRemoveStillListed', 'AppRemoveWrongOutcome', 'AppRemoveNoWarning', 'AppRemoveWrongRemovability', 'AppRemoveCheckFails', 'AppRemoveNoApps', 'AppRemoveNoRequiresReboot', 'AppInstall', 'AppInstallWrongOutcome', 'AppInstallMissingItem', 'AppInstallWrongInstalled', 'AppInstallNoInstallRows', 'AppInstallWrongWingetState', 'AppInstallNoMessage', 'AppInstallWrongExit', 'AppInstallCheckFails', 'AppInstallWrongWingetCode', 'AppInstallUnexpectedWingetCode')][string]$Variant
+    [Parameter(Mandatory)][ValidateSet('Good', 'NoReport', 'HiveMissing', 'WrittenToHkcu', 'EmptyNotWrittenTo', 'StateDiff', 'RunThrows', 'WrongState', 'ArrayOk', 'ArrayBad', 'EmptyAllowed', 'EmptyActual', 'RealCases', 'Skipped', 'Execute', 'ExecuteCheckFails', 'ExecuteCleanupFails', 'ExecuteFailedMessage', 'ExecuteFailedMessageWrong', 'ExecuteRequiresReboot', 'ExecuteNoRequiresReboot', 'ExecuteNoRequiresRebootField', 'SkippedLiveIt', 'Reboot', 'RebootKeyPresent', 'RebootNoRestart', 'RebootNoKeyCheck', 'RebootWrongAfterReboot', 'ReconnectReal', 'FullChecks', 'FullCheckAfterApplyFails', 'FullCheckAfterUndoEmpty', 'RebootKeyPresentMissing', 'RebootMarkerNotGone', 'RebootNoRequiresReboot', 'NoSnapshot', 'AppRemove', 'AppRemoveStillListed', 'AppRemoveWrongOutcome', 'AppRemoveNoWarning', 'AppRemoveWrongRemovability', 'AppRemoveCheckFails', 'AppRemoveNoApps', 'AppRemoveNoRequiresReboot', 'AppInstall', 'AppInstallWrongOutcome', 'AppInstallMissingItem', 'AppInstallWrongInstalled', 'AppInstallNoInstallRows', 'AppInstallWrongWingetState', 'AppInstallNoMessage', 'AppInstallWrongExit', 'AppInstallCheckFails', 'AppInstallWrongWingetCode', 'AppInstallUnexpectedWingetCode', 'Autostart', 'AutostartWrongListed', 'AutostartListWrote', 'AutostartWrongSetOutcome', 'AutostartStartedWhenDisabled', 'AutostartNotStartedAfterUndo', 'AutostartControlMissing', 'AutostartWrongRestoreOutcome', 'AutostartOneReboot', 'AutostartNotMeasured', 'AutostartWrongStateAfter')][string]$Variant
 )
 $ErrorActionPreference = 'Stop'
 $VmRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -42,6 +42,59 @@ function global:New-DsoFakeRecord {
     param($Case)
     $E = $Case.Expect
     $Steps = [System.Collections.Generic.List[object]]::new()
+    if ($Case.Flow -eq 'Autostart') {
+        # Lista przed: wiersze z Expect.Listed i pozycje Items w stanie Initial; po: pozycje w stanie po przywróceniu, MeasuredAfter z pomiarem.
+        $NewRow = { param([string]$Id, [string]$State, [bool]$CanToggle = $true, [bool]$MissingFile = $false, $Verdict = $null, $CpuMs = $null)
+            [pscustomobject]@{ id = $Id; source = 'RunUser'; name = $Id; publisher = $null; scope = 'User'; state = $State; missingFile = $MissingFile; verdict = $Verdict; canToggle = $CanToggle; cpuMs = $CpuMs; diskBytes = $null } }
+        $Initial = if ($Case.ContainsKey('Initial') -and $Case.Initial -eq 'disabled') { 'Disabled' } else { 'Enabled' }
+        $Before = [System.Collections.Generic.List[object]]::new()
+        if ($E.ContainsKey('Listed')) {
+            foreach ($Id in $E.Listed.Keys) {
+                $W = $E.Listed[$Id]
+                $Before.Add((& $NewRow $Id (Get-DsoLast $W.State) ([bool]$W.CanToggle) ([bool]($W.ContainsKey('MissingFile') -and $W.MissingFile)) $(if ($W.ContainsKey('Verdict')) { $W.Verdict } else { $null })))
+            }
+        }
+        foreach ($Item in @($Case.Items | Where-Object { $null -ne $_ })) { if (-not ($E.ContainsKey('Listed') -and $E.Listed.ContainsKey($Item.Id))) { $Before.Add((& $NewRow $Item.Id $Initial)) } }
+        if ($Before.Count -eq 0) { $Before.Add((& $NewRow 'run:machine:SecurityHealth' 'Enabled' $false $false 'Protected')) }
+        $Steps.Add((New-DsoFakeStep 'list-before' 0 ([pscustomobject]@{ exitCode = 0; autostartRows = $Before.ToArray() })))
+        $Keys = @(if ($E.ContainsKey('ListDoesNotWrite')) { foreach ($K in @($E.ListDoesNotWrite)) { [pscustomobject]@{ Key = $K; Exists = $false } } })
+        $KeysAfter = @(if ($E.ContainsKey('ListDoesNotWrite')) { foreach ($K in @($E.ListDoesNotWrite)) { [pscustomobject]@{ Key = $K; Exists = $false } } })
+        $Record = [pscustomobject]@{
+            Name = $Case.Name; Flow = 'Autostart'; Steps = $null; KeysBeforeList = $Keys; KeysAfterList = $KeysAfter; Reboots = @()
+            StartAfterSet = $null; StartAfterRestore = $null; StartupInfo = $null; CheckResult = 'Passed'; CleanupError = $null
+        }
+        if ($Case.ContainsKey('Set')) {
+            $Index = 0
+            foreach ($Item in @($Case.Items)) {
+                $Index++
+                $Step = New-DsoFakeStep "set-$Index" (Get-DsoLast $E.SetExit) ([pscustomobject]@{ outcome = (Get-DsoLast $E.SetOutcome); message = '' })
+                $Step | Add-Member -NotePropertyName ItemId -NotePropertyValue $Item.Id
+                $Steps.Add($Step)
+            }
+            $Observe = { param([string]$Phase)
+                $Started = Get-VmAutostartExpectedStart -Case $Case -Phase $Phase
+                [pscustomobject]@{ BootUtc = '2026-11-02T10:00:00.0000000Z'; ControlsStarted = @($Case.Controls)
+                    Items = @(foreach ($Item in @($Case.Items)) { [pscustomobject]@{ Id = $Item.Id; Started = $Started; Evidence = 'atrapa' } }) } }
+            $Record.StartAfterSet = & $Observe 'Set'
+            $Index = 0
+            foreach ($Item in @($Case.Items)) {
+                $Index++
+                $Step = New-DsoFakeStep "restore-$Index" (Get-DsoLast $E.RestoreExit) ([pscustomobject]@{ outcome = (Get-DsoLast $E.RestoreOutcome); message = '' })
+                $Step | Add-Member -NotePropertyName ItemId -NotePropertyValue $Item.Id
+                $Steps.Add($Step)
+            }
+            $Record.StartAfterRestore = & $Observe 'Restore'
+            $Record.Reboots = @([pscustomobject]@{ Step = 'reboot-after-set'; BootBefore = '2026-11-02T10:00:00.0000000'; BootAfter = '2026-11-02T10:05:00.0000000'; Attempts = 1; MarkerGone = $true }, [pscustomobject]@{ Step = 'reboot-after-restore'; BootBefore = '2026-11-02T10:05:00.0000000'; BootAfter = '2026-11-02T10:10:00.0000000'; Attempts = 1; MarkerGone = $true })
+            $Record.StartupInfo = [pscustomobject]@{ File = 'S-1-5-21-9-9-9-1000_StartupInfo2.xml' }
+            $AfterState = if (Get-VmAutostartExpectedStart -Case $Case -Phase Restore) { 'Enabled' } else { 'Disabled' }
+            $After = [System.Collections.Generic.List[object]]::new()
+            foreach ($Item in @($Case.Items)) { $After.Add((& $NewRow $Item.Id $AfterState)) }
+            if ($E.ContainsKey('MeasuredAfter')) { foreach ($Id in @($E.MeasuredAfter)) { $After.Add((& $NewRow $Id 'Enabled' $true $false $null 1534)) } }
+            $Steps.Add((New-DsoFakeStep 'list-after' 0 ([pscustomobject]@{ exitCode = 0; autostartRows = $After.ToArray() })))
+        }
+        $Record.Steps = $Steps.ToArray()
+        return $Record
+    }
     if ($Case.Flow -eq 'AppInstall') {
         $Report = [pscustomobject]@{
             exitCode = (Get-DsoLast $E.Exit)
@@ -194,6 +247,16 @@ function global:Invoke-VmCase {
         'AppInstallCheckFails' { $R.CheckResult = 'Check zwrócił: False' }
         'AppInstallWrongWingetCode' { if ($Case.Command -eq 'install-apps') { $R.Steps[0].Report.installItems[0].wingetCode = '0x00000001' } }
         'AppInstallUnexpectedWingetCode' { if ($Case.Command -eq 'install-apps') { $R.Steps[0].Report.installItems[1].wingetCode = '0x8A150107' } }
+        'AutostartWrongListed' { foreach ($Row in @($R.Steps[0].Report.autostartRows)) { if ($Row.id -eq 'run:machine:SecurityHealth') { $Row.state = 'Disabled' } } }
+        'AutostartListWrote' { foreach ($Key in @($R.KeysAfterList)) { $Key.Exists = $true } }
+        'AutostartWrongSetOutcome' { if ($Case.ContainsKey('Set')) { $R.Steps[1].Report.outcome = 'Refused' } }
+        'AutostartStartedWhenDisabled' { if ($Case.ContainsKey('Set')) { $R.StartAfterSet.Items[0].Started = $true } }
+        'AutostartNotStartedAfterUndo' { if ($Case.ContainsKey('Set')) { $R.StartAfterRestore.Items[0].Started = $false } }
+        'AutostartControlMissing' { if ($Case.ContainsKey('Set')) { $R.StartAfterSet.ControlsStarted = @() } }
+        'AutostartWrongRestoreOutcome' { if ($Case.ContainsKey('Set')) { @($R.Steps | Where-Object Step -eq 'restore-1')[0].Report.outcome = 'Refused' } }
+        'AutostartOneReboot' { if ($Case.ContainsKey('Set')) { $R.Reboots = @($R.Reboots[0]) } }
+        'AutostartNotMeasured' { if ($Case.ContainsKey('Set')) { foreach ($Row in @(@($R.Steps | Where-Object Step -eq 'list-after')[0].Report.autostartRows)) { $Row.cpuMs = $null } } }
+        'AutostartWrongStateAfter' { if ($Case.ContainsKey('Set')) { @(@($R.Steps | Where-Object Step -eq 'list-after')[0].Report.autostartRows)[0].state = 'Disabled' } }
     }
     return $R
 }
@@ -331,6 +394,26 @@ if ($Variant -like 'AppInstall*') {
             Name = 'list-msi'; Flow = 'AppInstall'; Command = 'list-install'; AppsCatalog = 'C:\dso\fixtures\vm-test-apps.json'
             Check = '$true'
             Expect = @{ Exit = 0; WingetState = 'OtherAccount'; Installed = @{ 'install.dso-test-msi' = $true }; MessageContains = 'uruchom DSOptimizer na koncie' }
+        }
+    )
+}
+if ($Variant -like 'Autostart*') {
+    $Cases = @(
+        @{
+            Name = 'as-lista'; Flow = 'Autostart'; RunAs = 'dso'; Setup = @('Write-Output 1'); Check = '$true'; Cleanup = 'Write-Output 1'
+            Expect = @{
+                Listed           = @{
+                    'run:machine:SecurityHealth' = @{ State = 'Enabled'; CanToggle = $false; Verdict = 'Protected' }
+                    'run:user:DsoMissing'        = @{ State = 'Enabled'; CanToggle = $true; MissingFile = $true }
+                }
+                ListDoesNotWrite = @("HKU\$global:DsoSid\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved")
+            }
+        }
+        @{
+            Name = 'as-wyl'; Flow = 'Autostart'; RunAs = 'dso'; Check = '$true'
+            Items = @(@{ Id = 'run:user:DsoRunUser'; Probe = 'DsoRunUser' }, @{ Id = 'appx:Microsoft.WindowsTerminal_8wekyb3d8bbwe!StartTerminalOnLoginTask'; Process = 'WindowsTerminal' })
+            Controls = @('DsoRunUserCtl'); Set = 'disabled'; Restore = 'undo'
+            Expect = @{ SetExit = 0; SetOutcome = 'Applied'; RestoreExit = 0; RestoreOutcome = 'Undone'; MeasuredAfter = @('run:user:DsoRunUserCtl') }
         }
     )
 }

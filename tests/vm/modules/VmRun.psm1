@@ -15,17 +15,38 @@ Opis działania:
     --list-install, opcjonalnie --apps-catalog) -> Check -> Cleanup; VM bez sieci, więc instalacja kończy się uczciwym "Nie wykonano".
     Klucz przypadku Language ('pl' albo 'en', poza AppInstall) = język CLI wszystkich kroków przypadku (--lang <Language>);
     bez niego Invoke-DsoCli dokleja --lang pl.
+    Flow Autostart: pliki z tests\vm\fixtures do VM -> Setup (sondy Install-DsoAutostartProbe.ps1) -> --list-autostart (odczyt
+    istnienia kluczy Expect.ListDoesNotWrite przed i po) -> bez Set: Check -> Cleanup. Z Set: --set-autostart <id> <Set> dla
+    każdej pozycji Items -> restart -> Wait-VmAutostartStart (sondy Controls w probe.log po rozruchu, 20 s zapasu, ocena startu
+    pozycji) -> przywrócenie (--undo-autostart <id> albo --set-autostart <id> enabled|disabled) -> restart -> Wait-VmAutostartStart
+    + Wait-VmStartupInfo -> --list-autostart -> Check -> Cleanup. Przypadek z Set ma osobny przebieg od czystego checkpointu.
     Hasło VM nigdy nie trafia do wyjścia.
 #>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$script:CaseKeys = @('Name', 'TweakId', 'AppId', 'RunAs', 'Flow', 'RestorePoint', 'Setup', 'Snapshot', 'Expect', 'Hypothesis', 'Catalog', 'Skip', 'Check', 'Cleanup', 'CheckAfterApply', 'CheckAfterUndo', 'CliTimeoutSeconds', 'Command', 'AppIds', 'AppsCatalog', 'Language')
+$script:CaseKeys = @('Name', 'TweakId', 'AppId', 'RunAs', 'Flow', 'RestorePoint', 'Setup', 'Snapshot', 'Expect', 'Hypothesis', 'Catalog', 'Skip', 'Check', 'Cleanup', 'CheckAfterApply', 'CheckAfterUndo', 'CliTimeoutSeconds', 'Command', 'AppIds', 'AppsCatalog', 'Language', 'Items', 'Controls', 'Initial', 'Set', 'Restore')
+# Flow Autostart: klucze przypadku, Expect i wiersza Expect.Listed. Items = @{ Id; Probe } albo @{ Id; Process } (id bez spacji),
+# Controls = sondy, które muszą wystartować w każdym rozruchu; bez Set przypadek tylko czyta listę (przebieg main, bez restartu).
+$script:AutostartOnlyKeys = @('Items', 'Controls', 'Initial', 'Set', 'Restore')
+$script:AutostartKeys = @('Name', 'Flow', 'RunAs', 'Setup', 'Items', 'Controls', 'Initial', 'Set', 'Restore', 'Check', 'Cleanup', 'Expect', 'Hypothesis', 'Skip')
+$script:AutostartExpectKeys = @('Listed', 'ListDoesNotWrite', 'SetExit', 'SetOutcome', 'RestoreExit', 'RestoreOutcome', 'MeasuredAfter')
+$script:AutostartSetExpectKeys = @('SetExit', 'SetOutcome', 'RestoreExit', 'RestoreOutcome')
+$script:AutostartListedKeys = @('State', 'CanToggle', 'MissingFile', 'Verdict')
+$script:AutostartStates = @('Enabled', 'Disabled', 'Unknown')
+$script:AutostartVerdicts = @('Protected', 'CanDisable')
+$script:AutostartProbePattern = '^Dso[A-Za-z0-9]+\z'
+$script:AutostartProcessPattern = '^[A-Za-z0-9._-]+\z'
+# Czekanie na start po restarcie: sondy kontrolne do 240 s, potem 20 s zapasu na pozycje; plik StartupInfo do 240 s (pomiar: ok. 95 s po rozruchu).
+$script:AutostartStartTimeoutSeconds = 240
+$script:AutostartSettleSeconds = 20
+$script:AutostartPollSeconds = 5
+$script:AutostartUserName = 'dso'
 # CliTimeoutSeconds (Etap 4b partia 2): limit czekania na CLI kroku 'execute' dla długich akcji (DISM/SFC, cleanmgr); tylko Flow 'Execute'.
 # Language: język CLI przypadku ('pl' albo 'en'), każde wywołanie CLI dostaje --lang <Language>; bez klucza Invoke-DsoCli dokleja --lang pl.
 $script:CaseLanguages = @('pl', 'en')
 $script:CliTimeoutRange = @(60, 7200)
-$script:FlowsSupported = @('Full', 'ApplyOnly', 'DetectOnly', 'Execute', 'Reboot', 'AppRemove', 'AppInstall')
+$script:FlowsSupported = @('Full', 'ApplyOnly', 'DetectOnly', 'Execute', 'Reboot', 'AppRemove', 'AppInstall', 'Autostart')
 # Flow AppInstall (Etap 4c): klucze przypadku i Expect; Installed tylko przy list-install, Outcomes i WingetCodes tylko przy
 # install-apps. WingetCodes (M2 final review): id -> dozwolone wartości pola wingetCode raportu (0x + 8 cyfr szesnastkowych,
 # wielkie litery) albo $null = pozycja bez kodu (winget nie startował).
@@ -193,6 +214,109 @@ function Assert-VmAppInstallCase {
     }
 }
 
+function Assert-VmAutostartId {
+    # Id pozycji autostartu w argumencie CLI: niepusty tekst bez spacji (Start-Process w VM nie cytuje argumentów).
+    param([string]$Label, [string]$What, $Id)
+    if ($Id -isnot [string] -or [string]::IsNullOrWhiteSpace($Id) -or $Id -match '\s') {
+        throw "Przypadek '$Label': $What musi być niepustym id pozycji autostartu bez spacji (jest: '$Id')."
+    }
+}
+
+function Assert-VmAutostartCase {
+    # Flow Autostart: lista (--list-autostart) i opcjonalnie Set z restartem; wymagany Check (niezależny odczyt w VM).
+    param([string]$Label, [hashtable]$Case)
+    foreach ($Key in $Case.Keys) {
+        if ($Key -notin $script:AutostartKeys) { throw "Przypadek '$Label': klucz '$Key' nie dotyczy Flow 'Autostart' (dozwolone: $($script:AutostartKeys -join ', '))." }
+    }
+    foreach ($Key in @('Name', 'Check', 'Expect')) {
+        if (-not $Case.ContainsKey($Key)) { throw "Przypadek '$Label': brak wymaganego klucza '$Key' (Flow 'Autostart')." }
+    }
+    if ($Case.ContainsKey('RunAs') -and ($Case.RunAs -isnot [string] -or $Case.RunAs -notmatch '^[A-Za-z0-9_-]+\z')) {
+        throw "Przypadek '$Label': 'RunAs' musi być nazwą konta lokalnego (litery, cyfry, _ i -), np. 'dso'."
+    }
+    if ($Case.ContainsKey('Skip') -and ($Case.Skip -isnot [string] -or [string]::IsNullOrWhiteSpace($Case.Skip))) {
+        throw "Przypadek '$Label': klucz 'Skip' musi być niepustym tekstem z powodem pominięcia."
+    }
+    foreach ($Key in @('Check', 'Cleanup')) {
+        if ($Case.ContainsKey($Key) -and ($Case.$Key -isnot [string] -or [string]::IsNullOrWhiteSpace($Case.$Key))) { throw "Przypadek '$Label': klucz '$Key' musi być niepustym skryptem PowerShell (tekst)." }
+    }
+    if ($Case.ContainsKey('Setup')) {
+        foreach ($Command in @($Case.Setup)) {
+            if ($Command -isnot [string] -or [string]::IsNullOrWhiteSpace($Command)) { throw "Przypadek '$Label': 'Setup' musi być listą niepustych skryptów PowerShell." }
+        }
+    }
+    if ($Case.Expect -isnot [hashtable]) { throw "Przypadek '$Label': klucz 'Expect' musi być hashtable." }
+    foreach ($Key in $Case.Expect.Keys) {
+        if ($Key -notin $script:AutostartExpectKeys) { throw "Przypadek '$Label': niedozwolony klucz Expect '$Key' (Flow 'Autostart': $($script:AutostartExpectKeys -join ', '))." }
+    }
+    $HasSet = $Case.ContainsKey('Set')
+    if ($HasSet) {
+        if ($Case.Set -isnot [string] -or $Case.Set -cnotin @('disabled', 'enabled')) { throw "Przypadek '$Label': 'Set' = '$($Case.Set)' (dozwolone: disabled, enabled)." }
+        if (-not $Case.ContainsKey('Restore')) { throw "Przypadek '$Label': 'Set' wymaga klucza 'Restore' (undo, enable albo disable) - stan po teście musi wrócić." }
+        if ($Case.Restore -isnot [string] -or $Case.Restore -cnotin @('undo', 'enable', 'disable')) { throw "Przypadek '$Label': 'Restore' = '$($Case.Restore)' (dozwolone: undo, enable, disable)." }
+        if ($Case.ContainsKey('Initial') -and ($Case.Initial -isnot [string] -or $Case.Initial -cnotin @('enabled', 'disabled'))) { throw "Przypadek '$Label': 'Initial' = '$($Case.Initial)' (dozwolone: enabled, disabled)." }
+        $Items = @(if ($Case.ContainsKey('Items')) { $Case.Items })
+        if ($Items.Count -eq 0) { throw "Przypadek '$Label': 'Set' wymaga niepustej listy 'Items' (@{ Id; Probe } albo @{ Id; Process })." }
+        $Ids = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+        foreach ($Item in $Items) {
+            if ($Item -isnot [hashtable]) { throw "Przypadek '$Label': każdy element 'Items' musi być hashtable @{ Id; Probe } albo @{ Id; Process }." }
+            foreach ($Key in $Item.Keys) {
+                if ($Key -notin @('Id', 'Probe', 'Process')) { throw "Przypadek '$Label': niedozwolony klucz '$Key' w 'Items' (dozwolone: Id, Probe, Process)." }
+            }
+            if (-not $Item.ContainsKey('Id')) { throw "Przypadek '$Label': element 'Items' bez klucza 'Id'." }
+            Assert-VmAutostartId -Label $Label -What "'Items.Id'" -Id $Item.Id
+            if (-not $Ids.Add([string]$Item.Id)) { throw "Przypadek '$Label': id '$($Item.Id)' powtarza się w 'Items'." }
+            if ($Item.ContainsKey('Probe') -eq $Item.ContainsKey('Process')) {
+                throw "Przypadek '$Label': pozycja '$($Item.Id)' musi mieć dokładnie jedno z: Probe (sonda w probe.log) albo Process (proces konta)."
+            }
+            if ($Item.ContainsKey('Probe') -and ($Item.Probe -isnot [string] -or $Item.Probe -notmatch $script:AutostartProbePattern)) { throw "Przypadek '$Label': 'Probe' pozycji '$($Item.Id)' musi być nazwą sondy Dso<litery i cyfry>." }
+            if ($Item.ContainsKey('Process') -and ($Item.Process -isnot [string] -or $Item.Process -notmatch $script:AutostartProcessPattern)) { throw "Przypadek '$Label': 'Process' pozycji '$($Item.Id)' musi być nazwą procesu bez spacji i bez .exe." }
+        }
+        $Controls = @(if ($Case.ContainsKey('Controls')) { $Case.Controls })
+        if ($Controls.Count -eq 0) { throw "Przypadek '$Label': 'Set' wymaga niepustej listy 'Controls' (sondy, które muszą wystartować w każdym rozruchu)." }
+        foreach ($Control in $Controls) {
+            if ($Control -isnot [string] -or $Control -notmatch $script:AutostartProbePattern) { throw "Przypadek '$Label': element 'Controls' musi być nazwą sondy Dso<litery i cyfry> (jest: '$Control')." }
+        }
+        foreach ($Key in $script:AutostartSetExpectKeys) {
+            if (-not $Case.Expect.ContainsKey($Key)) { throw "Przypadek '$Label': 'Set' wymaga klucza Expect '$Key'." }
+        }
+    }
+    else {
+        foreach ($Key in @('Restore', 'Items', 'Controls', 'Initial')) {
+            if ($Case.ContainsKey($Key)) { throw "Przypadek '$Label': klucz '$Key' wymaga klucza 'Set' (bez Set przypadek tylko czyta listę)." }
+        }
+        foreach ($Key in $script:AutostartSetExpectKeys + @('MeasuredAfter')) {
+            if ($Case.Expect.ContainsKey($Key)) { throw "Przypadek '$Label': klucz Expect '$Key' wymaga klucza 'Set'." }
+        }
+    }
+    if ($Case.Expect.ContainsKey('Listed')) {
+        $Listed = $Case.Expect.Listed
+        if ($Listed -isnot [hashtable] -or $Listed.Count -eq 0) { throw "Przypadek '$Label': 'Expect.Listed' musi być niepustą hashtable id -> @{ State; CanToggle; MissingFile?; Verdict? }." }
+        foreach ($Id in $Listed.Keys) {
+            Assert-VmAutostartId -Label $Label -What "klucz 'Expect.Listed'" -Id $Id
+            $Want = $Listed[$Id]
+            if ($Want -isnot [hashtable]) { throw "Przypadek '$Label': 'Expect.Listed' dla '$Id' musi być hashtable." }
+            foreach ($Key in $Want.Keys) {
+                if ($Key -notin $script:AutostartListedKeys) { throw "Przypadek '$Label': niedozwolone pole '$Key' w 'Expect.Listed' dla '$Id' (dozwolone: $($script:AutostartListedKeys -join ', '))." }
+            }
+            foreach ($Key in @('State', 'CanToggle')) {
+                if (-not $Want.ContainsKey($Key)) { throw "Przypadek '$Label': 'Expect.Listed' dla '$Id' bez wymaganego pola '$Key'." }
+            }
+            if ($Want.State -isnot [string] -or $Want.State -cnotin $script:AutostartStates) { throw "Przypadek '$Label': 'Expect.Listed.State' dla '$Id' = '$($Want.State)' (dozwolone: $($script:AutostartStates -join ', '))." }
+            foreach ($Key in @('CanToggle', 'MissingFile')) {
+                if ($Want.ContainsKey($Key) -and $Want[$Key] -isnot [bool]) { throw "Przypadek '$Label': 'Expect.Listed.$Key' dla '$Id' musi być wartością logiczną." }
+            }
+            if ($Want.ContainsKey('Verdict') -and ($Want.Verdict -isnot [string] -or $Want.Verdict -cnotin $script:AutostartVerdicts)) { throw "Przypadek '$Label': 'Expect.Listed.Verdict' dla '$Id' = '$($Want.Verdict)' (dozwolone: $($script:AutostartVerdicts -join ', '))." }
+        }
+    }
+    if ($Case.Expect.ContainsKey('ListDoesNotWrite')) { Assert-VmKeyList -Label $Label -KeyName 'ListDoesNotWrite' -Value $Case.Expect.ListDoesNotWrite }
+    if ($Case.Expect.ContainsKey('MeasuredAfter')) {
+        $Measured = @($Case.Expect.MeasuredAfter)
+        if ($Measured.Count -eq 0) { throw "Przypadek '$Label': 'Expect.MeasuredAfter' musi być niepustą listą id." }
+        foreach ($Id in $Measured) { Assert-VmAutostartId -Label $Label -What "element 'Expect.MeasuredAfter'" -Id $Id }
+    }
+}
+
 function Import-VmCases {
     [CmdletBinding()]
     [OutputType([hashtable[]])]
@@ -218,6 +342,15 @@ function Import-VmCases {
             $Result.Add($Case)
             continue
         }
+        if ($Case.ContainsKey('Flow') -and $Case.Flow -eq 'Autostart') {
+            Assert-VmAutostartCase -Label $Label -Case $Case
+            if (-not $Names.Add($Label)) { throw "Przypadek '$Label': zduplikowana wartość klucza 'Name'." }
+            $Result.Add($Case)
+            continue
+        }
+        foreach ($Key in $script:AutostartOnlyKeys) {
+            if ($Case.ContainsKey($Key)) { throw "Przypadek '$Label': klucz '$Key' jest dozwolony tylko we Flow 'Autostart'." }
+        }
         foreach ($Key in @('Command', 'AppIds', 'AppsCatalog')) {
             if ($Case.ContainsKey($Key)) { throw "Przypadek '$Label': klucz '$Key' jest dozwolony tylko we Flow 'AppInstall'." }
         }
@@ -227,7 +360,7 @@ function Import-VmCases {
             if (-not $Case.ContainsKey($Key)) { throw "Przypadek '$Label': brak wymaganego klucza '$Key'." }
         }
         if (-not $Names.Add($Label)) { throw "Przypadek '$Label': zduplikowana wartość klucza 'Name'." }
-        if ($Case.Flow -notin $script:FlowsSupported) { throw "Przypadek '$Label': klucz 'Flow' = '$($Case.Flow)' (dozwolone: Full, ApplyOnly, DetectOnly, Execute, Reboot, AppRemove, AppInstall)." }
+        if ($Case.Flow -notin $script:FlowsSupported) { throw "Przypadek '$Label': klucz 'Flow' = '$($Case.Flow)' (dozwolone: $($script:FlowsSupported -join ', '))." }
         if ($IsAppRemove) {
             if ($Case.ContainsKey('TweakId')) { throw "Przypadek '$Label': klucz 'TweakId' jest niedozwolony we Flow 'AppRemove' (użyj 'AppId')." }
             foreach ($Key in @('Catalog', 'Snapshot')) {
@@ -394,8 +527,10 @@ function Split-VmCaseRuns {
     $Labels = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     $ActiveMain = 0
     foreach ($Case in $Cases) {
-        if ($Case.Flow -eq 'Reboot' -and -not $Case.ContainsKey('Skip')) {
-            $Label = 'reboot-' + ([string]$Case.Name -replace '[^A-Za-z0-9._-]', '_')
+        # Autostart z Set restartuje VM jak Reboot, więc dostaje własny przebieg; bez Set (sama lista) idzie do main.
+        $SeparatePrefix = if ($Case.Flow -eq 'Reboot') { 'reboot-' } elseif ($Case.Flow -eq 'Autostart' -and $Case.ContainsKey('Set')) { 'autostart-' } else { $null }
+        if ($null -ne $SeparatePrefix -and -not $Case.ContainsKey('Skip')) {
+            $Label = $SeparatePrefix + ([string]$Case.Name -replace '[^A-Za-z0-9._-]', '_')
             if (-not $Labels.Add($Label)) { throw "Przypadek '$($Case.Name)': zduplikowana etykieta przebiegu '$Label'." }
             $Separate.Add(@{ Label = $Label; Cases = @($Case); SkipOnly = $false })
         }
@@ -441,7 +576,7 @@ function ConvertTo-DsoCliArguments {
     [CmdletBinding()]
     [OutputType([string[]])]
     param(
-        [Parameter(Mandatory)][ValidateSet('detect', 'apply', 'undo', 'execute', 'list-apps', 'remove-app', 'install-apps', 'list-install')][string]$Command,
+        [Parameter(Mandatory)][ValidateSet('detect', 'apply', 'undo', 'execute', 'list-apps', 'remove-app', 'install-apps', 'list-install', 'list-autostart', 'set-autostart', 'undo-autostart')][string]$Command,
         # Id tweaka albo aplikacji (remove-app); list-apps i polecenia instalacji nie mają id.
         [AllowNull()][AllowEmptyString()][string]$TweakId,
         [AllowNull()][AllowEmptyString()][string]$CatalogPath,
@@ -450,11 +585,37 @@ function ConvertTo-DsoCliArguments {
         # install-apps: id pozycji (install.<nazwa> albo winget:<id>), łączone przecinkiem bez spacji.
         [AllowNull()][AllowEmptyCollection()][string[]]$AppIds,
         # list-install/install-apps: lista apps.json w VM (--apps-catalog).
-        [AllowNull()][AllowEmptyString()][string]$AppsCatalog
+        [AllowNull()][AllowEmptyString()][string]$AppsCatalog,
+        # set-autostart: stan docelowy (druga wartość --set-autostart).
+        [ValidateSet('disabled', 'enabled')][string]$AutostartState
     )
     foreach ($Path in @($CatalogPath, $OutPath, $AppsCatalog)) {
         if (-not [string]::IsNullOrEmpty($Path) -and $Path -match '\s') { throw "Ścieżka '$Path' zawiera spację lub inny biały znak (niedozwolone w argumentach CLI)." }
     }
+    $IsAutostartCommand = $Command -in @('list-autostart', 'set-autostart', 'undo-autostart')
+    if ($IsAutostartCommand) {
+        # Autostart: bez katalogu tweaków, punktu przywracania i list aplikacji; stan tylko przy set-autostart.
+        if (-not [string]::IsNullOrEmpty($CatalogPath)) { throw "Polecenie $Command nie przyjmuje katalogu tweaków (--catalog)." }
+        if ($RestorePoint) { throw "Polecenie $Command nie przyjmuje punktu przywracania (--restore-point)." }
+        if (($null -ne $AppIds -and $AppIds.Count -gt 0) -or -not [string]::IsNullOrEmpty($AppsCatalog)) { throw "Polecenie $Command nie przyjmuje AppIds ani AppsCatalog." }
+        if ($Command -ne 'set-autostart' -and $AutostartState) { throw "Polecenie $Command jest bez stanu (stan podaje się tylko przy set-autostart)." }
+        if ($Command -eq 'list-autostart') {
+            if (-not [string]::IsNullOrEmpty($TweakId)) { throw "Polecenie list-autostart jest bez id (podano '$TweakId')." }
+            $Arguments = @('--list-autostart')
+        }
+        else {
+            if ([string]::IsNullOrWhiteSpace($TweakId)) { throw "Polecenie $Command wymaga id pozycji autostartu." }
+            if ($TweakId -match '\s') { throw "Id '$TweakId' zawiera spację lub inny biały znak (niedozwolone w argumentach CLI)." }
+            $Arguments = @("--$Command", $TweakId)
+            if ($Command -eq 'set-autostart') {
+                if (-not $AutostartState) { throw "Polecenie set-autostart wymaga stanu (disabled albo enabled)." }
+                $Arguments += $AutostartState
+            }
+        }
+        $Arguments += @('--out', $OutPath)
+        return [string[]]$Arguments
+    }
+    if ($AutostartState) { throw "Polecenie $Command nie przyjmuje stanu autostartu (tylko set-autostart)." }
     $IsInstallCommand = $Command -in @('install-apps', 'list-install')
     if (-not $IsInstallCommand -and -not [string]::IsNullOrEmpty($AppsCatalog)) { throw "Polecenie $Command nie przyjmuje AppsCatalog (--apps-catalog dotyczy list-install i install-apps)." }
     $HasAppIds = $null -ne $AppIds -and $AppIds.Count -gt 0
@@ -742,12 +903,16 @@ function Invoke-VmSetup {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
-        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$Setup
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$Setup,
+        # Wyjście skryptów Setup jako tekst (Flow Autostart zapisuje je w rekordzie, np. wartości klucza zadania Terminala).
+        [switch]$PassThru
     )
+    $Output = [System.Collections.Generic.List[string]]::new()
     foreach ($Command in $Setup) {
         $Block = [scriptblock]::Create("`$ErrorActionPreference = 'Stop'; $Command")
-        Invoke-Command -Session $Session -ScriptBlock $Block | Out-Null
+        foreach ($Line in @(Invoke-Command -Session $Session -ScriptBlock $Block)) { if ($null -ne $Line) { $Output.Add([string]$Line) } }
     }
+    if ($PassThru) { return , $Output.ToArray() }
 }
 
 function Invoke-VmCheck {
@@ -941,6 +1106,314 @@ function Restart-VmAndReconnect {
     }
 }
 
+function Get-VmAutostartExpectedStart {
+    # Czy pozycja ma wystartować po restarcie fazy: Set (enabled = start, disabled = brak) albo Restore (undo = stan Initial,
+    # domyślnie enabled; enable = start; disable = brak).
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)][hashtable]$Case,
+        [Parameter(Mandatory)][ValidateSet('Set', 'Restore')][string]$Phase
+    )
+    if ($Phase -eq 'Set') { return ([string]$Case.Set -eq 'enabled') }
+    switch ([string]$Case.Restore) {
+        'enable' { return $true }
+        'disable' { return $false }
+        'undo' {
+            $Initial = if ($Case.ContainsKey('Initial')) { [string]$Case.Initial } else { 'enabled' }
+            return ($Initial -eq 'enabled')
+        }
+        default { throw "Przypadek '$($Case.Name)': nieznane 'Restore' = '$($Case.Restore)'." }
+    }
+}
+
+function ConvertFrom-VmUtcText {
+    # Czas ISO 8601 z VM (probe.log, BootUtc, StartUtc) -> DateTime UTC; tekst nie do odczytania = $null (linia nie liczy się jako start).
+    param([AllowNull()][AllowEmptyString()][string]$Text)
+    $Parsed = [datetime]::MinValue
+    if ([string]::IsNullOrWhiteSpace($Text)) { return $null }
+    if (-not [datetime]::TryParse($Text, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind, [ref]$Parsed)) { return $null }
+    return $Parsed.ToUniversalTime()
+}
+
+function Get-VmAutostartObservation {
+    # Jeden odczyt w VM (tylko odczyt): czas rozruchu (UTC), linie C:\dsotest\probe.log (otwarcie z FileShare.ReadWrite, bo sondy
+    # dopisują) i procesy o podanych nazwach z kontem i czasem startu (UTC). Błąd odczytu probe.log = LogError, nie wyjątek.
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
+        [AllowEmptyCollection()][string[]]$ProcessNames = @()
+    )
+    return Invoke-Command -Session $Session -ArgumentList @(, [string[]]@($ProcessNames)) -ScriptBlock {
+        param([string[]]$ProcessNames)
+        $ErrorActionPreference = 'Stop'
+        $Boot = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime.ToUniversalTime().ToString('o')
+        $Lines = @()
+        $LogError = $null
+        $Path = 'C:\dsotest\probe.log'
+        if ([System.IO.File]::Exists($Path)) {
+            # Sonda dopisuje z wyłącznym dostępem (kilka startuje naraz), więc zajęty plik to chwila - ponowienie zamiast fałszywego "brak startu".
+            for ($Attempt = 1; $Attempt -le 50; $Attempt++) {
+                try {
+                    $Stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]'ReadWrite, Delete')
+                    try {
+                        $Reader = New-Object System.IO.StreamReader($Stream)
+                        $Lines = @($Reader.ReadToEnd() -split "`r?`n" | Where-Object { $_ })
+                    }
+                    finally { $Stream.Dispose() }
+                    $LogError = $null
+                    break
+                }
+                catch {
+                    $LogError = $_.Exception.Message
+                    Start-Sleep -Milliseconds 100
+                }
+            }
+        }
+        $Processes = @()
+        foreach ($Name in @($ProcessNames)) {
+            foreach ($Process in @(Get-Process -Name $Name -IncludeUserName -ErrorAction SilentlyContinue)) {
+                $Start = $null
+                try { $Start = $Process.StartTime.ToUniversalTime().ToString('o') } catch { $Start = $null }
+                $Processes += [pscustomobject]@{ Name = [string]$Process.ProcessName; UserName = [string]$Process.UserName; StartUtc = $Start; Id = [int]$Process.Id }
+            }
+        }
+        [pscustomobject]@{ BootUtc = $Boot; Lines = $Lines; LogError = $LogError; Processes = $Processes }
+    }
+}
+
+function Get-VmProbeStarts {
+    # Sondy z probe.log (linia: <nazwa>|<czas UTC ISO>|<konto>|<sesja>) zapisane PO rozruchu z obserwacji: nazwa -> pierwsza taka linia.
+    param([Parameter(Mandatory)]$Observation)
+    $Boot = ConvertFrom-VmUtcText -Text ([string]$Observation.BootUtc)
+    if ($null -eq $Boot) { throw "Odczyt VM bez czasu rozruchu (BootUtc '$($Observation.BootUtc)') - start sond nie może być oceniony." }
+    $Starts = @{}
+    foreach ($Line in @($Observation.Lines)) {
+        $Parts = ([string]$Line).Split('|')
+        if ($Parts.Count -lt 2) { continue }
+        $At = ConvertFrom-VmUtcText -Text $Parts[1]
+        if ($null -eq $At -or $At -le $Boot) { continue }
+        $Name = $Parts[0].Trim()
+        if (-not $Starts.ContainsKey($Name)) { $Starts[$Name] = [string]$Line }
+    }
+    return $Starts
+}
+
+function Wait-VmAutostartStart {
+    # Po restarcie: czeka (najwyżej TimeoutSeconds, co PollSeconds), aż każda sonda z Controls zapisze w probe.log linię z czasem po
+    # rozruchu, potem SettleSeconds zapasu i świeży odczyt; ocenia start każdej pozycji Items (Probe = linia po rozruchu, Process =
+    # proces konta UserName ze StartTime po rozruchu). Kontrola bez startu po limicie = wyjątek (bez niej brak startu pozycji nic nie znaczy).
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$Controls,
+        [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Items,
+        [ValidateRange(1, 3600)][int]$TimeoutSeconds = $script:AutostartStartTimeoutSeconds,
+        [ValidateRange(0, 600)][int]$SettleSeconds = $script:AutostartSettleSeconds,
+        [ValidateRange(1, 60)][int]$PollSeconds = $script:AutostartPollSeconds,
+        [ValidatePattern('^[A-Za-z0-9_-]+\z')][string]$UserName = $script:AutostartUserName
+    )
+    $ProcessNames = [string[]]@($Items | Where-Object { $_.ContainsKey('Process') } | ForEach-Object { [string]$_.Process })
+    $MaxPolls = [int][Math]::Ceiling($TimeoutSeconds / $PollSeconds)
+    $Poll = 0
+    while ($true) {
+        $Observation = Get-VmAutostartObservation -Session $Session -ProcessNames $ProcessNames
+        $Starts = Get-VmProbeStarts -Observation $Observation
+        $Missing = @($Controls | Where-Object { -not $Starts.ContainsKey($_) })
+        if ($Missing.Count -eq 0) { break }
+        if ($Poll -ge $MaxPolls) {
+            $Seen = @($Starts.Keys | Sort-Object) -join ', '
+            $LogNote = if ($Observation.LogError) { " Błąd odczytu probe.log: $($Observation.LogError)." } else { '' }
+            throw "Sondy kontrolne nie wystartowały w ciągu $TimeoutSeconds s po rozruchu $($Observation.BootUtc): $($Missing -join ', ') (sondy po rozruchu: $(if ($Seen) { $Seen } else { 'brak' })).$LogNote"
+        }
+        $Poll++
+        Start-Sleep -Seconds $PollSeconds
+    }
+    if ($SettleSeconds -gt 0) { Start-Sleep -Seconds $SettleSeconds }
+    $Observation = Get-VmAutostartObservation -Session $Session -ProcessNames $ProcessNames
+    # Nieudany odczyt probe.log nie może zamienić się w "pozycja nie wystartowała".
+    if ($Observation.LogError) { throw "Nie udało się odczytać C:\dsotest\probe.log po zapasie $SettleSeconds s: $($Observation.LogError)" }
+    $Starts = Get-VmProbeStarts -Observation $Observation
+    $Boot = ConvertFrom-VmUtcText -Text ([string]$Observation.BootUtc)
+    $Results = foreach ($Item in $Items) {
+        if ($Item.ContainsKey('Probe')) {
+            $Started = $Starts.ContainsKey([string]$Item.Probe)
+            $Evidence = if ($Started) { $Starts[[string]$Item.Probe] } else { "brak linii '$($Item.Probe)' w probe.log po rozruchu" }
+        }
+        else {
+            $Matching = @($Observation.Processes | Where-Object {
+                    $null -ne $_ -and [string]$_.Name -ieq [string]$Item.Process -and [string]$_.UserName -like "*\$UserName" -and
+                    $null -ne (ConvertFrom-VmUtcText -Text ([string]$_.StartUtc)) -and (ConvertFrom-VmUtcText -Text ([string]$_.StartUtc)) -gt $Boot
+                })
+            $Started = $Matching.Count -gt 0
+            $All = @($Observation.Processes | Where-Object { $null -ne $_ } | ForEach-Object { "$($_.Name) $($_.UserName) $($_.StartUtc)" })
+            $Evidence = if ($Started) { "proces $($Matching[0].Name) (PID $($Matching[0].Id)) konta $($Matching[0].UserName) od $($Matching[0].StartUtc)" } else { "brak procesu '$($Item.Process)' konta $UserName po rozruchu (procesy: $(if ($All) { $All -join '; ' } else { 'brak' }))" }
+        }
+        [pscustomobject]@{ Id = [string]$Item.Id; Probe = $(if ($Item.ContainsKey('Probe')) { [string]$Item.Probe } else { $null }); Process = $(if ($Item.ContainsKey('Process')) { [string]$Item.Process } else { $null }); Started = [bool]$Started; Evidence = $Evidence }
+    }
+    return [pscustomobject]@{
+        BootUtc         = [string]$Observation.BootUtc
+        ControlsStarted = @($Controls | Where-Object { $Starts.ContainsKey($_) })
+        ProbeLines      = @($Starts.Values | Sort-Object)
+        Items           = @($Results)
+        Polls           = $Poll
+        LogError        = $Observation.LogError
+    }
+}
+
+function Get-VmStartupInfoState {
+    # Odczyt w VM (tylko odczyt): SID konta, czas rozruchu (UTC) i pliki <SID>_StartupInfo*.xml z czasem zapisu (UTC).
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
+        [ValidatePattern('^[A-Za-z0-9_-]+\z')][string]$UserName = $script:AutostartUserName
+    )
+    return Invoke-Command -Session $Session -ArgumentList $UserName -ScriptBlock {
+        param([string]$UserName)
+        $ErrorActionPreference = 'Stop'
+        $Sid = (Get-LocalUser -Name $UserName).SID.Value
+        $Boot = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime.ToUniversalTime().ToString('o')
+        $Directory = Join-Path $env:SystemRoot 'System32\wdi\LogFiles\StartupInfo'
+        $Files = @()
+        if ([System.IO.Directory]::Exists($Directory)) {
+            $Files = @(Get-ChildItem -LiteralPath $Directory -Filter "$($Sid)_StartupInfo*.xml" -File | ForEach-Object { [pscustomobject]@{ Name = $_.Name; WriteUtc = $_.LastWriteTimeUtc.ToString('o') } })
+        }
+        [pscustomobject]@{ Sid = $Sid; BootUtc = $Boot; Files = $Files }
+    }
+}
+
+function Wait-VmStartupInfo {
+    # Czeka (najwyżej TimeoutSeconds), aż Windows zapisze pomiar startu konta: plik <SID>_StartupInfo*.xml z czasem zapisu po rozruchu.
+    # Bez niego lista po restarcie nie ma pomiaru tego rozruchu (Expect.MeasuredAfter). Brak po limicie = wyjątek.
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
+        [ValidateRange(1, 3600)][int]$TimeoutSeconds = $script:AutostartStartTimeoutSeconds,
+        [ValidateRange(1, 60)][int]$PollSeconds = $script:AutostartPollSeconds,
+        [ValidatePattern('^[A-Za-z0-9_-]+\z')][string]$UserName = $script:AutostartUserName
+    )
+    $MaxPolls = [int][Math]::Ceiling($TimeoutSeconds / $PollSeconds)
+    $Poll = 0
+    while ($true) {
+        $State = Get-VmStartupInfoState -Session $Session -UserName $UserName
+        $Boot = ConvertFrom-VmUtcText -Text ([string]$State.BootUtc)
+        if ($null -eq $Boot) { throw "Odczyt VM bez czasu rozruchu (BootUtc '$($State.BootUtc)') - pliku StartupInfo nie da się ocenić." }
+        $Fresh = @($State.Files | Where-Object { $null -ne $_ -and $null -ne (ConvertFrom-VmUtcText -Text ([string]$_.WriteUtc)) -and (ConvertFrom-VmUtcText -Text ([string]$_.WriteUtc)) -gt $Boot } |
+                Sort-Object { ConvertFrom-VmUtcText -Text ([string]$_.WriteUtc) })
+        if ($Fresh.Count -gt 0) {
+            $Newest = $Fresh[$Fresh.Count - 1]
+            return [pscustomobject]@{ Sid = [string]$State.Sid; BootUtc = [string]$State.BootUtc; File = [string]$Newest.Name; WriteUtc = [string]$Newest.WriteUtc; Polls = $Poll }
+        }
+        if ($Poll -ge $MaxPolls) {
+            $Names = @($State.Files | Where-Object { $null -ne $_ } | ForEach-Object { "$($_.Name) $($_.WriteUtc)" }) -join '; '
+            throw "Brak pliku $($State.Sid)_StartupInfo*.xml zapisanego po rozruchu $($State.BootUtc) w ciągu $TimeoutSeconds s (pliki: $(if ($Names) { $Names } else { 'brak' }))."
+        }
+        $Poll++
+        Start-Sleep -Seconds $PollSeconds
+    }
+}
+
+function Invoke-VmAutostartCase {
+    # Przebieg Flow Autostart (opis w nagłówku modułu). Sesja po restarcie (ostatnia) zostaje otwarta: należy do wywołującego.
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)][hashtable]$Case,
+        [Parameter(Mandatory)][hashtable]$Layout,
+        [scriptblock]$Reconnect
+    )
+    $Steps = [System.Collections.Generic.List[object]]::new()
+    $Reboots = [System.Collections.Generic.List[object]]::new()
+    $RunAsUser = if ($Case.ContainsKey('RunAs')) { [string]$Case.RunAs } else { '' }
+    $Expect = $Case.Expect
+    $HasSet = $Case.ContainsKey('Set')
+    $Items = @(if ($HasSet) { $Case.Items | Where-Object { $null -ne $_ } })
+    [string[]]$Controls = @(if ($HasSet) { $Case.Controls | Where-Object { $null -ne $_ } })
+    [string[]]$Setup = @()
+    if ($Case.ContainsKey('Setup')) { $Setup = [string[]]@($Case.Setup) }
+    [string[]]$WatchedKeys = @()
+    if ($Expect.ContainsKey('ListDoesNotWrite')) { $WatchedKeys = [string[]]@($Expect.ListDoesNotWrite) }
+    $Run = {
+        param([string]$Step, [string]$Command, [string]$ItemId, [string]$State)
+        $OutPath = '{0}\{1}-{2}.json' -f $Layout.Out, $Case.Name, $Step
+        $CliArgs = @{ Command = $Command; OutPath = $OutPath }
+        if ($ItemId) { $CliArgs.TweakId = $ItemId }
+        if ($State) { $CliArgs.AutostartState = $State }
+        $Arguments = ConvertTo-DsoCliArguments @CliArgs
+        $Result = Invoke-DsoCli -Session $Session -ExePath $Layout.Exe -Arguments $Arguments -OutPath $OutPath -RunAsUser $RunAsUser
+        $Steps.Add([pscustomobject]@{ Step = $Step; ItemId = $(if ($ItemId) { $ItemId } else { $null }); ExitCode = $Result.ExitCode; TimedOut = $Result.TimedOut; Report = $Result.Report; Json = $Result.Json; ReportError = $Result.ReportError })
+    }
+    $SetupOutput = @()
+    $KeysBefore = $null
+    $KeysAfter = $null
+    $StartAfterSet = $null
+    $StartAfterRestore = $null
+    $StartupInfo = $null
+    $CheckResult = $null
+    $CleanupError = $null
+    try {
+        # Sondy budują się w VM (csc.exe), więc do VM trafia tylko ich źródło i skrypt instalacji.
+        Copy-VmFixtures -Session $Session -Destination (Join-Path $Layout.Root 'fixtures')
+        $SetupOutput = @(Invoke-VmSetup -Session $Session -Setup $Setup -PassThru)
+        if ($WatchedKeys.Count -gt 0) { $KeysBefore = @(Get-VmKeyExistence -Session $Session -Keys $WatchedKeys) }
+        & $Run 'list-before' 'list-autostart'
+        if ($WatchedKeys.Count -gt 0) { $KeysAfter = @(Get-VmKeyExistence -Session $Session -Keys $WatchedKeys) }
+        if ($HasSet) {
+            $Index = 0
+            foreach ($Item in $Items) { $Index++; & $Run "set-$Index" 'set-autostart' ([string]$Item.Id) ([string]$Case.Set) }
+            $Restart = Restart-VmAndReconnect -Session $Session -Reconnect $Reconnect -Step 'reboot-after-set'
+            $Session = $Restart.Session
+            $Reboots.Add($Restart.Record)
+            $StartAfterSet = Wait-VmAutostartStart -Session $Session -Controls $Controls -Items $Items
+            $Index = 0
+            foreach ($Item in $Items) {
+                $Index++
+                switch ([string]$Case.Restore) {
+                    'undo' { & $Run "restore-$Index" 'undo-autostart' ([string]$Item.Id) }
+                    'enable' { & $Run "restore-$Index" 'set-autostart' ([string]$Item.Id) 'enabled' }
+                    'disable' { & $Run "restore-$Index" 'set-autostart' ([string]$Item.Id) 'disabled' }
+                }
+            }
+            $Restart = Restart-VmAndReconnect -Session $Session -Reconnect $Reconnect -Step 'reboot-after-restore'
+            $Session = $Restart.Session
+            $Reboots.Add($Restart.Record)
+            $StartAfterRestore = Wait-VmAutostartStart -Session $Session -Controls $Controls -Items $Items
+            $StartupInfo = Wait-VmStartupInfo -Session $Session
+            & $Run 'list-after' 'list-autostart'
+        }
+        $CheckResult = Invoke-VmCheck -Session $Session -Script $Case.Check
+    }
+    finally {
+        # Sprzątanie zawsze (także po błędzie restartu albo czekania); własny błąd sprzątania nie zasłania pierwotnego wyjątku.
+        if ($Case.ContainsKey('Cleanup')) {
+            try {
+                $CleanupBlock = [scriptblock]::Create("`$ErrorActionPreference = 'Stop'; $($Case.Cleanup)")
+                Invoke-Command -Session $Session -ScriptBlock $CleanupBlock | Out-Null
+            }
+            catch {
+                $CleanupError = $_.Exception.Message
+                Write-Warning "Sprzątanie przypadku '$($Case.Name)' nie powiodło się: $CleanupError"
+            }
+        }
+    }
+    return [pscustomobject]@{
+        Name              = $Case.Name
+        Flow              = 'Autostart'
+        RunAs             = $RunAsUser
+        Hypothesis        = if ($Case.ContainsKey('Hypothesis')) { $Case.Hypothesis } else { $null }
+        SetupOutput       = @($SetupOutput)
+        Steps             = $Steps.ToArray()
+        KeysBeforeList    = $KeysBefore
+        KeysAfterList     = $KeysAfter
+        Reboots           = $Reboots.ToArray()
+        StartAfterSet     = $StartAfterSet
+        StartAfterRestore = $StartAfterRestore
+        StartupInfo       = $StartupInfo
+        CheckResult       = $CheckResult
+        CleanupError      = $CleanupError
+    }
+}
+
 function Invoke-VmCase {
     [CmdletBinding()]
     param(
@@ -951,6 +1424,12 @@ function Invoke-VmCase {
     )
     if ($Case.Flow -eq 'Reboot' -and $null -eq $Reconnect) {
         throw "Przypadek '$($Case.Name)': Flow 'Reboot' wymaga parametru -Reconnect (scriptblock zwracający nową sesję po restarcie)."
+    }
+    if ($Case.Flow -eq 'Autostart') {
+        if ($Case.ContainsKey('Set') -and $null -eq $Reconnect) {
+            throw "Przypadek '$($Case.Name)': Flow 'Autostart' z 'Set' wymaga parametru -Reconnect (scriptblock zwracający nową sesję po restarcie)."
+        }
+        return Invoke-VmAutostartCase -Session $Session -Case $Case -Layout $Layout -Reconnect $Reconnect
     }
     $Steps = [System.Collections.Generic.List[object]]::new()
     $UseBuiltInCatalog = $Case.ContainsKey('Catalog') -and $Case.Catalog -eq 'BuiltIn'
@@ -1203,4 +1682,4 @@ function Invoke-VmCase {
     }
 }
 
-Export-ModuleMember -Function Import-VmCases, Split-VmCaseRuns, Expand-VmCasePlaceholders, ConvertTo-DsoCliArguments, Invoke-DsoCli, Get-DsoStateSnapshot, Get-VmStateSnapshot, Compare-VmSnapshot, Test-VmSnapshotMatches, Invoke-VmSetup, Get-VmRestorePointCount, Invoke-VmCase, Restart-VmAndReconnect, New-VmRestartMarker, Test-VmRestartMarker
+Export-ModuleMember -Function Import-VmCases, Split-VmCaseRuns, Expand-VmCasePlaceholders, ConvertTo-DsoCliArguments, Invoke-DsoCli, Get-DsoStateSnapshot, Get-VmStateSnapshot, Compare-VmSnapshot, Test-VmSnapshotMatches, Invoke-VmSetup, Get-VmRestorePointCount, Invoke-VmCase, Restart-VmAndReconnect, New-VmRestartMarker, Test-VmRestartMarker, Get-VmAutostartExpectedStart, Wait-VmAutostartStart, Wait-VmStartupInfo

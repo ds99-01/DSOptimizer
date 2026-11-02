@@ -1170,5 +1170,194 @@
             Check = '$Roots = @(''Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'', ''Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall''); $Found = @(foreach ($Root in $Roots) { if (Test-Path -LiteralPath $Root) { Get-ChildItem -LiteralPath $Root | ForEach-Object { [string]$_.GetValue(''DisplayName'') } | Where-Object { $_ -eq ''RustDesk'' } } }); $Downloads = ''C:\ProgramData\DSOptimizer\downloads''; $NoFiles = (-not (Test-Path -LiteralPath $Downloads)) -or (@(Get-ChildItem -LiteralPath $Downloads -Recurse -Force -File).Count -eq 0); $NoSteamLog = -not (Test-Path -Path ''C:\ProgramData\DSOptimizer\logs\winget\Valve.Steam-*.log''); ($Found.Count -eq 0) -and ($null -eq (Get-Service -Name ''RustDesk'' -ErrorAction SilentlyContinue)) -and $NoFiles -and $NoSteamLog'
             Hypothesis = 'Plan RustDesk, Task 6 (seria mieszana bez sieci): RustDesk pierwszy w kolejności apps.json -> Failed „brak połączenia z GitHubem”, Steam Skipped bez kodu (winget install nie wystartował: brak logu Valve.Steam-*.log), kod 1; nic nie pobrane, brak wpisu Uninstall i usługi RustDesk.'
         }
+        # Flow Autostart. autostart-list-clean-dso (bez Set) idzie w przebiegu main i zakłada, że żaden przypadek przebiegu main nie
+        # otwiera Ustawień ani Menedżera zadań: oba same zapisują StartupApproved, więc ListDoesNotWrite i Check straciłyby znaczenie.
+        # Check jest odporny na kolejność (sprawdza tylko wartość DsoMissing, której nikt poza odczytem listy nie mógłby dopisać).
+        @{
+            Name = 'autostart-list-clean-dso'; Flow = 'Autostart'; RunAs = 'dso'
+            Setup = @("Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force; & 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoMissing -Source RunUser -UserSid {UserSid} -Missing")
+            Expect = @{
+                Listed           = @{
+                    'run:machine:SecurityHealth'                                          = @{ State = 'Enabled'; CanToggle = $false; Verdict = 'Protected' }
+                    'run:user:DsoMissing'                                                 = @{ State = 'Enabled'; CanToggle = $true; MissingFile = $true }
+                    'appx:Microsoft.WindowsTerminal_8wekyb3d8bbwe!StartTerminalOnLoginTask' = @{ State = 'Disabled'; CanToggle = $true }
+                }
+                ListDoesNotWrite = @(
+                    'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved'
+                    'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run32'
+                    'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder'
+                )
+            }
+            Check = @'
+$Key = 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run'
+$Value = if (Test-Path -LiteralPath $Key) { (Get-Item -LiteralPath $Key).GetValue('DsoMissing') } else { $null }
+if ($null -eq $Value) { $true } else { "odczyt listy dopisał StartupApproved\Run\DsoMissing = $([BitConverter]::ToString([byte[]]$Value))" }
+'@
+            Cleanup = "Remove-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Run' -Name DsoMissing -Force"
+            Hypothesis = 'Czysty 26H2, CLI jako dso: SecurityHealth włączony i chroniony (bez przełącznika), wpis Run na nieistniejący plik włączony z oznaczeniem braku pliku i możliwy do przełączenia, Terminal wyłączony (manifest) i możliwy do przełączenia; odczyt listy nie tworzy kluczy StartupApproved ani wartości DsoMissing.'
+        }
+        @{
+            Name = 'autostart-five-sources-undo-dso'; Flow = 'Autostart'; RunAs = 'dso'
+            Setup = @(
+                'Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force'
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunUser -Source RunUser -UserSid {UserSid}"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunHklm -Source RunMachine"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunWow -Source Run32"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoLnkUser -Source FolderUser -UserSid {UserSid}"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoLnkCommon -Source FolderCommon"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunUserCtl -Source RunUser -UserSid {UserSid}"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunHklmCtl -Source RunMachine"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunWowCtl -Source Run32"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoLnkUserCtl -Source FolderUser -UserSid {UserSid}"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoLnkCommonCtl -Source FolderCommon"
+            )
+            Items = @(
+                @{ Id = 'run:user:DsoRunUser'; Probe = 'DsoRunUser' }
+                @{ Id = 'run:machine:DsoRunHklm'; Probe = 'DsoRunHklm' }
+                @{ Id = 'run32:DsoRunWow'; Probe = 'DsoRunWow' }
+                @{ Id = 'folder:user:DsoLnkUser.lnk'; Probe = 'DsoLnkUser' }
+                @{ Id = 'folder:common:DsoLnkCommon.lnk'; Probe = 'DsoLnkCommon' }
+            )
+            Controls = @('DsoRunUserCtl', 'DsoRunHklmCtl', 'DsoRunWowCtl', 'DsoLnkUserCtl', 'DsoLnkCommonCtl')
+            Set = 'disabled'; Restore = 'undo'
+            Expect = @{
+                SetExit = 0; SetOutcome = 'Applied'; RestoreExit = 0; RestoreOutcome = 'Undone'
+                MeasuredAfter = @('run:user:DsoRunUserCtl', 'run:machine:DsoRunHklmCtl', 'run32:DsoRunWowCtl', 'folder:user:DsoLnkUserCtl.lnk', 'folder:common:DsoLnkCommonCtl.lnk')
+            }
+            Check = @'
+$U = 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved'
+$M = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved'
+$Values = @(@("$U\Run", 'DsoRunUser'), @("$M\Run", 'DsoRunHklm'), @("$M\Run32", 'DsoRunWow'), @("$U\StartupFolder", 'DsoLnkUser.lnk'), @("$M\StartupFolder", 'DsoLnkCommon.lnk'))
+$Present = @(foreach ($V in $Values) { if ((Test-Path -LiteralPath $V[0]) -and $null -ne (Get-Item -LiteralPath $V[0]).GetValue($V[1])) { $V[1] } })
+$Ids = @('run:user:DsoRunUser', 'run:machine:DsoRunHklm', 'run32:DsoRunWow', 'folder:user:DsoLnkUser.lnk', 'folder:common:DsoLnkCommon.lnk')
+$Journal = [System.IO.File]::ReadAllText('C:\ProgramData\DSOptimizer\journal\journal.json', [System.Text.Encoding]::UTF8).TrimStart([char]0xFEFF) | ConvertFrom-Json
+$Entries = @(@($Journal.entries) | Where-Object { $null -ne $_ -and [string]$_.kind -eq 'autostart' })
+$Undone = @($Entries | Where-Object { [string]$_.status -eq 'Undone' -and $Ids -contains [string]$_.tweakId })
+if ($Present.Count -eq 0 -and $Entries.Count -eq 5 -and $Undone.Count -eq 5) { $true }
+else { "wartości StartupApproved po cofnięciu: $(if ($Present) { $Present -join ', ' } else { 'brak' }); wpisy autostart: $(@($Entries | ForEach-Object { "$($_.tweakId)=$($_.status)" }) -join ', ')" }
+'@
+            Hypothesis = 'Pięć źródeł (Run konta, Run maszyny, Run32, folder konta, folder wspólny) bez wartości StartupApproved: wyłączenie przez CLI = brak startu sondy po restarcie przy starcie sondy kontrolnej w tym samym miejscu; cofnięcie = start po restarcie, wartości StartupApproved znikają (stan sprzed), w journalu pięć wpisów Undone, a pomiar Windows z drugiego rozruchu daje sondom kontrolnym co najmniej 1 s CPU.'
+        }
+        @{
+            # Bez RunAs: CLI jako wbudowany Administrator sesji PS Direct przy zalogowanym dso - pozycja konta idzie do HKU dso, nie do HKCU procesu.
+            Name = 'autostart-enable-admin'; Flow = 'Autostart'
+            Setup = @(
+                'Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force'
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunUser -Source RunUser -UserSid {UserSid}"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunWow -Source Run32"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoLnkCommon -Source FolderCommon"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunUserCtl -Source RunUser -UserSid {UserSid}"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunWowCtl -Source Run32"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoLnkCommonCtl -Source FolderCommon"
+            )
+            Items = @(
+                @{ Id = 'run:user:DsoRunUser'; Probe = 'DsoRunUser' }
+                @{ Id = 'run32:DsoRunWow'; Probe = 'DsoRunWow' }
+                @{ Id = 'folder:common:DsoLnkCommon.lnk'; Probe = 'DsoLnkCommon' }
+            )
+            Controls = @('DsoRunUserCtl', 'DsoRunWowCtl', 'DsoLnkCommonCtl')
+            Set = 'disabled'; Restore = 'enable'
+            Expect = @{ SetExit = 0; SetOutcome = 'Applied'; RestoreExit = 0; RestoreOutcome = 'Undone' }
+            Check = @'
+$U = 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved'
+$M = 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved'
+$A = 'Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved'
+$Values = @(@("$U\Run", 'DsoRunUser'), @("$M\Run32", 'DsoRunWow'), @("$M\StartupFolder", 'DsoLnkCommon.lnk'), @("$A\Run", 'DsoRunUser'))
+$Present = @(foreach ($V in $Values) { if ((Test-Path -LiteralPath $V[0]) -and $null -ne (Get-Item -LiteralPath $V[0]).GetValue($V[1])) { "$($V[0])\$($V[1])" } })
+$Ids = @('run:user:DsoRunUser', 'run32:DsoRunWow', 'folder:common:DsoLnkCommon.lnk')
+$Journal = [System.IO.File]::ReadAllText('C:\ProgramData\DSOptimizer\journal\journal.json', [System.Text.Encoding]::UTF8).TrimStart([char]0xFEFF) | ConvertFrom-Json
+$Entries = @(@($Journal.entries) | Where-Object { $null -ne $_ -and [string]$_.kind -eq 'autostart' })
+$Undone = @($Entries | Where-Object { [string]$_.status -eq 'Undone' -and $Ids -contains [string]$_.tweakId })
+$UserEntry = @($Entries | Where-Object { [string]$_.tweakId -eq 'run:user:DsoRunUser' -and [string]$_.userSid -eq '{UserSid}' })
+if ($Present.Count -eq 0 -and $Entries.Count -eq 3 -and $Undone.Count -eq 3 -and $UserEntry.Count -eq 1) { $true }
+else { "wartości po włączeniu: $(if ($Present) { $Present -join ', ' } else { 'brak' }); wpisy autostart: $(@($Entries | ForEach-Object { "$($_.tweakId)=$($_.status) konto $($_.userSid)" }) -join ', ')" }
+'@
+            Hypothesis = 'CLI jako Administrator (inne konto niż zalogowany dso): wyłączenie Run konta dso, Run32 i folderu wspólnego = brak startu sond po restarcie; włączenie przez set-autostart enabled zamyka aktywny wpis (Undone, jeden aktywny wpis na pozycję) i przywraca stan sprzed (brak wartości), sondy startują; nic nie trafia do HKCU Administratora, wpis pozycji konta ma SID dso.'
+        }
+        @{
+            Name = 'autostart-taskmgr-state-dso'; Flow = 'Autostart'; RunAs = 'dso'
+            Setup = @(
+                'Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force'
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunUser -Source RunUser -UserSid {UserSid} -StartupApproved disabled"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoLnkUser -Source FolderUser -UserSid {UserSid} -StartupApproved disabled"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunUserCtl -Source RunUser -UserSid {UserSid}"
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoLnkUserCtl -Source FolderUser -UserSid {UserSid}"
+            )
+            Items = @(
+                @{ Id = 'run:user:DsoRunUser'; Probe = 'DsoRunUser' }
+                @{ Id = 'folder:user:DsoLnkUser.lnk'; Probe = 'DsoLnkUser' }
+            )
+            Controls = @('DsoRunUserCtl', 'DsoLnkUserCtl')
+            Initial = 'disabled'; Set = 'enabled'; Restore = 'undo'
+            Expect = @{
+                Listed  = @{
+                    'run:user:DsoRunUser'        = @{ State = 'Disabled'; CanToggle = $true }
+                    'folder:user:DsoLnkUser.lnk' = @{ State = 'Disabled'; CanToggle = $true }
+                }
+                SetExit = 0; SetOutcome = 'Applied'; RestoreExit = 0; RestoreOutcome = 'Undone'
+            }
+            Check = @'
+$U = 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved'
+$Pairs = @(@("$U\Run", 'DsoRunUser', 'DsoRunUser'), @("$U\StartupFolder", 'DsoLnkUser.lnk', 'DsoLnkUser'))
+$Bad = @(foreach ($P in $Pairs) {
+    $Want = [System.IO.File]::ReadAllText("C:\dsotest\$($P[2]).startupapproved.txt").Trim()
+    $Value = if (Test-Path -LiteralPath $P[0]) { (Get-Item -LiteralPath $P[0]).GetValue($P[1]) } else { $null }
+    $Have = if ($null -eq $Value) { '(brak)' } else { [BitConverter]::ToString([byte[]]$Value) }
+    if ($Have -ne $Want) { "$($P[1]): jest $Have, przed testem $Want" }
+})
+$Journal = [System.IO.File]::ReadAllText('C:\ProgramData\DSOptimizer\journal\journal.json', [System.Text.Encoding]::UTF8).TrimStart([char]0xFEFF) | ConvertFrom-Json
+$Entries = @(@($Journal.entries) | Where-Object { $null -ne $_ -and [string]$_.kind -eq 'autostart' })
+$Undone = @($Entries | Where-Object { [string]$_.status -eq 'Undone' })
+if ($Bad.Count -eq 0 -and $Entries.Count -eq 2 -and $Undone.Count -eq 2) { $true }
+else { "StartupApproved: $(if ($Bad) { $Bad -join '; ' } else { 'zgodne' }); wpisy autostart: $(@($Entries | ForEach-Object { "$($_.tweakId)=$($_.status)" }) -join ', ')" }
+'@
+            Hypothesis = 'Pozycje wyłączone jak przez Menedżer zadań (03 + FILETIME): lista pokazuje je jako wyłączone; włączenie przez CLI = nowy wpis Applied i start sond po restarcie; cofnięcie = wartości wracają dokładnie do 03 + FILETIME sprzed testu i sondy nie startują.'
+        }
+        @{
+            # Klucz zadania Terminala tworzy sam Windows po logowaniu (State 0, ShowNotification 1, UserEnabledStartupOnce 0; zmierzone 15-92 s);
+            # Setup czeka na niego co najmniej 60 s po logowaniu dso i zapisuje odczytane wartości w rekordzie (SetupOutput).
+            Name = 'autostart-terminal-dso'; Flow = 'Autostart'; RunAs = 'dso'
+            Setup = @(
+                'Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force'
+                "& 'C:\dso\fixtures\Install-DsoAutostartProbe.ps1' -Name DsoRunUserCtl -Source RunUser -UserSid {UserSid}"
+                @'
+$Key = 'Registry::HKEY_USERS\{UserSid}_Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\Microsoft.WindowsTerminal_8wekyb3d8bbwe\StartTerminalOnLoginTask'
+$Logon = @(Get-Process -Name explorer -IncludeUserName | Where-Object { [string]$_.UserName -like '*\dso' } | Sort-Object StartTime)[0].StartTime
+$Deadline = (Get-Date).AddSeconds(240)
+while (-not (Test-Path -LiteralPath $Key) -or ((Get-Date) - $Logon).TotalSeconds -lt 60) {
+    if ((Get-Date) -gt $Deadline) { throw "Klucz zadania Terminala nie powstał w ciągu 240 s (logowanie dso: $Logon)." }
+    Start-Sleep -Seconds 2
+}
+$Item = Get-Item -LiteralPath $Key
+$Names = @($Item.GetValueNames() | Sort-Object)
+$Text = @($Names | ForEach-Object { "$_=$($Item.GetValue($_)) ($($Item.GetValueKind($_)))" }) -join '; '
+"Klucz zadania Terminala przed list-before, $([int]((Get-Date) - $Logon).TotalSeconds) s po logowaniu dso: $Text"
+if ($Item.GetValue('State') -ne 0 -or $Item.GetValue('ShowNotification') -ne 1 -or $Item.GetValue('UserEnabledStartupOnce') -ne 0 -or $Names -contains 'LastDisabledTime') { throw "Klucz zadania Terminala nie ma stanu systemu (State 0, ShowNotification 1, UserEnabledStartupOnce 0): $Text" }
+'@
+            )
+            Items = @(@{ Id = 'appx:Microsoft.WindowsTerminal_8wekyb3d8bbwe!StartTerminalOnLoginTask'; Process = 'WindowsTerminal' })
+            Controls = @('DsoRunUserCtl')
+            Initial = 'disabled'; Set = 'enabled'; Restore = 'undo'
+            Expect = @{
+                Listed  = @{ 'appx:Microsoft.WindowsTerminal_8wekyb3d8bbwe!StartTerminalOnLoginTask' = @{ State = 'Disabled'; CanToggle = $true } }
+                SetExit = 0; SetOutcome = 'Applied'; RestoreExit = 0; RestoreOutcome = 'Undone'
+            }
+            Check = @'
+$Key = 'Registry::HKEY_USERS\{UserSid}_Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\Microsoft.WindowsTerminal_8wekyb3d8bbwe\StartTerminalOnLoginTask'
+$Journal = [System.IO.File]::ReadAllText('C:\ProgramData\DSOptimizer\journal\journal.json', [System.Text.Encoding]::UTF8).TrimStart([char]0xFEFF) | ConvertFrom-Json
+$Entries = @(@($Journal.entries) | Where-Object { $null -ne $_ -and [string]$_.kind -eq 'autostart' })
+$Undone = @($Entries | Where-Object { [string]$_.status -eq 'Undone' -and [string]$_.tweakId -eq 'appx:Microsoft.WindowsTerminal_8wekyb3d8bbwe!StartTerminalOnLoginTask' })
+if (-not (Test-Path -LiteralPath $Key)) { 'klucz zadania Terminala nie istnieje po cofnięciu (oczekiwano stanu systemu sprzed testu)' }
+else {
+    $Item = Get-Item -LiteralPath $Key
+    $Names = @($Item.GetValueNames())
+    $Text = @($Names | Sort-Object | ForEach-Object { "$_=$($Item.GetValue($_)) ($($Item.GetValueKind($_)))" }) -join '; '
+    $WrongKind = @(@('State', 'ShowNotification', 'UserEnabledStartupOnce') | Where-Object { $Names -contains $_ -and [string]$Item.GetValueKind($_) -ne 'DWord' })
+    if ($Item.GetValue('State') -eq 0 -and $Item.GetValue('ShowNotification') -eq 1 -and $Item.GetValue('UserEnabledStartupOnce') -eq 0 -and $Names -notcontains 'LastDisabledTime' -and $WrongKind.Count -eq 0 -and $Entries.Count -eq 1 -and $Undone.Count -eq 1) { $true }
+    else { "klucz zadania: $Text; wpisy autostart: $(@($Entries | ForEach-Object { "$($_.tweakId)=$($_.status)" }) -join ', ')" }
+}
+'@
+            Hypothesis = 'Terminal na kluczu utworzonym przez system (State 0 = wyłączony z manifestu): włączenie przez CLI = WindowsTerminal.exe konta dso startuje po restarcie; cofnięcie = klucz wraca do State 0, ShowNotification 1, UserEnabledStartupOnce 0 bez LastDisabledTime (klucz zostaje, bo istniał przed testem) i Terminal nie startuje.'
+        }
     )
 }
