@@ -112,6 +112,46 @@
     {
       "pl": "wpis chroniony nie może mieć folderu zapisywalnego bez administratora ({0})",
       "en": "a protected entry can't have a folder writable without administrator rights ({0})"
+    },
+    {
+      "pl": "Wyłączona – zadziała od następnego logowania.",
+      "en": "Disabled – takes effect at the next sign-in."
+    },
+    {
+      "pl": "Włączona – zadziała od następnego logowania.",
+      "en": "Enabled – takes effect at the next sign-in."
+    },
+    {
+      "pl": "Była już wyłączona – nic nie zmieniono.",
+      "en": "It was already disabled – nothing was changed."
+    },
+    {
+      "pl": "Była już włączona – nic nie zmieniono.",
+      "en": "It was already enabled – nothing was changed."
+    },
+    {
+      "pl": "Cofnięto wcześniejszą zmianę z Historii zmian – zadziała od następnego logowania.",
+      "en": "Undid the earlier change from Change history – takes effect at the next sign-in."
+    },
+    {
+      "pl": "Odczyt po zapisie nie potwierdził zmiany – przywrócono poprzedni stan.",
+      "en": "Reading the state back after the change didn't confirm it – the previous state was restored."
+    },
+    {
+      "pl": "Odczyt po zapisie nie potwierdził zmiany, a poprzedniego stanu nie udało się przywrócić.",
+      "en": "Reading the state back after the change didn't confirm it, and the previous state couldn't be restored."
+    },
+    {
+      "pl": "Zmieniono poza programem.",
+      "en": "Changed outside the program."
+    },
+    {
+      "pl": "Nie udało się zapisać journala – nic nie zmieniono: {0}",
+      "en": "Couldn't save the journal – nothing was changed: {0}"
+    },
+    {
+      "pl": "Zapis stanu zmienił się od odczytu listy – nic nie zmieniono. Odśwież listę.",
+      "en": "The state changed since the list was read – nothing was changed. Refresh the list."
     }
   ]
 }

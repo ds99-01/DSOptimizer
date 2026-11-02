@@ -201,4 +201,18 @@ public class FakeRegistryTests
         Assert.Throws<System.ArgumentException>(() => registry.DeleteKeyTree(path));
         Assert.True(registry.HasKey(@"HKLM\SOFTWARE\DSO"));
     }
+
+    [Fact]
+    public void AfterWrite_RunsAfterSuccessfulWrite_CanOverwrite()
+    {
+        var registry = new FakeRegistry();
+        registry.AfterWrite = (path, name, _) => registry.Set(path, name, RegValue.FromDWord(7));
+        registry.FailWrite(Path, "B");
+
+        registry.Write(Path, "A", RegValue.FromDWord(1));
+
+        Assert.Equal(RegValue.FromDWord(7), registry.Get(Path, "A"));
+        Assert.Throws<OperationException>(() => registry.Write(Path, "B", RegValue.FromDWord(1)));
+        Assert.Equal(RegValue.Absent, registry.Get(Path, "B"));
+    }
 }

@@ -53,6 +53,31 @@ public class AutostartTextTests
     }
 
     [Fact]
+    public void EngineTexts_Verbatim()
+    {
+        Assert.Equal("Wyłączona – zadziała od następnego logowania.", AutostartText.Disabled);
+        Assert.Equal("Włączona – zadziała od następnego logowania.", AutostartText.Enabled);
+        Assert.Equal("Była już wyłączona – nic nie zmieniono.", AutostartText.AlreadyDisabled);
+        Assert.Equal("Była już włączona – nic nie zmieniono.", AutostartText.AlreadyEnabled);
+        Assert.Equal("Cofnięto wcześniejszą zmianę z Historii zmian – zadziała od następnego logowania.", AutostartText.UndoneByToggle);
+        Assert.Equal("Odczyt po zapisie nie potwierdził zmiany – przywrócono poprzedni stan.", AutostartText.NotConfirmed);
+        Assert.Equal("Odczyt po zapisie nie potwierdził zmiany, a poprzedniego stanu nie udało się przywrócić.", AutostartText.RollbackIncomplete);
+        Assert.Equal("Zmieniono poza programem.", AutostartText.ChangedOutside);
+        Assert.Equal("Nie udało się zapisać journala – nic nie zmieniono: dysk", AutostartText.JournalFailed("dysk"));
+        Assert.Equal("Zapis stanu zmienił się od odczytu listy – nic nie zmieniono. Odśwież listę.", AutostartText.FormatChanged);
+    }
+
+    [Fact]
+    public void EngineTexts_Translated()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("Disabled – takes effect at the next sign-in.", AutostartText.Disabled);
+            Assert.Equal("Couldn't save the journal – nothing was changed: disk", AutostartText.JournalFailed("disk"));
+        }
+    }
+
+    [Fact]
     public void RowTexts_FromRender()
     {
         Assert.Equal("Bez oceny – brak tej pozycji w bazie programu.", AutostartText.NotAssessed);

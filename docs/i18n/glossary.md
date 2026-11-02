@@ -423,6 +423,7 @@ separator of the Polish text (">"), and use the English page names exactly.
 | plik stronicowania | paging file | Windows memory term |
 | Eksplorator (restart) | File Explorer | "restarting File Explorer", "after File Explorer restarts" (see Windows names) |
 | ponowne zalogowanie | sign in again | Style rule 11: "after you sign in again" |
+| od następnego logowania | at the next sign-in | Style rule 11; Startup apps results: "takes effect at the next sign-in" |
 | Wymaga restartu komputera. | Requires a computer restart. | Restart warning of items with "Restart required" |
 
 ### Catalog – app lists

@@ -30,6 +30,31 @@ public static class AutostartText
     /// <summary>Podpowiedź kłódki pozycji chronionej.</summary>
     public static string ProtectedTooltip => L.T("Chroniona – DSOptimizer jej nie wyłącza");
 
+    /// <summary>Wynik wyłączenia potwierdzony świeżym odczytem.</summary>
+    public static string Disabled => L.T("Wyłączona – zadziała od następnego logowania.");
+
+    /// <summary>Wynik włączenia potwierdzony świeżym odczytem.</summary>
+    public static string Enabled => L.T("Włączona – zadziała od następnego logowania.");
+
+    public static string AlreadyDisabled => L.T("Była już wyłączona – nic nie zmieniono.");
+
+    public static string AlreadyEnabled => L.T("Była już włączona – nic nie zmieniono.");
+
+    /// <summary>Przełączenie w drugą stronę cofnęło aktywny wpis tej pozycji (bez nowego wpisu).</summary>
+    public static string UndoneByToggle => L.T("Cofnięto wcześniejszą zmianę z Historii zmian – zadziała od następnego logowania.");
+
+    public static string NotConfirmed => L.T("Odczyt po zapisie nie potwierdził zmiany – przywrócono poprzedni stan.");
+
+    public static string RollbackIncomplete => L.T("Odczyt po zapisie nie potwierdził zmiany, a poprzedniego stanu nie udało się przywrócić.");
+
+    /// <summary>Zdarzenie wpisu, którego zmianę cofnięto poza programem (np. Menedżerem zadań).</summary>
+    public static string ChangedOutside => L.T("Zmieniono poza programem.");
+
+    public static string JournalFailed(string error) => L.F("Nie udało się zapisać journala – nic nie zmieniono: {0}", error);
+
+    /// <summary>Świeży odczyt przed zapisem pokazał format tylko do odczytu albo zapis od zera bez dowodu.</summary>
+    public static string FormatChanged => L.T("Zapis stanu zmienił się od odczytu listy – nic nie zmieniono. Odśwież listę.");
+
     /// <summary>Powód „tylko do odczytu”; null, gdy pozycję można przełączać.</summary>
     public static string? Blocked(AutostartBlocker blocker) => blocker switch
     {

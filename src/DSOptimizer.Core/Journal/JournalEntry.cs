@@ -14,15 +14,19 @@ public sealed class JournalEntry
     /// <summary>Wartość <see cref="Kind"/> dla instalacji aplikacji przez winget (<see cref="TweakId"/> = <c>install.&lt;nazwa&gt;</c> albo <c>winget:&lt;id&gt;</c>).</summary>
     public const string AppInstallKind = "app-install";
 
+    /// <summary>Wartość <see cref="Kind"/> dla wyłączenia albo włączenia pozycji autostartu (<see cref="TweakId"/> = id pozycji).</summary>
+    public const string AutostartKind = "autostart";
+
     public Guid EntryId { get; set; }
 
     /// <summary>
     /// Rodzaj wpisu: null = tweak katalogu, <see cref="AppRemovalKind"/> = usunięcie aplikacji (<see cref="TweakId"/> = Id aplikacji),
-    /// <see cref="AppInstallKind"/> = instalacja aplikacji.
+    /// <see cref="AppInstallKind"/> = instalacja aplikacji, <see cref="AutostartKind"/> = zmiana pozycji autostartu (<see cref="TweakId"/> =
+    /// id pozycji, <see cref="Title"/> = jej nazwa).
     /// </summary>
     public string? Kind { get; set; }
 
-    /// <summary>Nazwa wyświetlana dla wpisów spoza katalogu (usunięta albo zainstalowana aplikacja); null dla tweaków.</summary>
+    /// <summary>Nazwa wyświetlana dla wpisów spoza katalogu (usunięta albo zainstalowana aplikacja, pozycja autostartu); null dla tweaków.</summary>
     public string? Title { get; set; }
 
     public string TweakId { get; set; } = string.Empty;

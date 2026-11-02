@@ -28,6 +28,9 @@ public sealed class FakeRegistry : IRegistry
     /// <summary>Wywoływany przed każdym zapisem; zwrócony wyjątek zostanie rzucony.</summary>
     public Func<string, string, RegValue, Exception?>? WriteInterceptor { get; set; }
 
+    /// <summary>Wywoływany po każdym udanym zapisie (np. inny program nadpisuje wartość tuż po zapisie).</summary>
+    public Action<string, string, RegValue>? AfterWrite { get; set; }
+
     public void Set(string path, string name, RegValue value)
     {
         if (value.Exists)
@@ -236,6 +239,7 @@ public sealed class FakeRegistry : IRegistry
 
         WriteLog.Add($"{path}\\{name}={value}");
         Set(path, name, value);
+        AfterWrite?.Invoke(path, name, value);
     }
 
     private static string NormalizeKey(string path) => path.TrimEnd('\\');
