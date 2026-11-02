@@ -167,6 +167,18 @@ Describe 'Set-DocsTranslationStamp.ps1' {
         $Text | Should -BeExactly "<!-- source: $($script:Docs)apps/README.md sha256: $(Get-ExpectedHash -Text $Polish) -->`n`n# b – Title`n"
     }
 
+    It 'przyjmuje docs/en/autostart/README.md' {
+        $Polish = "# Autostart – baza znanych pozycji`n"
+        $Root = New-DocsRepo -Files @{
+            'docs\autostart\README.md'    = $Polish
+            'docs\en\autostart\README.md' = "# Startup apps – known items`n"
+        }
+        $Result = Invoke-Stamp -Root $Root -Path 'docs\en\autostart\README.md'
+        $Result.Code | Should -Be 0
+        $Text = $script:Utf8NoBom.GetString((Read-Bytes -Root $Root -Name 'docs\en\autostart\README.md'))
+        $Text | Should -BeExactly "<!-- source: $($script:Docs)autostart/README.md sha256: $(Get-ExpectedHash -Text $Polish) -->`n`n# Startup apps – known items`n"
+    }
+
     It 'brak polskiego źródła daje kod 2 i nie zmienia pliku' {
         $Root = New-DocsRepo -Files @{ 'docs\en\tweaks\sierota.md' = "# sierota – Orphan`n" }
         $Before = [Convert]::ToBase64String((Read-Bytes -Root $Root -Name 'docs\en\tweaks\sierota.md'))

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
@@ -100,6 +101,28 @@ public class CatalogWordingTests
 
         var entry = Assert.Single(pl.Protected, p => p.Reason == polish);
         Assert.Equal(english, en.Protected.Single(p => p.Id == entry.Id).Reason);
+    }
+
+    [Theory]
+    [InlineData(
+        "ea-app",
+        "Aplikacja EA uruchamiana po zalogowaniu; po wyłączeniu gry są dostępne po ręcznym otwarciu. Wyłączenie autostartu nie zatrzymuje usługi EA w tle.",
+        "The EA app, started at sign-in; when disabled, games are available once you open it. Turning off startup doesn't stop the EA background service.")]
+    [InlineData(
+        "security-health",
+        "Ikona Zabezpieczeń Windows w zasobniku i powiadomienia o ochronie. Bez niej ochrona działa dalej, ale łatwiej przeoczyć alert.",
+        "The Windows Security icon in the notification area and protection notifications. Protection keeps running without it, but alerts are easier to miss.")]
+    public void AutostartKnownSummaries_AreHonest(string id, string polish, string english)
+    {
+        var pl = AutostartKnownCatalog.Load(BuiltInCatalog.AutostartKnownSource.Json);
+        AutostartKnownCatalog en;
+        using (L.Use(UiLanguage.English))
+        {
+            en = AutostartKnownCatalog.Load(BuiltInCatalog.AutostartKnownSource.Json);
+        }
+
+        Assert.Equal(polish, pl.Entries.Single(e => e.Id == id).Summary);
+        Assert.Equal(english, en.Entries.Single(e => e.Id == id).Summary);
     }
 
     private static void AssertField(TweakDefinition definition, string field, string expected)

@@ -36,3 +36,7 @@ docs/en/tweaks/net.smb-guest-access.md	a fake server on the network	zwykły teks
 docs/en/tweaks/net.throttling-index.md	would be a fake tweak	zwykły tekst: 'fake tweak' = pozycja pozorna, nie notatka procesu
 docs/apps/install-README.md	sha256:624fe792…77580495	skrót sha256 pobranego pliku (wartość z API GitHuba), nie hash commita
 docs/en/apps/install-README.md	sha256:624fe792…77580495	skrót sha256 pobranego pliku (wartość z API GitHuba), nie hash commita
+docs/autostart/README.md	docs/zrodla/2026-11-02-autostart-programy.md	odnośnik do publicznego dokumentu z odczytem programów, źródło wpisów bazy autostartu
+docs/autostart/README.md	docs/zrodla/2026-11-02-autostart-pomiar.md	odnośnik do publicznego dokumentu z odczytem autostartu czystego systemu, źródło wpisu security-health
+docs/en/autostart/README.md	docs/zrodla/2026-11-02-autostart-programy.md	odnośnik do publicznego dokumentu z odczytem programów, źródło wpisów bazy autostartu
+docs/en/autostart/README.md	docs/zrodla/2026-11-02-autostart-pomiar.md	odnośnik do publicznego dokumentu z odczytem autostartu czystego systemu, źródło wpisu security-health

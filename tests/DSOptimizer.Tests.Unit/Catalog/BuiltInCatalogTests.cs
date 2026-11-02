@@ -157,12 +157,13 @@ public class BuiltInCatalogTests
         var nested = files.Where(f => !string.Equals(Path.GetDirectoryName(f), root, StringComparison.OrdinalIgnoreCase)).ToList();
         Assert.True(nested.Count == 0, "JSON w podfolderze catalog/ nie jest osadzany (glob catalog\\*.json): " + string.Join(", ", nested));
 
-        // apps-bloat.json i apps.json to osobne formaty (klasyfikacja aplikacji i lista instalacji, nie tablice tweaków): osadzone
-        // pod własnymi nazwami zasobów i dostępne przez AppsBloatSource/AppsInstallSource, więc Sources ich nie zawiera.
-        // Testy niżej pilnują, że pliki są na dysku.
+        // apps-bloat.json, apps.json i autostart-known.json to osobne formaty (klasyfikacja aplikacji, lista instalacji, baza znanych
+        // pozycji autostartu – nie tablice tweaków): osadzone pod własnymi nazwami zasobów i dostępne przez AppsBloatSource,
+        // AppsInstallSource i AutostartKnownSource, więc Sources ich nie zawiera. Testy niżej pilnują, że pliki są na dysku.
         var onDisk = files.Select(Path.GetFileName)
             .Where(n => !string.Equals(n, BuiltInCatalog.AppsBloatFileName, StringComparison.Ordinal)
-                && !string.Equals(n, BuiltInCatalog.AppsInstallFileName, StringComparison.Ordinal))
+                && !string.Equals(n, BuiltInCatalog.AppsInstallFileName, StringComparison.Ordinal)
+                && !string.Equals(n, BuiltInCatalog.AutostartKnownFileName, StringComparison.Ordinal))
             .OrderBy(n => n, StringComparer.Ordinal).ToList();
         var embedded = BuiltInCatalog.Sources.Select(s => s.Name).OrderBy(n => n, StringComparer.Ordinal).ToList();
         Assert.True(
@@ -189,6 +190,17 @@ public class BuiltInCatalogTests
         Assert.Equal(BuiltInCatalog.AppsInstallFileName, BuiltInCatalog.AppsInstallSource.Name);
         Assert.Equal(File.ReadAllText(path, Encoding.UTF8).TrimStart('﻿'), BuiltInCatalog.AppsInstallSource.Json.TrimStart('﻿'));
         Assert.DoesNotContain(BuiltInCatalog.Sources, s => s.Name == BuiltInCatalog.AppsInstallFileName);
+    }
+
+    [Fact]
+    public void AutostartKnownSource_IsEmbeddedAndMatchesFileOnDisk()
+    {
+        Assert.Equal("autostart-known.json", BuiltInCatalog.AutostartKnownFileName);
+        var path = RepoRoot.Combine("src", "DSOptimizer.Catalog", "catalog", BuiltInCatalog.AutostartKnownFileName);
+        Assert.True(File.Exists(path), "Brak pliku na dysku: " + path);
+        Assert.Equal(BuiltInCatalog.AutostartKnownFileName, BuiltInCatalog.AutostartKnownSource.Name);
+        Assert.Equal(File.ReadAllText(path, Encoding.UTF8).TrimStart('﻿'), BuiltInCatalog.AutostartKnownSource.Json.TrimStart('﻿'));
+        Assert.DoesNotContain(BuiltInCatalog.Sources, s => s.Name == BuiltInCatalog.AutostartKnownFileName);
     }
 
     [Fact]

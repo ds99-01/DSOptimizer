@@ -1,17 +1,18 @@
 ﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
-    Wpisuje odcisk polskiego źródła w pierwszej linii angielskiego dokumentu docs/en/(tweaks|apps|prep)/*.md.
+    Wpisuje odcisk polskiego źródła w pierwszej linii angielskiego dokumentu docs/en/(tweaks|apps|prep|autostart)/*.md.
 
 .DESCRIPTION
     # Instrukcja uruchomienia (Windows PowerShell 5.1, z katalogu repo):
     #     .\tools\i18n\Set-DocsTranslationStamp.ps1 -Path docs\en\tweaks\README.md
     #     .\tools\i18n\Set-DocsTranslationStamp.ps1 -Path docs\en\apps\README.md,docs\en\prep\README.md
+    #     .\tools\i18n\Set-DocsTranslationStamp.ps1 -Path docs\en\autostart\README.md
     #     .\tools\i18n\Set-DocsTranslationStamp.ps1 -Path docs\en\tweaks\<id>.md -Root <repo>   # inny korzeń repo
     # Uruchamiaj tylko po przetłumaczeniu aktualnej polskiej treści – odcisk mówi, że angielski odpowiada temu źródłu.
     # Opis działania:
     #     Każda ścieżka (względna wobec -Root albo bezwzględna) musi wskazywać istniejący plik docs/en/<x>/<plik>.md, gdzie
-    #     <x> to tweaks, apps albo prep (bez podkatalogów), a polskie źródło docs/<x>/<plik>.md musi istnieć. Najpierw
+    #     <x> to tweaks, apps, prep albo autostart (bez podkatalogów), a polskie źródło docs/<x>/<plik>.md musi istnieć. Najpierw
     #     sprawdza wszystkie ścieżki; przy pierwszym błędzie wypisuje go i kończy z kodem 2, nie zmieniając żadnego pliku.
     #     Wielkość liter ścieżki (np. PERF.sysmain.md) jest brana z systemu plików, więc odcisk ma prawdziwą nazwę źródła.
     #     Hash źródła: SHA-256 bajtów UTF-8 polskiego pliku po usunięciu BOM i zamianie CRLF na LF. Linia odcisku:
@@ -19,7 +20,7 @@
     #     ta linia jest zastępowana; inaczej na początku dopisywana jest linia odcisku i pusta linia. Końce linii pliku
     #     (CRLF albo LF) zostają, zapis UTF-8 bez BOM. Raport Get-MissingTranslations.ps1 porównuje ten odcisk
     #     z bieżącym polskim plikiem (nieaktualny = brak tłumaczenia).
-    #     Kod wyjścia: 0 = odciski wpisane; 2 = ścieżka spoza docs/en/(tweaks|apps|prep)/, brak pliku EN, brak polskiego
+    #     Kod wyjścia: 0 = odciski wpisane; 2 = ścieżka spoza docs/en/(tweaks|apps|prep|autostart)/, brak pliku EN, brak polskiego
     #     źródła albo inny błąd.
 
 .PARAMETER Path
@@ -86,9 +87,9 @@ try {
             $Relative = Get-ActualCaseRelativePath -RootPath $RootPath -Relative $Full.Substring($RootPath.Length + 1).Replace('\', '/')
             $Full = Join-Path -Path $RootPath -ChildPath $Relative.Replace('/', '\')
         }
-        $Match = [regex]::Match($Relative, '^docs/en/((?:tweaks|apps|prep)/[^/]+\.md)$')
+        $Match = [regex]::Match($Relative, '^docs/en/((?:tweaks|apps|prep|autostart)/[^/]+\.md)$')
         if (-not $Match.Success) {
-            Write-Output ('Błąd: {0} – odcisk dotyczy tylko docs/en/(tweaks|apps|prep)/*.md.' -f $Relative)
+            Write-Output ('Błąd: {0} – odcisk dotyczy tylko docs/en/(tweaks|apps|prep|autostart)/*.md.' -f $Relative)
             exit 2
         }
         if (-not (Test-Path -LiteralPath $Full -PathType Leaf)) {

@@ -169,12 +169,12 @@ function ConvertTo-GuiProbeLanguage {
 }
 
 function Get-GuiCatalogTitle {
-    # Tytuł pozycji katalogu o danym id z plików src\DSOptimizer.Catalog\catalog repo (bez apps-bloat.json i apps.json). Brak = błąd.
+    # Tytuł pozycji katalogu o danym id z plików src\DSOptimizer.Catalog\catalog repo (bez apps-bloat.json, apps.json i autostart-known.json). Brak = błąd.
     [CmdletBinding()]
     [OutputType([string])]
     param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string]$Id)
     $Directory = Join-Path $Root 'src\DSOptimizer.Catalog\catalog'
-    foreach ($File in @(Get-ChildItem -LiteralPath $Directory -Filter '*.json' -File | Where-Object { $_.Name -notin @('apps-bloat.json', 'apps.json') } | Sort-Object Name)) {
+    foreach ($File in @(Get-ChildItem -LiteralPath $Directory -Filter '*.json' -File | Where-Object { $_.Name -notin @('apps-bloat.json', 'apps.json', 'autostart-known.json') } | Sort-Object Name)) {
         # ConvertFrom-Json w PowerShell 5.1 oddaje tablicę JSON jako jeden obiekt – najpierw zmienna, potem @() ją rozwija.
         $Items = [System.IO.File]::ReadAllText($File.FullName, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         foreach ($Item in @($Items)) {
@@ -1002,13 +1002,13 @@ function ConvertTo-DsoHitTestRange {
 function Get-GuiPrivacySuggestedId {
     # Identyfikatory sugerowanych tweaków kategorii „Prywatność i AI” (category=privacy, kind=tweak, suggested=true) z plików katalogu
     # (wbudowany katalog repo: src\DSOptimizer.Catalog\catalog). Pusty wynik = błąd, bo sprawdzenie nie miałoby czego liczyć.
-    # apps-bloat.json i apps.json leżą w tym samym katalogu, ale to klasyfikacja aplikacji i lista instalacji (obiekty entries),
-    # nie pozycje katalogu: pomijane jawnie po nazwie, tak jak w BuiltInCatalog (osobne zasoby AppsBloatSource i AppsInstallSource, poza Sources).
+    # apps-bloat.json, apps.json i autostart-known.json leżą w tym samym katalogu, ale to klasyfikacja aplikacji, lista instalacji i baza znanych
+    # pozycji autostartu (obiekty entries), nie pozycje katalogu: pomijane jawnie po nazwie, tak jak w BuiltInCatalog (osobne zasoby poza Sources).
     [CmdletBinding()]
     [OutputType([string[]])]
     param([Parameter(Mandatory)][string]$CatalogDirectory)
     $Ids = New-Object System.Collections.Generic.List[string]
-    $TweakFiles = @(Get-ChildItem -LiteralPath $CatalogDirectory -Filter '*.json' -File | Where-Object { $_.Name -notin @('apps-bloat.json', 'apps.json') } | Sort-Object Name)
+    $TweakFiles = @(Get-ChildItem -LiteralPath $CatalogDirectory -Filter '*.json' -File | Where-Object { $_.Name -notin @('apps-bloat.json', 'apps.json', 'autostart-known.json') } | Sort-Object Name)
     foreach ($File in $TweakFiles) {
         $Items = [System.IO.File]::ReadAllText($File.FullName, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         foreach ($Item in @($Items)) {
@@ -1023,13 +1023,13 @@ function Get-GuiPrivacySuggestedId {
 
 function Get-GuiRepairTitle {
     # Tytuły pozycji kategorii „Naprawy” (category=repair) z plików katalogu (wbudowany katalog repo: src\DSOptimizer.Catalog\catalog),
-    # w kolejności plików i wpisów; apps-bloat.json i apps.json pomijane jawnie jak w Get-GuiPrivacySuggestedId. Pusty wynik = błąd.
+    # w kolejności plików i wpisów; apps-bloat.json, apps.json i autostart-known.json pomijane jawnie jak w Get-GuiPrivacySuggestedId. Pusty wynik = błąd.
     # -Language en: tytuły z tabel tłumaczeń repo (Get-DsoUiText; brak = wyjątek).
     [CmdletBinding()]
     [OutputType([string[]])]
     param([Parameter(Mandatory)][string]$CatalogDirectory, [ValidateSet('pl', 'en')][string]$Language = 'pl')
     $Titles = New-Object System.Collections.Generic.List[string]
-    $Files = @(Get-ChildItem -LiteralPath $CatalogDirectory -Filter '*.json' -File | Where-Object { $_.Name -notin @('apps-bloat.json', 'apps.json') } | Sort-Object Name)
+    $Files = @(Get-ChildItem -LiteralPath $CatalogDirectory -Filter '*.json' -File | Where-Object { $_.Name -notin @('apps-bloat.json', 'apps.json', 'autostart-known.json') } | Sort-Object Name)
     foreach ($File in $Files) {
         $Items = [System.IO.File]::ReadAllText($File.FullName, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         foreach ($Item in @($Items)) {

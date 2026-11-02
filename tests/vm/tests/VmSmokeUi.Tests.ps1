@@ -247,6 +247,16 @@ Describe 'Get-GuiPrivacySuggestedId' {
         [System.IO.File]::WriteAllText((Join-Path $Dir 'apps.json'), (ConvertTo-Json -InputObject $Install -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
         Get-GuiPrivacySuggestedId -CatalogDirectory $Dir | Should -Be @('privacy.a')
     }
+    It 'pomija autostart-known.json po nazwie pliku (baza znanych pozycji autostartu, inny format niż katalog tweaków)' {
+        $Dir = Join-Path $TestDrive 'catalog-autostart'
+        $null = New-Item -ItemType Directory -Path $Dir -Force
+        $Items = @([ordered]@{ id = 'privacy.a'; category = 'privacy'; kind = 'tweak'; suggested = $true })
+        # Treść celowo wygląda jak pozycja katalogu: filtr ma działać po nazwie pliku, nie po kształcie treści.
+        $Known = @([ordered]@{ id = 'steam'; category = 'privacy'; kind = 'tweak'; suggested = $true })
+        [System.IO.File]::WriteAllText((Join-Path $Dir 'privacy.json'), (ConvertTo-Json -InputObject $Items -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
+        [System.IO.File]::WriteAllText((Join-Path $Dir 'autostart-known.json'), (ConvertTo-Json -InputObject $Known -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
+        Get-GuiPrivacySuggestedId -CatalogDirectory $Dir | Should -Be @('privacy.a')
+    }
     It 'wbudowany katalog: 11 sugerowanych pozycji privacy, bez „Proponowane” w Start' {
         $Dir = Join-Path $PSScriptRoot '..\..\..\src\DSOptimizer.Catalog\catalog'
         $Ids = @(Get-GuiPrivacySuggestedId -CatalogDirectory $Dir)
@@ -645,6 +655,15 @@ Describe 'Get-GuiRepairTitle' {
         $Install = @([ordered]@{ id = 'install.x'; category = 'repair'; title = 'Nie z katalogu' })
         [System.IO.File]::WriteAllText((Join-Path $Dir 'repair.json'), (ConvertTo-Json -InputObject $Items -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
         [System.IO.File]::WriteAllText((Join-Path $Dir 'apps.json'), (ConvertTo-Json -InputObject $Install -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
+        Get-GuiRepairTitle -CatalogDirectory $Dir | Should -Be @('Napraw A')
+    }
+    It 'pomija autostart-known.json po nazwie pliku' {
+        $Dir = Join-Path $TestDrive 'catalog-repair-autostart'
+        $null = New-Item -ItemType Directory -Path $Dir -Force
+        $Items = @([ordered]@{ id = 'repair.a'; category = 'repair'; kind = 'action'; title = 'Napraw A' })
+        $Known = @([ordered]@{ id = 'steam'; category = 'repair'; title = 'Nie z katalogu' })
+        [System.IO.File]::WriteAllText((Join-Path $Dir 'repair.json'), (ConvertTo-Json -InputObject $Items -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
+        [System.IO.File]::WriteAllText((Join-Path $Dir 'autostart-known.json'), (ConvertTo-Json -InputObject $Known -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
         Get-GuiRepairTitle -CatalogDirectory $Dir | Should -Be @('Napraw A')
     }
     It 'wbudowany katalog: 11 tytułów = tytuły z repair.json' {

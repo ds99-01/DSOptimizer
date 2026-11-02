@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Install;
 using DSOptimizer.Core.Localization;
@@ -358,6 +359,45 @@ public class CatalogCopyRulesEnglishTests
 
         Assert.True(violations.Count == 0, string.Join(Environment.NewLine, violations));
     }
+    [Fact]
+    public void AutostartKnownSummaries_FollowRules()
+    {
+        AutostartKnownCatalog polish;
+        AutostartKnownCatalog english;
+        using (L.Use(UiLanguage.Polish))
+        {
+            polish = AutostartKnownCatalog.Load(BuiltInCatalog.AutostartKnownSource.Json);
+        }
+
+        using (L.Use(UiLanguage.English))
+        {
+            english = AutostartKnownCatalog.Load(BuiltInCatalog.AutostartKnownSource.Json);
+        }
+
+        var ids = polish.Entries.Select(e => e.Id).Where(id => id.IndexOf('-') >= 0).ToList();
+        var violations = new List<string>();
+        foreach (var pl in polish.Entries)
+        {
+            var en = english.Entries.Single(e => e.Id == pl.Id).Summary;
+            if (!Translated(pl.Summary, en))
+            {
+                violations.Add($"{pl.Id}: summary without English translation");
+                continue;
+            }
+
+            violations.AddRange(ForbiddenMatches(pl.Id, new[] { en }));
+            violations.AddRange(TechnicalMatches(pl.Id, en));
+            violations.AddRange(ids.Where(id => en.IndexOf(id, StringComparison.OrdinalIgnoreCase) >= 0).Select(id => $"{pl.Id}: id {id} in summary"));
+            if (TooLong(en, MaxSummaryLength))
+            {
+                violations.Add($"{pl.Id}: summary has {en.Length} characters (limit {MaxSummaryLength})");
+            }
+        }
+
+        Assert.Equal(16, polish.Entries.Count);
+        Assert.True(violations.Count == 0, string.Join(Environment.NewLine, violations));
+    }
+
     private static IEnumerable<string?> TranslatedOnly(params (string? Pl, string? En)[] pairs)
         => pairs.Where(p => Translated(p.Pl, p.En)).Select(p => p.En);
 

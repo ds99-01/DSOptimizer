@@ -457,6 +457,23 @@ the Polish text sometimes uses a descriptive name, the English text then uses th
 | pakiet aplikacji / menu kontekstowe | app package / context menu | Install list warnings ("Also adds the … app package") |
 | Autostart (wszystkich kont) | Startup (for all accounts) | RustDesk warning: the Startup folder |
 
+### Catalog – known startup items
+
+Texts of `autostart-known.json` (the `summary` of each entry, table `catalog-autostart-known.json`). Program and product names
+(Steam, Battle.net, Realtek Audio Console, ATK Hotkey, G HUB) are not translated.
+
+| Polski | English | Notes/source |
+|---|---|---|
+| uruchamiany po zalogowaniu / uruchamiany razem z Windows | started at sign-in / started with Windows | Style rule 11 ("sign in") |
+| po wyłączeniu / wyłączenie autostartu | when disabled / turning off startup | |
+| po ręcznym otwarciu | once you open it | |
+| zasobnik (ikona w zasobniku) | notification area (an icon in the notification area) | Windows name of the area next to the clock |
+| usługa w tle / usługa EA w tle | background service / the EA background service | The program's service keeps running when startup is turned off |
+| silnik ochrony działa w usługach | the protection engine runs in services | Antivirus entries |
+| klawisze funkcyjne / klawisze Fn | function keys / Fn keys | |
+| gesty wielopalcowe | multi-finger gestures | Touchpad entries |
+| status online | online status | |
+
 ### Catalog – repairs
 
 Titles of the "Repairs" items (other texts quote them exactly) and the terms of their descriptions and script messages.

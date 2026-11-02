@@ -41,6 +41,17 @@ public static class BuiltInCatalog
     /// <summary>Lista aplikacji do instalacji przez winget osadzona obok katalogu tweaków (czyta ją <c>AppsInstallCatalog.Load</c>).</summary>
     public static CatalogSource AppsInstallSource => LazyAppsInstall.Value;
 
+    /// <summary>Nazwa pliku bazy znanych pozycji autostartu (<c>catalog\autostart-known.json</c>); nie jest częścią <see cref="Sources"/>.</summary>
+    public const string AutostartKnownFileName = "autostart-known.json";
+
+    private const string AutostartKnownResource = "DSOptimizer.AutostartKnown.autostart-known.json";
+
+    private static readonly Lazy<CatalogSource> LazyAutostartKnown =
+        new(() => ReadNamed(typeof(BuiltInCatalog).Assembly, AutostartKnownResource, AutostartKnownFileName));
+
+    /// <summary>Baza znanych pozycji autostartu (kłódki i sugestie) osadzona obok katalogu tweaków (czyta ją <c>AutostartKnownCatalog.Load</c>).</summary>
+    public static CatalogSource AutostartKnownSource => LazyAutostartKnown.Value;
+
     /// <summary>Jeden zasób osadzony pod własną nazwą (pliki aplikacji poza katalogiem tweaków), treść jako UTF-8.</summary>
     internal static CatalogSource ReadNamed(Assembly assembly, string resource, string fileName)
     {

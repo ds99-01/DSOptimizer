@@ -283,6 +283,17 @@ Describe 'Get-MissingTranslations.ps1' {
         $Result.Text | Should -Not -Match 'Źródło A'
     }
 
+    It 'autostart-known.json: summary wpisów, bez source, match i id' {
+        $Known = '{"entries":[{"id":"steam","match":{"file":"steam.exe","folders":["%ProgramFiles(x86)%\\Steam\\"],"publishers":["Valve Corporation"],"valueName":"Steam"},"verdict":"can-disable","summary":"Klient Steam.","source":["https://x","Źródło B"],"confirmed":true},{"id":"av","match":{"file":"avp.exe","folders":["%ProgramFiles%\\*"],"publishers":["Wydawca Ż"]},"verdict":"protected","summary":"Antywirus.","source":["https://y"],"confirmed":false}]}'
+        $Root = New-TestTree -Files @{ 'src\DSOptimizer.Catalog\catalog\autostart-known.json' = $Known }
+        $Result = Invoke-Report -Root $Root
+        $Result.Code | Should -Be 0
+        $Result.Text | Should -Match 'Braki: 2, nieużywane: 0'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/autostart-known\.json#steam\.summary  Klient Steam\.$'
+        $Result.Text | Should -Match '(?m)^  src/DSOptimizer\.Catalog/catalog/autostart-known\.json#av\.summary  Antywirus\.$'
+        $Result.Text | Should -Not -Match 'Źródło B|Wydawca Ż|steam\.exe'
+    }
+
     It 'wpis tabeli danych bez użycia w katalogu jest nieużywany' {
         $Catalog = '[{"id":"x.y","title":"Tytuł","summary":"Opis.","description":"D","warnings":[]}]'
         $Translations = '{"language":"en","data":true,"entries":[{"pl":"Tytuł","en":"Title"},{"pl":"Opis.","en":"Summary."},{"pl":"D","en":"D"},{"pl":"Usunięta pozycja","en":"Removed item"}]}'
@@ -404,6 +415,27 @@ Describe 'Get-MissingTranslations.ps1' {
         $Result.Text | Should -Match '(?m)^  docs/en/tweaks/usuniety\.md$'
         $Result.Text | Should -Match '(?m)^  docs/en/zrodla/x\.md$'
         $Result.Text | Should -Match 'Braki: 0, nieużywane: 2'
+    }
+
+    It 'docs: docs/autostart jest w raporcie dokumentacji' {
+        $Polish = "# Autostart`n"
+        $Root = New-TestTree -Files @{
+            'docs\autostart\README.md'    = $Polish
+            'docs\autostart\inny.md'      = "# Inny`n"
+            'docs\en\autostart\inny.md'   = (Get-DocsStamp -Source 'docs\autostart\inny.md' -Text "# Stary`n") + "`n`n# Other`n"
+            'docs\en\autostart\sierota.md' = "# Orphan`n"
+        }
+        $Result = Invoke-Report -Root $Root
+        $Result.Text | Should -Match '(?m)^  docs/autostart/README\.md  brak$'
+        $Result.Text | Should -Match '(?m)^  docs/autostart/inny\.md  nieaktualne$'
+        $Result.Text | Should -Match '(?m)^  docs/en/autostart/sierota\.md$'
+        $Result.Text | Should -Match 'Braki: 2, nieużywane: 1'
+
+        $Fixed = New-TestTree -Files @{
+            'docs\autostart\README.md'    = $Polish
+            'docs\en\autostart\README.md' = (Get-DocsStamp -Source 'docs\autostart\README.md' -Text $Polish) + "`n`n# Startup apps`n"
+        }
+        (Invoke-Report -Root $Fixed).Text | Should -Match 'Braki: 0, nieużywane: 0'
     }
 
     It 'docs: -FailOnMissing daje 1 przy samym braku dokumentu' {

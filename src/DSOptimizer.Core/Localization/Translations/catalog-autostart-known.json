@@ -1,0 +1,70 @@
+{
+  "language": "en",
+  "data": true,
+  "entries": [
+    {
+      "pl": "Klient Steam uruchamiany po zalogowaniu. Po wyłączeniu nie startuje sam, a gry i ich aktualizacje są dostępne po ręcznym otwarciu Steama.",
+      "en": "The Steam client, started at sign-in. When disabled, it doesn't start by itself; games and their updates are available once you open Steam."
+    },
+    {
+      "pl": "Launcher Epic Games uruchamiany razem z Windows. Po wyłączeniu nie startuje sam, a gry i ich aktualizacje są dostępne po ręcznym otwarciu.",
+      "en": "Epic Games Launcher, started with Windows. When disabled, it doesn't start by itself; games and their updates are available once you open it."
+    },
+    {
+      "pl": "Aplikacja Battle.net uruchamiana przy starcie komputera. Po wyłączeniu gry i ich aktualizacje są dostępne po ręcznym otwarciu aplikacji.",
+      "en": "The Battle.net app, started when the computer starts. When disabled, games and their updates are available once you open the app."
+    },
+    {
+      "pl": "Klient Spotify uruchamiany po zalogowaniu. Po wyłączeniu muzyka nie startuje sama, a Spotify działa normalnie po ręcznym otwarciu.",
+      "en": "The Spotify client, started at sign-in. When disabled, music doesn't start by itself, and Spotify works normally once you open it."
+    },
+    {
+      "pl": "Klient Discord uruchamiany po zalogowaniu. Po wyłączeniu powiadomienia i status online pojawiają się dopiero po ręcznym otwarciu Discorda.",
+      "en": "The Discord client, started at sign-in. When disabled, notifications and your online status appear only after you open Discord."
+    },
+    {
+      "pl": "Aplikacja EA uruchamiana po zalogowaniu; po wyłączeniu gry są dostępne po ręcznym otwarciu. Wyłączenie autostartu nie zatrzymuje usługi EA w tle.",
+      "en": "The EA app, started at sign-in; when disabled, games are available once you open it. Turning off startup doesn't stop the EA background service."
+    },
+    {
+      "pl": "Ikona Zabezpieczeń Windows w zasobniku i powiadomienia o ochronie. Bez niej ochrona działa dalej, ale łatwiej przeoczyć alert.",
+      "en": "The Windows Security icon in the notification area and protection notifications. Protection keeps running without it, but alerts are easier to miss."
+    },
+    {
+      "pl": "Usługa pomocnicza sterownika dźwięku Realtek. Bez niej mogą nie działać efekty, wykrywanie podłączonych słuchawek i Realtek Audio Console.",
+      "en": "A helper service of the Realtek audio driver. Without it, sound effects, headphone detection and Realtek Audio Console may not work."
+    },
+    {
+      "pl": "Panel Realtek HD Audio Manager z ikoną w zasobniku. Bez niego znika ikona i okno o wykryciu podłączonego urządzenia audio.",
+      "en": "The Realtek HD Audio Manager panel with an icon in the notification area. Without it, the icon and the plugged-in audio device window go away."
+    },
+    {
+      "pl": "Obsługa gestów touchpada ELAN. Bez niej mogą przestać działać gesty wielopalcowe i ustawienia touchpada; ruch kursora zwykle zostaje.",
+      "en": "Gesture support for the ELAN touchpad. Without it, multi-finger gestures and touchpad settings may stop working; cursor movement usually stays."
+    },
+    {
+      "pl": "Obsługa gestów i przewijania touchpada Synaptics. Na części laptopów bez niej przestają działać gesty i przewijanie.",
+      "en": "Gesture and scrolling support for the Synaptics touchpad. On some laptops, gestures and scrolling stop working without it."
+    },
+    {
+      "pl": "Obsługa klawiszy funkcyjnych ASUS (ATK Hotkey). Bez niej mogą przestać działać klawisze Fn, np. jasności i Wi-Fi.",
+      "en": "ASUS function key support (ATK Hotkey). Without it, Fn keys such as brightness and Wi-Fi may stop working."
+    },
+    {
+      "pl": "Interfejs antywirusa Kaspersky. Bez tego wpisu program może zgłaszać alert bezpieczeństwa, a sama ochrona zależy od jego usługi.",
+      "en": "The Kaspersky antivirus interface. Without this entry, the program may report a security alert; protection itself depends on its service."
+    },
+    {
+      "pl": "Ikona i powiadomienia antywirusa Avast. Silnik ochrony działa w usługach, ale bez tego wpisu alerty mogą zostać niezauważone.",
+      "en": "The Avast antivirus icon and notifications. The protection engine runs in services, but without this entry alerts may go unnoticed."
+    },
+    {
+      "pl": "Ikona i panel Bitdefendera w zasobniku. Silnik ochrony działa w usługach, a bez tego wpisu znika ikona i panel.",
+      "en": "The Bitdefender icon and panel in the notification area. The protection engine runs in services; without this entry the icon and panel go away."
+    },
+    {
+      "pl": "Program Logitech G HUB obsługujący urządzenia Logitech. Bez niego mogą nie działać profile, makra i podświetlenie.",
+      "en": "Logitech G HUB, which handles Logitech devices. Without it, profiles, macros and lighting may not work."
+    }
+  ]
+}

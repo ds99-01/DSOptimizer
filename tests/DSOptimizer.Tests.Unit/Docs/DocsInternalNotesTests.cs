@@ -10,7 +10,7 @@ using Xunit;
 namespace DSOptimizer.Tests.Unit.Docs;
 
 /// <summary>
-/// Strażnik: publiczne dokumenty (docs/tweaks, docs/apps, docs/prep, docs/en) nie pokazują znaczników procesu
+/// Strażnik: publiczne dokumenty (docs/tweaks, docs/apps, docs/prep, docs/autostart, docs/en) nie pokazują znaczników procesu
 /// (hash, HEAD, gałąź, numer specu, Task N, K1/K2, fake/mock, v3.x, osoba autora), a usunięcie notatki nie gubi zastrzeżeń
 /// o tym, czego nie sprawdzono (<c>docs-caveats-baseline.txt</c>: liczba linii z zastrzeżeniem w pliku nie może spaść).
 /// Wyjątki: <c>docs-internal-notes-allowed.txt</c> (ścieżka TAB fragment TAB powód; nieaktualny wpis = błąd).
@@ -19,7 +19,7 @@ public class DocsInternalNotesTests
 {
     private static readonly string DirectoryInRepo = Path.Combine("tests", "DSOptimizer.Tests.Unit", "Docs");
 
-    private static readonly string[] DocRoots = { "docs/tweaks", "docs/apps", "docs/prep", "docs/en" };
+    private static readonly string[] DocRoots = { "docs/tweaks", "docs/apps", "docs/prep", "docs/autostart", "docs/en" };
 
     private static readonly Regex Url = new(@"https?://\S+", RegexOptions.CultureInvariant);
 
@@ -191,6 +191,8 @@ public class DocsInternalNotesTests
     [InlineData("docs/en/apps/")]
     [InlineData("docs/prep/")]
     [InlineData("docs/en/prep/")]
+    [InlineData("docs/autostart/")]
+    [InlineData("docs/en/autostart/")]
     [InlineData("docs/tweaks/README.md")]
     [InlineData("docs/en/tweaks/README.md")]
     public void Batch_HasNoInternalNotes(string batch)
@@ -257,7 +259,7 @@ public class DocsInternalNotesTests
     internal static int CountCaveats(string fullPath) =>
         File.ReadAllLines(fullPath, Encoding.UTF8).Count(l => CaveatPattern.IsMatch(l));
 
-    /// <summary>Wszystkie .md w docs/tweaks, docs/apps, docs/prep i docs/en: ścieżka względem repo (z /) -> ścieżka pełna.</summary>
+    /// <summary>Wszystkie .md w docs/tweaks, docs/apps, docs/prep, docs/autostart i docs/en: ścieżka względem repo (z /) -> ścieżka pełna.</summary>
     private static SortedDictionary<string, string> DocFiles()
     {
         var result = new SortedDictionary<string, string>(StringComparer.Ordinal);

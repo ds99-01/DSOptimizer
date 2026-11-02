@@ -11,7 +11,7 @@ namespace DSOptimizer.Tests.Unit.Repo;
 
 /// <summary>
 /// Strażnik komunikatów skryptów katalogu. Polski napis w polu <c>script.*</c> (<c>apply</c>, <c>undo</c>, <c>detect</c>, <c>capture</c>)
-/// pozycji z <c>src/DSOptimizer.Catalog/catalog/*.json</c> (bez <c>apps*.json</c>) musi być pierwszym argumentem <c>Get-DsoText</c>,
+/// pozycji z <c>src/DSOptimizer.Catalog/catalog/*.json</c> (bez <c>apps*.json</c> i <c>autostart-known.json</c>) musi być pierwszym argumentem <c>Get-DsoText</c>,
 /// chyba że plik katalogu jest w <c>script-literals-pending.txt</c> (jeszcze nie przerobiony) albo para pozycja–literał jest
 /// w <c>script-literals-allowed.txt</c> (wzorzec porównywany z wyjściem Windows). <c>Get-DsoText</c> bez literału w apostrofach
 /// w tej samej linii jest błędem zawsze – wrapper zbiera teksty do tłumaczenia wyłącznie z takich literałów.
@@ -176,7 +176,7 @@ public class CatalogScriptTextRulesTests
         var result = new List<CatalogScript>();
         var files = Directory.EnumerateFiles(RepoRoot.Combine(CatalogDirectory.Replace('/', Path.DirectorySeparatorChar)), "*.json")
             .Select(Path.GetFileName)
-            .Where(n => !n.StartsWith("apps", StringComparison.Ordinal))
+            .Where(n => !n.StartsWith("apps", StringComparison.Ordinal) && !n.StartsWith("autostart", StringComparison.Ordinal))
             .OrderBy(n => n, StringComparer.Ordinal)
             .ToList();
         Assert.NotEmpty(files);

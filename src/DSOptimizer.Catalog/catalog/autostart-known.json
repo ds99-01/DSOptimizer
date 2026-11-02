@@ -1,0 +1,181 @@
+{
+  "entries": [
+    {
+      "id": "steam",
+      "match": { "file": "steam.exe", "folders": ["%ProgramFiles(x86)%\\Steam\\"], "publishers": ["Valve Corporation"], "valueName": "Steam" },
+      "verdict": "can-disable",
+      "summary": "Klient Steam uruchamiany po zalogowaniu. Po wyłączeniu nie startuje sam, a gry i ich aktualizacje są dostępne po ręcznym otwarciu Steama.",
+      "source": [
+        "docs/zrodla/2026-11-02-autostart-programy.md",
+        "https://blog.pcrisk.com/windows/13714-stop-steam-from-opening-on-startup",
+        "https://helpdeskgeek.com/how-to-stop-steam-from-opening-on-startup/"
+      ],
+      "confirmed": true
+    },
+    {
+      "id": "epic-games-launcher",
+      "match": { "file": "EpicGamesLauncher.exe", "folders": ["%ProgramFiles%\\Epic Games\\Launcher\\Portal\\Binaries\\Win64\\"], "publishers": ["Epic Games, Inc."], "valueName": "EpicGamesLauncher" },
+      "verdict": "can-disable",
+      "summary": "Launcher Epic Games uruchamiany razem z Windows. Po wyłączeniu nie startuje sam, a gry i ich aktualizacje są dostępne po ręcznym otwarciu.",
+      "source": [
+        "docs/zrodla/2026-11-02-autostart-programy.md",
+        "https://www.epicgames.com/help/epic-games-store-c-202300000001639/launcher-support-c-202300000001735/how-to-stop-the-epic-games-launcher-from-running-on-pc-startup-a202300000017760"
+      ],
+      "confirmed": true
+    },
+    {
+      "id": "battle-net",
+      "match": { "file": "Battle.net.exe", "folders": ["%ProgramFiles(x86)%\\Battle.net\\"], "publishers": ["Blizzard Entertainment"], "valueName": "Battle.net" },
+      "verdict": "can-disable",
+      "summary": "Aplikacja Battle.net uruchamiana przy starcie komputera. Po wyłączeniu gry i ich aktualizacje są dostępne po ręcznym otwarciu aplikacji.",
+      "source": [
+        "docs/zrodla/2026-11-02-autostart-programy.md",
+        "https://eu.battle.net/support/en/article/358265"
+      ],
+      "confirmed": true
+    },
+    {
+      "id": "spotify",
+      "match": { "file": "Spotify.exe", "folders": ["%APPDATA%\\Spotify\\"], "publishers": ["Spotify Ltd"], "valueName": "Spotify" },
+      "verdict": "can-disable",
+      "summary": "Klient Spotify uruchamiany po zalogowaniu. Po wyłączeniu muzyka nie startuje sama, a Spotify działa normalnie po ręcznym otwarciu.",
+      "source": [
+        "docs/zrodla/2026-11-02-autostart-programy.md",
+        "https://www.pcrisk.com/blog/windows/13713-stop-spotify-from-opening-on-startup",
+        "https://www.technipages.com/spotify-disable-automatic-startup"
+      ],
+      "confirmed": true
+    },
+    {
+      "id": "discord",
+      "match": { "file": "Discord.exe", "folders": ["%LOCALAPPDATA%\\Discord\\"], "publishers": ["Discord Inc."], "valueName": "Discord" },
+      "verdict": "can-disable",
+      "summary": "Klient Discord uruchamiany po zalogowaniu. Po wyłączeniu powiadomienia i status online pojawiają się dopiero po ręcznym otwarciu Discorda.",
+      "source": [
+        "docs/zrodla/2026-11-02-autostart-programy.md",
+        "https://blog.pcrisk.com/windows/13704-stop-discord-from-opening-on-startup"
+      ],
+      "confirmed": true
+    },
+    {
+      "id": "ea-app",
+      "match": { "file": "EALauncher.exe", "folders": ["%ProgramFiles%\\Electronic Arts\\EA Desktop\\EA Desktop\\"], "publishers": ["Electronic Arts"], "valueName": "EADM" },
+      "verdict": "can-disable",
+      "summary": "Aplikacja EA uruchamiana po zalogowaniu; po wyłączeniu gry są dostępne po ręcznym otwarciu. Wyłączenie autostartu nie zatrzymuje usługi EA w tle.",
+      "source": [
+        "docs/zrodla/2026-11-02-autostart-programy.md",
+        "https://forums.ea.com/discussions/ea-app-general-discussion-en/how-do-i-prevent-the-ea-app-from-starting-with-windows/7546567"
+      ],
+      "confirmed": true
+    },
+    {
+      "id": "security-health",
+      "match": { "file": "SecurityHealthSystray.exe", "folders": ["%SystemRoot%\\System32\\"], "publishers": ["Microsoft Corporation"], "valueName": "SecurityHealth" },
+      "verdict": "protected",
+      "summary": "Ikona Zabezpieczeń Windows w zasobniku i powiadomienia o ochronie. Bez niej ochrona działa dalej, ale łatwiej przeoczyć alert.",
+      "source": [
+        "docs/zrodla/2026-11-02-autostart-pomiar.md",
+        "https://learn.microsoft.com/en-us/answers/a/6762277",
+        "https://www.winhelponline.com/blog/windows-security-icon-tray-taskmgr-startup/"
+      ],
+      "confirmed": true
+    },
+    {
+      "id": "realtek-audio-service",
+      "match": { "file": "RtkAudUService64.exe", "folders": ["%SystemRoot%\\System32\\", "%SystemRoot%\\System32\\DriverStore\\FileRepository\\*\\"], "publishers": ["Realtek Semiconductor Corp."] },
+      "verdict": "protected",
+      "summary": "Usługa pomocnicza sterownika dźwięku Realtek. Bez niej mogą nie działać efekty, wykrywanie podłączonych słuchawek i Realtek Audio Console.",
+      "source": [
+        "https://blog.gridinsoft.com/rtkauduservice64-exe/",
+        "https://rog-forum.asus.com/t5/promotions-general-discussions/unreadable-title/td-p/741740/page/69"
+      ],
+      "confirmed": false
+    },
+    {
+      "id": "realtek-hd-audio-manager",
+      "match": { "file": "RAVCpl64.exe", "folders": ["%ProgramFiles%\\Realtek\\Audio\\HDA\\"], "publishers": ["Realtek Semiconductor Corp."] },
+      "verdict": "protected",
+      "summary": "Panel Realtek HD Audio Manager z ikoną w zasobniku. Bez niego znika ikona i okno o wykryciu podłączonego urządzenia audio.",
+      "source": [
+        "https://blog.gridinsoft.com/ravcpl64-exe/",
+        "https://www.sevenforums.com/threads/can-i-safely-remove-syntpenh-exe-ravcpl64-exe-s-from-startup.146658/"
+      ],
+      "confirmed": false
+    },
+    {
+      "id": "elan-touchpad",
+      "match": { "file": "ETDCtrl*.exe", "folders": ["%ProgramFiles%\\Elantech\\*", "%SystemRoot%\\System32\\"], "publishers": ["ELAN Microelectronics Corp."] },
+      "verdict": "protected",
+      "summary": "Obsługa gestów touchpada ELAN. Bez niej mogą przestać działać gesty wielopalcowe i ustawienia touchpada; ruch kursora zwykle zostaje.",
+      "source": [
+        "https://blog.gridinsoft.com/etdctrl-exe/",
+        "https://appuals.com/fix-etd-control-center-not-responding/"
+      ],
+      "confirmed": false
+    },
+    {
+      "id": "synaptics-touchpad",
+      "match": { "file": "SynTPEnh.exe", "folders": ["%ProgramFiles%\\Synaptics\\SynTP\\"], "publishers": ["Synaptics Incorporated"] },
+      "verdict": "protected",
+      "summary": "Obsługa gestów i przewijania touchpada Synaptics. Na części laptopów bez niej przestają działać gesty i przewijanie.",
+      "source": [
+        "https://blog.gridinsoft.com/syntpenh-exe/",
+        "https://www.sevenforums.com/threads/can-i-safely-remove-syntpenh-exe-ravcpl64-exe-s-from-startup.146658/",
+        "https://windowsreport.com/synaptics-touchpad-disabled-windows-startup/"
+      ],
+      "confirmed": false
+    },
+    {
+      "id": "asus-hotkeys",
+      "match": { "file": "HControl.exe", "folders": ["%ProgramFiles%\\*", "%ProgramFiles(x86)%\\*"], "publishers": ["ASUSTeK Computer Inc."] },
+      "verdict": "protected",
+      "summary": "Obsługa klawiszy funkcyjnych ASUS (ATK Hotkey). Bez niej mogą przestać działać klawisze Fn, np. jasności i Wi-Fi.",
+      "source": [
+        "https://www.file.net/process/hcontrol.exe.html",
+        "https://rog-forum.asus.com/t5/rog-gaming-notebooks/atk-issue-solved/td-p/360155"
+      ],
+      "confirmed": false
+    },
+    {
+      "id": "kaspersky",
+      "match": { "file": "avp.exe", "folders": ["%ProgramFiles%\\*", "%ProgramFiles(x86)%\\*"], "publishers": ["AO Kaspersky Lab"] },
+      "verdict": "protected",
+      "summary": "Interfejs antywirusa Kaspersky. Bez tego wpisu program może zgłaszać alert bezpieczeństwa, a sama ochrona zależy od jego usługi.",
+      "source": [
+        "https://www.wilderssecurity.com/threads/kis-v7-startup-issue.185155/"
+      ],
+      "confirmed": false
+    },
+    {
+      "id": "avast",
+      "match": { "file": "AvastUI.exe", "folders": ["%ProgramFiles%\\*", "%ProgramFiles(x86)%\\*"], "publishers": ["AVAST Software*", "Gen Digital*"] },
+      "verdict": "protected",
+      "summary": "Ikona i powiadomienia antywirusa Avast. Silnik ochrony działa w usługach, ale bez tego wpisu alerty mogą zostać niezauważone.",
+      "source": [
+        "https://forums.spybot.info/showthread.php?p=418242"
+      ],
+      "confirmed": false
+    },
+    {
+      "id": "bitdefender",
+      "match": { "file": "bdagent.exe", "folders": ["%ProgramFiles%\\*", "%ProgramFiles(x86)%\\*"], "publishers": ["Bitdefender SRL"] },
+      "verdict": "protected",
+      "summary": "Ikona i panel Bitdefendera w zasobniku. Silnik ochrony działa w usługach, a bez tego wpisu znika ikona i panel.",
+      "source": [
+        "https://community.bitdefender.com/en/discussion/99506/bdagent-and-bdagentapp-startup-apps-both-using-the-same-exe",
+        "https://community.bitdefender.com/en/discussion/comment/337641"
+      ],
+      "confirmed": false
+    },
+    {
+      "id": "logitech-g-hub",
+      "match": { "file": "lghub.exe", "folders": ["%ProgramFiles%\\*", "%ProgramFiles(x86)%\\*"], "publishers": ["Logitech Europe S.A."] },
+      "verdict": "protected",
+      "summary": "Program Logitech G HUB obsługujący urządzenia Logitech. Bez niego mogą nie działać profile, makra i podświetlenie.",
+      "source": [
+        "https://support.logi.com/hc/en-us/articles/9631120673943-G-HUB-or-Logi-Options-is-stuck-on-Loading-screen-with-macOS-Ventura"
+      ],
+      "confirmed": false
+    }
+  ]
+}

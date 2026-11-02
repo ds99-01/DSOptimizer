@@ -13,7 +13,7 @@ using Xunit;
 namespace DSOptimizer.Tests.Unit.Docs;
 
 /// <summary>
-/// Angielska dokumentacja w <c>docs/en/</c> (tweaks, apps, prep): odcisk polskiego źródła w pierwszej linii, szablon nagłówków,
+/// Angielska dokumentacja w <c>docs/en/</c> (tweaks, apps, prep, autostart): odcisk polskiego źródła w pierwszej linii, szablon nagłówków,
 /// tytuł z angielskiego katalogu, dopisek „(in Polish)” przy <c>docs/zrodla/</c> i te same adresy oraz wartości techniczne co
 /// w polskim oryginale. Każdy test sprawdza pliki, które są w <c>docs/en</c> (brak plików = nic do sprawdzenia), poza szablonem
 /// <c>docs/en/tweaks/README.md</c>, który musi istnieć. Aktualność odcisku (hash) sprawdza raport braków, nie test.
@@ -23,7 +23,7 @@ public class EnglishDocsTests
     private const string ObservationHeading = "Obserwacja skutku";
     private const string ObservedEffectHeading = "Observed effect";
 
-    private static readonly Regex StampLine = new(@"^<!-- source: (docs/(tweaks|apps|prep)/[^ ]+\.md) sha256: [0-9a-f]{64} -->$", RegexOptions.CultureInvariant);
+    private static readonly Regex StampLine = new(@"^<!-- source: (docs/(tweaks|apps|prep|autostart)/[^ ]+\.md) sha256: [0-9a-f]{64} -->$", RegexOptions.CultureInvariant);
     private static readonly Regex Url = new(@"https?://[^\s)>\]]+", RegexOptions.CultureInvariant);
     private static readonly Regex CodeSpan = new(@"`([^`\r\n]+)`", RegexOptions.CultureInvariant);
     private static readonly Regex PolishLetters = new("[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]", RegexOptions.CultureInvariant);

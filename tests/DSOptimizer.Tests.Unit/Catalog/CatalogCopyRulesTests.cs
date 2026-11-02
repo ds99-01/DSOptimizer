@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Install;
 using DSOptimizer.Core.Model;
@@ -50,6 +51,7 @@ public class CatalogCopyRulesTests
     private static readonly Regex SentenceEnd = new(@"[.!?](\s|$)", RegexOptions.CultureInvariant);
 
     private const int MaxTitleLength = 60;
+    private const int MaxSummaryLength = 160;
     private const int MaxWarnings = 2;
     private const int MaxWarningLength = 140;
     private const int MaxBenefitSentences = 2;
@@ -233,6 +235,28 @@ public class CatalogCopyRulesTests
             violations.AddRange(ForbiddenMatches(e.Id, new[] { e.Reason }));
         }
 
+        Assert.True(violations.Count == 0, string.Join(Environment.NewLine, violations));
+    }
+
+    [Fact]
+    public void AutostartKnownSummaries_FollowRules()
+    {
+        var entries = AutostartKnownCatalog.Load(BuiltInCatalog.AutostartKnownSource.Json).Entries;
+        var ids = entries.Select(e => e.Id).Where(id => id.IndexOf('-') >= 0).ToList();
+
+        var violations = new List<string>();
+        foreach (var e in entries)
+        {
+            violations.AddRange(ForbiddenMatches(e.Id, new[] { e.Summary }));
+            violations.AddRange(TechnicalTokens.Where(p => p.IsMatch(e.Summary)).Select(p => $"{e.Id}: /{p}/ w „{e.Summary}”"));
+            violations.AddRange(ids.Where(id => e.Summary.IndexOf(id, StringComparison.OrdinalIgnoreCase) >= 0).Select(id => $"{e.Id}: identyfikator {id} w opisie"));
+            if (e.Summary.Length > MaxSummaryLength)
+            {
+                violations.Add($"{e.Id}: opis ma {e.Summary.Length} znaków (limit {MaxSummaryLength})");
+            }
+        }
+
+        Assert.Equal(16, entries.Count);
         Assert.True(violations.Count == 0, string.Join(Environment.NewLine, violations));
     }
 

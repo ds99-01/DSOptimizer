@@ -18,12 +18,13 @@
     #     ({"language":"en","entries":[{"pl":"…","en":"…"}]}, tabele danych z "data": true tak samo); tekst jest przetłumaczony,
     #     gdy ma wpis z niepustym "en". Teksty danych (L.Data) czyta z src\DSOptimizer.Catalog\catalog\*.json: pozycje tablic
     #     tweaków – title, summary, benefit, description, każda uwaga z warnings; apps.json – summary, warning (bez title, to nazwy
-    #     produktów); apps-bloat.json – entries[].summary, entries[].warning, protected[].reason. Miejsce takiego tekstu:
+    #     produktów); apps-bloat.json – entries[].summary, entries[].warning, protected[].reason; autostart-known.json –
+    #     entries[].summary (bez source, match i id). Miejsce takiego tekstu:
     #     src/DSOptimizer.Catalog/catalog/<plik>#<id>.<pole>; teksty danych liczą się jako używane. Z pozycji tweaków (bez
-    #     apps*.json) także komunikaty skryptów: pierwszy argument Get-DsoText '…' w polach script.apply/undo/detect/capture
+    #     apps*.json i autostart-known.json) także komunikaty skryptów: pierwszy argument Get-DsoText '…' w polach script.apply/undo/detect/capture
     #     ('' = apostrof), miejsce src/DSOptimizer.Catalog/catalog/<plik>#<id>.script.<pole>, oraz value wpisów registry[]
     #     z "localized": true (tekst zapisywany w języku programu), miejsce <plik>#<id>.registry.value. Zły JSON katalogu = kod 2.
-    #     Dokumentacja: każdy polski docs\tweaks\*.md, docs\apps\*.md i docs\prep\*.md (bez podkatalogów) ma mieć angielski
+    #     Dokumentacja: każdy polski docs\tweaks\*.md, docs\apps\*.md, docs\prep\*.md i docs\autostart\*.md (bez podkatalogów) ma mieć angielski
     #     docs\en\<to samo>, którego pierwsza linia to odcisk bieżącego polskiego pliku
     #     (<!-- source: docs/<x>/<plik>.md sha256: <hash> -->, wpisuje go Set-DocsTranslationStamp.ps1); brak pliku = „brak”,
     #     zły albo stary odcisk = „nieaktualne”. Pliki docs\en\**\*.md bez takiego polskiego źródła są nieużywane.
@@ -158,7 +159,8 @@ function Get-CatalogTexts {
     param([string]$Path, [string]$Relative)
     # Teksty dla człowieka z plików katalogu (tłumaczone przez L.Data): pozycje tweaków – title, summary, benefit, description, warnings
     # i value wpisów registry[] z "localized": true;
-    # apps.json – summary, warning (title to nazwa produktu); apps-bloat.json – entries[].summary/warning, protected[].reason.
+    # apps.json – summary, warning (title to nazwa produktu); apps-bloat.json – entries[].summary/warning, protected[].reason;
+    # autostart-known.json – entries[].summary.
     try {
         $Json = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
     }
@@ -173,6 +175,9 @@ function Get-CatalogTexts {
     elseif ($Name -ceq 'apps-bloat.json') {
         foreach ($Entry in @(Get-Items -Object $Json -Name 'entries')) { $Fields.Add(@($Entry, @('summary', 'warning'))) }
         foreach ($Entry in @(Get-Items -Object $Json -Name 'protected')) { $Fields.Add(@($Entry, @('reason'))) }
+    }
+    elseif ($Name -ceq 'autostart-known.json') {
+        foreach ($Entry in @(Get-Items -Object $Json -Name 'entries')) { $Fields.Add(@($Entry, @('summary'))) }
     }
     else {
         foreach ($Entry in @($Json)) { $Fields.Add(@($Entry, @('title', 'summary', 'benefit', 'description', 'warnings'))) }
@@ -190,7 +195,7 @@ function Get-CatalogTexts {
                 }
             }
         }
-        if ($Name -ceq 'apps.json' -or $Name -ceq 'apps-bloat.json') { continue }
+        if ($Name -ceq 'apps.json' -or $Name -ceq 'apps-bloat.json' -or $Name -ceq 'autostart-known.json') { continue }
         # Wpisy rejestru z "localized": true – tekst wartości zapisywany w języku programu (L.Data w RegistryValueOperation).
         foreach ($Registry in @(Get-Items -Object $Entry -Name 'registry')) {
             if ($null -eq $Registry -or $Registry -is [string] -or $Registry -is [array]) { continue }
@@ -230,7 +235,7 @@ function Get-DocsSourceHash {
 }
 
 function Get-DocsStatus {
-    # Polskie docs/(tweaks|apps|prep)/*.md (bez podkatalogów) bez aktualnego docs/en/<to samo> oraz angielskie sieroty.
+    # Polskie docs/(tweaks|apps|prep|autostart)/*.md (bez podkatalogów) bez aktualnego docs/en/<to samo> oraz angielskie sieroty.
     param([string]$RootPath)
     $Stale = New-Object -TypeName 'System.Collections.Generic.List[object]'
     $Orphans = New-Object -TypeName 'System.Collections.Generic.List[string]'
@@ -239,7 +244,7 @@ function Get-DocsStatus {
         return [pscustomobject]@{ Stale = @(); Orphans = @() }
     }
     $Sources = New-Object -TypeName 'System.Collections.Generic.HashSet[string]' -ArgumentList ([System.StringComparer]::Ordinal)
-    foreach ($Folder in 'tweaks', 'apps', 'prep') {
+    foreach ($Folder in 'tweaks', 'apps', 'prep', 'autostart') {
         $FolderPath = Join-Path -Path $DocsPath -ChildPath $Folder
         if (-not (Test-Path -LiteralPath $FolderPath -PathType Container)) { continue }
         foreach ($File in Get-ChildItem -LiteralPath $FolderPath -Filter '*.md' -File) {
