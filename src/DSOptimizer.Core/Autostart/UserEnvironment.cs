@@ -23,7 +23,27 @@ public sealed class UserEnvironment
 
     private readonly Dictionary<string, string> _variables;
 
-    private UserEnvironment(Dictionary<string, string> variables) => _variables = variables;
+    private readonly Dictionary<string, string> _machineRooted;
+
+    private UserEnvironment(Dictionary<string, string> variables, Dictionary<string, string> machine)
+    {
+        _variables = variables;
+
+        // Te same zmienne, ale nazwy maszyny wyłącznie z procesu: konto zwykłego użytkownika może zapisać własne SystemRoot czy
+        // ProgramFiles w HKU\<SID>\Environment (setx), więc reguła „folder tylko dla administratora” nie może brać ich od konta.
+        _machineRooted = new Dictionary<string, string>(variables, StringComparer.OrdinalIgnoreCase);
+        foreach (var name in MachineNames)
+        {
+            if (machine.TryGetValue(name, out var value))
+            {
+                _machineRooted[name] = value;
+            }
+            else
+            {
+                _machineRooted.Remove(name);
+            }
+        }
+    }
 
     /// <summary>Zmienne brane ze środowiska procesu; każda inna nazwa ze słownika maszyny jest pomijana.</summary>
     public static IReadOnlyList<string> MachineVariableNames => MachineNames;
@@ -103,9 +123,10 @@ public sealed class UserEnvironment
             result[name] = (string)value.Data!;
         }
 
-        return new UserEnvironment(result);
+        return new UserEnvironment(result, machineOnly);
     }
 
+    /// <summary>Zmienne podane wprost; nazwy z <see cref="MachineVariableNames"/> traktowane jak zmienne maszyny z procesu.</summary>
     public static UserEnvironment FromVariables(IReadOnlyDictionary<string, string> variables)
     {
         if (variables is null)
@@ -122,7 +143,7 @@ public sealed class UserEnvironment
             }
         }
 
-        return new UserEnvironment(copy);
+        return new UserEnvironment(copy, copy);
     }
 
     /// <summary>
@@ -137,6 +158,21 @@ public sealed class UserEnvironment
         }
 
         return TryExpand(_variables, text, out expanded);
+    }
+
+    /// <summary>
+    /// Jak <see cref="TryExpand(string, out string)"/>, ale zmienne z <see cref="MachineVariableNames"/> wyłącznie z wartości maszyny (procesu),
+    /// nigdy z <c>Environment</c>/<c>Volatile Environment</c> konta; pozostałe (np. <c>LOCALAPPDATA</c>, <c>APPDATA</c>) z konta. Dla wzorców
+    /// folderów, w których miejsce zapisu tylko dla administratora jest warunkiem oceny pozycji.
+    /// </summary>
+    public bool TryExpandMachineRooted(string text, out string expanded)
+    {
+        if (text is null)
+        {
+            throw new ArgumentNullException(nameof(text));
+        }
+
+        return TryExpand(_machineRooted, text, out expanded);
     }
 
     public string? Get(string name) => _variables.TryGetValue(name, out var value) ? value : null;

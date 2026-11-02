@@ -31,6 +31,44 @@ public class UserEnvironmentTests
     }
 
     [Fact]
+    public void MachineRooted_MachineNamesOnlyFromProcess_AccountNamesFromAccount()
+    {
+        var registry = new FakeRegistry();
+        registry.Set(Locations.UserEnvironmentKey, "SystemRoot", RegValue.FromString(@"C:\Users\dso\w"));
+        registry.Set(Locations.VolatileEnvironmentKey, "ProgramFiles", RegValue.FromString(@"C:\Users\dso\pf"));
+        registry.Set(Locations.VolatileEnvironmentKey, "LOCALAPPDATA", RegValue.FromString(@"C:\Users\dso\AppData\Local"));
+
+        var environment = UserEnvironment.Load(registry, Locations, Machine);
+
+        Assert.True(environment.TryExpand(@"%SystemRoot%|%ProgramFiles%", out var merged));
+        Assert.Equal(@"C:\Users\dso\w|C:\Users\dso\pf", merged);
+        Assert.True(environment.TryExpandMachineRooted(@"%SystemRoot%|%ProgramFiles%|%LOCALAPPDATA%", out var rooted));
+        Assert.Equal(@"C:\Windows|C:\Program Files|C:\Users\dso\AppData\Local", rooted);
+    }
+
+    [Fact]
+    public void MachineRooted_MachineNameOnlyInAccount_NotExpanded()
+    {
+        var registry = new FakeRegistry();
+        registry.Set(Locations.UserEnvironmentKey, "ProgramFiles(x86)", RegValue.FromString(@"C:\Users\dso\pf86"));
+
+        var environment = UserEnvironment.Load(registry, Locations, Machine);
+
+        Assert.True(environment.TryExpand(@"%ProgramFiles(x86)%", out _));
+        Assert.False(environment.TryExpandMachineRooted(@"%ProgramFiles(x86)%\x\", out _));
+        Assert.Throws<System.ArgumentNullException>(() => environment.TryExpandMachineRooted(null!, out _));
+    }
+
+    [Fact]
+    public void MachineRooted_FromVariables_UsesGivenMachineNames()
+    {
+        var environment = UserEnvironment.FromVariables(new Dictionary<string, string> { ["SystemRoot"] = @"C:\Windows", ["APPDATA"] = @"C:\a" });
+
+        Assert.True(environment.TryExpandMachineRooted(@"%SystemRoot%\%APPDATA%", out var expanded));
+        Assert.Equal(@"C:\Windows\C:\a", expanded);
+    }
+
+    [Fact]
     public void MachineDictionaryOutsideWhitelist_Ignored()
     {
         var machine = new Dictionary<string, string>(Machine)

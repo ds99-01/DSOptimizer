@@ -42,8 +42,8 @@ public sealed class AutostartCatalogException : Exception
 
 /// <summary>
 /// Reguła wpisu bazy. Pasuje tylko pozycja z ustalonym plikiem (<see cref="AutostartEntry.FilePath"/>) i wydawcą: nazwa pliku pasuje do
-/// <see cref="File"/>, folder pliku (z <c>\</c> na końcu) do któregoś wzorca z <see cref="Folders"/> rozwiniętego zmiennymi konta
-/// (nierozwinięty = brak dopasowania), wydawca do któregoś wzorca z <see cref="Publishers"/>, a podane <see cref="ValueName"/> i
+/// <see cref="File"/>, folder pliku (z <c>\</c> na końcu) do któregoś wzorca z <see cref="Folders"/> (nierozwinięty = brak dopasowania;
+/// zmienne maszyny wyłącznie z procesu, <c>%LOCALAPPDATA%</c>/<c>%APPDATA%</c> z konta – <see cref="UserEnvironment.TryExpandMachineRooted"/>), wydawca do któregoś wzorca z <see cref="Publishers"/>, a podane <see cref="ValueName"/> i
 /// <see cref="PackageFamily"/> są równe nazwie wpisu i rodzinie pakietu. Wzorce z <c>*</c> (<see cref="WildcardText"/>), wszystko bez
 /// rozróżniania wielkości liter. Ścieżka z <c>/</c> albo z segmentem <c>.</c>/<c>..</c> nie pasuje nigdy: folder z bazy nie może być
 /// obejściem przez ścieżkę względną.
@@ -74,7 +74,7 @@ public sealed record AutostartMatchRule(
         }
 
         return WildcardText.Matches(File, fileName)
-            && Folders.Any(pattern => environment.TryExpand(pattern, out var expanded) && WildcardText.Matches(expanded, folder))
+            && Folders.Any(pattern => environment.TryExpandMachineRooted(pattern, out var expanded) && WildcardText.Matches(expanded, folder))
             && Publishers.Any(pattern => WildcardText.Matches(pattern.Trim(), publisher!))
             && (ValueName is null || string.Equals(ValueName, entry.EntryName, StringComparison.OrdinalIgnoreCase))
             && (PackageFamily is null || string.Equals(PackageFamily, entry.PackageFamily, StringComparison.OrdinalIgnoreCase));
@@ -134,6 +134,9 @@ public sealed class AutostartKnownCatalog
     {
         "%SystemRoot%", "%ProgramFiles%", "%ProgramFiles(x86)%", "%ProgramData%", "%LOCALAPPDATA%", "%APPDATA%",
     };
+
+    /// <summary>Korzenie zapisywalne bez administratora (w <c>C:\ProgramData</c> Users tworzą pliki i foldery) – nie dla wpisów chronionych.</summary>
+    private static readonly string[] UserWritableRoots = { "%ProgramData%", "%LOCALAPPDATA%", "%APPDATA%" };
 
     private static readonly Regex MeasurementDocument = new("^docs/zrodla/[0-9a-z.-]+\\.md$", RegexOptions.CultureInvariant);
 
@@ -228,6 +231,15 @@ public sealed class AutostartKnownCatalog
             _ => throw new AutostartCatalogException(id, "verdict", L.F("dozwolone: {0}", VerdictProtected + ", " + VerdictCanDisable)),
         };
 
+        if (verdict == AutostartVerdict.Protected
+            && match.Folders.Any(folder => UserWritableRoots.Any(root => folder.StartsWith(root + "\\", StringComparison.OrdinalIgnoreCase))))
+        {
+            throw new AutostartCatalogException(
+                id,
+                "match.folders",
+                L.F("wpis chroniony nie może mieć folderu zapisywalnego bez administratora ({0})", string.Join(", ", UserWritableRoots)));
+        }
+
         var summary = Required(obj, id, "summary");
         if (summary.Length > MaxSummary)
         {
@@ -282,6 +294,11 @@ public sealed class AutostartKnownCatalog
             throw new AutostartCatalogException(id, "match.file", L.T("sama nazwa pliku, bez folderu"));
         }
 
+        if (OnlyStars(file))
+        {
+            throw new AutostartCatalogException(id, "match.file", L.T("wzorzec z samych gwiazdek pasuje do wszystkiego"));
+        }
+
         var folders = Strings(match, id, "folders", "match.folders");
         foreach (var folder in folders)
         {
@@ -298,6 +315,10 @@ public sealed class AutostartKnownCatalog
         }
 
         var publishers = Strings(match, id, "publishers", "match.publishers");
+        if (publishers.Any(OnlyStars))
+        {
+            throw new AutostartCatalogException(id, "match.publishers", L.T("wzorzec z samych gwiazdek pasuje do wszystkiego"));
+        }
         return new AutostartMatchRule(
             file,
             folders,
@@ -317,6 +338,8 @@ public sealed class AutostartKnownCatalog
 
         return array.Select(item => item.Value<string>()!.Trim()).ToList();
     }
+
+    private static bool OnlyStars(string pattern) => pattern.Trim('*').Length == 0;
 
     private static bool IsHttps(string source)
         => Uri.TryCreate(source, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps;

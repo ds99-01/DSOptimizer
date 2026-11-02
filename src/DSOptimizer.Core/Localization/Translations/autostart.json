@@ -104,6 +104,14 @@
     {
       "pl": "werdykt can-disable wymaga adresu https ze źródłem skutku",
       "en": "the can-disable verdict requires an https URL with the source of the effect"
+    },
+    {
+      "pl": "wzorzec z samych gwiazdek pasuje do wszystkiego",
+      "en": "a pattern made only of asterisks matches everything"
+    },
+    {
+      "pl": "wpis chroniony nie może mieć folderu zapisywalnego bez administratora ({0})",
+      "en": "a protected entry can't have a folder writable without administrator rights ({0})"
     }
   ]
 }

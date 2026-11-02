@@ -231,6 +231,10 @@ public class AutostartClassifierTests
         Assert.False((row with { Blocker = AutostartBlocker.None }).CanToggle);
         Assert.False((unknown with { Entry = unknown.Entry with { Switch = ApprovedSwitch(AutostartSwitchFormat.UnknownFormat, AutostartState.Enabled) } }).CanToggle);
         Assert.False((unknown with { Entry = unknown.Entry with { Switch = ApprovedSwitch(AutostartSwitchFormat.Valid, AutostartState.Unknown) } }).CanToggle);
+        Assert.False((unknown with { Entry = unknown.Entry with { Switch = ApprovedSwitch(AutostartSwitchFormat.Unreadable, AutostartState.Enabled) } }).CanToggle);
+        var task = Single(Task(Switch(AutostartSwitchFormat.Valid, AutostartState.Enabled, taskState: 2, keyExists: true)));
+        Assert.True(task.CanToggle);
+        Assert.False((task with { Entry = task.Entry with { Switch = Switch(AutostartSwitchFormat.Policy, AutostartState.Enabled, taskState: 3, keyExists: true) } }).CanToggle);
         Assert.True(unknown.CanToggle);
         Assert.Null(unknown.BlockedReason);
     }

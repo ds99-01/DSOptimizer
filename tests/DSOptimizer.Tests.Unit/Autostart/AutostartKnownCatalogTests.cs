@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DSOptimizer.Core.Autostart;
+using DSOptimizer.Core.Model;
+using DSOptimizer.Tests.Unit.Fakes;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -50,6 +52,13 @@ public class AutostartKnownCatalogTests
         yield return Case(ProtectedEntry, e => e["match"]!["publishers"] = new JArray(" "), "match.publishers");
         yield return Case(ProtectedEntry, e => ((JObject)e["match"]!).Remove("file"), "match.file");
         yield return Case(ProtectedEntry, e => e["match"]!["file"] = @"System32\SecurityHealthSystray.exe", "match.file");
+        yield return Case(ProtectedEntry, e => e["match"]!["file"] = "*", "match.file");
+        yield return Case(CanDisableEntry, e => e["match"]!["file"] = "**", "match.file");
+        yield return Case(ProtectedEntry, e => e["match"]!["publishers"] = new JArray("Microsoft Corporation", "*"), "match.publishers");
+        yield return Case(CanDisableEntry, e => e["match"]!["publishers"] = new JArray(" ** "), "match.publishers");
+        yield return Case(ProtectedEntry, e => e["match"]!["folders"] = new JArray(@"%SystemRoot%\System32\", @"%ProgramData%\x\"), "match.folders");
+        yield return Case(ProtectedEntry, e => e["match"]!["folders"] = new JArray(@"%localappdata%\Microsoft\*"), "match.folders");
+        yield return Case(ProtectedEntry, e => e["match"]!["folders"] = new JArray(@"%APPDATA%\x\"), "match.folders");
         yield return Case(ProtectedEntry, e => e["match"]!["valueName"] = 5, "match.valueName");
         yield return Case(ProtectedEntry, e => e.Remove("match"), "match");
         yield return Case(ProtectedEntry, e => e["verdict"] = "maybe", "verdict");
@@ -96,10 +105,20 @@ public class AutostartKnownCatalogTests
     [Fact]
     public void Load_AllFolderRootsAccepted_CaseIgnored()
     {
-        var catalog = AutostartKnownCatalog.Load(Wrap(Mutate(ProtectedEntry, e => e["match"]!["folders"] = new JArray(
+        var catalog = AutostartKnownCatalog.Load(Wrap(Mutate(CanDisableEntry, e => e["match"]!["folders"] = new JArray(
             @"%systemroot%\System32\", @"%ProgramFiles%\*", @"%PROGRAMFILES(X86)%\x\", @"%ProgramData%\x\", @"%LocalAppData%\x\", @"%APPDATA%\x*"))));
 
         Assert.Equal(6, catalog.Entries[0].Match.Folders.Count);
+    }
+
+    [Fact]
+    public void Load_ProtectedOnlyAdminRoots_CanDisableAlsoUserRoots()
+    {
+        var catalog = AutostartKnownCatalog.Load(Wrap(
+            Mutate(ProtectedEntry, e => e["match"]!["folders"] = new JArray(@"%SystemRoot%\System32\", @"%ProgramFiles%\*", @"%ProgramFiles(x86)%\x\")),
+            Mutate(CanDisableEntry, e => e["match"]!["folders"] = new JArray(@"%APPDATA%\Spotify\", @"%LOCALAPPDATA%\Discord\*", @"%ProgramData%\x\"))));
+
+        Assert.Equal(2, catalog.Entries.Count);
     }
 
     [Theory]
@@ -152,6 +171,39 @@ public class AutostartKnownCatalogTests
         var catalog = AutostartKnownCatalog.Load(Wrap(ProtectedEntry));
 
         Assert.Null(catalog.Match(Entry(filePath, "Microsoft Corporation"), Environment));
+    }
+
+    [Fact]
+    public void Match_AccountRedefinesSystemRoot_NoMatch()
+    {
+        const string Forged = @"C:\Users\dso\AppData\Local\Temp\w";
+        var locations = AutostartLocations.ForUser("S-1-5-21-1-2-3-1001");
+        var registry = new FakeRegistry();
+        registry.Set(locations.UserEnvironmentKey, "SystemRoot", RegValue.FromString(Forged));
+        registry.Set(locations.UserEnvironmentKey, "ProgramFiles(x86)", RegValue.FromString(Forged));
+        registry.Set(locations.VolatileEnvironmentKey, "LOCALAPPDATA", RegValue.FromString(@"C:\Users\dso\AppData\Local"));
+        var machine = new Dictionary<string, string> { ["SystemRoot"] = @"C:\Windows", ["ProgramFiles(x86)"] = @"C:\Program Files (x86)" };
+        var environment = UserEnvironment.Load(registry, locations, machine);
+        var catalog = AutostartKnownCatalog.Load(Wrap(
+            ProtectedEntry,
+            Mutate(CanDisableEntry, e => ((JObject)e["match"]!).Remove("valueName")),
+            Mutate(CanDisableEntry, e =>
+            {
+                e["id"] = "onedrive";
+                e["match"]!["file"] = "OneDrive.exe";
+                e["match"]!["folders"] = new JArray(@"%LOCALAPPDATA%\Microsoft\OneDrive\");
+                e["match"]!["publishers"] = new JArray("Microsoft Corporation");
+                ((JObject)e["match"]!).Remove("valueName");
+            })));
+
+        // Konto widzi podrobione wartości przy rozwijaniu poleceń, ale nie we wzorcach folderów bazy.
+        Assert.True(environment.TryExpand(@"%SystemRoot%\System32\", out var commandView));
+        Assert.Equal(Forged + @"\System32\", commandView);
+        Assert.Null(catalog.Match(Entry(Forged + @"\System32\SecurityHealthSystray.exe", "Microsoft Corporation"), environment));
+        Assert.Null(catalog.Match(Entry(Forged + @"\Steam\steam.exe", "Valve Corporation"), environment));
+        Assert.Equal("windows.security-health", catalog.Match(Entry(SecurityHealth, "Microsoft Corporation"), environment)?.Id);
+        Assert.Equal("steam", catalog.Match(Entry(@"C:\Program Files (x86)\Steam\steam.exe", "Valve Corporation"), environment)?.Id);
+        Assert.Equal("onedrive", catalog.Match(Entry(@"C:\Users\dso\AppData\Local\Microsoft\OneDrive\OneDrive.exe", "Microsoft Corporation"), environment)?.Id);
     }
 
     [Fact]
@@ -217,8 +269,14 @@ public class AutostartKnownCatalogTests
     [Fact]
     public void Match_UnexpandableFolder_NoMatch()
     {
-        var catalog = AutostartKnownCatalog.Load(Wrap(Mutate(ProtectedEntry, e => e["match"]!["folders"] = new JArray(@"%LOCALAPPDATA%\Microsoft\OneDrive\"))));
-        var onedrive = Entry(@"C:\Users\dso\AppData\Local\Microsoft\OneDrive\SecurityHealthSystray.exe", "Microsoft Corporation");
+        var catalog = AutostartKnownCatalog.Load(Wrap(Mutate(CanDisableEntry, e =>
+        {
+            e["match"]!["file"] = "OneDrive.exe";
+            e["match"]!["folders"] = new JArray(@"%LOCALAPPDATA%\Microsoft\OneDrive\");
+            e["match"]!["publishers"] = new JArray("Microsoft Corporation");
+            ((JObject)e["match"]!).Remove("valueName");
+        })));
+        var onedrive = Entry(@"C:\Users\dso\AppData\Local\Microsoft\OneDrive\OneDrive.exe", "Microsoft Corporation");
 
         Assert.NotNull(catalog.Match(onedrive, Environment));
         Assert.Null(catalog.Match(onedrive, UserEnvironment.FromVariables(new Dictionary<string, string> { ["SystemRoot"] = @"C:\Windows" })));
