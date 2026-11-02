@@ -19,7 +19,8 @@ namespace DSOptimizer.Tests.Windows;
 /// <summary>
 /// „Wyłącz (N)”/„Włącz (M)” strony „Autostart” w modelu głównego okna (<c>MainViewModel.ToggleAutostartAsync</c>) z atrapą okna serii.
 /// Odczyt z atrapy czytnika; przełączniki wierszy leżą w <see cref="RegistrySandbox"/>, a silnik pisze wyłącznie pod kluczem przełącznika
-/// wiersza – prawdziwy autostart hosta nie jest czytany ani zmieniany. Wątek STA z dispatcherem jako kontekstem synchronizacji (jak okno).
+/// wiersza – prawdziwy autostart hosta nie jest czytany ani zmieniany. Wiersze są pozycjami maszyny: przełącznik pozycji konta silnik
+/// przyjmuje tylko z gałęzi konta (<c>HKU\&lt;SID&gt;</c>), a ta nie leży w piaskownicy. Wątek STA z dispatcherem jako kontekstem synchronizacji (jak okno).
 /// </summary>
 [Trait("Category", "Windows")]
 public sealed class AutostartToggleTests
@@ -65,7 +66,7 @@ public sealed class AutostartToggleTests
             Assert.False(vm.IsBusy);
             Assert.False(vm.Autostart.IsBusy);
             var report = Assert.IsType<GuiOperationReport>(dialogs.LastReport);
-            Assert.Equal(new[] { AutostartIds.For(AutostartSource.RunUser, "Alpha") }, report.SucceededIds);
+            Assert.Equal(new[] { AutostartIds.For(AutostartSource.RunMachine, "Alpha") }, report.SucceededIds);
             // Zapis trafił pod klucz przełącznika wiersza w piaskownicy (bit 0 = wyłączona).
             var written = new WindowsRegistry().Read(SwitchKey(sandbox), "Alpha");
             Assert.Equal(ReadStatus.Found, written.Status);
@@ -86,7 +87,7 @@ public sealed class AutostartToggleTests
             {
                 TweakId = "autostart",
                 Operation = GuiOperation.DisableAutostart,
-                SucceededIds = new[] { AutostartIds.For(AutostartSource.RunUser, "Alpha") },
+                SucceededIds = new[] { AutostartIds.For(AutostartSource.RunMachine, "Alpha") },
             };
 
             Execute(vm.Autostart.DisableCommand);
@@ -138,8 +139,8 @@ public sealed class AutostartToggleTests
 
     private static AutostartEntry Entry(RegistrySandbox sandbox, string name) => new()
     {
-        Id = AutostartIds.For(AutostartSource.RunUser, name),
-        Source = AutostartSource.RunUser,
+        Id = AutostartIds.For(AutostartSource.RunMachine, name),
+        Source = AutostartSource.RunMachine,
         EntryName = name,
         Name = name,
         Location = sandbox.HkcuPath + @"\Run",

@@ -137,6 +137,12 @@ public sealed class AutostartEngine
         var now = _clock.UtcNow;
         var warnings = new List<string>();
 
+        // Konto zmienione po odczycie listy: przełącznik pozycji konta musi leżeć w gałęzi konta z kontekstu (tego SID trafia do journala).
+        if (!InAccountHive(row.Entry, context.Locations))
+        {
+            return Finish(row.Id, TweakOutcome.Refused, AutostartText.FormatChanged, warnings);
+        }
+
         // 1. Świeży odczyt tym samym czytnikiem co lista; dane z wiersza służą tylko do wskazania przełącznika.
         var fresh = AutostartSwitchReader.Reread(_registry, row.Entry.Switch);
         if (fresh.Format is not (AutostartSwitchFormat.Valid or AutostartSwitchFormat.Absent))
@@ -469,6 +475,24 @@ public sealed class AutostartEngine
             _log.Fail(Component, L.F("Nieoczekiwany błąd weryfikacji {0}.", id), ex);
             return false;
         }
+    }
+
+    /// <summary>
+    /// Pozycja maszyny = zawsze true. Pozycja konta: klucz przełącznika w <see cref="AutostartLocations.UserRoot"/> (Run i folder konta) albo
+    /// <see cref="AutostartLocations.UserClassesRoot"/> (Sklep), bez rozróżniania wielkości liter i na granicy segmentu ścieżki.
+    /// </summary>
+    private static bool InAccountHive(AutostartEntry entry, AutostartLocations locations)
+    {
+        var scope = AutostartSources.ScopeOf(entry.Source);
+        if (scope == AutostartScope.Machine)
+        {
+            return true;
+        }
+
+        var root = scope == AutostartScope.Store ? locations.UserClassesRoot : locations.UserRoot;
+        var path = entry.Switch.KeyPath;
+        return path.StartsWith(root, StringComparison.OrdinalIgnoreCase)
+            && (path.Length == root.Length || path[root.Length] == '\\');
     }
 
     private static AutostartState Opposite(AutostartState target)

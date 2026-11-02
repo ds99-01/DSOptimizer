@@ -232,6 +232,62 @@ public class AutostartEngineTests
         Assert.Empty(_registry.WriteLog);
     }
 
+    [Theory]
+    [InlineData("S-1-5-21-1-2-3-1002")]
+    [InlineData("S-1-5-21-1-2-3-100")]
+    public void UserRow_SwitchInOtherAccountHive_Refused_NoJournal_NoWrite(string currentSid)
+    {
+        var row = ApprovedRow();
+
+        var result = Single(Engine().Set(new[] { row }, AutostartState.Disabled, OtherAccountContext(currentSid), new AutostartRunOptions(), CancellationToken.None));
+
+        Assert.Equal(TweakOutcome.Refused, result.Outcome);
+        Assert.Equal(AutostartText.FormatChanged, result.Message);
+        Assert.Equal(0, _journal.LoadCount);
+        Assert.Equal(0, _journal.SaveCount);
+        Assert.Empty(_registry.WriteLog);
+    }
+
+    [Theory]
+    [InlineData("S-1-5-21-1-2-3-1002")]
+    [InlineData("S-1-5-21-1-2-3-100")]
+    public void StoreRow_SwitchInOtherAccountHive_Refused_NoJournal_NoWrite(string currentSid)
+    {
+        _registry.Set(TaskKey, "State", RegValue.FromDWord(2));
+        var row = TaskRow(manifestEnabled: false);
+
+        var result = Single(Engine().Set(new[] { row }, AutostartState.Disabled, OtherAccountContext(currentSid), new AutostartRunOptions(), CancellationToken.None));
+
+        Assert.Equal(TweakOutcome.Refused, result.Outcome);
+        Assert.Equal(AutostartText.FormatChanged, result.Message);
+        Assert.Equal(0, _journal.LoadCount);
+        Assert.Equal(0, _journal.SaveCount);
+        Assert.Empty(_registry.WriteLog);
+    }
+
+    [Fact]
+    public void UserRow_SwitchInAccountHive_RootDiffersOnlyInCase_Applied()
+    {
+        var row = ApprovedRow();
+
+        var result = Single(Engine().Set(new[] { row }, AutostartState.Disabled, OtherAccountContext(Sid.ToLowerInvariant()), new AutostartRunOptions(), CancellationToken.None));
+
+        Assert.Equal(TweakOutcome.Applied, result.Outcome);
+    }
+
+    [Theory]
+    [InlineData(AutostartSource.RunMachine)]
+    [InlineData(AutostartSource.FolderCommon)]
+    public void MachineRow_OtherAccountContext_Applied(AutostartSource source)
+    {
+        var row = ApprovedRow(source);
+
+        var result = Single(Engine().Set(new[] { row }, AutostartState.Disabled, OtherAccountContext("S-1-5-21-1-2-3-1002"), new AutostartRunOptions(), CancellationToken.None));
+
+        Assert.Equal(TweakOutcome.Applied, result.Outcome);
+        Assert.Equal(RegValue.FromBinary(Approved(0x03, 0, 0, 0, NowFiletime)), _registry.Get(Locations.StartupApprovedKey(source), Name));
+    }
+
     [Fact]
     public void FreshAbsent_SourceNotConfirmed_Refused_NoJournal()
     {
@@ -621,6 +677,10 @@ public class AutostartEngineTests
 
     private static AutostartContext Context(params AutostartSource[] confirmed)
         => new(Sid, true, Sid, true, true, Locations, confirmed.Length == 0 ? AllApproved : confirmed, true, true);
+
+    /// <summary>Zalogowane konto zmienione po odczycie listy: kontekst innego SID, wiersze nadal z gałęzi <see cref="Sid"/>.</summary>
+    private static AutostartContext OtherAccountContext(string sid)
+        => new(sid, true, sid, true, true, AutostartLocations.ForUser(sid), AllApproved, true, true);
 
     private AutostartEngine Engine() => new(_registry, _journal, _log, _clock);
 

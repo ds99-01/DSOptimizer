@@ -120,11 +120,11 @@ public sealed class StartupInfoFolder : IStartupInfoSource
         }
         catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
         {
-            throw new OperationException(OperationErrorKind.NotFound, L.F("Nie można odczytać plik {0}: {1}", file.Path, ex.Message), ex);
+            throw new OperationException(OperationErrorKind.NotFound, L.F("Nie można odczytać pliku {0}: {1}", file.Path, ex.Message), ex);
         }
         catch (Exception ex) when (ex is IOException or ArgumentException or NotSupportedException or DecoderFallbackException)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można odczytać plik {0}: {1}", file.Path, ex.Message), ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można odczytać pliku {0}: {1}", file.Path, ex.Message), ex);
         }
     }
 

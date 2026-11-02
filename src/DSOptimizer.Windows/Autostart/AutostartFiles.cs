@@ -222,11 +222,11 @@ public sealed class AutostartFiles : IAutostartFiles
         }
         catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
         {
-            throw new OperationException(OperationErrorKind.NotFound, L.F("Nie można odczytać plik {0}: {1}", path, ex.Message), ex);
+            throw new OperationException(OperationErrorKind.NotFound, L.F("Nie można odczytać pliku {0}: {1}", path, ex.Message), ex);
         }
         catch (Exception ex) when (ex is IOException or ArgumentException or NotSupportedException)
         {
-            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można odczytać plik {0}: {1}", path, ex.Message), ex);
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można odczytać pliku {0}: {1}", path, ex.Message), ex);
         }
 
         return header.SequenceEqual(LinkHeader);

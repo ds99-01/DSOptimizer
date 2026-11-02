@@ -58,8 +58,8 @@
       "en": "State set by policy or unknown – DSOptimizer doesn't change this item."
     },
     {
-      "pl": "Tej pozycji nikt jeszcze nie przełączał – DSOptimizer jej nie zmienia, wyłączysz ją Menedżerem zadań.",
-      "en": "Nobody has switched this item yet – DSOptimizer doesn't change it, but you can disable it in Task Manager."
+      "pl": "Tej pozycji nikt jeszcze nie przełączał – DSOptimizer jej nie zmienia, przełączysz ją Menedżerem zadań.",
+      "en": "Nobody has switched this item yet – DSOptimizer doesn't change it, but you can switch it in Task Manager."
     },
     {
       "pl": "Wpis bez nazwy – DSOptimizer go nie zmienia.",

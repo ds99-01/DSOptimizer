@@ -147,7 +147,11 @@ public sealed class AutostartScanner : IAutostartReader
         List<AutostartEntry> entries,
         List<string> warnings)
     {
-        if (!environment.TryExpand(rawFolder, out var folder))
+        // Folder wspólny („wszystkie konta”) wyłącznie ze zmiennych maszyny: konto może zapisać własne ProgramData w HKU\<SID>\Environment.
+        var expandedFully = source == AutostartSource.FolderCommon
+            ? environment.TryExpandMachineRooted(rawFolder, out var folder)
+            : environment.TryExpand(rawFolder, out folder);
+        if (!expandedFully)
         {
             return;
         }

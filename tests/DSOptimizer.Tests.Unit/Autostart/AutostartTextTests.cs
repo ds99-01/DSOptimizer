@@ -25,7 +25,7 @@ public class AutostartTextTests
             "Stan ustawiony zasadami albo nieznany – DSOptimizer tej pozycji nie zmienia.",
             AutostartText.Blocked(AutostartBlocker.TaskStateNotSupported));
         Assert.Equal(
-            "Tej pozycji nikt jeszcze nie przełączał – DSOptimizer jej nie zmienia, wyłączysz ją Menedżerem zadań.",
+            "Tej pozycji nikt jeszcze nie przełączał – DSOptimizer jej nie zmienia, przełączysz ją Menedżerem zadań.",
             AutostartText.Blocked(AutostartBlocker.WriteFromZeroNotMeasured));
         Assert.Equal("Wpis bez nazwy – DSOptimizer go nie zmienia.", AutostartText.Blocked(AutostartBlocker.NoName));
         Assert.Throws<ArgumentOutOfRangeException>(() => AutostartText.Blocked((AutostartBlocker)99));

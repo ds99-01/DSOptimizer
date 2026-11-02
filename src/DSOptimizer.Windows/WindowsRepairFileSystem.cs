@@ -221,7 +221,7 @@ public sealed class WindowsRepairFileSystem : IRepairFileSystem
             },
             (denied, error) => denied
                 ? L.F("Brak uprawnień, by odczytać plik {0}: {1}", path, error)
-                : L.F("Nie można odczytać plik {0}: {1}", path, error));
+                : L.F("Nie można odczytać pliku {0}: {1}", path, error));
     }
 
     private static void DeleteTree(string path)

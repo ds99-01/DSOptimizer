@@ -244,6 +244,34 @@ public class AutostartScannerTests
         Assert.Equal(UserFolder + @"\Tool.exe", Entry(reading, "folder:user:Tool.exe").FilePath);
     }
 
+    [Theory]
+    [InlineData(@"\Environment")]
+    [InlineData(@"\Volatile Environment")]
+    public void CommonFolder_AccountRedefinesProgramData_FolderFromMachineValue(string environmentKey)
+    {
+        const string AccountFolder = @"C:\Users\dso\Fake\Microsoft\Windows\Start Menu\Programs\StartUp";
+        _registry.Set(UserRoot + environmentKey, "ProgramData", RegValue.FromString(@"C:\Users\dso\Fake"));
+        _files.AddToFolder(CommonFolder, "Tool.exe");
+        _files.AddToFolder(AccountFolder, "Planted.exe");
+
+        var reading = Read();
+
+        Assert.Equal(new[] { UserFolder, CommonFolder }, _files.ListedFolders);
+        Assert.Equal(CommonFolder, Entry(reading, "folder:common:Tool.exe").Location);
+        Assert.DoesNotContain(reading.Entries, e => e.EntryName == "Planted.exe");
+    }
+
+    [Fact]
+    public void CommonFolder_MachineProgramDataUnknown_FolderSkipped()
+    {
+        _machine.Remove("ProgramData");
+        _registry.Set(UserRoot + @"\Environment", "ProgramData", RegValue.FromString(@"C:\ProgramData"));
+
+        Read();
+
+        Assert.Equal(new[] { UserFolder }, _files.ListedFolders);
+    }
+
     [Fact]
     public void UserFolder_AppDataUnknown_FolderSkipped()
     {

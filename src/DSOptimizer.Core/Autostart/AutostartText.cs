@@ -53,7 +53,7 @@ public static class AutostartText
     /// <summary>Cofnięcie pozycji bez aktywnego wpisu autostartu (także wpis nieznany albo już cofnięty).</summary>
     public static string NoActiveEntry => L.T("Brak aktywnej zmiany tej pozycji w Historii zmian.");
 
-    public static string NotConfirmed =>L.T("Odczyt po zapisie nie potwierdził zmiany – przywrócono poprzedni stan.");
+    public static string NotConfirmed => L.T("Odczyt po zapisie nie potwierdził zmiany – przywrócono poprzedni stan.");
 
     public static string RollbackIncomplete => L.T("Odczyt po zapisie nie potwierdził zmiany, a poprzedniego stanu nie udało się przywrócić.");
 
@@ -75,7 +75,7 @@ public static class AutostartText
         AutostartBlocker.Unreadable => L.T("Nie udało się odczytać stanu – DSOptimizer tej pozycji nie zmienia."),
         AutostartBlocker.UnknownFormat => L.T("Nieznany zapis stanu – DSOptimizer tej pozycji nie zmienia."),
         AutostartBlocker.TaskStateNotSupported => L.T("Stan ustawiony zasadami albo nieznany – DSOptimizer tej pozycji nie zmienia."),
-        AutostartBlocker.WriteFromZeroNotMeasured => L.T("Tej pozycji nikt jeszcze nie przełączał – DSOptimizer jej nie zmienia, wyłączysz ją Menedżerem zadań."),
+        AutostartBlocker.WriteFromZeroNotMeasured => L.T("Tej pozycji nikt jeszcze nie przełączał – DSOptimizer jej nie zmienia, przełączysz ją Menedżerem zadań."),
         AutostartBlocker.NoName => L.T("Wpis bez nazwy – DSOptimizer go nie zmienia."),
         _ => throw new ArgumentOutOfRangeException(nameof(blocker), blocker, null),
     };
