@@ -11,4 +11,7 @@ public enum CliCommand
     ListInstall,
     InstallApps,
     SearchApps,
+    ListAutostart,
+    SetAutostart,
+    UndoAutostart,
 }

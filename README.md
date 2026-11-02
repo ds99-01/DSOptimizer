@@ -129,12 +129,17 @@ DSOptimizer.exe --remove-app <id> [--restore-point required|ifavailable|skip] --
 DSOptimizer.exe --list-install [--apps-catalog <file.json>] --out <file.json>
 DSOptimizer.exe --install-apps <id>[,<id>…] [--apps-catalog <file.json>] --out <file.json>
 DSOptimizer.exe --search-apps <text> --out <file.json>
+DSOptimizer.exe --list-autostart --out <file.json>
+DSOptimizer.exe --set-autostart <id> disabled|enabled --out <file.json>
+DSOptimizer.exe --undo-autostart <id> --out <file.json>
 ```
 
 - `--detect`, `--apply` and `--undo` apply to `kind=tweak` items; `--execute` applies to `kind=action` and `kind=panel` (`--apply` on an action or panel gives code 2).
 - `--list-apps` returns the visible rows of the "Apps" page, and `--remove-app` removes one app by its id (`appx:<PackageFamilyName>` or `win32:<key>`); a protected or blocked row is refused. `--restore-point` defaults to `required`: without a restore point nothing is removed.
 - `--list-install` returns the install list with the winget state, `--install-apps` installs the given items (`install.<name>` from the list or `winget:<id>`) without asking, and `--search-apps` returns `winget search` results. `--apps-catalog` replaces the built-in install list.
 - Installing and searching through winget work only on the signed-in user's account; on another account they end with a refusal (code 1), and winget is not started.
+- `--list-autostart` returns the rows of the "Startup apps" page for the signed-in user's account in the `autostartRows` field: `id`, `source` (`RunUser`, `RunMachine`, `Run32`, `FolderUser`, `FolderCommon`, `StartupTask`), `name`, `publisher`, `scope` (`User`, `Machine`, `Store`), `state` (`Enabled`, `Disabled`, `Unknown`), `missingFile`, `verdict` (`Protected`, `CanDisable` or `null` when not assessed), `canToggle`, `cpuMs` (processor time from the Windows measurement, in milliseconds) and `diskBytes` (disk reads in bytes); both numbers are `null` when not measured.
+- `--set-autostart` disables or enables one item by its id from the list (the state is not case-sensitive), and `--undo-autostart` restores the state from before the item's active change in the change history. An id that is not on the list gives code 1; a row with `canToggle=false` (protected or read-only) is refused (code 1) and nothing is written; an item already in the target state gives `AlreadyApplied` (code 0). An undo that could not restore everything gives code 4 and lists what was not restored in `notRestored`. `--catalog`, `--apps-catalog` and `--restore-point` with these commands, or a missing or unknown state, give code 2.
 
 ### Exit codes
 

@@ -12,6 +12,7 @@ using DSOptimizer.Core.Cli;
 using DSOptimizer.Core.Install;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Windows.Apps;
+using DSOptimizer.Windows.Autostart;
 
 namespace DSOptimizer.Windows;
 
@@ -28,12 +29,14 @@ public static class CliHost
     /// Wbudowane źródła katalogu przychodzą jako delegat, żeby ich odczyt (zasoby osadzone) był wykonany w bloku <c>try</c>
     /// i tylko wtedy, gdy nie podano <c>--catalog</c>. <paramref name="serialize"/> to szew testowy (domyślnie serializer raportu).
     /// <paramref name="installServices"/> to szew testowy usług instalacji (domyślnie <see cref="CreateInstallServices"/>: prawdziwy
-    /// winget przez alias konta); testy podają fałszywy runner, więc żaden winget nie startuje.
+    /// winget przez alias konta); testy podają fałszywy runner, więc żaden winget nie startuje. <paramref name="autostartServices"/> to szew
+    /// testowy usług autostartu (domyślnie <see cref="CreateAutostartServices"/>: skaner prawdziwego autostartu); testy podają fałszywy czytnik.
     /// </summary>
     internal static int Run(IReadOnlyList<string> args, SecureRoot root, string? logMirrorDirectory,
                             Func<string, string> readAllText, Func<IReadOnlyList<CatalogSource>> builtInSources,
                             Func<CliReport, string>? serialize = null,
-                            Func<AppComposition, AppsInstallCatalog, CliInstallServices>? installServices = null)
+                            Func<AppComposition, AppsInstallCatalog, CliInstallServices>? installServices = null,
+                            Func<AppComposition, CliAutostartServices>? autostartServices = null)
     {
         if (args is null)
         {
@@ -47,12 +50,13 @@ public static class CliHost
 
         serialize ??= CliReportSerializer.Serialize;
         installServices ??= CreateInstallServices;
+        autostartServices ??= CreateAutostartServices;
         var startedAt = DateTimeOffset.UtcNow;
 
         // Cały przebieg, od parsowania po zapis raportu, idzie w tym języku; domyślny język procesu ustawia Program.Main.
         using (L.Use(ResolveLanguage(args, root)))
         {
-            return RunInLanguage(args, root, logMirrorDirectory, readAllText, builtInSources, serialize, installServices, startedAt);
+            return RunInLanguage(args, root, logMirrorDirectory, readAllText, builtInSources, serialize, installServices, autostartServices, startedAt);
         }
     }
 
@@ -81,7 +85,7 @@ public static class CliHost
     private static int RunInLanguage(IReadOnlyList<string> args, SecureRoot root, string? logMirrorDirectory,
                                      Func<string, string> readAllText, Func<IReadOnlyList<CatalogSource>> builtInSources,
                                      Func<CliReport, string> serialize, Func<AppComposition, AppsInstallCatalog, CliInstallServices> installServices,
-                                     DateTimeOffset startedAt)
+                                     Func<AppComposition, CliAutostartServices> autostartServices, DateTimeOffset startedAt)
     {
         string? outPath = null;
         CliOptions? options = null;
@@ -98,7 +102,7 @@ public static class CliHost
             }
 
             options = parsed.Options!;
-            return RunParsed(options, root, logMirrorDirectory, readAllText, builtInSources, startedAt, serialize, installServices);
+            return RunParsed(options, root, logMirrorDirectory, readAllText, builtInSources, startedAt, serialize, installServices, autostartServices);
         }
         catch (Exception ex)
         {
@@ -111,7 +115,8 @@ public static class CliHost
 
     private static int RunParsed(CliOptions options, SecureRoot root, string? logMirrorDirectory,
                                  Func<string, string> readAllText, Func<IReadOnlyList<CatalogSource>> builtInSources, DateTimeOffset startedAt,
-                                 Func<CliReport, string> serialize, Func<AppComposition, AppsInstallCatalog, CliInstallServices> installServices)
+                                 Func<CliReport, string> serialize, Func<AppComposition, AppsInstallCatalog, CliInstallServices> installServices,
+                                 Func<AppComposition, CliAutostartServices> autostartServices)
     {
         var sources = options.CatalogPath is null ? builtInSources() : Array.Empty<CatalogSource>();
         var catalog = CliCatalog.Load(options.CatalogPath, readAllText, sources);
@@ -157,7 +162,8 @@ public static class CliHost
         {
             var apps = options.Command is CliCommand.ListApps or CliCommand.RemoveApp ? CreateAppServices(composition) : null;
             var install = appsCatalog is null ? null : installServices(composition, appsCatalog);
-            report = CliRunner.Run(options, catalog, composition.Services, composition.StartupWarnings, apps, install);
+            var autostart = CliParser.IsAutostartCommand(options.Command) ? autostartServices(composition) : null;
+            report = CliRunner.Run(options, catalog, composition.Services, composition.StartupWarnings, apps, install, autostart);
         }
         catch (Exception ex)
         {
@@ -203,6 +209,19 @@ public static class CliHost
             ProcessSid = WindowsIdentity.GetCurrent().User?.Value ?? throw new InvalidOperationException(L.T("Brak SID bieżącego procesu.")),
             AccountName = new WindowsAccountNames().NameOf,
             GitHub = composition.GitHub,
+        };
+
+    /// <summary>
+    /// Usługi poleceń autostartu na prawdziwym systemie: skaner z <see cref="AutostartComposition.CreateReader(AppComposition)"/> (tylko
+    /// składany, czyta dopiero polecenie), wbudowana baza znanych pozycji i SID konta procesu. Konto i jego gałęzie bierze się
+    /// z zalogowanego użytkownika (<see cref="CliAutostartServices.Context"/> = null), nie z procesu.
+    /// </summary>
+    internal static CliAutostartServices CreateAutostartServices(AppComposition composition)
+        => new()
+        {
+            Reader = AutostartComposition.CreateReader(composition),
+            Catalog = AutostartComposition.LoadCatalog(),
+            ProcessSid = WindowsIdentity.GetCurrent().User?.Value ?? throw new InvalidOperationException(L.T("Brak SID bieżącego procesu.")),
         };
 
     /// <summary>Wbudowana lista <c>apps.json</c> albo plik <c>--apps-catalog</c>; błąd odczytu lub formatu = <c>null</c> z komunikatem.</summary>

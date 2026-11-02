@@ -191,7 +191,7 @@ public class CliParserTests
 
     [Theory]
     [InlineData(new[] { "--remove-app", "--out", "o.json" }, "Opcja --remove-app wymaga wartości")]
-    [InlineData(new[] { "--list-apps", "--remove-app", "appx:A_b", "--out", "o.json" }, "Podaj dokładnie jedno z: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps.")]
+    [InlineData(new[] { "--list-apps", "--remove-app", "appx:A_b", "--out", "o.json" }, "Podaj dokładnie jedno z: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps, --list-autostart, --set-autostart, --undo-autostart.")]
     [InlineData(new[] { "--list-apps", "--list-apps", "--out", "o.json" }, "Podaj dokładnie jedno z")]
     [InlineData(new[] { "--list-apps", "--restore-point", "skip", "--out", "o.json" }, "Opcja --restore-point dotyczy tylko --apply i --remove-app.")]
     [InlineData(new[] { "--list-apps", "--catalog", "k.json", "--out", "o.json" }, "Opcja --catalog nie dotyczy --list-apps ani --remove-app.")]

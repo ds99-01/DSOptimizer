@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Engine;
 
 namespace DSOptimizer.Core.Cli;
@@ -25,4 +26,7 @@ public sealed class CliOptions
 
     /// <summary>Zapytanie <c>--search-apps</c>.</summary>
     public string? SearchQuery { get; init; }
+
+    /// <summary>Stan docelowy <c>--set-autostart</c> (<see cref="AutostartState.Disabled"/> albo <see cref="AutostartState.Enabled"/>); dla innych poleceń null.</summary>
+    public AutostartState? AutostartTarget { get; init; }
 }

@@ -2,8 +2,8 @@
  "language": "en",
  "entries": [
   {
-   "pl": "DSOptimizer.exe --detect <id> | --apply <id> [--restore-point required|ifavailable|skip] | --undo <id> | --execute <id> [--catalog <plik.json>] --out <plik.json> | DSOptimizer.exe --list-apps | --remove-app <id> [--restore-point required|ifavailable|skip] --out <plik.json> | DSOptimizer.exe --list-install [--apps-catalog <plik.json>] | --install-apps <id>[,<id>…] [--apps-catalog <plik.json>] | --search-apps <tekst> --out <plik.json> [--lang pl|en]",
-   "en": "DSOptimizer.exe --detect <id> | --apply <id> [--restore-point required|ifavailable|skip] | --undo <id> | --execute <id> [--catalog <file.json>] --out <file.json> | DSOptimizer.exe --list-apps | --remove-app <id> [--restore-point required|ifavailable|skip] --out <file.json> | DSOptimizer.exe --list-install [--apps-catalog <file.json>] | --install-apps <id>[,<id>…] [--apps-catalog <file.json>] | --search-apps <text> --out <file.json> [--lang pl|en]"
+   "pl": "DSOptimizer.exe --detect <id> | --apply <id> [--restore-point required|ifavailable|skip] | --undo <id> | --execute <id> [--catalog <plik.json>] --out <plik.json> | DSOptimizer.exe --list-apps | --remove-app <id> [--restore-point required|ifavailable|skip] --out <plik.json> | DSOptimizer.exe --list-install [--apps-catalog <plik.json>] | --install-apps <id>[,<id>…] [--apps-catalog <plik.json>] | --search-apps <tekst> --out <plik.json> | DSOptimizer.exe --list-autostart | --set-autostart <id> disabled|enabled | --undo-autostart <id> --out <plik.json> [--lang pl|en]",
+   "en": "DSOptimizer.exe --detect <id> | --apply <id> [--restore-point required|ifavailable|skip] | --undo <id> | --execute <id> [--catalog <file.json>] --out <file.json> | DSOptimizer.exe --list-apps | --remove-app <id> [--restore-point required|ifavailable|skip] --out <file.json> | DSOptimizer.exe --list-install [--apps-catalog <file.json>] | --install-apps <id>[,<id>…] [--apps-catalog <file.json>] | --search-apps <text> --out <file.json> | DSOptimizer.exe --list-autostart | --set-autostart <id> disabled|enabled | --undo-autostart <id> --out <file.json> [--lang pl|en]"
   },
   {
    "pl": "Nieoczekiwany argument '{0}'.",
@@ -46,8 +46,8 @@
    "en": "Unknown value '{0}' for --restore-point (allowed: required, ifavailable, skip)."
   },
   {
-   "pl": "Podaj dokładnie jedno z: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps.",
-   "en": "Specify exactly one of: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps."
+   "pl": "Podaj dokładnie jedno z: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps, --list-autostart, --set-autostart, --undo-autostart.",
+   "en": "Specify exactly one of: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps, --list-autostart, --set-autostart, --undo-autostart."
   },
   {
    "pl": "Brak wymaganej opcji --out.",
@@ -92,6 +92,22 @@
   {
    "pl": "Aplikacja '{0}' podana w --install-apps więcej niż raz.",
    "en": "App '{0}' was given more than once in --install-apps."
+  },
+  {
+   "pl": "Opcja --set-autostart wymaga stanu po id (disabled albo enabled).",
+   "en": "Option --set-autostart requires a state after the ID (disabled or enabled)."
+  },
+  {
+   "pl": "Nieznany stan --set-autostart '{0}' (dozwolone: disabled, enabled).",
+   "en": "Unknown state '{0}' for --set-autostart (allowed: disabled, enabled)."
+  },
+  {
+   "pl": "Opcja --catalog nie dotyczy poleceń autostartu.",
+   "en": "Option --catalog doesn't apply to the Startup apps commands."
+  },
+  {
+   "pl": "Nie ma pozycji '{0}' na liście autostartu.",
+   "en": "Item '{0}' isn't on the Startup apps list."
   }
  ]
 }

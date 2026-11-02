@@ -1,4 +1,5 @@
 using System;
+using DSOptimizer.Catalog;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Autostart;
 
@@ -20,6 +21,9 @@ public static class AutostartComposition
 
         return CreateReader(composition.Services.Registry, composition.Services.Scripts, composition.Log);
     }
+
+    /// <summary>Wbudowana baza znanych pozycji (<c>autostart-known.json</c>) wczytana i sprawdzona przez <see cref="AutostartKnownCatalog.Load"/>.</summary>
+    public static AutostartKnownCatalog LoadCatalog() => AutostartKnownCatalog.Load(BuiltInCatalog.AutostartKnownSource.Json);
 
     /// <summary>Składanie z podanych usług (szew testów: dowód, że składanie nie woła rejestru, skryptów ani dziennika).</summary>
     internal static AutostartScanner CreateReader(IRegistry registry, IScriptRunner scripts, ILog log)

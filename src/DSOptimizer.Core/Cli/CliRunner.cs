@@ -12,7 +12,8 @@ namespace DSOptimizer.Core.Cli;
 /// <summary>
 /// Wykonuje detect/apply/undo/execute jednego tweaka na silniku, <c>--list-apps</c>/<c>--remove-app</c> (usługi
 /// <see cref="CliAppServices"/>) albo polecenia instalacji przez winget (<see cref="CliInstallRunner"/>, usługi
-/// <see cref="CliInstallServices"/>) i zwraca raport CLI.
+/// <see cref="CliInstallServices"/>) albo polecenia autostartu (<see cref="CliAutostartRunner"/>, usługi <see cref="CliAutostartServices"/>)
+/// i zwraca raport CLI.
 /// </summary>
 public static class CliRunner
 {
@@ -27,6 +28,11 @@ public static class CliRunner
     public static CliReport Run(CliOptions options, CliCatalogResult catalog, EngineServices services,
                                 IReadOnlyList<string> startupWarnings, CliAppServices? apps, CliInstallServices? install,
                                 CancellationToken cancellationToken = default)
+        => Run(options, catalog, services, startupWarnings, apps, install, null, cancellationToken);
+
+    public static CliReport Run(CliOptions options, CliCatalogResult catalog, EngineServices services,
+                                IReadOnlyList<string> startupWarnings, CliAppServices? apps, CliInstallServices? install,
+                                CliAutostartServices? autostart, CancellationToken cancellationToken = default)
     {
         if (options is null)
         {
@@ -74,6 +80,16 @@ public static class CliRunner
             }
 
             return CliInstallRunner.Run(options, catalog, services, install, startedAt, warnings, cancellationToken);
+        }
+
+        if (CliParser.IsAutostartCommand(options.Command))
+        {
+            if (autostart is null)
+            {
+                throw new ArgumentNullException(nameof(autostart), "Polecenia autostartu wymagają usług autostartu.");
+            }
+
+            return CliAutostartRunner.Run(options, catalog, services, autostart, startedAt, warnings, cancellationToken);
         }
 
         var tweak = Find(loaded.Definitions, options.TweakId);
@@ -228,7 +244,8 @@ public static class CliRunner
     internal static CliReport Build(CliOptions options, CliCatalogResult catalog, EngineServices services, DateTimeOffset startedAt,
                                     CliExitCode code, string? tweakId, List<string> warnings, DetectionState? state = null,
                                     TweakResult? result = null, BatchResult? batch = null, IReadOnlyList<string>? errors = null,
-                                    IReadOnlyList<CliAppInfo>? apps = null, CliInstallReportPart? install = null)
+                                    IReadOnlyList<CliAppInfo>? apps = null, CliInstallReportPart? install = null,
+                                    IReadOnlyList<CliAutostartRow>? autostartRows = null)
     {
         var all = new List<string>(warnings);
         if (batch is not null)
@@ -276,6 +293,7 @@ public static class CliRunner
             InstallItems = install?.Items,
             InstallRows = install?.Rows,
             SearchRows = install?.SearchRows,
+            AutostartRows = autostartRows,
             StartedAt = startedAt,
             FinishedAt = services.Clock.UtcNow,
         };

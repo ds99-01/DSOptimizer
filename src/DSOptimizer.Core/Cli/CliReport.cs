@@ -69,6 +69,10 @@ public sealed class CliReport
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public IReadOnlyList<CliSearchRow>? SearchRows { get; init; }
 
+    /// <summary>Wiersze listy autostartu (<c>--list-autostart</c>); dla innych poleceń null i pominięte w JSON.</summary>
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public IReadOnlyList<CliAutostartRow>? AutostartRows { get; init; }
+
     public DateTimeOffset StartedAt { get; init; }
 
     public DateTimeOffset FinishedAt { get; init; }

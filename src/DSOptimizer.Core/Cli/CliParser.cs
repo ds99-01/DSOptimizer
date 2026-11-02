@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Install;
 using DSOptimizer.Core.Localization;
@@ -8,10 +9,11 @@ namespace DSOptimizer.Core.Cli;
 
 public static class CliParser
 {
-    public static string Usage => L.T("DSOptimizer.exe --detect <id> | --apply <id> [--restore-point required|ifavailable|skip] | --undo <id> | --execute <id> [--catalog <plik.json>] --out <plik.json> | DSOptimizer.exe --list-apps | --remove-app <id> [--restore-point required|ifavailable|skip] --out <plik.json> | DSOptimizer.exe --list-install [--apps-catalog <plik.json>] | --install-apps <id>[,<id>…] [--apps-catalog <plik.json>] | --search-apps <tekst> --out <plik.json> [--lang pl|en]");
+    public static string Usage => L.T("DSOptimizer.exe --detect <id> | --apply <id> [--restore-point required|ifavailable|skip] | --undo <id> | --execute <id> [--catalog <plik.json>] --out <plik.json> | DSOptimizer.exe --list-apps | --remove-app <id> [--restore-point required|ifavailable|skip] --out <plik.json> | DSOptimizer.exe --list-install [--apps-catalog <plik.json>] | --install-apps <id>[,<id>…] [--apps-catalog <plik.json>] | --search-apps <tekst> --out <plik.json> | DSOptimizer.exe --list-autostart | --set-autostart <id> disabled|enabled | --undo-autostart <id> --out <plik.json> [--lang pl|en]");
 
     private const string ListAppsOption = "--list-apps";
     private const string ListInstallOption = "--list-install";
+    private const string ListAutostartOption = "--list-autostart";
     private const string LangOption = "--lang";
 
     /// <summary>
@@ -55,7 +57,7 @@ public static class CliParser
         string? appsCatalogPath = null;
         RestorePointPolicy? restorePoint = null;
         var langSeen = false;
-        var commands = new List<(CliCommand Command, string Id)>();
+        var commands = new List<(CliCommand Command, string Id, AutostartState? Target)>();
 
         for (var i = 0; i < args.Count; i++)
         {
@@ -66,10 +68,10 @@ public static class CliParser
                 continue;
             }
 
-            if (arg.Equals(ListAppsOption, StringComparison.OrdinalIgnoreCase) || arg.Equals(ListInstallOption, StringComparison.OrdinalIgnoreCase))
+            if (TryGetValuelessCommand(arg, out var valueless))
             {
                 // Komendy bez wartości: następny argument nie jest ich wartością.
-                commands.Add((arg.Equals(ListAppsOption, StringComparison.OrdinalIgnoreCase) ? CliCommand.ListApps : CliCommand.ListInstall, string.Empty));
+                commands.Add((valueless, string.Empty, null));
                 continue;
             }
 
@@ -95,7 +97,25 @@ public static class CliParser
             var value = args[++i];
             if (isCommand)
             {
-                commands.Add((command, value));
+                AutostartState? target = null;
+                if (command == CliCommand.SetAutostart)
+                {
+                    // Druga wartość --set-autostart: stan docelowy (bez wielkości liter); brak albo inny = błąd składni.
+                    if (i + 1 >= args.Count || args[i + 1].StartsWith("--", StringComparison.Ordinal))
+                    {
+                        error ??= L.T("Opcja --set-autostart wymaga stanu po id (disabled albo enabled).");
+                    }
+                    else if (TryGetAutostartState(args[++i], out var state))
+                    {
+                        target = state;
+                    }
+                    else
+                    {
+                        error ??= L.F("Nieznany stan --set-autostart '{0}' (dozwolone: disabled, enabled).", args[i]);
+                    }
+                }
+
+                commands.Add((command, value, target));
             }
             else if (arg.Equals("--out", StringComparison.OrdinalIgnoreCase))
             {
@@ -162,7 +182,7 @@ public static class CliParser
 
         if (error is null && commands.Count != 1)
         {
-            error = L.T("Podaj dokładnie jedno z: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps.");
+            error = L.T("Podaj dokładnie jedno z: --detect, --apply, --undo, --execute, --list-apps, --remove-app, --list-install, --install-apps, --search-apps, --list-autostart, --set-autostart, --undo-autostart.");
         }
 
         if (error is null && outPath is null)
@@ -185,6 +205,11 @@ public static class CliParser
         if (error is null && catalogPath is not null && isInstallCommand)
         {
             error = L.T("Opcja --catalog nie dotyczy poleceń instalacji (listę aplikacji podmienia --apps-catalog).");
+        }
+
+        if (error is null && catalogPath is not null && IsAutostartCommand(commands[0].Command))
+        {
+            error = L.T("Opcja --catalog nie dotyczy poleceń autostartu.");
         }
 
         if (error is null && appsCatalogPath is not null && commands[0].Command is not (CliCommand.ListInstall or CliCommand.InstallApps))
@@ -220,6 +245,7 @@ public static class CliParser
                 AppsCatalogPath = appsCatalogPath,
                 InstallIds = installIds,
                 SearchQuery = commands[0].Command == CliCommand.SearchApps ? commands[0].Id : null,
+                AutostartTarget = commands[0].Target,
                 OutPath = outPath!,
                 // --remove-app: domyślnie „required” = bez punktu przywracania seria nie rusza – z programem (spec 6.3, R15) i z samymi AppX (R20).
                 RestorePointPolicy = restorePoint
@@ -231,6 +257,10 @@ public static class CliParser
     /// <summary>Polecenia instalacji przez winget (Etap 4c).</summary>
     public static bool IsInstallCommand(CliCommand command)
         => command is CliCommand.ListInstall or CliCommand.InstallApps or CliCommand.SearchApps;
+
+    /// <summary>Polecenia autostartu: lista, przełączenie jednej pozycji i cofnięcie jej aktywnej zmiany.</summary>
+    public static bool IsAutostartCommand(CliCommand command)
+        => command is CliCommand.ListAutostart or CliCommand.SetAutostart or CliCommand.UndoAutostart;
 
     /// <summary>
     /// Wartość <c>--install-apps</c>: id rozdzielone przecinkiem, bez spacji. Każde to <c>install.&lt;nazwa&gt;</c> albo
@@ -315,7 +345,61 @@ public static class CliParser
             return true;
         }
 
+        if (arg.Equals("--set-autostart", StringComparison.OrdinalIgnoreCase))
+        {
+            command = CliCommand.SetAutostart;
+            return true;
+        }
+
+        if (arg.Equals("--undo-autostart", StringComparison.OrdinalIgnoreCase))
+        {
+            command = CliCommand.UndoAutostart;
+            return true;
+        }
+
         command = default;
+        return false;
+    }
+
+    private static bool TryGetValuelessCommand(string arg, out CliCommand command)
+    {
+        if (arg.Equals(ListAppsOption, StringComparison.OrdinalIgnoreCase))
+        {
+            command = CliCommand.ListApps;
+            return true;
+        }
+
+        if (arg.Equals(ListInstallOption, StringComparison.OrdinalIgnoreCase))
+        {
+            command = CliCommand.ListInstall;
+            return true;
+        }
+
+        if (arg.Equals(ListAutostartOption, StringComparison.OrdinalIgnoreCase))
+        {
+            command = CliCommand.ListAutostart;
+            return true;
+        }
+
+        command = default;
+        return false;
+    }
+
+    private static bool TryGetAutostartState(string value, out AutostartState state)
+    {
+        if (value.Equals("disabled", StringComparison.OrdinalIgnoreCase))
+        {
+            state = AutostartState.Disabled;
+            return true;
+        }
+
+        if (value.Equals("enabled", StringComparison.OrdinalIgnoreCase))
+        {
+            state = AutostartState.Enabled;
+            return true;
+        }
+
+        state = default;
         return false;
     }
 

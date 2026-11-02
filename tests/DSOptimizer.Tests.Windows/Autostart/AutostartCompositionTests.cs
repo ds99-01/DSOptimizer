@@ -24,6 +24,16 @@ public class AutostartCompositionTests
         Assert.IsType<AutostartScanner>(AutostartComposition.CreateReader(composition));
     }
 
+    // Wbudowana baza znanych pozycji wczytana tym samym walidatorem co w programie.
+    [Fact]
+    public void LoadCatalog_LoadsBuiltInEntries()
+    {
+        var catalog = AutostartComposition.LoadCatalog();
+
+        Assert.Equal(16, catalog.Entries.Count);
+        Assert.Contains(catalog.Entries, entry => entry.Verdict == AutostartVerdict.Protected);
+    }
+
     // Usługi, które rzucają przy każdym wywołaniu i liczą wywołania: składanie nie dotyka rejestru, skryptów ani dziennika.
     [Fact]
     public void CreateReader_TouchesNothingUntilRead()

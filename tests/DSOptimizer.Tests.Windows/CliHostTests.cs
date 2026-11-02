@@ -7,12 +7,14 @@ using System.Text;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Cli;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Install;
 using DSOptimizer.Core.Settings;
 using DSOptimizer.Tests.Windows.Support;
 using DSOptimizer.Windows;
+using DSOptimizer.Windows.Autostart;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -516,6 +518,61 @@ public class CliHostTests
         Assert.Same(composition.Winget, services.Runner);
         Assert.Same(catalog, services.Catalog);
         Assert.False(Directory.Exists(temp.AppRoot.DownloadsDirectory));
+    }
+
+    /// <summary>
+    /// --list-autostart na podmienionych usługach: wiersze pochodzą wyłącznie z fałszywego czytnika (prawdziwy autostart hosta nie jest
+    /// czytany), kontekst z zalogowanego konta.
+    /// </summary>
+    [Fact]
+    public void ListAutostart_UsesServicesSeam_NoRealRead()
+    {
+        using var temp = new TempDirectory();
+        var output = temp.Sub("autostart.json");
+        var entry = new AutostartEntry
+        {
+            Id = "run:user:DsoTestAutostart",
+            Source = AutostartSource.RunUser,
+            EntryName = "DsoTestAutostart",
+            Name = "DSO Test Autostart",
+            Location = "test",
+            FileStatus = AutostartFileStatus.NotDetermined,
+            Switch = new AutostartSwitch(AutostartSwitchKind.StartupApproved, "test", "DsoTestAutostart", AutostartSwitchFormat.Valid, AutostartState.Enabled, null, null),
+        };
+        var reader = new FakeAutostartReader(new AutostartReading(
+            new[] { entry }, UserEnvironment.FromVariables(new Dictionary<string, string>()), null, new[] { "ostrzeżenie testowe" }));
+        string? userSid = null;
+
+        var code = CliHost.Run(
+            new[] { "--list-autostart", "--out", output }, temp.AppRoot, null, File.ReadAllText, () => BuiltInCatalog.Sources, null, null,
+            composition =>
+            {
+                userSid = composition.Services.User.Sid;
+                return new CliAutostartServices { Reader = reader, Catalog = AutostartComposition.LoadCatalog(), ProcessSid = userSid };
+            });
+
+        var report = JObject.Parse(File.ReadAllText(output));
+        Assert.True(code == 0, string.Join(" | ", report["errors"]!.Children().Select(e => (string)e!)));
+        Assert.Equal("ListAutostart", (string)report["command"]!);
+        Assert.Equal(userSid, Assert.Single(reader.Contexts).UserSid);
+        var row = Assert.Single(report["autostartRows"]!.Children());
+        Assert.Equal("run:user:DsoTestAutostart", (string)row["id"]!);
+        Assert.Contains(report["warnings"]!.Children(), w => (string)w! == "ostrzeżenie testowe");
+    }
+
+    /// <summary>Tylko składanie: skaner, wbudowana baza i SID procesu; nic nie jest czytane, dopóki polecenie nie wywoła odczytu.</summary>
+    [Fact]
+    public void CreateAutostartServices_ComposesOnly()
+    {
+        using var temp = new TempDirectory();
+        var composition = AppComposition.Create(temp.AppRoot, null);
+
+        var services = CliHost.CreateAutostartServices(composition);
+
+        Assert.IsType<AutostartScanner>(services.Reader);
+        Assert.Equal(AutostartComposition.LoadCatalog().Entries.Count, services.Catalog.Entries.Count);
+        Assert.Equal(WindowsIdentity.GetCurrent().User!.Value, services.ProcessSid);
+        Assert.Null(services.Context);
     }
 
     private static string WriteCatalog(TempDirectory temp, RegistrySandbox sandbox, string title)
