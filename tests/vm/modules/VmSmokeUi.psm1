@@ -1435,6 +1435,10 @@ function Get-GuiAutostartPageCheck {
         if ($null -ne $Expected[$Key] -and $Shown -eq $Expected[$Key]) { $Parts += "${Label}: $Shown (CLI $Cli)" }
         else { $GroupsOk = $false; $Parts += "NIE: ${Label}: $Shown (CLI $Cli)" }
     }
+    # Tylko informacja: lista pusta po obu stronach (okno i CLI) i to, czy sonda szukała w kontenerze strony.
+    if ($GroupsOk -and $ExpectedOk -and ($Expected.Enabled + $Expected.Disabled + $Expected.MissingFile) -eq 0) { $Parts += 'wierszy 0' }
+    $Scoped = [bool](& $Get 'AutostartPageScoped' $false)
+    $Parts += if ($Scoped) { 'kontener strony: tak' } else { 'kontener strony: nie' }
     $ButtonsOk = $true
     foreach ($Button in @(@{ Field = 'AutostartDisable'; Idle = [string]$Texts.DisableIdle }, @{ Field = 'AutostartEnable'; Idle = [string]$Texts.EnableIdle })) {
         $Text = & $Get "$($Button.Field)Text" $null

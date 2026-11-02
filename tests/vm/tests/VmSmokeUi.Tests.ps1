@@ -966,6 +966,20 @@ Describe 'Get-GuiUiCheck: AutostartPage' {
         $Check.Passed | Should -BeTrue
         $Check.Detail | Should -BeLike '*pozycja menu*odczyt skończony*Włączone: 3 (CLI 3)*Wyłączone: 1 (CLI 1)*Bez pliku: 0 (CLI 0)*„Wyłącz (0)” nieaktywny*„Włącz (0)” nieaktywny*'
     }
+    It 'opis podaje, czy sonda znalazła kontener strony (tylko informacja, bez wpływu na wynik)' {
+        $Check = Get-AutostartCheck (New-UiProbe @{})
+        $Check.Detail | Should -BeLike '*kontener strony: tak*'
+        $Check = Get-AutostartCheck (New-UiProbe @{ AutostartPageScoped = $false })
+        $Check.Passed | Should -BeTrue
+        $Check.Detail | Should -BeLike '*kontener strony: nie*'
+    }
+    It 'pusta lista po obu stronach: opis ma dopisek „wierszy 0”, sprawdzenie dalej zaliczone' {
+        $Zero = [pscustomobject]@{ Enabled = 0; Disabled = 0; MissingFile = 0; Detail = 'cli' }
+        $Check = Get-AutostartCheck (New-UiProbe @{ AutostartGroupNames = @('Włączone, 0', 'Wyłączone, 0', 'Bez pliku, 0') }) $Zero
+        $Check.Passed | Should -BeTrue
+        $Check.Detail | Should -BeLike '*wierszy 0*'
+        (Get-AutostartCheck (New-UiProbe @{})).Detail | Should -Not -BeLike '*wierszy 0*'
+    }
     It 'kolejność pozycji przełącznika nie ma znaczenia' {
         (Get-AutostartCheck (New-UiProbe @{ AutostartGroupNames = @('Bez pliku, 0', 'Włączone, 3', 'Wyłączone, 1') })).Passed | Should -BeTrue
     }
