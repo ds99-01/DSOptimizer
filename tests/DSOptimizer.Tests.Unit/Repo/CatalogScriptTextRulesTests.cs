@@ -176,7 +176,7 @@ public class CatalogScriptTextRulesTests
         var result = new List<CatalogScript>();
         var files = Directory.EnumerateFiles(RepoRoot.Combine(CatalogDirectory.Replace('/', Path.DirectorySeparatorChar)), "*.json")
             .Select(Path.GetFileName)
-            .Where(n => !n.StartsWith("apps", StringComparison.Ordinal) && !n.StartsWith("autostart", StringComparison.Ordinal))
+            .Where(n => !n.StartsWith("apps", StringComparison.Ordinal) && !string.Equals(n, "autostart-known.json", StringComparison.Ordinal))
             .OrderBy(n => n, StringComparer.Ordinal)
             .ToList();
         Assert.NotEmpty(files);

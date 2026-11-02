@@ -51,8 +51,8 @@
       "en": "ASUS function key support (ATK Hotkey). Without it, Fn keys such as brightness and Wi-Fi may stop working."
     },
     {
-      "pl": "Interfejs antywirusa Kaspersky. Bez tego wpisu program może zgłaszać alert bezpieczeństwa, a sama ochrona zależy od jego usługi.",
-      "en": "The Kaspersky antivirus interface. Without this entry, the program may report a security alert; protection itself depends on its service."
+      "pl": "Główny proces i ikona antywirusa Kaspersky. Bez tego wpisu program może zgłaszać alert bezpieczeństwa, a sama ochrona zależy od jego usługi.",
+      "en": "The main process and icon of the Kaspersky antivirus. Without this entry, the program may report a security alert; protection itself depends on its service."
     },
     {
       "pl": "Ikona i powiadomienia antywirusa Avast. Silnik ochrony działa w usługach, ale bez tego wpisu alerty mogą zostać niezauważone.",
@@ -63,8 +63,8 @@
       "en": "The Bitdefender icon and panel in the notification area. The protection engine runs in services; without this entry the icon and panel go away."
     },
     {
-      "pl": "Program Logitech G HUB obsługujący urządzenia Logitech. Bez niego mogą nie działać profile, makra i podświetlenie.",
-      "en": "Logitech G HUB, which handles Logitech devices. Without it, profiles, macros and lighting may not work."
+      "pl": "Program Logitech G HUB obsługujący urządzenia Logitech, uruchamiany razem z Windows.",
+      "en": "Logitech G HUB, which handles Logitech devices, started with Windows."
     }
   ]
 }

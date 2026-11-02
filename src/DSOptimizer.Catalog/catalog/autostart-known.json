@@ -140,7 +140,7 @@
       "id": "kaspersky",
       "match": { "file": "avp.exe", "folders": ["%ProgramFiles%\\*", "%ProgramFiles(x86)%\\*"], "publishers": ["AO Kaspersky Lab"] },
       "verdict": "protected",
-      "summary": "Interfejs antywirusa Kaspersky. Bez tego wpisu program może zgłaszać alert bezpieczeństwa, a sama ochrona zależy od jego usługi.",
+      "summary": "Główny proces i ikona antywirusa Kaspersky. Bez tego wpisu program może zgłaszać alert bezpieczeństwa, a sama ochrona zależy od jego usługi.",
       "source": [
         "https://www.wilderssecurity.com/threads/kis-v7-startup-issue.185155/"
       ],
@@ -171,7 +171,7 @@
       "id": "logitech-g-hub",
       "match": { "file": "lghub.exe", "folders": ["%ProgramFiles%\\*", "%ProgramFiles(x86)%\\*"], "publishers": ["Logitech Europe S.A."] },
       "verdict": "protected",
-      "summary": "Program Logitech G HUB obsługujący urządzenia Logitech. Bez niego mogą nie działać profile, makra i podświetlenie.",
+      "summary": "Program Logitech G HUB obsługujący urządzenia Logitech, uruchamiany razem z Windows.",
       "source": [
         "https://support.logi.com/hc/en-us/articles/9631120673943-G-HUB-or-Logi-Options-is-stuck-on-Loading-screen-with-macOS-Ventura"
       ],

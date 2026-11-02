@@ -1,4 +1,4 @@
-<!-- source: docs/autostart/README.md sha256: 9c1a8727af6834ccc0048f5aacff4e7a718899fa09f8078a93749b260ffb048f -->
+<!-- source: docs/autostart/README.md sha256: e6d98b85da8c41bd13acfc535c6dbe7a5c591c2d192d086b81d891e6277b4b4d -->
 
 # Startup apps – known items file `autostart-known.json`
 
@@ -99,7 +99,7 @@ Notes on the sources:
   Discord's machine-wide installer (`C:\ProgramData\SquirrelMachineInstalls\Discord.exe --checkInstall`) doesn't match the `discord` entry
   and stays unassessed.
 - The `ea-app` entry: turning off startup doesn't stop the `EABackgroundService` service the program installs next to it.
-- The sources of `protected` entries are mostly tech sites and forums; they don't confirm the exact Run value names, so these entries
+- The sources of `protected` entries are mostly tech sites and forums; the exact Run value names there are unverified, so these entries
   have no `valueName`. The `logitech-g-hub` source describes macOS; the effect on Windows isn't confirmed.
 
 ## Intentionally not assessed

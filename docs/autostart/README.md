@@ -57,7 +57,7 @@ Progi są celowo różne:
 - `can-disable` wymaga `confirmed: true`, dokumentu z odczytem na maszynie testowej (nazwa pliku, folder, wydawca i nazwa wartości,
   `docs/zrodla/2026-11-02-autostart-programy.md`) oraz co najmniej jednego adresu `https://` o skutku wyłączenia. Pilnuje tego loader.
 - `protected` może mieć `confirmed: false`. Zbędna kłódka kosztuje mniej niż sugestia wyłączenia antywirusa albo sterownika
-  touchpada, więc wystarczą źródła opisowe. Wpisy z `confirmed: false` nie zostały jeszcze potwierdzone na prawdziwym sprzęcie.
+  touchpada, więc wystarczą źródła opisowe. Wpisy z `confirmed: false` są jeszcze niepotwierdzone na prawdziwym sprzęcie.
 - Gdy źródła nie podają folderu (`asus-hotkeys`, `kaspersky`, `avast`, `bitdefender`, `logitech-g-hub`), folder to
   `%ProgramFiles%\*` albo `%ProgramFiles(x86)%\*`, a wydawca jest wymagany: plik o tej nazwie z `%TEMP%` albo `AppData` nie dostaje kłódki.
 - `security-health` jest jedynym potwierdzonym wpisem `protected`: wartość `SecurityHealth` w `HKLM\…\Run` jest na czystym systemie
@@ -96,8 +96,8 @@ Uwagi do źródeł:
   (program nie startuje sam, działa po ręcznym otwarciu) – z adresów w tabeli. Wartość Run instalatora maszynowego Discorda
   (`C:\ProgramData\SquirrelMachineInstalls\Discord.exe --checkInstall`) nie pasuje do wpisu `discord` i zostaje bez oceny.
 - Wpis `ea-app`: wyłączenie autostartu nie zatrzymuje usługi `EABackgroundService`, którą program instaluje obok.
-- Źródła wpisów `protected` to głównie serwisy techniczne i fora; dokładne nazwy wartości Run nie są w nich potwierdzone, dlatego wpisy
-  nie mają `valueName`. Źródło `logitech-g-hub` opisuje macOS; dla Windows skutek nie jest potwierdzony.
+- Źródła wpisów `protected` to głównie serwisy techniczne i fora; dokładne nazwy wartości Run są w nich niepotwierdzone, dlatego wpisy
+  nie mają `valueName`. Źródło `logitech-g-hub` opisuje macOS; dla Windows skutek jest niepotwierdzony.
 
 ## Celowo bez oceny
 
@@ -111,7 +111,7 @@ Te pozycje nie mają wpisu – program nie daje im ani kłódki, ani sugestii, d
 - **Java Update Scheduler** (`jusched.exe`) – wyłączenie ukrywa powiadomienia o poprawkach bezpieczeństwa Javy.
 - **iTunesHelper** – Apple odradza wyłączanie ([Apple](https://support.apple.com/en-us/102018)); iTunes przestaje sam reagować na
   podłączony iPhone albo iPod.
-- **Sterowniki grafiki** (NVIDIA, AMD, Intel) – nazwy wartości nie są potwierdzone, a od wpisu zależą dodatki (ikona, nagrywanie,
+- **Sterowniki grafiki** (NVIDIA, AMD, Intel) – nazwy wartości są niepotwierdzone, a od wpisu zależą dodatki (ikona, nagrywanie,
   profile, skróty klawiszowe), nie sam sterownik.
 - **Bluetooth** (stary stos z ikoną w zasobniku) – od wpisu zależy tylko ikona, połączenia obsługuje usługa stosu.
 - **Microsoft Edge – przyspieszanie uruchamiania** – Edge sam odtwarza wpis; trwale wyłącza się je w ustawieniach Edge

@@ -107,3 +107,5 @@ docs/en/tweaks/ux.classic-context-menu.md	1
 docs/en/tweaks/ux.game-dvr.md	1
 docs/en/tweaks/ux.game-dvr-policy.md	3
 docs/en/tweaks/ux.menu-delay.md	3
+docs/autostart/README.md	4
+docs/en/autostart/README.md	4
