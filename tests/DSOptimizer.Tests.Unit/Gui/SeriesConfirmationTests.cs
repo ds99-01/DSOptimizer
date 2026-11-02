@@ -300,6 +300,8 @@ public class SeriesConfirmationTests
 
         public System.Collections.Generic.IReadOnlyList<string> SubKeyNames(string path) => throw new InvalidOperationException("rejestr padł");
 
+        public System.Collections.Generic.IReadOnlyList<string> ValueNames(string path) => throw new InvalidOperationException("rejestr padł");
+
         public bool DeleteKeyIfEmpty(string path) => throw new InvalidOperationException("rejestr padł");
 
         public void DeleteKeyTree(string path) => throw new InvalidOperationException("rejestr padł");

@@ -25,6 +25,13 @@ public interface IRegistry
     IReadOnlyList<string> SubKeyNames(string path);
 
     /// <summary>
+    /// Nazwy wartości klucza (także pusta nazwa wartości domyślnej, gdy ma dane), w kolejności zwróconej przez system. Brak klucza =
+    /// pusta lista. Brak dostępu albo błąd wejścia/wyjścia = <see cref="Errors.OperationException"/>; nieobsługiwany korzeń ścieżki =
+    /// <see cref="System.ArgumentException"/>.
+    /// </summary>
+    IReadOnlyList<string> ValueNames(string path);
+
+    /// <summary>
     /// Usuwa klucz, jeśli nie ma wartości (łącznie z domyślną) ani podkluczy. True = usunięty albo go nie było;
     /// false = klucz niepusty (także gdy podklucz pojawił się w trakcie usuwania). Błędy: OperationException.
     /// </summary>

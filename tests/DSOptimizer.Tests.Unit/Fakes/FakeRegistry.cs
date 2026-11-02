@@ -89,6 +89,27 @@ public sealed class FakeRegistry : IRegistry
         return names;
     }
 
+    public IReadOnlyList<string> ValueNames(string path)
+    {
+        var key = NormalizeKey(path);
+        if (_deniedKeys.Contains(key))
+        {
+            throw new OperationException(OperationErrorKind.AccessDenied, $"Lista wartości {path} odrzucona (fake).");
+        }
+
+        var names = new List<string>();
+        foreach (var valueKey in _values.Keys)
+        {
+            var separator = valueKey.IndexOf('|');
+            if (string.Equals(NormalizeKey(valueKey.Substring(0, separator)), key, StringComparison.OrdinalIgnoreCase))
+            {
+                names.Add(valueKey.Substring(separator + 1));
+            }
+        }
+
+        return names;
+    }
+
     public bool DeleteKeyIfEmpty(string path)
     {
         var key = NormalizeKey(path);

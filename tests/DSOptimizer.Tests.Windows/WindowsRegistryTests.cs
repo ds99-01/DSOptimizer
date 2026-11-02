@@ -145,6 +145,36 @@ public class WindowsRegistryTests
         => Assert.Throws<ArgumentException>(() => _registry.SubKeyNames(@"HKEY_LOCAL_MACHINE\X"));
 
     [Fact]
+    public void ValueNames_ReadsSandbox_MissingKeyEmpty()
+    {
+        using var sandbox = new RegistrySandbox();
+        _registry.Write(sandbox.HkcuPath, "Steam", RegValue.FromString("x"));
+        _registry.Write(sandbox.HkcuPath, "Binarna", RegValue.FromBinary(new byte[] { 2, 0 }));
+        _registry.Write(sandbox.HkcuPath, string.Empty, RegValue.FromString("domyślna"));
+        _registry.Write(sandbox.HkcuPath + @"\Sub", "Deep", RegValue.FromDWord(1));
+        _registry.Write(sandbox.HkcuPath + @"\Empty", "x", RegValue.FromDWord(1));
+        _registry.Write(sandbox.HkcuPath + @"\Empty", "x", RegValue.Absent);
+
+        var names = new List<string>(_registry.ValueNames(sandbox.HkcuPath + @"\"));
+        names.Sort(StringComparer.Ordinal);
+
+        Assert.Equal(new[] { string.Empty, "Binarna", "Steam" }, names);
+        Assert.Empty(_registry.ValueNames(sandbox.HkcuPath + @"\Empty"));
+        Assert.Empty(_registry.ValueNames(sandbox.HkcuPath + @"\nie-ma"));
+    }
+
+    [Fact]
+    public void ValueNames_ProtectedKey_ThrowsAccessDenied()
+    {
+        var ex = Assert.Throws<OperationException>(() => _registry.ValueNames(@"HKLM\SECURITY\Policy"));
+        Assert.Equal(OperationErrorKind.AccessDenied, ex.Kind);
+    }
+
+    [Fact]
+    public void ValueNames_UnknownRoot_Throws()
+        => Assert.Throws<ArgumentException>(() => _registry.ValueNames(@"HKEY_LOCAL_MACHINE\X"));
+
+    [Fact]
     public void DeleteKeyIfEmpty_EmptyKey_Deleted()
     {
         using var sandbox = new RegistrySandbox();

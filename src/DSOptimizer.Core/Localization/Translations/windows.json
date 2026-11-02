@@ -446,6 +446,14 @@
       "en": "Error reading the subkeys of {0}: {1}"
     },
     {
+      "pl": "Brak uprawnień do odczytu nazw wartości {0}: {1}",
+      "en": "No permission to read the value names of {0}: {1}"
+    },
+    {
+      "pl": "Błąd odczytu nazw wartości {0}: {1}",
+      "en": "Error reading the value names of {0}: {1}"
+    },
+    {
       "pl": "Brak uprawnień do usunięcia klucza {0}: {1}",
       "en": "No permission to delete the key {0}: {1}"
     },

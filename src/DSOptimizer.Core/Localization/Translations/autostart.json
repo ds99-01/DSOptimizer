@@ -1,0 +1,9 @@
+{
+  "language": "en",
+  "entries": [
+    {
+      "pl": "Nie udało się odczytać zmiennych konta z {0}: {1}",
+      "en": "Couldn't read the account variables from {0}: {1}"
+    }
+  ]
+}

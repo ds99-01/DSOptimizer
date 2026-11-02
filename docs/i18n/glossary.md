@@ -287,6 +287,8 @@ How to read the tables:
 | niezaufany właściciel lub uprawnienia / odłożony | untrusted owner or permissions / set aside | Program folders and files with a foreign owner or ACL are renamed (`.untrusted-*`) and replaced: "… was set aside. A new one was created." |
 | Nie można … / Brak dostępu do … / Brak uprawnień do … | Can't … / Access denied to … / No permission to … | Windows layer errors; "Błąd zapisu / odczytu / usuwania" = "Error writing / reading / deleting" |
 | klucz / podklucz / drzewo kluczy | key / subkey / key tree | Registry |
+| nazwy wartości | value names | Registry; "Error reading the value names of {0}: {1}" |
+| zmienne konta | account variables | Environment variables of the signed-in account, read from its registry hive (`Environment`, `Volatile Environment`), not from the program's process |
 | punkt ponownej analizy | reparse point | Junction or symbolic link (Windows term) |
 | potok / Job Object | pipe / Job Object | Process plumbing in Windows layer errors; "Job Object" kept as the Windows name |
 | Ponowne uruchomienie programu: {0} | Restarting the program: {0} | Startup log line before the program restarts itself |

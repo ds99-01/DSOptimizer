@@ -1246,6 +1246,8 @@ public class WindowsUpdateResetTests
 
         public IReadOnlyList<string> SubKeyNames(string path) => _inner.SubKeyNames(path);
 
+        public IReadOnlyList<string> ValueNames(string path) => _inner.ValueNames(path);
+
         public bool DeleteKeyIfEmpty(string path) => _inner.DeleteKeyIfEmpty(path);
 
         public void DeleteKeyTree(string path)

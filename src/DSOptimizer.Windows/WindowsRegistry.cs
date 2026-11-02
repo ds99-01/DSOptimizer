@@ -134,6 +134,25 @@ public sealed class WindowsRegistry : IRegistry
         }
     }
 
+    public IReadOnlyList<string> ValueNames(string path)
+    {
+        var (hive, subKey) = Split(path);
+        try
+        {
+            using var root = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
+            using var key = root.OpenSubKey(subKey, writable: false);
+            return key is null ? Array.Empty<string>() : key.GetValueNames();
+        }
+        catch (Exception ex) when (ex is SecurityException or UnauthorizedAccessException)
+        {
+            throw new OperationException(OperationErrorKind.AccessDenied, L.F("Brak uprawnień do odczytu nazw wartości {0}: {1}", path, ex.Message), ex);
+        }
+        catch (IOException ex)
+        {
+            throw new OperationException(OperationErrorKind.Unexpected, L.F("Błąd odczytu nazw wartości {0}: {1}", path, ex.Message), ex);
+        }
+    }
+
     public bool DeleteKeyIfEmpty(string path)
     {
         var (hive, subKey) = Split(path);

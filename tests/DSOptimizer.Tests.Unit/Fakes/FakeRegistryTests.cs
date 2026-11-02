@@ -159,6 +159,26 @@ public class FakeRegistryTests
     }
 
     [Fact]
+    public void ValueNames_ListsNames_MissingKeyEmpty_DeniedThrows()
+    {
+        var registry = new FakeRegistry();
+        registry.Write(Path, "A", RegValue.FromDWord(1));
+        registry.Write(Path, string.Empty, RegValue.FromString("domyślna"));
+        registry.Write(Path + @"\Sub", "Deep", RegValue.FromDWord(2));
+        registry.Write(Path + "X", "Other", RegValue.FromDWord(3));
+        registry.CreateKey(Path + @"\Empty");
+
+        Assert.Equal(new[] { string.Empty, "A" }, registry.ValueNames(Path + @"\").OrderBy(n => n, System.StringComparer.Ordinal).ToArray());
+        Assert.Equal(new[] { "Deep" }, registry.ValueNames(Path.ToLowerInvariant() + @"\sub"));
+        Assert.Empty(registry.ValueNames(Path + @"\Empty"));
+        Assert.Empty(registry.ValueNames(@"HKLM\SOFTWARE\Nie-ma"));
+
+        registry.DenyKey(Path);
+        var ex = Assert.Throws<OperationException>(() => registry.ValueNames(Path));
+        Assert.Equal(OperationErrorKind.AccessDenied, ex.Kind);
+    }
+
+    [Fact]
     public void DeleteKeyTree_DeniedKey_Throws()
     {
         var registry = new FakeRegistry();
