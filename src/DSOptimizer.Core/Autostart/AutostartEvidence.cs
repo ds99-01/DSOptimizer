@@ -25,8 +25,8 @@ public static class AutostartEvidence
     public static IReadOnlyCollection<AutostartSource> WriteFromZeroConfirmed => Confirmed;
 
     /// <summary>
-    /// Zadanie startowe, klucz nie istnieje (manifest <c>Enabled="false"</c>): utworzenie klucza od zera ze stanem włączenia działa.
-    /// Wyłączenie od zera (manifest <c>Enabled="true"</c>) nie było mierzone.
+    /// Zadanie startowe, klucz nie istnieje (<see cref="StartupTaskRead.KeyExists"/> = false, manifest <c>Enabled="false"</c>): utworzenie
+    /// klucza od zera ze stanem włączenia działa. Wyłączenie od zera (manifest <c>Enabled="true"</c>) i klucz bez <c>State</c> nie były mierzone.
     /// </summary>
     public static bool StartupTaskKeyAbsentEnable { get; } = true;
 

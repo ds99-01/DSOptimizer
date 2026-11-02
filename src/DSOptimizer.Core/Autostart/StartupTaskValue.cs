@@ -4,7 +4,12 @@ using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Autostart;
 
-public sealed record StartupTaskRead(AutostartSwitchFormat Format, AutostartState State, DateTimeOffset? DisabledAt, uint? TaskState);
+/// <summary>
+/// Odczyt zadania startowego. <see cref="KeyExists"/> = klucz zadania istnieje (<see cref="ReadStatus.Found"/>): odróżnia „klucz nie
+/// istnieje” od „klucz bez <c>State</c>” i „<c>State</c> 0”, bo dowód zapisu od zera jest osobny dla każdego z tych stanów
+/// (<see cref="AutostartEvidence"/>), a klucz bez <c>State</c> nie był mierzony.
+/// </summary>
+public sealed record StartupTaskRead(AutostartSwitchFormat Format, AutostartState State, DateTimeOffset? DisabledAt, uint? TaskState, bool KeyExists);
 
 /// <summary>
 /// Stan zadania startowego aplikacji ze Sklepu (klucz <see cref="AutostartLocations.StartupTaskKey"/>): <c>State</c> DWORD 1 = wyłączone
@@ -33,25 +38,25 @@ public static class StartupTaskValue
         var manifestState = enabledInManifest ? AutostartState.Enabled : AutostartState.Disabled;
         if (keyStatus == ReadStatus.NotFound || (keyStatus == ReadStatus.Found && state.Status == ReadStatus.NotFound))
         {
-            return new StartupTaskRead(AutostartSwitchFormat.Absent, manifestState, null, null);
+            return new StartupTaskRead(AutostartSwitchFormat.Absent, manifestState, null, null, keyStatus == ReadStatus.Found);
         }
 
         if (keyStatus != ReadStatus.Found || state.Status != ReadStatus.Found)
         {
-            return new StartupTaskRead(AutostartSwitchFormat.Unreadable, AutostartState.Unknown, null, null);
+            return new StartupTaskRead(AutostartSwitchFormat.Unreadable, AutostartState.Unknown, null, null, keyStatus == ReadStatus.Found);
         }
 
         if (state.Value.Data is not uint value || state.Value.Type != RegistryValueType.DWord)
         {
-            return new StartupTaskRead(AutostartSwitchFormat.UnknownFormat, AutostartState.Unknown, null, null);
+            return new StartupTaskRead(AutostartSwitchFormat.UnknownFormat, AutostartState.Unknown, null, null, keyStatus == ReadStatus.Found);
         }
 
         return value switch
         {
-            0 => new StartupTaskRead(AutostartSwitchFormat.Absent, manifestState, null, value),
-            1 => new StartupTaskRead(AutostartSwitchFormat.Valid, AutostartState.Disabled, DisabledAtOf(lastDisabled), value),
-            2 => new StartupTaskRead(AutostartSwitchFormat.Valid, AutostartState.Enabled, null, value),
-            _ => new StartupTaskRead(AutostartSwitchFormat.Policy, AutostartState.Unknown, null, value),
+            0 => new StartupTaskRead(AutostartSwitchFormat.Absent, manifestState, null, value, KeyExists: true),
+            1 => new StartupTaskRead(AutostartSwitchFormat.Valid, AutostartState.Disabled, DisabledAtOf(lastDisabled), value, KeyExists: true),
+            2 => new StartupTaskRead(AutostartSwitchFormat.Valid, AutostartState.Enabled, null, value, KeyExists: true),
+            _ => new StartupTaskRead(AutostartSwitchFormat.Policy, AutostartState.Unknown, null, value, KeyExists: true),
         };
     }
 

@@ -31,7 +31,9 @@ public static class AutostartCommand
     /// <summary>
     /// Plik polecenia Run. W cudzysłowie – do drugiego cudzysłowu. Bez cudzysłowu i bez białych znaków – całość. Bez cudzysłowu ze spacjami –
     /// najpierw sama nazwa interpretera w pierwszym tokenie, potem prefiksy kończące się przed kolejnymi spacjami (od najkrótszego) i całość,
-    /// bez rozszerzenia także z <c>.exe</c>; wygrywa pierwszy istniejący, a brak kandydata = plik nieustalony.
+    /// kandydat bez rozszerzenia tylko z dopisanym <c>.exe</c> (jak <c>CreateProcess</c>, więc prefiks w rodzaju <c>C:\Program Files</c>
+    /// nigdy nie trafia w katalog); wygrywa pierwszy istniejący, a brak kandydata = plik nieustalony. <paramref name="probe"/> zwraca
+    /// <see cref="FileProbe.Exists"/> tylko dla istniejącego pliku – katalog to nie <see cref="FileProbe.Exists"/>.
     /// </summary>
     public static CommandTarget Parse(string? command, UserEnvironment environment, Func<string, FileProbe> probe)
     {
@@ -174,15 +176,11 @@ public static class AutostartCommand
             return false;
         }
 
-        if (probe(expanded) == FileProbe.Exists)
+        // Bez rozszerzenia tylko z dopisanym .exe, jak CreateProcess: sam prefiks bez rozszerzenia to zwykle katalog (C:\Program Files).
+        var file = HasExtension(expanded) ? expanded : expanded + ".exe";
+        if (probe(file) == FileProbe.Exists)
         {
-            path = expanded;
-            return true;
-        }
-
-        if (!HasExtension(expanded) && probe(expanded + ".exe") == FileProbe.Exists)
-        {
-            path = expanded + ".exe";
+            path = file;
             return true;
         }
 

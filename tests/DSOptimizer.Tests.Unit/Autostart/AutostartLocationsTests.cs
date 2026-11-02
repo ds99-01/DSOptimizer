@@ -9,7 +9,7 @@ public class AutostartLocationsTests
     private const string Sid = "S-1-5-21-1-2-3-1001";
 
     [Fact]
-    public void ForUser_PathsFromSpecTable()
+    public void ForUser_Paths()
     {
         var locations = AutostartLocations.ForUser(Sid);
 

@@ -24,31 +24,42 @@ public class StartupTaskValueTests
     [Fact]
     public void KeyAbsent_ManifestFalse_DisabledAbsent()
         => Assert.Equal(
-            new StartupTaskRead(AutostartSwitchFormat.Absent, AutostartState.Disabled, null, null),
+            new StartupTaskRead(AutostartSwitchFormat.Absent, AutostartState.Disabled, null, null, KeyExists: false),
             StartupTaskValue.Interpret(ReadStatus.NotFound, Missing, Missing, enabledInManifest: false));
 
     [Fact]
     public void KeyAbsent_ManifestTrue_EnabledAbsent()
         => Assert.Equal(
-            new StartupTaskRead(AutostartSwitchFormat.Absent, AutostartState.Enabled, null, null),
+            new StartupTaskRead(AutostartSwitchFormat.Absent, AutostartState.Enabled, null, null, KeyExists: false),
             StartupTaskValue.Interpret(ReadStatus.NotFound, Missing, Missing, enabledInManifest: true));
 
     [Fact]
     public void State0_UsesManifest()
     {
         Assert.Equal(
-            new StartupTaskRead(AutostartSwitchFormat.Absent, AutostartState.Disabled, null, 0u),
+            new StartupTaskRead(AutostartSwitchFormat.Absent, AutostartState.Disabled, null, 0u, KeyExists: true),
             StartupTaskValue.Interpret(ReadStatus.Found, DWord(0), Missing, enabledInManifest: false));
         Assert.Equal(
-            new StartupTaskRead(AutostartSwitchFormat.Absent, AutostartState.Enabled, null, 0u),
+            new StartupTaskRead(AutostartSwitchFormat.Absent, AutostartState.Enabled, null, 0u, KeyExists: true),
             StartupTaskValue.Interpret(ReadStatus.Found, DWord(0), Missing, enabledInManifest: true));
     }
 
     [Fact]
     public void KeyWithoutState_UsesManifest()
         => Assert.Equal(
-            new StartupTaskRead(AutostartSwitchFormat.Absent, AutostartState.Enabled, null, null),
+            new StartupTaskRead(AutostartSwitchFormat.Absent, AutostartState.Enabled, null, null, KeyExists: true),
             StartupTaskValue.Interpret(ReadStatus.Found, Missing, Missing, enabledInManifest: true));
+
+    [Fact]
+    public void KeyWithoutState_DistinctFromKeyAbsent()
+    {
+        var withoutState = StartupTaskValue.Interpret(ReadStatus.Found, Missing, Missing, enabledInManifest: false);
+        var keyAbsent = StartupTaskValue.Interpret(ReadStatus.NotFound, Missing, Missing, enabledInManifest: false);
+
+        Assert.True(withoutState.KeyExists);
+        Assert.False(keyAbsent.KeyExists);
+        Assert.NotEqual(keyAbsent, withoutState);
+    }
 
     [Fact]
     public void State1_DisabledWithLastDisabledTime()
@@ -56,7 +67,7 @@ public class StartupTaskValueTests
         var read = StartupTaskValue.Interpret(ReadStatus.Found, DWord(1), RegistryReadResult.Found(RegValue.FromQWord(1793609249)), false);
 
         Assert.Equal(
-            new StartupTaskRead(AutostartSwitchFormat.Valid, AutostartState.Disabled, new DateTimeOffset(2026, 11, 2, 8, 47, 29, TimeSpan.Zero), 1u),
+            new StartupTaskRead(AutostartSwitchFormat.Valid, AutostartState.Disabled, new DateTimeOffset(2026, 11, 2, 8, 47, 29, TimeSpan.Zero), 1u, KeyExists: true),
             read);
     }
 
@@ -73,7 +84,7 @@ public class StartupTaskValueTests
     [Fact]
     public void State2_Enabled()
         => Assert.Equal(
-            new StartupTaskRead(AutostartSwitchFormat.Valid, AutostartState.Enabled, null, 2u),
+            new StartupTaskRead(AutostartSwitchFormat.Valid, AutostartState.Enabled, null, 2u, KeyExists: true),
             StartupTaskValue.Interpret(ReadStatus.Found, DWord(2), RegistryReadResult.Found(RegValue.FromQWord(1793609249)), false));
 
     [Theory]
@@ -82,13 +93,13 @@ public class StartupTaskValueTests
     [InlineData(7u)]
     public void OtherState_PolicyUnknown(uint state)
         => Assert.Equal(
-            new StartupTaskRead(AutostartSwitchFormat.Policy, AutostartState.Unknown, null, state),
+            new StartupTaskRead(AutostartSwitchFormat.Policy, AutostartState.Unknown, null, state, KeyExists: true),
             StartupTaskValue.Interpret(ReadStatus.Found, DWord(state), Missing, true));
 
     [Fact]
     public void StateString_UnknownFormat()
         => Assert.Equal(
-            new StartupTaskRead(AutostartSwitchFormat.UnknownFormat, AutostartState.Unknown, null, null),
+            new StartupTaskRead(AutostartSwitchFormat.UnknownFormat, AutostartState.Unknown, null, null, KeyExists: true),
             StartupTaskValue.Interpret(ReadStatus.Found, RegistryReadResult.Found(RegValue.FromString("2")), Missing, true));
 
     [Theory]
@@ -96,12 +107,12 @@ public class StartupTaskValueTests
     [InlineData(ReadStatus.Error)]
     public void KeyDenied_Unreadable(ReadStatus keyStatus)
         => Assert.Equal(
-            new StartupTaskRead(AutostartSwitchFormat.Unreadable, AutostartState.Unknown, null, null),
+            new StartupTaskRead(AutostartSwitchFormat.Unreadable, AutostartState.Unknown, null, null, KeyExists: false),
             StartupTaskValue.Interpret(keyStatus, DWord(2), Missing, true));
 
     [Fact]
     public void StateValueDenied_Unreadable()
         => Assert.Equal(
-            new StartupTaskRead(AutostartSwitchFormat.Unreadable, AutostartState.Unknown, null, null),
+            new StartupTaskRead(AutostartSwitchFormat.Unreadable, AutostartState.Unknown, null, null, KeyExists: true),
             StartupTaskValue.Interpret(ReadStatus.Found, RegistryReadResult.AccessDenied("odmowa"), Missing, true));
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DSOptimizer.Core.Autostart;
 using Xunit;
 
@@ -70,8 +71,26 @@ public class AutostartCommandTests
         var target = AutostartCommand.Parse(Java, Environment, Probe(Java));
 
         Assert.Equal(new CommandTarget(Java, FileProbe.Exists, Definite: true, IsInterpreter: false, null), target);
-        Assert.Equal(@"C:\Program", _probed[0]);
-        Assert.Equal(@"C:\Program.exe", _probed[1]);
+        Assert.Equal(@"C:\Program.exe", _probed[0]);
+        Assert.Equal(@"C:\Program Files.exe", _probed[1]);
+        Assert.DoesNotContain(@"C:\Program", _probed);
+        Assert.DoesNotContain(@"C:\Program Files", _probed);
+    }
+
+    [Fact]
+    public void Unquoted_PrefixIsExistingFolder_NeverChosen()
+    {
+        const string Java = @"C:\Program Files (x86)\Common Files\Java\Java Update\jusched.exe";
+
+        // Atrapa odpowiada Exists także dla katalogów – prefiks bez rozszerzenia i tak nie jest sprawdzany jako plik.
+        var folders = new[] { @"C:\Program", @"C:\Program Files", @"C:\Program Files (x86)\Common", @"C:\Program Files (x86)\Common Files\Java\Java" };
+
+        var resolved = AutostartCommand.Parse(Java, Environment, Probe(folders.Concat(new[] { Java }).ToArray()));
+        var undetermined = AutostartCommand.Parse(Java, Environment, Probe(folders));
+
+        Assert.Equal(new CommandTarget(Java, FileProbe.Exists, Definite: true, IsInterpreter: false, null), resolved);
+        Assert.Equal(new CommandTarget(null, FileProbe.Unknown, Definite: false, IsInterpreter: false, null), undetermined);
+        Assert.DoesNotContain(_probed, p => Array.IndexOf(folders, p) >= 0);
     }
 
     [Fact]

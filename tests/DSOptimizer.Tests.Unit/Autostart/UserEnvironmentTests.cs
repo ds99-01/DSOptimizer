@@ -157,7 +157,7 @@ public class UserEnvironmentTests
     }
 
     [Fact]
-    public void MachineVariableNames_FromPlanDecision()
+    public void MachineVariableNames_MachineWideOnly()
         => Assert.Equal(
             new[]
             {
