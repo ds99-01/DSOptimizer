@@ -4,6 +4,30 @@
     {
       "pl": "Nie udało się odczytać zmiennych konta z {0}: {1}",
       "en": "Couldn't read the account variables from {0}: {1}"
+    },
+    {
+      "pl": "(bez nazwy)",
+      "en": "(no name)"
+    },
+    {
+      "pl": "Brak pomiaru Windows – w kolumnie pomiaru będzie „nie zmierzono”.",
+      "en": "No Windows measurement – the measurement column will show \"not measured\"."
+    },
+    {
+      "pl": "Nie udało się odczytać {0}: {1}",
+      "en": "Couldn't read {0}: {1}"
+    },
+    {
+      "pl": "Pominięto wartość {1} w {0}: nieobsługiwany typ.",
+      "en": "Skipped value {1} in {0}: unsupported type."
+    },
+    {
+      "pl": "Pominięto plik pomiaru Windows {0}: błędny format.",
+      "en": "Skipped Windows measurement file {0}: invalid format."
+    },
+    {
+      "pl": "Nie udało się odczytać aplikacji ze Sklepu: {0}",
+      "en": "Couldn't read the Store apps: {0}"
     }
   ]
 }

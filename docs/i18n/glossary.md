@@ -288,6 +288,7 @@ How to read the tables:
 | Nie można … / Brak dostępu do … / Brak uprawnień do … | Can't … / Access denied to … / No permission to … | Windows layer errors; "Błąd zapisu / odczytu / usuwania" = "Error writing / reading / deleting" |
 | klucz / podklucz / drzewo kluczy | key / subkey / key tree | Registry |
 | nazwy wartości | value names | Registry; "Error reading the value names of {0}: {1}" |
+| pomiar Windows / nie zmierzono / plik pomiaru Windows | Windows measurement / not measured / Windows measurement file | Startup data Windows writes after sign-in (`StartupInfo`): processor time and disk reads of each startup app; "not measured" as in Task Manager's "Startup impact" column |
 | zmienne konta | account variables | Environment variables of the signed-in account, read from its registry hive (`Environment`, `Volatile Environment`), not from the program's process |
 | punkt ponownej analizy | reparse point | Junction or symbolic link (Windows term) |
 | potok / Job Object | pipe / Job Object | Process plumbing in Windows layer errors; "Job Object" kept as the Windows name |
