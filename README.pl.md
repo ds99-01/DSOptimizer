@@ -23,8 +23,13 @@ i sprawdzenie sterowników. Każda zmiana ustawień trafia do historii. Większo
   producenta laptopa, urządzenia bez sterownika. Program tylko sprawdza stan i podaje oficjalne linki.
 - **Aplikacje** – lista zainstalowanych aplikacji z sugestiami, co można usunąć. Aplikacje ważne dla systemu
   są chronione i nie da się ich zaznaczyć.
+- **Autostart** – programy, które startują same po zalogowaniu użytkownika (z rejestru, folderów Autostart
+  i aplikacji ze Sklepu), z czasem procesora zużytym przy starcie według pomiaru Windows. Można je wyłączać
+  i włączać: program używa tego samego przełącznika co Menedżer zadań i Ustawienia i niczego nie usuwa. Pozycje
+  ważne dla systemu są chronione; część znanych programów i pozycje, których plik już nie istnieje, są sugerowane
+  do wyłączenia.
 - **Instalacja** – instalacja popularnych programów przez winget (Microsoft) oraz RustDesk z GitHuba jego autorów.
-- **Historia zmian** – zmiany ustawień, usunięcia i instalacje aplikacji w jednym miejscu. Zmiany ustawień można tu cofnąć; usunięcia i instalacje aplikacji nie mają „Cofnij”.
+- **Historia zmian** – zmiany ustawień, zmiany w autostarcie, usunięcia i instalacje aplikacji w jednym miejscu. Zmiany ustawień i autostartu można tu cofnąć; usunięcia i instalacje aplikacji nie mają „Cofnij”.
 
 ## Wymagania
 
@@ -96,6 +101,10 @@ Raport ze specyfikacją zawiera numery seryjne dysków – pamiętaj o tym, zani
 - **Naprawy i akcje** – działają jednorazowo i nie mają „Cofnij” (np. wyczyszczonych plików nie da się
   odzyskać). Przed uruchomieniem przeczytaj opis pozycji.
 - **Instalacja** – zainstalowany program odinstalujesz na stronie „Aplikacje”.
+- **Autostart** – wyłączenie i włączenie zmienia tylko przełącznik, którego używa sam Windows (ten sam co
+  w Menedżerze zadań i Ustawieniach); program nigdy nie usuwa wpisu autostartu ani pliku. Zmianę cofniesz na stronie
+  „Historia zmian” albo przełączając pozycję z powrotem. Zmiany działają od następnego logowania, a punkt
+  przywracania nie jest tworzony.
 
 ## Budowanie ze źródeł
 
@@ -136,7 +145,7 @@ DSOptimizer.exe --undo-autostart <id> --out <plik.json>
 - `--list-install` zwraca listę instalacji ze stanem winget, `--install-apps` instaluje podane pozycje (`install.<nazwa>` z listy albo `winget:<id>`) bez pytania, a `--search-apps` zwraca wyniki `winget search`. `--apps-catalog` podmienia wbudowaną listę instalacji.
 - Instalacja i wyszukiwanie przez winget działają tylko na koncie zalogowanego użytkownika; na innym koncie kończą się odmową (kod 1), a winget nie jest uruchamiany.
 - `--list-autostart` zwraca wiersze strony „Autostart” dla konta zalogowanego użytkownika w polu `autostartRows`: `id`, `source` (`RunUser`, `RunMachine`, `Run32`, `FolderUser`, `FolderCommon`, `StartupTask`), `name`, `publisher`, `scope` (`User`, `Machine`, `Store`), `state` (`Enabled`, `Disabled`, `Unknown`), `missingFile`, `verdict` (`Protected`, `CanDisable` albo `null`, gdy bez oceny), `canToggle`, `cpuMs` (czas procesora z pomiaru Windows w milisekundach) i `diskBytes` (odczyt z dysku w bajtach); obie liczby są `null`, gdy nie zmierzono.
-- `--set-autostart` wyłącza albo włącza jedną pozycję po jej id z listy (stan bez rozróżniania wielkości liter), a `--undo-autostart` przywraca stan sprzed aktywnej zmiany tej pozycji z Historii zmian. Id spoza listy daje kod 1; wiersz z `canToggle=false` (chroniony albo tylko do odczytu) jest odrzucany (kod 1) i nic nie jest zapisywane; pozycja już w stanie docelowym daje `AlreadyApplied` (kod 0). Cofnięcie, które nie przywróciło wszystkiego, daje kod 4 i wymienia to w `notRestored`. `--catalog`, `--apps-catalog` i `--restore-point` przy tych poleceniach albo brak lub nieznany stan dają kod 2.
+- `--set-autostart` wyłącza albo włącza jedną pozycję po jej id z listy (stan bez rozróżniania wielkości liter), a `--undo-autostart` przywraca stan sprzed aktywnej zmiany tej pozycji z Historii zmian. Id spoza listy daje kod 1; wiersz z `canToggle=false` (chroniony albo tylko do odczytu) jest odrzucany (kod 1) z powodem w `message` i nic nie jest zapisywane; pozycja już w stanie docelowym daje `AlreadyApplied` (kod 0). Cofnięcie, które nie przywróciło wszystkiego, daje kod 4 i wymienia to w `notRestored`. `--catalog`, `--apps-catalog` i `--restore-point` przy tych poleceniach albo brak lub nieznany stan dają kod 2.
 
 ### Kody wyjścia
 
@@ -162,7 +171,7 @@ Plik `--out` to UTF-8 bez BOM. Windows PowerShell 5.1 czyta taki plik poprawnie 
 
 ## Dokumentacja
 
-Dokumentacja pozycji jest po polsku w `docs/tweaks`, `docs/apps` i `docs/prep` (oryginał) oraz po angielsku w `docs/en`. Zapisy źródeł (`docs/zrodla`) są tylko po polsku.
+Dokumentacja pozycji jest po polsku w `docs/tweaks`, `docs/apps`, `docs/prep` i `docs/autostart` (oryginał) oraz po angielsku w `docs/en`. Baza znanych pozycji autostartu (chronione i sugerowane, ze źródłami) jest opisana w [docs/autostart/README.md](docs/autostart/README.md). Zapisy źródeł (`docs/zrodla`) są tylko po polsku.
 
 ## Licencja
 

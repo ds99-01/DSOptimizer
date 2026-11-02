@@ -310,6 +310,11 @@ How to read the tables:
 | Procesor / Odczyt z dysku / Wpływ / Pomiar / Ocena / Miejsce | Processor / Disk read / Impact / Measured / Assessment / Location | Startup apps detail labels; "Ocena" = the verdict from the program's list, "Miejsce" = registry key, Startup folder or Store package |
 | Polecenie: {0} / Plik: {0} / Plik: nie ustalono | Command: {0} / File: {0} / File: not determined | Startup apps technical details; "not determined" = the program couldn't work out the file (never "missing") |
 | Szukaj w autostarcie / Grupy autostartu | Search startup apps / Startup app groups | Screen reader names of the search box and the group switch on the Startup apps page |
+| Włączone / Wyłączone / Bez pliku (grupy) | Enabled / Disabled / File missing | Group switch above the Startup apps list; the screen reader name adds the count ("Enabled, 11"). An item whose file is missing is in "File missing" whatever its state |
+| (ostatni start) | (last start) | Startup apps "Measured" value of a disabled item: the numbers come from the last startup in which it still ran |
+| Źródło: {0} / Źródło: pomiar DSOptimizera | Source: {0} / Source: DSOptimizer measurement | Startup apps details: web domains of a known item's sources, or the program's own measurement when that is the only source |
+| Pozycje innych kont nie są pokazywane. | Items of other accounts aren't shown. | Fixed line under the Startup apps list |
+| (bez nazwy) | (no name) | Run value without a name; such a startup item is read-only |
 | Wbudowana baza autostartu jest nieprawidłowa | The built-in startup apps list is invalid | Startup message when the built-in list of known startup items is damaged |
 | punkt ponownej analizy | reparse point | Junction or symbolic link (Windows term) |
 | potok / Job Object | pipe / Job Object | Process plumbing in Windows layer errors; "Job Object" kept as the Windows name |

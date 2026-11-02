@@ -36,9 +36,14 @@ DISM and SFC) is shown in the language of Windows.
   official links.
 - **"Apps"** – the list of installed apps with suggestions of what can be removed. Apps important for
   the system are protected and cannot be selected.
+- **"Startup apps"** – programs that start by themselves when the signed-in user signs in (from the registry,
+  the Startup folders and Microsoft Store apps), with the processor time each used at startup according to the
+  Windows measurement. You can disable and enable them: the program uses the same switch as Task Manager and
+  Settings and never deletes anything. Items important for the system are protected; some known programs and
+  items whose file no longer exists are suggested for disabling.
 - **"Install"** – installing popular programs through winget (Microsoft) and RustDesk from its
   authors' GitHub.
-- **"Change history"** – Settings changes, app removals and app installs, in one place. Settings changes can be undone here; app removals and installs have no "Undo".
+- **"Change history"** – Settings changes, Startup apps changes, app removals and app installs, in one place. Settings and Startup apps changes can be undone here; app removals and installs have no "Undo".
 
 ## Requirements
 
@@ -99,6 +104,9 @@ The specification report contains disk serial numbers, so keep that in mind befo
 - **Repairs and actions** – they run once and have no Undo (e.g. cleaned-up files cannot be recovered).
   Read the item's description before running it.
 - **Install** – you can uninstall an installed program on the "Apps" page.
+- **Startup apps** – disabling and enabling only flips the switch Windows itself uses (the same as in Task Manager
+  and Settings); the program never deletes a startup entry or file. You can undo a change on the "Change history"
+  page or by switching the item back. Changes take effect at the next sign-in, and no restore point is created.
 
 ## Building from source
 
@@ -139,7 +147,7 @@ DSOptimizer.exe --undo-autostart <id> --out <file.json>
 - `--list-install` returns the install list with the winget state, `--install-apps` installs the given items (`install.<name>` from the list or `winget:<id>`) without asking, and `--search-apps` returns `winget search` results. `--apps-catalog` replaces the built-in install list.
 - Installing and searching through winget work only on the signed-in user's account; on another account they end with a refusal (code 1), and winget is not started.
 - `--list-autostart` returns the rows of the "Startup apps" page for the signed-in user's account in the `autostartRows` field: `id`, `source` (`RunUser`, `RunMachine`, `Run32`, `FolderUser`, `FolderCommon`, `StartupTask`), `name`, `publisher`, `scope` (`User`, `Machine`, `Store`), `state` (`Enabled`, `Disabled`, `Unknown`), `missingFile`, `verdict` (`Protected`, `CanDisable` or `null` when not assessed), `canToggle`, `cpuMs` (processor time from the Windows measurement, in milliseconds) and `diskBytes` (disk reads in bytes); both numbers are `null` when not measured.
-- `--set-autostart` disables or enables one item by its id from the list (the state is not case-sensitive), and `--undo-autostart` restores the state from before the item's active change in the change history. An id that is not on the list gives code 1; a row with `canToggle=false` (protected or read-only) is refused (code 1) and nothing is written; an item already in the target state gives `AlreadyApplied` (code 0). An undo that could not restore everything gives code 4 and lists what was not restored in `notRestored`. `--catalog`, `--apps-catalog` and `--restore-point` with these commands, or a missing or unknown state, give code 2.
+- `--set-autostart` disables or enables one item by its id from the list (the state is not case-sensitive), and `--undo-autostart` restores the state from before the item's active change in the change history. An id that is not on the list gives code 1; a row with `canToggle=false` (protected or read-only) is refused (code 1) with the reason in `message`, and nothing is written; an item already in the target state gives `AlreadyApplied` (code 0). An undo that could not restore everything gives code 4 and lists what was not restored in `notRestored`. `--catalog`, `--apps-catalog` and `--restore-point` with these commands, or a missing or unknown state, give code 2.
 
 ### Exit codes
 
@@ -165,7 +173,7 @@ The `--out` file is UTF-8 without BOM. Windows PowerShell 5.1 reads such a file 
 
 ## Documentation
 
-Item documentation is available in English in `docs/en` (`docs/en/tweaks`, `docs/en/apps`, `docs/en/prep`) and in Polish in `docs/tweaks`, `docs/apps` and `docs/prep` (the Polish version is the original). Source records (`docs/zrodla`) are written in Polish.
+Item documentation is available in English in `docs/en` (`docs/en/tweaks`, `docs/en/apps`, `docs/en/prep`, `docs/en/autostart`) and in Polish in `docs/tweaks`, `docs/apps`, `docs/prep` and `docs/autostart` (the Polish version is the original). The list of known startup items (protected and suggested, with sources) is described in [docs/en/autostart/README.md](docs/en/autostart/README.md). Source records (`docs/zrodla`) are written in Polish.
 
 ## License
 
