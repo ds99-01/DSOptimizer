@@ -42,6 +42,9 @@
             InstallMenuFound = $true; InstallLoaded = $true; InstallButtonText = 'Zainstaluj (0)'; InstallButtonEnabled = $false; InstallError = $null
             InstallCategories = @('Wszystkie', 'Zaznaczone', 'Przeglądarki', 'Narzędzia'); InstallSubtitle = 'Źródła: winget (Microsoft) i GitHub (RustDesk) · 34 aplikacje · zainstalowane: 3'
             InstallTexts = @('Google Chrome', 'Google.Chrome', 'Przeglądarka internetowa Google.', '7-Zip', '7zip.7zip', 'Zainstalowana')
+            AutostartMenuFound = $true; AutostartPageScoped = $true; AutostartLoaded = $true; AutostartReadFailed = $false; AutostartError = $null
+            AutostartGroupNames = @('Włączone, 3', 'Wyłączone, 1', 'Bez pliku, 0')
+            AutostartDisableText = 'Wyłącz (0)'; AutostartDisableEnabled = $false; AutostartEnableText = 'Włącz (0)'; AutostartEnableEnabled = $false
             HitTest = @(
                 [pscustomobject]@{
                     State = 'Normal'; BarTop = 36; BarBottom = 80; ScanX = 59
@@ -66,6 +69,8 @@
     $script:RepairOk = @('Naprawa A', 'Naprawa B')
     # Oczekiwania strony „Instalacja” (Get-GuiInstallTitle) zgodne z New-UiProbe (InstallCategories, InstallTexts).
     $script:InstallOk = [pscustomobject]@{ Titles = @('Google Chrome', '7-Zip'); Categories = @('Wszystkie', 'Zaznaczone', 'Przeglądarki', 'Narzędzia') }
+    # Oczekiwane liczby grup strony „Autostart” (Get-GuiAutostartExpectedCount) zgodne z New-UiProbe (AutostartGroupNames).
+    $script:AutostartOk = [pscustomobject]@{ Enabled = 3; Disabled = 1; MissingFile = 0; Detail = 'cli' }
 }
 
 Describe 'VmSmokeUi (plik i skrypt sondy)' {
@@ -587,7 +592,7 @@ Describe 'Get-GuiUiCheck: PrepPage' {
         $Probe = New-UiProbe @{}
         $Without = [pscustomobject]@{}
         foreach ($P in $Probe.PSObject.Properties | Where-Object { $_.Name -notlike 'Prep*' }) { $Without | Add-Member -NotePropertyName $P.Name -NotePropertyValue $P.Value }
-        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe $Without -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
+        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe $Without -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk -AutostartExpected $script:AutostartOk
         (Get-Check $Checks 'RepairPage').Passed | Should -BeTrue
     }
 }
@@ -735,11 +740,11 @@ Describe 'Sonda: „Instalacja” (krok 11)' {
     BeforeAll {
         $script:ProbeText = Get-GuiUiProbeScript
         $script:Step11 = $script:ProbeText.Substring($script:ProbeText.IndexOf('# 11.'))
-        $script:Step11 = $script:Step11.Substring(0, $script:Step11.IndexOf('$Out.Ok = $true'))
+        $script:Step11 = $script:Step11.Substring(0, $script:Step11.IndexOf('# 12.'))
     }
-    It 'krok 11 jest ostatni: po kroku 10 („Naprawy”) i jego obsłudze błędu' {
+    It 'krok 11 jest po kroku 10 („Naprawy”) i jego obsłudze błędu, a przed krokiem 12 („Autostart”)' {
         $script:ProbeText.IndexOf('# 11.') | Should -BeGreaterThan $script:ProbeText.IndexOf('catch { $Out.RepairError = $_.Exception.Message')
-        $script:Step11 | Should -Not -Match '# 12\.'
+        $script:Step11 | Should -Match ([regex]::Escape('catch { $Out.InstallError = $_.Exception.Message'))
     }
     It 'wchodzi na pozycję menu „Instalacja” (nazwa = InstallText.PageTitle) wzorcem SelectionItemPattern' {
         (Get-CsText (Read-CoreSource 'Install\InstallText.cs') 'PageTitle') | Should -Be (Get-GuiProbeTexts -Language pl).InstallPage
@@ -891,17 +896,143 @@ Describe 'Get-GuiUiCheck: InstallPage' {
     }
 }
 
+Describe 'Sonda: „Autostart” (krok 12)' {
+    BeforeAll {
+        $script:ProbeText = Get-GuiUiProbeScript
+        $script:Step12 = $script:ProbeText.Substring($script:ProbeText.IndexOf('# 12.'))
+        $script:Step12 = $script:Step12.Substring(0, $script:Step12.IndexOf('$Out.Ok = $true'))
+    }
+    It 'krok 12 jest ostatni: po kroku 11 („Instalacja”) i jego obsłudze błędu' {
+        $script:ProbeText.IndexOf('# 12.') | Should -BeGreaterThan $script:ProbeText.IndexOf('catch { $Out.InstallError = $_.Exception.Message')
+        $script:Step12 | Should -Not -Match '# 13\.'
+    }
+    It 'wchodzi na stronę przez pozycję menu „Autostart” (nazwa = AutostartText.PageTitle) wzorcem SelectionItemPattern' {
+        (Get-CsText (Read-CoreSource 'Autostart\AutostartText.cs') 'PageTitle') | Should -Be (Get-GuiProbeTexts -Language pl).AutostartPage
+        $script:Step12 | Should -Match ([regex]::Escape('Find-Element $Root $T.AutostartPage $ListItem'))
+        $script:Step12 | Should -Match ([regex]::Escape('[System.Windows.Automation.SelectionItemPattern]::Pattern).Select()'))
+        # Jedyny wybór w kroku 12 to pozycja menu (żaden wiersz listy ani grupa nie jest wybierana).
+        ([regex]::Matches($script:Step12, [regex]::Escape('.Select()'))).Count | Should -Be 1
+    }
+    It 'szuka elementów strony w kontenerze strony (AutomationId = x:Name widoku w MainWindow.xaml)' {
+        $Main = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\..\..\src\DSOptimizer.App\MainWindow.xaml'), [System.Text.Encoding]::UTF8)
+        $Main | Should -Match ([regex]::Escape('<views:AutostartView x:Name="AutostartPage"'))
+        $script:Step12 | Should -Match ([regex]::Escape("`$AE::AutomationIdProperty, 'AutostartPage'"))
+        $script:Step12 | Should -Match 'AutostartPageScoped'
+    }
+    It 'czeka najwyżej 120 s na koniec odczytu („Odśwież listę” aktywne, bez „Odczyt listy w toku” i „jeszcze nie odczytana”) i na stały stan przez 3 s' {
+        $script:Step12 | Should -Match ([regex]::Escape('AddSeconds(120)'))
+        foreach ($Name in 'AutostartRefresh', 'AutostartReading', 'AutostartNotRead', 'AutostartReadFailed') { $script:Step12 | Should -Match ([regex]::Escape("`$T.$Name")) }
+        $script:Step12 | Should -Match ([regex]::Escape('IsEnabled'))
+        $script:Step12 | Should -Match ([regex]::Escape('TotalSeconds -ge 3'))
+    }
+    It 'czyta nazwy pozycji przełącznika grup (lista „Grupy autostartu”) i napis oraz stan przycisków „Wyłącz (N)” i „Włącz (N)”' {
+        $script:Step12 | Should -Match ([regex]::Escape('$T.AutostartGroups ([System.Windows.Automation.ControlType]::List)'))
+        $script:Step12 | Should -Match ([regex]::Escape('$T.DisablePattern'))
+        $script:Step12 | Should -Match ([regex]::Escape('$T.EnablePattern'))
+        foreach ($Field in 'AutostartMenuFound', 'AutostartLoaded', 'AutostartReadFailed', 'AutostartGroupNames', 'AutostartDisableText', 'AutostartDisableEnabled', 'AutostartEnableText', 'AutostartEnableEnabled') { $script:Step12 | Should -Match $Field }
+    }
+    It 'niczego nie zaznacza, nie wyłącza i nie włącza (bez Invoke, Toggle, „Zaznacz sugerowane”, wpisywania, myszy i klawiatury)' {
+        $script:Step12 | Should -Not -Match 'Invoke\(\)'
+        $script:Step12 | Should -Not -Match 'Toggle\(\)'
+        $script:Step12 | Should -Not -Match ([regex]::Escape('$T.SelectSuggested'))
+        $script:Step12 | Should -Not -Match 'ValuePattern|SetValue|AddToSelection'
+        $script:Step12 | Should -Not -Match 'DsoUser32\]::(Click|DoubleClick|PressKey)'
+    }
+    It 'krok 12 ma własny try/catch, a pola wyniku są w początkowym obiekcie sondy' {
+        $script:ProbeText | Should -Match ([regex]::Escape('catch { $Out.AutostartError = $_.Exception.Message'))
+        $Head = $script:ProbeText.Substring(0, $script:ProbeText.IndexOf('function Add-Step'))
+        foreach ($Field in 'AutostartMenuFound', 'AutostartPageScoped', 'AutostartLoaded', 'AutostartReadFailed', 'AutostartGroupNames', 'AutostartDisableText', 'AutostartDisableEnabled', 'AutostartEnableText', 'AutostartEnableEnabled', 'AutostartError') { $Head | Should -Match $Field }
+    }
+    It 'strony wybiera po nazwie pozycji menu, nigdy po pozycji na liście (nowa pozycja „Autostart” przesunęła „Instalację” i dalsze)' {
+        foreach ($Key in 'HistoryPage', 'ProbeCategory', 'AppsPage', 'PrepPage', 'RepairCategory', 'InstallPage', 'AutostartPage') {
+            $script:ProbeText | Should -Match ([regex]::Escape("Find-Element `$Root `$T.$Key `$ListItem")) -Because $Key
+        }
+        $script:ProbeText | Should -Match ([regex]::Escape('$PrivacyName = [string]$T.PrivacyCategory'))
+        $script:ProbeText | Should -Match ([regex]::Escape('Find-Element $Root $PrivacyName $ListItem'))
+        # Lista menu służy wyłącznie do pomiaru paska (BoundingRectangle): jej pozycji się nie przegląda ani nie liczy.
+        $script:ProbeText | Should -Not -Match '\$Menu\.(FindAll|FindFirst)'
+        $script:ProbeText | Should -Not -Match '\$T\.Menu\b[^\r\n]*\.(FindAll|Count)'
+    }
+}
+
+Describe 'Get-GuiUiCheck: AutostartPage' {
+    BeforeAll {
+        function script:Get-AutostartCheck($Probe, $Expected = $script:AutostartOk, $Texts = $script:PlTexts) {
+            Get-Check (Get-GuiUiCheck -Texts $Texts -Probe $Probe -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk -AutostartExpected $Expected) 'AutostartPage'
+        }
+    }
+    It 'przechodzi: pozycja menu, odczyt skończony, liczby grup = CLI, „Wyłącz (0)” i „Włącz (0)” nieaktywne' {
+        $Check = Get-AutostartCheck (New-UiProbe @{})
+        $Check.Passed | Should -BeTrue
+        $Check.Detail | Should -BeLike '*pozycja menu*odczyt skończony*Włączone: 3 (CLI 3)*Wyłączone: 1 (CLI 1)*Bez pliku: 0 (CLI 0)*„Wyłącz (0)” nieaktywny*„Włącz (0)” nieaktywny*'
+    }
+    It 'kolejność pozycji przełącznika nie ma znaczenia' {
+        (Get-AutostartCheck (New-UiProbe @{ AutostartGroupNames = @('Bez pliku, 0', 'Włączone, 3', 'Wyłączone, 1') })).Passed | Should -BeTrue
+    }
+    It 'nie przechodzi, gdy <Powod>' -ForEach @(
+        @{ Powod = 'liczba włączonych różni się od CLI'; Override = @{ AutostartGroupNames = @('Włączone, 4', 'Wyłączone, 1', 'Bez pliku, 0') }; Like = '*NIE: Włączone: 4 (CLI 3)*' }
+        @{ Powod = 'liczba wyłączonych różni się od CLI'; Override = @{ AutostartGroupNames = @('Włączone, 3', 'Wyłączone, 0', 'Bez pliku, 0') }; Like = '*NIE: Wyłączone: 0 (CLI 1)*' }
+        @{ Powod = 'liczba bez pliku różni się od CLI'; Override = @{ AutostartGroupNames = @('Włączone, 3', 'Wyłączone, 1', 'Bez pliku, 2') }; Like = '*NIE: Bez pliku: 2 (CLI 0)*' }
+        @{ Powod = 'brakuje grupy w przełączniku'; Override = @{ AutostartGroupNames = @('Włączone, 3', 'Wyłączone, 1') }; Like = '*NIE: Bez pliku: brak w przełączniku grup (CLI 0)*' }
+        @{ Powod = 'nazwa grupy bez licznika (stara strona)'; Override = @{ AutostartGroupNames = @('Włączone', 'Wyłączone, 1', 'Bez pliku, 0') }; Like = '*NIE: Włączone: brak w przełączniku grup*' }
+        @{ Powod = 'pusty przełącznik grup'; Override = @{ AutostartGroupNames = @() }; Like = '*NIE: Włączone: brak w przełączniku grup*' }
+        @{ Powod = 'brak pozycji menu'; Override = @{ AutostartMenuFound = $false }; Like = '*NIE: pozycja menu*' }
+        @{ Powod = 'odczyt się nie skończył w 120 s'; Override = @{ AutostartLoaded = $false }; Like = '*NIE: odczyt skończony w 120 s*' }
+        @{ Powod = 'odczyt listy się nie udał'; Override = @{ AutostartReadFailed = $true }; Like = '*NIE: odczyt bez błędu*' }
+        @{ Powod = '„Wyłącz (0)” jest aktywny'; Override = @{ AutostartDisableEnabled = $true }; Like = '*NIE: „Wyłącz (0)” nieaktywny*' }
+        @{ Powod = '„Włącz (N)” ma N > 0 (coś zaznaczone)'; Override = @{ AutostartEnableText = 'Włącz (2)' }; Like = '*NIE: „Włącz (0)” nieaktywny (przycisk ''Włącz (2)''*' }
+        @{ Powod = 'brak przycisku „Wyłącz (N)”'; Override = @{ AutostartDisableText = $null; AutostartDisableEnabled = $null }; Like = '*NIE: „Wyłącz (0)” nieaktywny (brak przycisku)*' }
+        @{ Powod = 'sonda zgłosiła błąd kroku'; Override = @{ AutostartError = 'Brak listy Grupy autostartu' }; Like = '*sonda: Brak listy Grupy autostartu*' }
+    ) {
+        $Check = Get-AutostartCheck (New-UiProbe $Override)
+        $Check.Passed | Should -BeFalse
+        $Check.Detail | Should -BeLike $Like
+    }
+    It 'nie przechodzi bez oczekiwanych liczb (brak wyniku CLI albo liczby $null przy błędzie CLI), a opis niesie powód' {
+        $Check = Get-AutostartCheck (New-UiProbe @{}) $null
+        $Check.Passed | Should -BeFalse
+        $Check.Detail | Should -BeLike '*brak oczekiwanych liczb*'
+        $Check = Get-AutostartCheck (New-UiProbe @{}) ([pscustomobject]@{ Enabled = $null; Disabled = $null; MissingFile = $null; Detail = '--list-autostart: kod 1' })
+        $Check.Passed | Should -BeFalse
+        $Check.Detail | Should -BeLike '*--list-autostart: kod 1*'
+    }
+    It 'nie przechodzi, gdy sonda nie ma pól kroku 12 (stara sonda)' {
+        $Probe = New-UiProbe @{}
+        $Without = [pscustomobject]@{}
+        foreach ($P in $Probe.PSObject.Properties | Where-Object { $_.Name -notlike 'Autostart*' }) { $Without | Add-Member -NotePropertyName $P.Name -NotePropertyValue $P.Value }
+        $Check = Get-AutostartCheck $Without
+        $Check.Passed | Should -BeFalse
+        $Check.Detail | Should -BeLike 'brak pola AutostartMenuFound*'
+    }
+    It 'brak pól kroku 11 nie pomija sprawdzenia kroku 12' {
+        $Probe = New-UiProbe @{}
+        $Without = [pscustomobject]@{}
+        foreach ($P in $Probe.PSObject.Properties | Where-Object { $_.Name -notlike 'Install*' }) { $Without | Add-Member -NotePropertyName $P.Name -NotePropertyValue $P.Value }
+        (Get-AutostartCheck $Without).Passed | Should -BeTrue
+    }
+    It 'po angielsku: nazwy grup i przycisków z tabel tłumaczeń' {
+        $En = Get-GuiProbeTexts -Language en
+        $Probe = New-UiProbe @{
+            AutostartGroupNames = @("$($En.AutostartEnabled), 3", "$($En.AutostartDisabled), 1", "$($En.AutostartMissingFile), 0")
+            AutostartDisableText = $En.DisableIdle; AutostartEnableText = $En.EnableIdle
+        }
+        (Get-AutostartCheck $Probe $script:AutostartOk $En).Passed | Should -BeTrue
+        # Polska sonda oceniana angielskim słownikiem nie przechodzi.
+        (Get-AutostartCheck (New-UiProbe @{}) $script:AutostartOk $En).Passed | Should -BeFalse
+    }
+}
+
 Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
-    It 'komplet: szesnaście zaliczonych sprawdzeń w stałej kolejności' {
-        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{}) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
-        @($Checks.Name) | Should -Be @('HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage')
+    It 'komplet: siedemnaście zaliczonych sprawdzeń w stałej kolejności' {
+        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{}) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk -AutostartExpected $script:AutostartOk
+        @($Checks.Name) | Should -Be @('HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage', 'AutostartPage')
         @($Checks | Where-Object { -not $_.Passed }).Count | Should -Be 0
         (Get-Check $Checks 'HistoryEntryActive').Detail | Should -Be 'wiersz: Szybsze otwieranie podmenu, Eksplorator i wygoda, Aktywna, 20.10.2026 21:00'
         (Get-Check $Checks 'CaptionHitTest').Detail | Should -BeLike '*przekrój x=8: 42..43: 2; 44..44: 1*'
     }
-    It 'brak sondy ($null): wszystkie szesnaście niezaliczone' {
-        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe $null -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
-        @($Checks).Count | Should -Be 16
+    It 'brak sondy ($null): wszystkie siedemnaście niezaliczone' {
+        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe $null -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk -AutostartExpected $script:AutostartOk
+        @($Checks).Count | Should -Be 17
         @($Checks | Where-Object Passed).Count | Should -Be 0
     }
     It '<Nazwa> nie przechodzi, gdy <Powod>' -ForEach @(
@@ -987,7 +1118,7 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
         @{ Nazwa = 'FilterHistoryOpened' }
         @{ Nazwa = 'FilterHistorySelected' }
     ) {
-        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ $Nazwa = $false }) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
+        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ $Nazwa = $false }) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk -AutostartExpected $script:AutostartOk
         $Check = Get-Check $Checks $Nazwa
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike 'NIE: *'
@@ -1012,7 +1143,7 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
         @{ Nazwa = 'RunIconRuns' }
         @{ Nazwa = 'RunIconDoubleClickOnce' }
     ) {
-        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ $Nazwa = $false }) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
+        $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ $Nazwa = $false }) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk -AutostartExpected $script:AutostartOk
         $Check = Get-Check $Checks $Nazwa
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike 'NIE: *'
@@ -1190,6 +1321,17 @@ Describe 'Get-GuiProbeTexts (słownik tekstów sondy)' {
         @{ Key = 'InstallSummaryWinget'; File = 'src\DSOptimizer.Core\Install\InstallText.cs' }
         @{ Key = 'InstallSummaryWingetDown'; File = 'src\DSOptimizer.Core\Install\InstallText.cs' }
         @{ Key = 'InstallUnavailable'; File = 'src\DSOptimizer.Core\Install\InstallText.cs' }
+        @{ Key = 'AutostartPage'; File = 'src\DSOptimizer.Core\Autostart\AutostartText.cs' }
+        @{ Key = 'AutostartGroups'; File = 'src\DSOptimizer.Core\Autostart\AutostartText.cs' }
+        @{ Key = 'AutostartEnabled'; File = 'src\DSOptimizer.Core\Autostart\AutostartText.cs' }
+        @{ Key = 'AutostartDisabled'; File = 'src\DSOptimizer.Core\Autostart\AutostartText.cs' }
+        @{ Key = 'AutostartMissingFile'; File = 'src\DSOptimizer.Core\Autostart\AutostartText.cs' }
+        @{ Key = 'AutostartRefresh'; File = 'src\DSOptimizer.App\Views\AutostartView.xaml' }
+        @{ Key = 'AutostartReading'; File = 'src\DSOptimizer.Core\Autostart\AutostartText.cs' }
+        @{ Key = 'AutostartNotRead'; File = 'src\DSOptimizer.Core\Autostart\AutostartText.cs' }
+        @{ Key = 'AutostartReadFailed'; File = 'src\DSOptimizer.Core\Autostart\AutostartText.cs' }
+        @{ Key = 'DisableFormat'; File = 'src\DSOptimizer.Core\Autostart\AutostartText.cs' }
+        @{ Key = 'EnableFormat'; File = 'src\DSOptimizer.Core\Autostart\AutostartText.cs' }
     ) {
         $Text = [string]$script:Pl[$Key]
         $Text | Should -Not -BeNullOrEmpty
@@ -1229,6 +1371,36 @@ Describe 'Get-GuiProbeTexts (słownik tekstów sondy)' {
         (((Get-DsoUiText -Polish 'Usuń ({0})' -Language en) -f 5) -match $script:En.RemovePattern) | Should -BeTrue
         ($script:En.InstallIdle -match $script:En.InstallPattern) | Should -BeTrue
         $script:En.ApplyOne -match $script:Pl.ApplyPattern | Should -BeFalse
+    }
+    It 'teksty strony Autostart (<Language>): przyciski bez zaznaczenia, wzorce N przycisków i pozycji przełącznika grup' -ForEach @(
+        @{ Language = 'pl' }, @{ Language = 'en' }
+    ) {
+        $Texts = Get-GuiProbeTexts -Language $Language
+        $Texts.DisableIdle | Should -Be ($Texts.DisableFormat -f 0)
+        $Texts.EnableIdle | Should -Be ($Texts.EnableFormat -f 0)
+        (($Texts.DisableFormat -f 12) -match $Texts.DisablePattern) | Should -BeTrue
+        $Matches[1] | Should -Be '12'
+        (($Texts.EnableFormat -f 3) -match $Texts.EnablePattern) | Should -BeTrue
+        ($Texts.DisableIdle -match $Texts.EnablePattern) | Should -BeFalse
+        ($Texts.EnableIdle -match $Texts.DisablePattern) | Should -BeFalse
+        foreach ($Group in 'AutostartEnabled', 'AutostartDisabled', 'AutostartMissingFile') {
+            $Pattern = [string]$Texts["$($Group)Pattern"]
+            ("$($Texts[$Group]), 11" -match $Pattern) | Should -BeTrue -Because $Group
+            $Matches[1] | Should -Be '11'
+            ([string]$Texts[$Group] -match $Pattern) | Should -BeFalse -Because "$Group bez licznika"
+        }
+        ("$($Texts.AutostartDisabled), 2" -match $Texts.AutostartEnabledPattern) | Should -BeFalse
+        ("$($Texts.AutostartEnabled), 2" -match $Texts.AutostartDisabledPattern) | Should -BeFalse
+    }
+    It 'wzorzec pozycji przełącznika grup = AutostartGroupOption.AutomationName („Nazwa, N”, liczba w kulturze niezmiennej)' {
+        $Source = Read-RepoSource 'src\DSOptimizer.App\ViewModels\AutostartGroupOption.cs'
+        $Source | Should -Match ([regex]::Escape('AutomationName => Name + ", " + Count.ToString(CultureInfo.InvariantCulture);'))
+        $Source | Should -Match ([regex]::Escape('Name = AutostartText.GroupName(value);'))
+        $View = Read-RepoSource 'src\DSOptimizer.App\Views\AutostartView.xaml'
+        $View | Should -Match ([regex]::Escape('<Setter Property="AutomationProperties.Name" Value="{Binding AutomationName}" />'))
+        $View | Should -Match ([regex]::Escape('AutomationProperties.Name="{x:Static autostart:AutostartText.GroupsName}"'))
+        $View | Should -Match ([regex]::Escape('Content="{Binding EnableText}"'))
+        $View | Should -Match ([regex]::Escape('Content="{Binding DisableText}"'))
     }
     It 'en: brak tłumaczenia któregokolwiek tekstu sondy to wyjątek (repo bez tabel)' {
         $Root = Join-Path $TestDrive 'repo-bez-tabel'
@@ -1277,23 +1449,25 @@ Describe 'Sonda: teksty z pliku (-TextsFile)' {
 }
 
 Describe 'Get-GuiUiCheck po angielsku (-Texts en)' {
-    It 'angielska sonda z angielskimi tekstami: szesnaście zaliczonych' {
+    It 'angielska sonda z angielskimi tekstami: siedemnaście zaliczonych' {
         $En = Get-GuiProbeTexts -Language en
         $Probe = New-UiProbe @{
             EntryNames = @("$($En.TweakTitle), $($En.ProbeCategory), $($En.HistoryActive), 10/20/2026 9:00 PM")
             PrepTitles = @($En.PrepTitles); PrepGraphicsLines = @('Microsoft Hyper-V Video', '10.0.26100.1')
             InstallSubtitle = ($En.InstallSourcePrefix + '35 apps · installed: 0'); InstallButtonText = $En.InstallIdle
             InstallCategories = @($En.InstallAll, $En.InstallSelected, 'Browsers')
+            AutostartGroupNames = @("$($En.AutostartEnabled), 3", "$($En.AutostartDisabled), 1", "$($En.AutostartMissingFile), 0")
+            AutostartDisableText = $En.DisableIdle; AutostartEnableText = $En.EnableIdle
         }
         $Install = [pscustomobject]@{ Titles = @('Google Chrome', '7-Zip'); Categories = @($En.InstallAll, $En.InstallSelected, 'Browsers') }
-        $Checks = Get-GuiUiCheck -Probe $Probe -Texts $En -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $Install
+        $Checks = Get-GuiUiCheck -Probe $Probe -Texts $En -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $Install -AutostartExpected $script:AutostartOk
         @($Checks | Where-Object { -not $_.Passed } | ForEach-Object { "$($_.Name): $($_.Detail)" }) | Should -Be @()
         (Get-Check $Checks 'PrepPage').Detail | Should -BeLike "*$($En.PrepOpenWindowsUpdate)*"
     }
-    It 'polska sonda z angielskimi tekstami nie przechodzi (wiersz historii, Przygotowanie, Instalacja)' {
+    It 'polska sonda z angielskimi tekstami nie przechodzi (wiersz historii, Przygotowanie, Instalacja, Autostart)' {
         $En = Get-GuiProbeTexts -Language en
-        $Checks = Get-GuiUiCheck -Probe (New-UiProbe @{}) -Texts $En -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk
-        foreach ($Name in 'HistoryEntryActive', 'PrepPage', 'InstallPage') { (Get-Check $Checks $Name).Passed | Should -BeFalse -Because $Name }
+        $Checks = Get-GuiUiCheck -Probe (New-UiProbe @{}) -Texts $En -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk -AutostartExpected $script:AutostartOk
+        foreach ($Name in 'HistoryEntryActive', 'PrepPage', 'InstallPage', 'AutostartPage') { (Get-Check $Checks $Name).Passed | Should -BeFalse -Because $Name }
     }
     It 'krok „Grafika” z samą angielską etykietą stanu („Graphics cards”) nie przechodzi' {
         $En = Get-GuiProbeTexts -Language en

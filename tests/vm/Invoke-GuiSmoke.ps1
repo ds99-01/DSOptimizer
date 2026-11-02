@@ -27,8 +27,12 @@ Opis działania:
     Suggested z Removability=Removable z CLI --list-apps tego przebiegu, uruchomionego przed sondą jako 'dso' - to samo konto co okno
     (AppsSuggestedRemove); niczego nie usuwa ani nie stosuje. Potem sonda wchodzi na „Przygotowanie”
     i po zakończonym odczycie (najwyżej 60 s, bez „Wczytywanie…”) sprawdza 7 tytułów kroków, przycisk „Otwórz Windows Update” (albo notatkę
-    zastępczą, gdy PrepLinks.SettingsOpenable = false) i linię karty w kroku „Grafika” (PrepPage); żadnego linku nie klika. Jako ostatnie sonda wchodzi na „Instalacja” (kategorie i tytuły
-    z apps.json, „Zainstaluj (0)” nieaktywne – InstallPage); niczego nie zaznacza ani nie instaluje.
+    zastępczą, gdy PrepLinks.SettingsOpenable = false) i linię karty w kroku „Grafika” (PrepPage); żadnego linku nie klika. Potem sonda wchodzi na „Naprawy”
+    (RepairPage) i „Instalacja” (kategorie i tytuły z apps.json, „Zainstaluj (0)” nieaktywne – InstallPage); niczego nie zaznacza ani nie instaluje.
+    Jako ostatnie sonda wchodzi przez menu na „Autostart” i po zakończonym odczycie listy (najwyżej 120 s, bez „Odczyt listy w toku”) sprawdza,
+    że liczby w nazwach grup („Włączone, N”, „Wyłączone, N”, „Bez pliku, N”) są równe liczbom z CLI --list-autostart tego przebiegu,
+    uruchomionego przed sondą jako 'dso' („Bez pliku” wygrywa ze stanem), a „Wyłącz (0)” i „Włącz (0)” są nieaktywne (AutostartPage);
+    niczego nie zaznacza, nie wyłącza ani nie włącza. Razem 23 sprawdzenia.
     Zrzuty ekranu (Msvm_VirtualSystemManagementService.
     GetVirtualSystemThumbnailImage) po starcie i po sondzie UI oraz wynik (gui-smoke-<VM>.json) trafiają do -OutDirectory.
     Jedyna operacja to ta jedna bezpieczna pozycja (VM i tak wraca do checkpointu). Błąd uwierzytelnienia PowerShell Direct przerywa

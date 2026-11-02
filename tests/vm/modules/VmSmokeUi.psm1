@@ -34,11 +34,17 @@ Opis działania:
      10. Potem (Etap 4b partia 1) wchodzi na „Naprawy” i czyta teksty listy „Pozycje” (także po przewinięciu do końca);
          host sprawdza, że są wszystkie tytuły pozycji kategorii repair z katalogu (RepairPage, Get-GuiRepairTitle). Niczego nie
          zaznacza, nie klika ani nie uruchamia – żadna naprawa nie startuje.
-     11. Na samym końcu (Etap 4c) wchodzi na „Instalacja”, czeka na koniec odczytu (najwyżej 180 s), wybiera po kolei każdą kategorię
+     11. Potem (Etap 4c) wchodzi na „Instalacja”, czeka na koniec odczytu (najwyżej 180 s), wybiera po kolei każdą kategorię
          (nawigacja wzorcem SelectionItemPattern; kolejność: „Wszystkie”, „Zaznaczone”, kategorie z apps.json; na końcu wraca na „Wszystkie”)
          i czyta teksty listy „Aplikacje do instalacji” (z przewijaniem) oraz napis i stan
          przycisku „Zainstaluj (N)”; host sprawdza wszystkie kategorie i tytuły z apps.json i nieaktywne „Zainstaluj (0)” (InstallPage,
          Get-GuiInstallTitle). Bez zaznaczania, instalowania i wyszukiwania (VM bez sieci).
+     12. Na samym końcu wchodzi na „Autostart” (pozycja menu po nazwie; nowa pozycja między „Aplikacjami” a „Instalacją” nie zmienia
+         niczego w sondzie, bo żaden krok nie liczy pozycji menu), szuka elementów w kontenerze strony (AutomationId „AutostartPage”),
+         czeka na koniec odczytu (najwyżej 120 s, bez „Odczyt listy w toku”) i czyta nazwy pozycji przełącznika grup („Włączone, N”,
+         „Wyłączone, N”, „Bez pliku, N” – AutostartGroupOption.AutomationName) oraz napis i stan przycisków „Wyłącz (N)” i „Włącz (N)”.
+         Host porównuje liczby z CLI --list-autostart tego przebiegu i wymaga nieaktywnych „Wyłącz (0)” i „Włącz (0)” (AutostartPage).
+         Bez klikania „Wyłącz”, „Włącz” i „Zaznacz sugerowane”; drugi zrzut ekranu pokazuje tę stronę.
     Kroki 1-4 bez kliknięć myszą (wzorce UIA i SendMessageTimeout). Dotyka wyłącznie VM; na hoście nic nie zmienia.
     Język: nazwy w opisie powyżej są polskie, ale sonda szuka tekstów okna w języku smoke (-Language pl|en). Host składa słownik
     Get-GuiProbeTexts (polski: stałe modułu zgodne z C# i tytuły z JSON katalogu; angielski: wyłącznie tabele tłumaczeń repo przez
@@ -92,6 +98,17 @@ $script:ProbeTextsPolish = [ordered]@{
     InstallSummaryWinget = 'Źródło: winget (Microsoft) · {0} · zainstalowane: {1}'
     InstallSummaryWingetDown = 'Źródła: GitHub (RustDesk) · winget (Microsoft) niedostępny · {0} · zainstalowane: {1}'
     InstallUnavailable = 'Źródło: winget (Microsoft) · niedostępne'
+    AutostartPage = 'Autostart'                       # AutostartText.PageTitle: pozycja menu (krok 12)
+    AutostartGroups = 'Grupy autostartu'              # AutostartText.GroupsName: przełącznik grup
+    AutostartEnabled = 'Włączone'                     # AutostartText.GroupName(Enabled)
+    AutostartDisabled = 'Wyłączone'                   # AutostartText.GroupName(Disabled)
+    AutostartMissingFile = 'Bez pliku'                # AutostartText.GroupName(MissingFile)
+    AutostartRefresh = 'Odśwież listę'                # Views\AutostartView.xaml (ten sam tekst co w Aplikacjach)
+    AutostartReading = 'Odczyt listy w toku'          # AutostartText.Reading
+    AutostartNotRead = 'Lista nie została jeszcze odczytana' # AutostartText.NotRead
+    AutostartReadFailed = 'Nie udało się odczytać listy autostartu.' # AutostartText.ReadFailed (podtytuł po błędzie odczytu)
+    DisableFormat = 'Wyłącz ({0})'                    # AutostartText.DisableButton
+    EnableFormat = 'Włącz ({0})'                      # AutostartText.EnableButton
 }
 # Opcje filtrów w kolejności listy (GuiText.RiskFilterName, HistoryText.FilterName).
 $script:RiskOptionsPolish = @('Wszystkie', 'Bez eksperymentalnych', 'Tylko bezpieczne')
@@ -245,6 +262,15 @@ function Get-GuiProbeTexts {
     $SuffixAt = $Unavailable.LastIndexOf(' · ', [System.StringComparison]::Ordinal)
     if ($SuffixAt -lt 0) { throw "Tekst InstallUnavailable ($Language) nie zawiera separatora ' · ': '$Unavailable'." }
     $Texts['InstallUnavailableSuffix'] = $Unavailable.Substring($SuffixAt + 3)
+    # Strona „Autostart”: przyciski serii bez zaznaczenia, wzorce N przycisków i pozycji przełącznika grup. Nazwa pozycji przełącznika
+    # = AutostartGroupOption.AutomationName: „<nazwa grupy>, <N>” (separator i liczba bez tłumaczenia, kultura niezmienna).
+    $Texts['DisableIdle'] = $Texts.DisableFormat.Replace('{0}', '0')
+    $Texts['EnableIdle'] = $Texts.EnableFormat.Replace('{0}', '0')
+    $Texts['DisablePattern'] = ConvertTo-GuiCountPattern -Format $Texts.DisableFormat
+    $Texts['EnablePattern'] = ConvertTo-GuiCountPattern -Format $Texts.EnableFormat
+    foreach ($Group in 'AutostartEnabled', 'AutostartDisabled', 'AutostartMissingFile') {
+        $Texts["$($Group)Pattern"] = ConvertTo-GuiCountPattern -Format ([string]$Texts[$Group] + ', {0}')
+    }
     return $Texts
 }
 
@@ -267,7 +293,7 @@ function Get-GuiUiProbeScript {
     return @'
 param([Parameter(Mandatory)][string]$ResultFile, [Parameter(Mandatory)][string]$TextsFile)
 $ErrorActionPreference = 'Stop'
-$RequiredTexts = @('AppsNotRead', 'AppsPage', 'AppsReading', 'AppsRefresh', 'ApplyOne', 'ApplyPattern', 'HistoryFilter', 'HistoryOptions', 'HistoryPage', 'InstallAppList', 'InstallCategoryList', 'InstallPage', 'InstallPattern', 'InstallRefresh', 'InstallSourceProbePrefix', 'Items', 'Menu', 'Minimize', 'PanelTitle', 'PanelsCategory', 'PrepGraphicsTitle', 'PrepLoading', 'PrepOpenWindowsUpdate', 'PrepPage', 'PrepTitles', 'PrepWindowsUpdateNote', 'PrivacyCategory', 'ProbeCategory', 'RefreshState', 'RemovePattern', 'RepairCategory', 'RiskCombo', 'RiskOptions', 'SelectSuggested', 'TweakTitle')
+$RequiredTexts = @('AppsNotRead', 'AppsPage', 'AppsReading', 'AppsRefresh', 'ApplyOne', 'ApplyPattern', 'AutostartGroups', 'AutostartNotRead', 'AutostartPage', 'AutostartReadFailed', 'AutostartReading', 'AutostartRefresh', 'DisablePattern', 'EnablePattern', 'HistoryFilter', 'HistoryOptions', 'HistoryPage', 'InstallAppList', 'InstallCategoryList', 'InstallPage', 'InstallPattern', 'InstallRefresh', 'InstallSourceProbePrefix', 'Items', 'Menu', 'Minimize', 'PanelTitle', 'PanelsCategory', 'PrepGraphicsTitle', 'PrepLoading', 'PrepOpenWindowsUpdate', 'PrepPage', 'PrepTitles', 'PrepWindowsUpdateNote', 'PrivacyCategory', 'ProbeCategory', 'RefreshState', 'RemovePattern', 'RepairCategory', 'RiskCombo', 'RiskOptions', 'SelectSuggested', 'TweakTitle')
 $Out = [ordered]@{
     Ok = $false; Error = $null; Steps = @(); Dpi = $null
     HistoryMenuFound = $false; ApplyInvoked = $false; ApplyBusySeen = $false; ApplySeconds = $null; ApplyError = $null
@@ -281,6 +307,8 @@ $Out = [ordered]@{
     RepairMenuFound = $false; RepairListFound = $false; RepairTexts = @(); RepairError = $null
     InstallMenuFound = $false; InstallLoaded = $false; InstallSubtitle = $null; InstallCategories = @(); InstallTexts = @()
     InstallButtonText = $null; InstallButtonEnabled = $null; InstallError = $null
+    AutostartMenuFound = $false; AutostartPageScoped = $false; AutostartLoaded = $false; AutostartReadFailed = $false; AutostartGroupNames = @()
+    AutostartDisableText = $null; AutostartDisableEnabled = $null; AutostartEnableText = $null; AutostartEnableEnabled = $null; AutostartError = $null
 }
 function Add-Step([string]$Text) { $script:Out.Steps += ('{0:HH:mm:ss.fff} {1}' -f (Get-Date), $Text) }
 try {
@@ -973,6 +1001,71 @@ public static class DsoUser32 {
         Add-Step "instalacja: kategorii $($CategoryNames.Count), tekstow listy $($InstallNames.Count), przycisk '$($Out.InstallButtonText)' aktywny=$($Out.InstallButtonEnabled)"
     }
     catch { $Out.InstallError = $_.Exception.Message; Add-Step "instalacja: BLAD $($Out.InstallError)" }
+    # 12. Strona "Autostart" - na samym koncu (drugi zrzut pokazuje te strone). Nic nie jest zaznaczane, wylaczane ani wlaczane: wejscie
+    #     wzorcem SelectionItemPattern na pozycje menu, elementy strony szukane w jej kontenerze (AutomationId = x:Name widoku w MainWindow.xaml;
+    #     brak kontenera = cale okno), czekanie najwyzej 120 s na koniec odczytu ("Odswiez liste" aktywne, bez "Odczyt listy w toku"
+    #     i "Lista nie zostala jeszcze odczytana", przelacznik grup niepusty, oba przyciski serii; stan staly przez 3 s; blad odczytu konczy
+    #     czekanie). Potem nazwy pozycji przelacznika grup ("Wlaczone, N" - AutostartGroupOption.AutomationName) oraz napis i IsEnabled
+    #     przyciskow "Wylacz (N)" i "Wlacz (N)". Liczby i stan przyciskow ocenia host (CLI --list-autostart tego przebiegu).
+    try {
+        $AutostartNav = Find-Element $Root $T.AutostartPage $ListItem
+        $Out.AutostartMenuFound = ($null -ne $AutostartNav)
+        if ($null -eq $AutostartNav) { throw "Brak pozycji menu '$($T.AutostartPage)'." }
+        $AutostartNav.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
+        Start-Sleep -Milliseconds 1000
+        $ByPageId = New-Object System.Windows.Automation.PropertyCondition($AE::AutomationIdProperty, 'AutostartPage')
+        $AutostartScope = $null
+        $Limit = (Get-Date).AddSeconds(15)
+        do {
+            $AutostartScope = $Root.FindFirst($Scope, $ByPageId)
+            if ($null -eq $AutostartScope) { Start-Sleep -Milliseconds 250 }
+        } while ($null -eq $AutostartScope -and (Get-Date) -lt $Limit)
+        $Out.AutostartPageScoped = ($null -ne $AutostartScope)
+        if ($null -eq $AutostartScope) { $AutostartScope = $Root; Add-Step 'autostart: brak kontenera strony (AutomationId), szukanie w calym oknie' }
+        $GroupList = Wait-Element $AutostartScope $T.AutostartGroups ([System.Windows.Automation.ControlType]::List) 30
+        if ($null -eq $GroupList) { throw "Brak listy '$($T.AutostartGroups)' na stronie Autostart." }
+        $AutostartRefreshName = [string]$T.AutostartRefresh
+        $AutostartBusyNames = @([string]$T.AutostartReading, [string]$T.AutostartNotRead)
+        $AutostartFailedName = [string]$T.AutostartReadFailed
+        $DisablePattern = $T.DisablePattern
+        $EnablePattern = $T.EnablePattern
+        $ByAutostartText = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Text)
+        $ByAutostartButton = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)
+        $ByAutostartItem = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $ListItem)
+        $GroupNames = @()
+        $DisableButton = $null
+        $EnableButton = $null
+        $Last = $null
+        $StableSince = $null
+        $Limit = (Get-Date).AddSeconds(120)
+        do {
+            $Refresh = Find-Element $AutostartScope $AutostartRefreshName ([System.Windows.Automation.ControlType]::Button)
+            $PageTexts = @($AutostartScope.FindAll($Scope, $ByAutostartText) | ForEach-Object { [string]$_.Current.Name })
+            $Busy = @($AutostartBusyNames | Where-Object { $PageTexts -contains $_ }).Count -gt 0
+            $Out.AutostartReadFailed = $PageTexts -contains $AutostartFailedName
+            $GroupNames = @($GroupList.FindAll($Scope, $ByAutostartItem) | ForEach-Object { [string]$_.Current.Name })
+            $DisableButton = $null
+            $EnableButton = $null
+            foreach ($Button in $AutostartScope.FindAll($Scope, $ByAutostartButton)) {
+                $Name = [string]$Button.Current.Name
+                if ($null -eq $DisableButton -and $Name -match $DisablePattern) { $DisableButton = $Button }
+                if ($null -eq $EnableButton -and $Name -match $EnablePattern) { $EnableButton = $Button }
+            }
+            $Ready = $null -ne $Refresh -and $Refresh.Current.IsEnabled -and -not $Busy -and $GroupNames.Count -gt 0 -and $null -ne $DisableButton -and $null -ne $EnableButton
+            $Seen = if ($Ready) { "$($GroupNames -join '|')|$($DisableButton.Current.Name)|$($EnableButton.Current.Name)" } else { $null }
+            if (-not $Ready) { $Last = $null; $StableSince = $null }
+            elseif ($null -eq $StableSince -or $Seen -ne $Last) { $Last = $Seen; $StableSince = Get-Date }
+            elseif (((Get-Date) - $StableSince).TotalSeconds -ge 3) { $Out.AutostartLoaded = $true; break }
+            if ($Ready -and $Out.AutostartReadFailed) { break }
+            Start-Sleep -Milliseconds 250
+        } while ((Get-Date) -lt $Limit)
+        $Out.AutostartGroupNames = @($GroupNames)
+        if ($null -ne $DisableButton) { $Out.AutostartDisableText = [string]$DisableButton.Current.Name; $Out.AutostartDisableEnabled = [bool]$DisableButton.Current.IsEnabled }
+        if ($null -ne $EnableButton) { $Out.AutostartEnableText = [string]$EnableButton.Current.Name; $Out.AutostartEnableEnabled = [bool]$EnableButton.Current.IsEnabled }
+        Add-Step "autostart: odczyt skonczony=$($Out.AutostartLoaded), blad odczytu=$($Out.AutostartReadFailed), grupy '$($GroupNames -join ' | ')', przyciski '$($Out.AutostartDisableText)' aktywny=$($Out.AutostartDisableEnabled), '$($Out.AutostartEnableText)' aktywny=$($Out.AutostartEnableEnabled)"
+        if (-not $Out.AutostartLoaded -and -not $Out.AutostartReadFailed) { throw 'Odczyt strony Autostart nie skonczyl sie (albo stan sie zmienial) w 120 s.' }
+    }
+    catch { $Out.AutostartError = $_.Exception.Message; Add-Step "autostart: BLAD $($Out.AutostartError)" }
     $Out.Ok = $true
 }
 catch { $Out.Error = $_.Exception.Message }
@@ -1119,20 +1212,22 @@ function New-GuiUiCheck {
 }
 
 function Get-GuiUiCheck {
-    # Czysta agregacja wyniku sondy UI -> { Name, Passed, Detail }: HistoryMenu, HistoryEntryActive, CaptionHitTest, FilterRiskOpened, FilterRiskSelected, FilterHistoryOpened, FilterHistorySelected, RowClickPreview, RowDoubleClickToggles, RunIconRuns, RunIconDoubleClickOnce, PrivacySuggestedApply, AppsSuggestedRemove, PrepPage, RepairPage, InstallPage. Sonda $null = niezaliczone.
+    # Czysta agregacja wyniku sondy UI -> { Name, Passed, Detail }: HistoryMenu, HistoryEntryActive, CaptionHitTest, FilterRiskOpened, FilterRiskSelected, FilterHistoryOpened, FilterHistorySelected, RowClickPreview, RowDoubleClickToggles, RunIconRuns, RunIconDoubleClickOnce, PrivacySuggestedApply, AppsSuggestedRemove, PrepPage, RepairPage, InstallPage, AutostartPage. Sonda $null = niezaliczone.
     # -PrivacyExpected: wynik Get-GuiPrivacyExpectedCount ({ Count, Detail }); brak albo Count = $null = PrivacySuggestedApply niezaliczone.
     # -AppsExpected: wynik Get-GuiAppsExpectedCount ({ Count, Detail }); brak albo Count = $null = AppsSuggestedRemove niezaliczone.
     # -SettingsOpenable: PrepLinks.SettingsOpenable (domyślnie stała modułu); true = krok 2 strony „Przygotowanie” ma przycisk, false = notatkę.
     # -RepairTitles: wynik Get-GuiRepairTitle (tytuły kategorii repair z katalogu); brak albo pusta lista = RepairPage niezaliczone.
     # -InstallExpected: wynik Get-GuiInstallTitle ({ Titles, Categories } z apps.json); brak albo puste tytuły = InstallPage niezaliczone.
+    # -AutostartExpected: wynik VmSmoke\Get-GuiAutostartExpectedCount ({ Enabled, Disabled, MissingFile, Detail } z CLI --list-autostart);
+    #   brak albo liczba $null = AutostartPage niezaliczone.
     # -Texts: wynik Get-GuiProbeTexts w języku okna (ten sam słownik, który dostała sonda); wymagany.
     [CmdletBinding()]
     param(
         [AllowNull()]$Probe, [AllowNull()]$PrivacyExpected, [AllowNull()]$AppsExpected, [bool]$SettingsOpenable = $script:PrepSettingsOpenable,
-        [AllowNull()][AllowEmptyCollection()][string[]]$RepairTitles, [AllowNull()]$InstallExpected,
+        [AllowNull()][AllowEmptyCollection()][string[]]$RepairTitles, [AllowNull()]$InstallExpected, [AllowNull()]$AutostartExpected,
         [Parameter(Mandatory)][System.Collections.IDictionary]$Texts
     )
-    $Names = 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage'
+    $Names = 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage', 'AutostartPage'
     if ($null -eq $Probe) { return , @($Names | ForEach-Object { New-GuiUiCheck -Name $_ -Passed $false -Detail 'brak odczytu sondy UI' }) }
     $Props = $Probe.PSObject.Properties
     $Get = { param($N, $Default) if ($null -ne $Props[$N] -and $null -ne $Props[$N].Value) { $Props[$N].Value } else { $Default } }
@@ -1286,7 +1381,76 @@ function Get-GuiUiCheck {
     else {
         $Checks += Get-GuiInstallPageCheck -Get $Get -InstallExpected $InstallExpected -Texts $Texts
     }
+
+    # „Autostart” (krok 12 sondy): pozycja menu, koniec odczytu bez błędu, liczby w nazwach pozycji przełącznika grup = liczby z CLI
+    # --list-autostart, „Wyłącz (0)” i „Włącz (0)” nieaktywne. Brak pól kroku 12 (stara sonda) albo oczekiwanych liczb = niezaliczone.
+    if ($null -eq $Props['AutostartMenuFound']) {
+        $Checks += New-GuiUiCheck -Name 'AutostartPage' -Passed $false -Detail 'brak pola AutostartMenuFound w wyniku sondy'
+    }
+    else {
+        $Checks += Get-GuiAutostartPageCheck -Get $Get -AutostartExpected $AutostartExpected -Texts $Texts
+    }
     return , $Checks
+}
+
+function Get-GuiAutostartPageCheck {
+    # Sprawdzenie AutostartPage (krok 12 sondy) z odczytu pól sondy przez -Get (blok z Get-GuiUiCheck). Liczba grupy = N z nazwy jej pozycji
+    # przełącznika („<nazwa>, N” – wzorce z Get-GuiProbeTexts), porównana z liczbą z CLI (-AutostartExpected); przyciski serii bez zaznaczenia
+    # („Wyłącz (0)”, „Włącz (0)”) muszą być nieaktywne. Kolejność pozycji przełącznika nie ma znaczenia.
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][scriptblock]$Get, [AllowNull()]$AutostartExpected, [Parameter(Mandatory)][System.Collections.IDictionary]$Texts)
+    $Groups = [ordered]@{ Enabled = 'AutostartEnabled'; Disabled = 'AutostartDisabled'; MissingFile = 'AutostartMissingFile' }
+    $Expected = @{}
+    $ExpectedOk = $null -ne $AutostartExpected
+    $ExpectedDetail = 'CLI --list-autostart nie zwróciło wyniku'
+    if ($ExpectedOk) {
+        $ExpectedDetail = [string]$AutostartExpected.Detail
+        foreach ($Key in $Groups.Keys) {
+            $Property = $AutostartExpected.PSObject.Properties[$Key]
+            $Expected[$Key] = if ($null -ne $Property -and $null -ne $Property.Value) { [int]$Property.Value } else { $null }
+            if ($null -eq $Expected[$Key]) { $ExpectedOk = $false }
+        }
+    }
+    $Menu = [bool](& $Get 'AutostartMenuFound' $false)
+    $Loaded = [bool](& $Get 'AutostartLoaded' $false)
+    $ReadFailed = [bool](& $Get 'AutostartReadFailed' $false)
+    $GroupNames = @(@(& $Get 'AutostartGroupNames' @()) | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ })
+    $AutostartError = & $Get 'AutostartError' $null
+    $Parts = @()
+    $Parts += if ($Menu) { 'pozycja menu' } else { 'NIE: pozycja menu' }
+    $Parts += if ($Loaded) { 'odczyt skończony' } else { 'NIE: odczyt skończony w 120 s' }
+    # Cudzysłowy „ ” to w PowerShellu ograniczniki napisu – tylko w napisach w apostrofach.
+    if ($ReadFailed) { $Parts += 'NIE: odczyt bez błędu („' + [string]$Texts.AutostartReadFailed + '”)' }
+    if (-not $ExpectedOk) { $Parts += "brak oczekiwanych liczb ($ExpectedDetail)" }
+    $GroupsOk = $true
+    foreach ($Key in $Groups.Keys) {
+        $Label = [string]$Texts[$Groups[$Key]]
+        $Pattern = [string]$Texts["$($Groups[$Key])Pattern"]
+        $Cli = if ($null -ne $Expected[$Key]) { [string]$Expected[$Key] } else { '?' }
+        $Found = @($GroupNames | Where-Object { $_ -cmatch $Pattern })
+        if ($Found.Count -eq 0) { $GroupsOk = $false; $Parts += "NIE: ${Label}: brak w przełączniku grup (CLI $Cli)"; continue }
+        if ($Found.Count -gt 1) { $GroupsOk = $false; $Parts += "NIE: ${Label}: $($Found.Count) pozycje przełącznika (CLI $Cli)"; continue }
+        $null = $Found[0] -cmatch $Pattern
+        $Shown = [int]$Matches[1]
+        if ($null -ne $Expected[$Key] -and $Shown -eq $Expected[$Key]) { $Parts += "${Label}: $Shown (CLI $Cli)" }
+        else { $GroupsOk = $false; $Parts += "NIE: ${Label}: $Shown (CLI $Cli)" }
+    }
+    $ButtonsOk = $true
+    foreach ($Button in @(@{ Field = 'AutostartDisable'; Idle = [string]$Texts.DisableIdle }, @{ Field = 'AutostartEnable'; Idle = [string]$Texts.EnableIdle })) {
+        $Text = & $Get "$($Button.Field)Text" $null
+        $Enabled = & $Get "$($Button.Field)Enabled" $null
+        $Ok = $null -ne $Text -and [string]$Text -ceq $Button.Idle -and $null -ne $Enabled -and -not [bool]$Enabled
+        $IdleText = '„' + $Button.Idle + '” nieaktywny'
+        if ($Ok) { $Parts += $IdleText; continue }
+        $ButtonsOk = $false
+        $Seen = if ($null -eq $Text) { 'brak przycisku' } else { "przycisk '$Text', aktywny: $Enabled" }
+        $Parts += 'NIE: ' + $IdleText + " ($Seen)"
+    }
+    $Detail = $Parts -join '; '
+    if ($ExpectedOk) { $Detail += "; $ExpectedDetail" }
+    if ($AutostartError) { $Detail += "; sonda: $AutostartError" }
+    $Passed = $Menu -and $Loaded -and -not $ReadFailed -and $ExpectedOk -and $GroupsOk -and $ButtonsOk -and -not $AutostartError
+    return (New-GuiUiCheck -Name 'AutostartPage' -Passed $Passed -Detail $Detail)
 }
 
 function Get-GuiInstallPageCheck {

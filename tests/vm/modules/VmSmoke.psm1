@@ -23,9 +23,12 @@ Opis działania:
     zapisuje go do VM jako JSON UTF-8 (GuiSmoke-Ui-texts.json) i podaje sondzie w -TextsFile; tym samym słownikiem ocenia wynik.
     Potem sonda wchodzi na „Przygotowanie” (7 tytułów kroków po odczycie, przycisk „Otwórz Windows Update”, linia karty w kroku
     „Grafika” – PrepPage; bez klikania linków), potem na „Naprawy” (lista ma wszystkie tytuły kategorii repair z katalogu –
-    RepairPage, Get-GuiRepairTitle; niczego nie uruchamia), a jako ostatnie na „Instalacja” (Etap 4c: wszystkie kategorie i tytuły
+    RepairPage, Get-GuiRepairTitle; niczego nie uruchamia), potem na „Instalacja” (Etap 4c: wszystkie kategorie i tytuły
     z apps.json, „Zainstaluj (0)” nieaktywne – InstallPage, Get-GuiInstallTitle; bez zaznaczania, instalowania i wyszukiwania),
-    więc drugi zrzut pokazuje stronę „Instalacja”.
+    a jako ostatnie na „Autostart”: po odczycie listy (najwyżej 120 s) liczby w nazwach pozycji przełącznika grup („Włączone, N”,
+    „Wyłączone, N”, „Bez pliku, N”) mają być równe liczbom z CLI --list-autostart tego przebiegu, uruchomionego przed sondą UI jako 'dso'
+    (Get-DsoAutostartListing + Get-GuiAutostartExpectedCount; „Bez pliku” wygrywa ze stanem), a „Wyłącz (0)” i „Włącz (0)” nieaktywne
+    (AutostartPage; bez zaznaczania, wyłączania i włączania). Drugi zrzut pokazuje więc stronę „Autostart”.
     Dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro; na hoście niczego nie zmienia (poza plikami w OutDirectory).
 #>
 Set-StrictMode -Version Latest
@@ -206,8 +209,8 @@ function Get-DsoGuiUiProbe {
         [Parameter(Mandatory)][hashtable]$Layout,
         [Parameter(Mandatory)][System.Collections.IDictionary]$Texts,
         [ValidatePattern('^[A-Za-z0-9_-]+\z')][string]$UserName = 'dso',
-        # 600 s: krok 11 („Instalacja”, Etap 4c) czeka na odczyt strony najwyżej 180 s ponad dotychczasowe kroki.
-        [ValidateRange(60, 900)][int]$TimeoutSeconds = 600
+        # 720 s: krok 11 („Instalacja”, Etap 4c) czeka na odczyt strony najwyżej 180 s, a krok 12 („Autostart”) jeszcze najwyżej 120 s.
+        [ValidateRange(60, 900)][int]$TimeoutSeconds = 720
     )
     Assert-DsoVmLiveAllowed
     $TextsName = 'GuiSmoke-Ui-texts.json'
@@ -393,6 +396,47 @@ function Get-DsoAppsListing {
     return Invoke-DsoCli -Session $Session -ExePath $Layout.Exe -Arguments $Arguments -OutPath $OutPath -RunAsUser $UserName -TimeoutSeconds $TimeoutSeconds
 }
 
+function Get-DsoAutostartListing {
+    # W VM: CLI DSOptimizer.exe --list-autostart --out <json> jako konto 'dso' przez zadanie Harmonogramu (Interactive + Highest,
+    # VmRun\Invoke-DsoCli -RunAsUser) - to samo konto co okno, więc ta sama gałąź HKU, folder Autostart i aplikacje ze Sklepu.
+    # Tylko odczyt (odczyt listy niczego nie zapisuje). Argumenty składane tu, bo ConvertTo-DsoCliArguments nie zna poleceń autostartu.
+    # Zwraca wynik Invoke-DsoCli (ExitCode, TimedOut, Report, Json, ReportError).
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)][hashtable]$Layout,
+        [ValidatePattern('^[A-Za-z0-9_-]+\z')][string]$UserName = 'dso',
+        [ValidateRange(10, 900)][int]$TimeoutSeconds = 300
+    )
+    Assert-DsoVmLiveAllowed
+    $OutPath = "$($Layout.Out)\smoke-list-autostart.json"
+    if ($OutPath -match '\s') { throw "Ścieżka '$OutPath' zawiera spację lub inny biały znak (niedozwolone w argumentach CLI)." }
+    return Invoke-DsoCli -Session $Session -ExePath $Layout.Exe -Arguments @('--list-autostart', '--out', $OutPath) -OutPath $OutPath -RunAsUser $UserName -TimeoutSeconds $TimeoutSeconds
+}
+
+function Get-GuiAutostartExpectedCount {
+    # Oczekiwane liczby grup strony „Autostart” z raportu CLI --list-autostart tego przebiegu (wynik VmRun\Invoke-DsoCli), ta sama reguła
+    # co AutostartRow.Group w Core: missingFile = „Bez pliku” (wygrywa ze stanem), inaczej state Disabled = „Wyłączone”, każdy inny stan
+    # (Enabled, Unknown) = „Włączone”. Liczby $null, gdy CLI nie zwróciło wyniku, przekroczyło limit czasu, skończyło się kodem różnym od 0
+    # albo raport nie ma listy.
+    [CmdletBinding()]
+    param([AllowNull()]$Listing)
+    $NoCounts = { param([string]$Detail) [pscustomobject]@{ Enabled = $null; Disabled = $null; MissingFile = $null; Detail = $Detail } }
+    if ($null -eq $Listing) { return (& $NoCounts '--list-autostart: brak wyniku') }
+    if ($Listing.TimedOut -eq $true) { return (& $NoCounts '--list-autostart: limit czasu') }
+    if ([int]$Listing.ExitCode -ne 0) { return (& $NoCounts "--list-autostart: kod $($Listing.ExitCode)") }
+    $Report = $Listing.Report
+    if ($null -eq $Report) { return (& $NoCounts "--list-autostart: brak raportu ($($Listing.ReportError))") }
+    if ($null -eq $Report.PSObject.Properties['autostartRows'] -or $null -eq $Report.autostartRows) { return (& $NoCounts '--list-autostart: raport bez listy autostartu') }
+    $Rows = @($Report.autostartRows | Where-Object { $null -ne $_ })
+    $Missing = @($Rows | Where-Object { $_.missingFile -eq $true })
+    $Disabled = @($Rows | Where-Object { $_.missingFile -ne $true -and [string]$_.state -eq 'Disabled' })
+    $Enabled = $Rows.Count - $Missing.Count - $Disabled.Count
+    $User = if ($null -ne $Report.PSObject.Properties['user'] -and $null -ne $Report.user) { "konto $($Report.user.sid), pewne: $($Report.user.isCertain)" } else { 'konto ?' }
+    $Detail = "--list-autostart ($User): wierszy $($Rows.Count), włączone $Enabled, wyłączone $($Disabled.Count), bez pliku $($Missing.Count)"
+    return [pscustomobject]@{ Enabled = $Enabled; Disabled = $Disabled.Count; MissingFile = $Missing.Count; Detail = $Detail }
+}
+
 function ConvertTo-DsoRgb565Png {
     # Bajty obrazu RGB565 (16 bpp, bez dopełnienia wierszy) -> PNG na dysku. Zwraca ścieżkę.
     [CmdletBinding()]
@@ -526,8 +570,8 @@ function Get-GuiSmokeCheck {
 
 function Invoke-DsoGuiSmoke {
     # Jedna VM: revert -> start -> gotowość -> kopia builda -> start GUI w sesji dso -> czekanie -> zrzut -> detekcja CLI sugerowanych
-    # pozycji „Prywatność i AI” (oczekiwane N) -> CLI --list-apps jako dso (oczekiwane N „Usuń (N)”) -> sonda UI (historia, WM_NCHITTEST,
-    # filtry, wiersze, „Prywatność i AI”, „Aplikacje”, „Przygotowanie”, „Naprawy”, na końcu „Instalacja”) -> drugi zrzut -> sonda stanu (zdarzenia i log od startu, więc obejmują też sondę UI) -> (domyślnie) revert i VM Off.
+    # pozycji „Prywatność i AI” (oczekiwane N) -> CLI --list-apps jako dso (oczekiwane N „Usuń (N)”) -> CLI --list-autostart jako dso (oczekiwane liczby grup)
+    # -> sonda UI (historia, WM_NCHITTEST, filtry, wiersze, „Prywatność i AI”, „Aplikacje”, „Przygotowanie”, „Naprawy”, „Instalacja”, na końcu „Autostart”) -> drugi zrzut -> sonda stanu (zdarzenia i log od startu, więc obejmują też sondę UI) -> (domyślnie) revert i VM Off.
     # Zwraca wynik (passed, checks, errors, screenshotPath, uiScreenshotPath, resultPath); zapisuje gui-smoke-<VM>.json w OutDirectory.
     [CmdletBinding()]
     param(
@@ -565,6 +609,9 @@ function Invoke-DsoGuiSmoke {
     $AppsListing = $null
     $AppsExpected = $null
     $AppsListError = $null
+    $AutostartListing = $null
+    $AutostartExpected = $null
+    $AutostartListError = $null
     $RepairTitles = $null
     $RepairTitlesError = $null
     $InstallExpected = $null
@@ -605,10 +652,16 @@ function Invoke-DsoGuiSmoke {
             $AppsExpected = Get-GuiAppsExpectedCount -Listing $AppsListing
         }
         catch { $AppsListError = "lista aplikacji: $($_.Exception.Message)" }
-        # Oczekiwane tytuły strony „Naprawy” (krok 10 sondy UI, na samym końcu): kategoria repair z wbudowanego katalogu repo.
+        # Oczekiwane liczby grup „Autostart” (krok 12 sondy UI): CLI --list-autostart jako dso, przed sondą UI (sonda niczego nie przełącza).
+        try {
+            $AutostartListing = Get-DsoAutostartListing -Session $Session -Layout $Layout
+            $AutostartExpected = Get-GuiAutostartExpectedCount -Listing $AutostartListing
+        }
+        catch { $AutostartListError = "lista autostartu: $($_.Exception.Message)" }
+        # Oczekiwane tytuły strony „Naprawy” (krok 10 sondy UI): kategoria repair z wbudowanego katalogu repo.
         try { $RepairTitles = @(Get-GuiRepairTitle -CatalogDirectory (Join-Path (Get-DsoRepoRoot) 'src\DSOptimizer.Catalog\catalog') -Language $Language) }
         catch { $RepairTitlesError = "tytuły Napraw: $($_.Exception.Message)" }
-        # Oczekiwania strony „Instalacja” (krok 11 sondy UI, na samym końcu): tytuły i kategorie z apps.json repo.
+        # Oczekiwania strony „Instalacja” (krok 11 sondy UI): tytuły i kategorie z apps.json repo.
         try { $InstallExpected = Get-GuiInstallTitle -CatalogDirectory (Join-Path (Get-DsoRepoRoot) 'src\DSOptimizer.Catalog\catalog') -Language $Language }
         catch { $InstallTitlesError = "lista instalacji: $($_.Exception.Message)" }
         try { $UiProbe = Get-DsoGuiUiProbe -Session $Session -Layout $Layout -Texts $Texts }
@@ -626,10 +679,10 @@ function Invoke-DsoGuiSmoke {
         }
     }
     $BaseChecks = Get-GuiSmokeCheck -Probe $Probe -ScreenshotPath $Shot
-    $UiChecks = Get-GuiUiCheck -Probe $UiProbe -PrivacyExpected $PrivacyExpected -AppsExpected $AppsExpected -RepairTitles $RepairTitles -InstallExpected $InstallExpected -Texts $Texts
+    $UiChecks = Get-GuiUiCheck -Probe $UiProbe -PrivacyExpected $PrivacyExpected -AppsExpected $AppsExpected -RepairTitles $RepairTitles -InstallExpected $InstallExpected -AutostartExpected $AutostartExpected -Texts $Texts
     $LanguageCheck = Get-GuiLanguageCheck -Choice $LanguageChoice -Language $Language
     $Checks = @($BaseChecks) + @($LanguageCheck) + @($UiChecks)
-    $Errors = @($PrimaryError, $LanguageError, $ShotError, $DetectionError, $AppsListError, $RepairTitlesError, $InstallTitlesError, $UiError, $UiShotError, $RevertError) | Where-Object { $_ }
+    $Errors = @($PrimaryError, $LanguageError, $ShotError, $DetectionError, $AppsListError, $AutostartListError, $RepairTitlesError, $InstallTitlesError, $UiError, $UiShotError, $RevertError) | Where-Object { $_ }
     $Failed = @($Checks | Where-Object { -not $_.Passed }).Count + @($Errors).Count
     $Result = [ordered]@{
         schema         = 1
@@ -652,6 +705,8 @@ function Invoke-DsoGuiSmoke {
         privacyExpected  = $PrivacyExpected
         appsListing      = $AppsListing
         appsExpected     = $AppsExpected
+        autostartListing  = $AutostartListing
+        autostartExpected = $AutostartExpected
         repairTitles     = @($RepairTitles)
         installExpected  = $InstallExpected
         probeTexts       = $Texts
@@ -660,4 +715,4 @@ function Invoke-DsoGuiSmoke {
     return [pscustomobject]$Result
 }
 
-Export-ModuleMember -Function Get-GuiSmokeProbeScript, Get-LanguageChoiceProbeScript, Confirm-DsoLanguageChoice, Get-GuiLanguageCheck, Start-DsoGuiInUserSession, Invoke-DsoUserSessionScript, Get-DsoGuiProbe, Get-DsoGuiUiProbe, Get-DsoPrivacyDetection, Get-DsoAppsListing, ConvertTo-DsoRgb565Png, Save-DsoVmThumbnail, Get-DsoVmResolution, Get-GuiSmokeCheck, Invoke-DsoGuiSmoke
+Export-ModuleMember -Function Get-GuiSmokeProbeScript, Get-LanguageChoiceProbeScript, Confirm-DsoLanguageChoice, Get-GuiLanguageCheck, Start-DsoGuiInUserSession, Invoke-DsoUserSessionScript, Get-DsoGuiProbe, Get-DsoGuiUiProbe, Get-DsoPrivacyDetection, Get-DsoAppsListing, Get-DsoAutostartListing, Get-GuiAutostartExpectedCount, ConvertTo-DsoRgb565Png, Save-DsoVmThumbnail, Get-DsoVmResolution, Get-GuiSmokeCheck, Invoke-DsoGuiSmoke

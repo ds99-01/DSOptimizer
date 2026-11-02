@@ -34,6 +34,9 @@ BeforeAll {
         InstallMenuFound = $true; InstallLoaded = $true; InstallButtonText = 'Zainstaluj (0)'; InstallButtonEnabled = $false; InstallError = $null
         InstallSubtitle = 'Źródła: winget (Microsoft) i GitHub (RustDesk) · 35 aplikacji · zainstalowane: 0'
         InstallCategories = @('Przeglądarki', 'Narzędzia'); InstallTexts = @('Mozilla Firefox', 'Mozilla.Firefox', '7-Zip', '7zip.7zip')
+        AutostartMenuFound = $true; AutostartPageScoped = $true; AutostartLoaded = $true; AutostartReadFailed = $false; AutostartError = $null
+        AutostartGroupNames = @('Włączone, 2', 'Wyłączone, 1', 'Bez pliku, 1')
+        AutostartDisableText = 'Wyłącz (0)'; AutostartDisableEnabled = $false; AutostartEnableText = 'Włącz (0)'; AutostartEnableEnabled = $false
         HitTest = @([pscustomobject]@{
                 State = 'Maximized'; BarTop = 0; BarBottom = 44; ScanX = 8
                 Points = @([pscustomobject]@{ Name = 'mid'; XDip = 8; X = 8; Y = 22; Ht = 2 }, [pscustomobject]@{ Name = 'low'; XDip = 8; X = 8; Y = 42; Ht = 2 },
@@ -62,6 +65,19 @@ BeforeAll {
             apps = @(
                 [pscustomobject]@{ id = 'appx:Microsoft.GamingApp_8wekyb3d8bbwe'; kind = 'Store'; name = 'Xbox'; group = 'Suggested'; removability = 'Removable' }
                 [pscustomobject]@{ id = 'appx:Microsoft.WindowsCalculator_8wekyb3d8bbwe'; kind = 'Store'; name = 'Kalkulator'; group = 'Protected'; removability = 'Protected' }
+            )
+        }
+    }
+    # --list-autostart (wynik Invoke-DsoCli): 2 włączone (w tym stan nieznany), 1 wyłączona, 1 bez pliku (wyłączona, bez pliku wygrywa ze stanem).
+    $script:GoodAutostartListing = [pscustomobject]@{
+        ExitCode = 0; TimedOut = $false; Json = 'x'; ReportError = $null
+        Report = [pscustomobject]@{
+            exitCode = 0; user = [pscustomobject]@{ sid = 'S-1-5-21-1'; isCertain = $true }
+            autostartRows = @(
+                [pscustomobject]@{ id = 'run-user:a'; source = 'RunUser'; name = 'A'; state = 'Enabled'; missingFile = $false }
+                [pscustomobject]@{ id = 'task:b'; source = 'StartupTask'; name = 'B'; state = 'Unknown'; missingFile = $false }
+                [pscustomobject]@{ id = 'run-machine:c'; source = 'RunMachine'; name = 'C'; state = 'Disabled'; missingFile = $false }
+                [pscustomobject]@{ id = 'run-user:d'; source = 'RunUser'; name = 'D'; state = 'Disabled'; missingFile = $true }
             )
         }
     }
@@ -287,7 +303,7 @@ Describe 'Start-DsoGuiInUserSession i Get-DsoGuiProbe' {
             $Data = $ArgumentList[6]
             $Sent = if ($null -ne $Data -and $Data.ContainsKey('GuiSmoke-Ui-texts.json')) { $Data['GuiSmoke-Ui-texts.json'] | ConvertFrom-Json } else { $null }
             $ArgumentList[1] -eq (Get-GuiUiProbeScript) -and $ArgumentList[2] -eq 'GuiSmoke-Ui' -and
-            $ArgumentList[3] -eq '-TextsFile C:\dso\out\GuiSmoke-Ui-texts.json' -and $ArgumentList[5] -eq 600 -and
+            $ArgumentList[3] -eq '-TextsFile C:\dso\out\GuiSmoke-Ui-texts.json' -and $ArgumentList[5] -eq 720 -and
             $null -ne $Sent -and $Sent.HistoryPage -eq 'Change history' -and @($Sent.PrepTitles).Count -eq 7 -and $Sent.TweakTitle -eq $Texts.TweakTitle
         }
     }
@@ -440,6 +456,7 @@ Describe 'Okno wyboru języka w Invoke-DsoGuiSmoke (orkiestracja na mockach)' -S
         Mock -ModuleName VmSmoke Get-GuiInstallTitle { [pscustomobject]@{ Titles = @('Mozilla Firefox', '7-Zip'); Categories = @('Przeglądarki', 'Narzędzia') } }
         Mock -ModuleName VmSmoke Get-DsoPrivacyDetection { $script:GoodDetection }
         Mock -ModuleName VmSmoke Get-DsoAppsListing { $script:GoodListing }
+        Mock -ModuleName VmSmoke Get-DsoAutostartListing { $script:GoodAutostartListing }
         Mock -ModuleName VmSmoke Save-DsoVmThumbnail { Set-Content -LiteralPath $Path -Value 'png'; $Path }
         Mock -ModuleName VmSmoke Get-DsoVmResolution { [pscustomobject]@{ Width = 1280; Height = 800; Source = 'guest'; Error = $null } }
     }
@@ -509,6 +526,65 @@ Describe 'Get-DsoAppsListing (CLI --list-apps w VM)' {
     }
 }
 
+Describe 'Get-DsoAutostartListing (CLI --list-autostart w VM)' {
+    BeforeEach { Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {} }
+    It 'woła CLI --list-autostart z --out w katalogu wyników VM, jako konto dso (to samo konto co okno)' {
+        Mock -ModuleName VmSmoke Invoke-DsoCli { $script:GoodAutostartListing }
+        $L = Get-DsoAutostartListing -Session $script:FakeSession -Layout (Get-DsoVmLayout)
+        @($L.Report.autostartRows).Count | Should -Be 4
+        Should -Invoke -ModuleName VmSmoke Invoke-DsoCli -Times 1 -Exactly -ParameterFilter {
+            $ExePath -eq 'C:\dso\app\DSOptimizer.exe' -and $OutPath -eq 'C:\dso\out\smoke-list-autostart.json' -and $RunAsUser -eq 'dso' -and
+            (@($Arguments) -join ' ') -eq '--list-autostart --out C:\dso\out\smoke-list-autostart.json'
+        }
+    }
+}
+
+Describe 'Get-GuiAutostartExpectedCount (liczby grup z --list-autostart)' {
+    BeforeAll {
+        function script:New-AutostartListing([object[]]$Rows) {
+            [pscustomobject]@{
+                ExitCode = 0; TimedOut = $false; Json = 'x'; ReportError = $null
+                Report = [pscustomobject]@{ exitCode = 0; user = [pscustomobject]@{ sid = 'S-1-5-21-1'; isCertain = $true }; autostartRows = @($Rows) }
+            }
+        }
+        function script:New-Row([string]$State, [bool]$MissingFile) { [pscustomobject]@{ id = [guid]::NewGuid().ToString('N'); name = 'X'; state = $State; missingFile = $MissingFile } }
+    }
+    It 'liczy grupy jak AutostartRow.Group: bez pliku wygrywa ze stanem, stan nieznany = Włączone' {
+        $R = Get-GuiAutostartExpectedCount -Listing $script:GoodAutostartListing
+        $R.Enabled | Should -Be 2
+        $R.Disabled | Should -Be 1
+        $R.MissingFile | Should -Be 1
+        $R.Detail | Should -BeLike '*--list-autostart*S-1-5-21-1*wierszy 4*'
+    }
+    It 'pozycja włączona bez pliku liczy się tylko do „Bez pliku”' {
+        $R = Get-GuiAutostartExpectedCount -Listing (New-AutostartListing @((New-Row 'Enabled' $true), (New-Row 'Enabled' $false), (New-Row 'Disabled' $false)))
+        @($R.Enabled, $R.Disabled, $R.MissingFile) | Should -Be @(1, 1, 1)
+    }
+    It 'pusta lista daje same zera' {
+        $R = Get-GuiAutostartExpectedCount -Listing (New-AutostartListing @())
+        @($R.Enabled, $R.Disabled, $R.MissingFile) | Should -Be @(0, 0, 0)
+    }
+    It 'reguła grup w module = AutostartRow.Group w Core' {
+        $Source = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\..\..\src\DSOptimizer.Core\Autostart\AutostartRow.cs'), [System.Text.Encoding]::UTF8)
+        $Source | Should -Match ([regex]::Escape('public AutostartGroup Group => MissingFile'))
+        $Source | Should -Match ([regex]::Escape('? AutostartGroup.MissingFile'))
+        $Source | Should -Match ([regex]::Escape(': State == AutostartState.Disabled ? AutostartGroup.Disabled : AutostartGroup.Enabled;'))
+    }
+    It 'brak liczb (<Powod>)' -ForEach @(
+        @{ Powod = 'brak wyniku'; Listing = $null; Like = '*brak wyniku*' }
+        @{ Powod = 'limit czasu'; Listing = [pscustomobject]@{ ExitCode = -1; TimedOut = $true; Report = $null; ReportError = $null }; Like = '*limit czasu*' }
+        @{ Powod = 'kod różny od 0'; Listing = [pscustomobject]@{ ExitCode = 1; TimedOut = $false; Report = [pscustomobject]@{ exitCode = 1 }; ReportError = $null }; Like = '*kod 1*' }
+        @{ Powod = 'brak raportu'; Listing = [pscustomobject]@{ ExitCode = 0; TimedOut = $false; Report = $null; ReportError = 'zły JSON' }; Like = '*brak raportu (zły JSON)*' }
+        @{ Powod = 'raport bez listy'; Listing = [pscustomobject]@{ ExitCode = 0; TimedOut = $false; Report = [pscustomobject]@{ exitCode = 0 }; ReportError = $null }; Like = '*bez listy autostartu*' }
+    ) {
+        $R = Get-GuiAutostartExpectedCount -Listing $Listing
+        $R.Enabled | Should -BeNullOrEmpty
+        $R.Disabled | Should -BeNullOrEmpty
+        $R.MissingFile | Should -BeNullOrEmpty
+        $R.Detail | Should -BeLike $Like
+    }
+}
+
 Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasHyperV) {
     BeforeEach {
         $script:Build = Join-Path $TestDrive 'build'
@@ -533,6 +609,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         Mock -ModuleName VmSmoke Get-GuiInstallTitle { [pscustomobject]@{ Titles = @('Mozilla Firefox', '7-Zip'); Categories = @('Przeglądarki', 'Narzędzia') } }
         Mock -ModuleName VmSmoke Get-DsoPrivacyDetection { $script:GoodDetection }
         Mock -ModuleName VmSmoke Get-DsoAppsListing { $script:GoodListing }
+        Mock -ModuleName VmSmoke Get-DsoAutostartListing { $script:GoodAutostartListing }
         Mock -ModuleName VmSmoke Save-DsoVmThumbnail { Set-Content -LiteralPath $Path -Value 'png'; $Path }
         Mock -ModuleName VmSmoke Get-DsoVmResolution { [pscustomobject]@{ Width = 1280; Height = 800; Source = 'guest'; Error = $null } }
     }
@@ -553,12 +630,15 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         $Result.screenshotPath | Should -BeLike (Join-Path $script:Out '*.png')
         $Saved = Get-Content -LiteralPath $Result.resultPath -Raw -Encoding UTF8 | ConvertFrom-Json
         $Saved.vmName | Should -Be 'DSO-26H2-Home'
-        @($Saved.checks.Name) | Should -Be @('ProcessAlive', 'Responding', 'NoCrashEvents', 'NoLogErrors', 'Screenshot', 'LanguageChoice', 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage')
+        @($Saved.checks.Name) | Should -Be @('ProcessAlive', 'Responding', 'NoCrashEvents', 'NoLogErrors', 'Screenshot', 'LanguageChoice', 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage', 'AutostartPage')
         @($Saved.repairTitles) | Should -Be @('Wyczyść pamięć DNS', 'Ochrona systemu')
         @($Saved.installExpected.Titles) | Should -Be @('Mozilla Firefox', '7-Zip')
         @($Saved.privacyDetection.Id) | Should -Be @('privacy.a', 'privacy.b', 'privacy.c')
         $Saved.privacyExpected.Count | Should -Be 2
         $Saved.appsExpected.Count | Should -Be 1
+        $Saved.autostartExpected.Enabled | Should -Be 2
+        $Saved.autostartExpected.MissingFile | Should -Be 1
+        @($Saved.autostartListing.Report.autostartRows.id) | Should -Contain 'run-user:d'
         @($Saved.appsListing.Report.apps.id) | Should -Contain 'appx:Microsoft.GamingApp_8wekyb3d8bbwe'
         $Saved.uiScreenshotPath | Should -Be (Join-Path $script:Out 'gui-smoke-DSO-26H2-Home-historia.png')
         $Saved.uiProbe.EntryNames | Should -Be @('Szybsze otwieranie podmenu, Eksplorator i wygoda, Aktywna, 20.10.2026 21:00')
@@ -570,8 +650,9 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         Mock -ModuleName VmSmoke Get-DsoGuiProbe { $script:Order.Add('stan'); $script:GoodProbe }
         Mock -ModuleName VmSmoke Get-DsoPrivacyDetection { $script:Order.Add('detekcja'); $script:GoodDetection }
         Mock -ModuleName VmSmoke Get-DsoAppsListing { $script:Order.Add('lista'); $script:GoodListing }
+        Mock -ModuleName VmSmoke Get-DsoAutostartListing { $script:Order.Add('autostart'); $script:GoodAutostartListing }
         Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
-        @($script:Order) | Should -Be @('zrzut:gui-smoke-DSO-26H2-Pro.png', 'detekcja', 'lista', 'ui', 'zrzut:gui-smoke-DSO-26H2-Pro-historia.png', 'stan')
+        @($script:Order) | Should -Be @('zrzut:gui-smoke-DSO-26H2-Pro.png', 'detekcja', 'lista', 'autostart', 'ui', 'zrzut:gui-smoke-DSO-26H2-Pro-historia.png', 'stan')
     }
     It 'N z „Usuń (N)” inne niż z --list-apps daje passed=false' {
         Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { $P = $script:GoodUiProbe | ConvertTo-Json -Depth 8 | ConvertFrom-Json; $P.AppsRemoveCount = 3; $P.AppsRemoveText = 'Usuń (3)'; $P }
@@ -587,6 +668,22 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         ($Result.errors -join ' ') | Should -BeLike '*lista aplikacji: zadanie nie wystartowało*'
         ($Result.checks | Where-Object Name -eq 'AppsSuggestedRemove').Passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'PrivacySuggestedApply').Passed | Should -BeTrue
+        Should -Invoke -ModuleName VmSmoke Get-DsoGuiUiProbe -Times 1 -Exactly
+    }
+    It 'liczba grupy „Autostart” inna niż z --list-autostart daje passed=false' {
+        Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { $P = $script:GoodUiProbe | ConvertTo-Json -Depth 8 | ConvertFrom-Json; $P.AutostartGroupNames = @('Włączone, 3', 'Wyłączone, 1', 'Bez pliku, 0'); $P }
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result.passed | Should -BeFalse
+        ($Result.checks | Where-Object Name -eq 'AutostartPage').Passed | Should -BeFalse
+        ($Result.checks | Where-Object Name -eq 'InstallPage').Passed | Should -BeTrue
+    }
+    It 'błąd --list-autostart nie gubi sondy UI, ale kończy się niepowodzeniem' {
+        Mock -ModuleName VmSmoke Get-DsoAutostartListing { throw 'zadanie nie wystartowało' }
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result.passed | Should -BeFalse
+        ($Result.errors -join ' ') | Should -BeLike '*lista autostartu: zadanie nie wystartowało*'
+        ($Result.checks | Where-Object Name -eq 'AutostartPage').Passed | Should -BeFalse
+        ($Result.checks | Where-Object Name -eq 'AppsSuggestedRemove').Passed | Should -BeTrue
         Should -Invoke -ModuleName VmSmoke Get-DsoGuiUiProbe -Times 1 -Exactly
     }
     It 'tytuły „Naprawy” z wbudowanego katalogu repo; brak tytułu na liście daje passed=false' {
@@ -742,6 +839,7 @@ Describe 'Wyłącznik DSO_VM_TESTS_MOCK_ONLY w smoke GUI (bez mocka Assert-DsoVm
         @{ Funkcja = 'Invoke-DsoUserSessionScript'; Kod = { Invoke-DsoUserSessionScript -Session $null -Layout (Get-DsoVmLayout) -Name 'X' -ScriptText 'x' } }
         @{ Funkcja = 'Get-DsoPrivacyDetection'; Kod = { Get-DsoPrivacyDetection -Session $null -Layout (Get-DsoVmLayout) -TweakId @('privacy.a') } }
         @{ Funkcja = 'Get-DsoAppsListing'; Kod = { Get-DsoAppsListing -Session $null -Layout (Get-DsoVmLayout) } }
+        @{ Funkcja = 'Get-DsoAutostartListing'; Kod = { Get-DsoAutostartListing -Session $null -Layout (Get-DsoVmLayout) } }
     ) {
         Mock -ModuleName VmSmoke Get-CimInstance {}
         Mock -ModuleName VmSmoke Invoke-Command -RemoveParameterValidation 'Session' {}
