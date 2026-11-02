@@ -126,7 +126,7 @@ public sealed class AutostartScannerSandboxTests : IDisposable
             Root("classes"),
             @"%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup",
             @"%ProgramData%\Microsoft\Windows\Start Menu\Programs\StartUp");
-        var context = new AutostartContext(Sid, UserCertain: true, Sid, UserHiveLoaded: true, ClassesHiveLoaded: true, locations, AutostartEvidence.WriteFromZeroConfirmed);
+        var context = new AutostartContext(Sid, UserCertain: true, Sid, UserHiveLoaded: true, ClassesHiveLoaded: true, locations, AutostartEvidence.WriteFromZeroConfirmed, AutostartEvidence.StartupTaskKeyAbsentEnable, AutostartEvidence.StartupTaskState0Enable);
         var machine = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["SystemRoot"] = Environment.GetFolderPath(Environment.SpecialFolder.Windows),
