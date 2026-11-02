@@ -11,8 +11,9 @@ Instrukcja uruchomienia:
 Opis działania:
     Dla każdej VM: przywraca checkpoint, startuje VM, czeka na PowerShell Direct i zalogowanego użytkownika 'dso',
     kopiuje build i katalog testowy, uruchamia scenariusze Pester (tests\vm\scenarios) przeciw VM i zapisuje raport
-    <OutDirectory>\<VM>\<RunLabel>\report.json. Przypadki Flow='Reboot' (restartują VM) dostają osobny przebieg
-    (RunLabel reboot-<nazwa>) od czystego checkpointu; wszystkie pozostałe idą razem w przebiegu 'main'. Każdy przebieg
+    <OutDirectory>\<VM>\<RunLabel>\report.json. Przypadki, które restartują VM - Flow='Reboot' i Flow='Autostart' z kluczem Set -
+    dostają osobny przebieg (RunLabel reboot-<nazwa> albo autostart-<nazwa>) od czystego checkpointu; wszystkie pozostałe idą razem
+    w przebiegu 'main'. Każdy przebieg
     kończy się (także po błędzie) przywróceniem VM do czystego checkpointu, a po ostatnim VM zostaje wyłączona.
     Podsumowanie sumuje przebiegi (także ukończone przed błędem). Przypadki ze Skip, gdy nie ma aktywnych zwykłych przypadków, dostają przebieg
     'skipped' bez VM (rekordy pominięcia). Błąd jednej VM jest zapisywany i nie przerywa przebiegu drugiej. Kod wyjścia: 0 gdy wszystko zaliczone

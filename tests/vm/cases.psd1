@@ -1357,6 +1357,19 @@ else {
     else { "klucz zadania: $Text; wpisy autostart: $(@($Entries | ForEach-Object { "$($_.tweakId)=$($_.status)" }) -join ', ')" }
 }
 '@
+            # Zaraz po cofnięciu, przed restartem: po logowaniu Windows sam odtworzyłby brakujący klucz z tymi samymi wartościami, więc dopiero
+            # ten odczyt odróżnia przywrócenie wartości od skasowania klucza.
+            CheckAfterUndo = @'
+$Key = 'Registry::HKEY_USERS\{UserSid}_Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\Microsoft.WindowsTerminal_8wekyb3d8bbwe\StartTerminalOnLoginTask'
+if (-not (Test-Path -LiteralPath $Key)) { 'klucz zadania Terminala nie istnieje zaraz po cofnięciu (cofnięcie skasowało klucz zamiast przywrócić wartości sprzed testu)' }
+else {
+    $Item = Get-Item -LiteralPath $Key
+    $Names = @($Item.GetValueNames())
+    $Text = @($Names | Sort-Object | ForEach-Object { "$_=$($Item.GetValue($_)) ($($Item.GetValueKind($_)))" }) -join '; '
+    if ($Item.GetValue('State') -eq 0 -and $Item.GetValue('ShowNotification') -eq 1 -and $Item.GetValue('UserEnabledStartupOnce') -eq 0 -and $Names -notcontains 'LastDisabledTime') { $true }
+    else { "klucz zadania zaraz po cofnięciu: $Text" }
+}
+'@
             Hypothesis = 'Terminal na kluczu utworzonym przez system (State 0 = wyłączony z manifestu): włączenie przez CLI = WindowsTerminal.exe konta dso startuje po restarcie; cofnięcie = klucz wraca do State 0, ShowNotification 1, UserEnabledStartupOnce 0 bez LastDisabledTime (klucz zostaje, bo istniał przed testem) i Terminal nie startuje.'
         }
     )

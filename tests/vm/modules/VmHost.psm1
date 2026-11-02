@@ -390,7 +390,7 @@ function Write-VmSkippedRun {
 
 function Invoke-DsoVmRunSet {
     # Dzieli przypadki (Split-VmCaseRuns) i uruchamia kolejno: grupa "main" i po jednym przebiegu na każdy aktywny przypadek
-    # Reboot, każdy od czystego checkpointu; przebieg tylko-pominięcia (SkipOnly) nie dotyka VM. Wyjątek przebiegu (np. błąd
+    # z restartem (Reboot oraz Autostart z Set), każdy od czystego checkpointu; przebieg tylko-pominięcia (SkipOnly) nie dotyka VM. Wyjątek przebiegu (np. błąd
     # uwierzytelnienia) zatrzymuje kolejne przebiegi, żeby nie ponawiać logowania do VM z blokadą konta; błędy testów
     # (Failed > 0) nie są wyjątkiem i nie przerywają. Wyjątek niesie ukończone przebiegi w $_.Exception.Data['CompletedRuns'],
     # dzięki czemu podsumowanie ich nie gubi.

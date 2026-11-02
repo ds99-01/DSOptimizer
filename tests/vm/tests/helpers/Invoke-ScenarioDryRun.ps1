@@ -10,7 +10,7 @@ Opis działania:
     Wypisuje linię 'DSORESULT:{json}' z passed, failed, messages, cases.
 #>
 param(
-    [Parameter(Mandatory)][ValidateSet('Good', 'NoReport', 'HiveMissing', 'WrittenToHkcu', 'EmptyNotWrittenTo', 'StateDiff', 'RunThrows', 'WrongState', 'ArrayOk', 'ArrayBad', 'EmptyAllowed', 'EmptyActual', 'RealCases', 'Skipped', 'Execute', 'ExecuteCheckFails', 'ExecuteCleanupFails', 'ExecuteFailedMessage', 'ExecuteFailedMessageWrong', 'ExecuteRequiresReboot', 'ExecuteNoRequiresReboot', 'ExecuteNoRequiresRebootField', 'SkippedLiveIt', 'Reboot', 'RebootKeyPresent', 'RebootNoRestart', 'RebootNoKeyCheck', 'RebootWrongAfterReboot', 'ReconnectReal', 'FullChecks', 'FullCheckAfterApplyFails', 'FullCheckAfterUndoEmpty', 'RebootKeyPresentMissing', 'RebootMarkerNotGone', 'RebootNoRequiresReboot', 'NoSnapshot', 'AppRemove', 'AppRemoveStillListed', 'AppRemoveWrongOutcome', 'AppRemoveNoWarning', 'AppRemoveWrongRemovability', 'AppRemoveCheckFails', 'AppRemoveNoApps', 'AppRemoveNoRequiresReboot', 'AppInstall', 'AppInstallWrongOutcome', 'AppInstallMissingItem', 'AppInstallWrongInstalled', 'AppInstallNoInstallRows', 'AppInstallWrongWingetState', 'AppInstallNoMessage', 'AppInstallWrongExit', 'AppInstallCheckFails', 'AppInstallWrongWingetCode', 'AppInstallUnexpectedWingetCode', 'Autostart', 'AutostartWrongListed', 'AutostartListWrote', 'AutostartWrongSetOutcome', 'AutostartStartedWhenDisabled', 'AutostartNotStartedAfterUndo', 'AutostartControlMissing', 'AutostartWrongRestoreOutcome', 'AutostartOneReboot', 'AutostartNotMeasured', 'AutostartWrongStateAfter')][string]$Variant
+    [Parameter(Mandatory)][ValidateSet('Good', 'NoReport', 'HiveMissing', 'WrittenToHkcu', 'EmptyNotWrittenTo', 'StateDiff', 'RunThrows', 'WrongState', 'ArrayOk', 'ArrayBad', 'EmptyAllowed', 'EmptyActual', 'RealCases', 'Skipped', 'Execute', 'ExecuteCheckFails', 'ExecuteCleanupFails', 'ExecuteFailedMessage', 'ExecuteFailedMessageWrong', 'ExecuteRequiresReboot', 'ExecuteNoRequiresReboot', 'ExecuteNoRequiresRebootField', 'SkippedLiveIt', 'Reboot', 'RebootKeyPresent', 'RebootNoRestart', 'RebootNoKeyCheck', 'RebootWrongAfterReboot', 'ReconnectReal', 'FullChecks', 'FullCheckAfterApplyFails', 'FullCheckAfterUndoEmpty', 'RebootKeyPresentMissing', 'RebootMarkerNotGone', 'RebootNoRequiresReboot', 'NoSnapshot', 'AppRemove', 'AppRemoveStillListed', 'AppRemoveWrongOutcome', 'AppRemoveNoWarning', 'AppRemoveWrongRemovability', 'AppRemoveCheckFails', 'AppRemoveNoApps', 'AppRemoveNoRequiresReboot', 'AppInstall', 'AppInstallWrongOutcome', 'AppInstallMissingItem', 'AppInstallWrongInstalled', 'AppInstallNoInstallRows', 'AppInstallWrongWingetState', 'AppInstallNoMessage', 'AppInstallWrongExit', 'AppInstallCheckFails', 'AppInstallWrongWingetCode', 'AppInstallUnexpectedWingetCode', 'Autostart', 'AutostartWrongListed', 'AutostartListWrote', 'AutostartWrongSetOutcome', 'AutostartStartedWhenDisabled', 'AutostartNotStartedAfterUndo', 'AutostartControlMissing', 'AutostartWrongRestoreOutcome', 'AutostartOneReboot', 'AutostartNotMeasured', 'AutostartWrongStateAfter', 'AutostartLateStart', 'AutostartCheckAfterUndoFails')][string]$Variant
 )
 $ErrorActionPreference = 'Stop'
 $VmRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -62,6 +62,7 @@ function global:New-DsoFakeRecord {
         $Record = [pscustomobject]@{
             Name = $Case.Name; Flow = 'Autostart'; Steps = $null; KeysBeforeList = $Keys; KeysAfterList = $KeysAfter; Reboots = @()
             StartAfterSet = $null; StartAfterRestore = $null; StartupInfo = $null; CheckResult = 'Passed'; CleanupError = $null
+            CheckAfterUndoResult = $(if ($Case.ContainsKey('CheckAfterUndo')) { 'Passed' } else { $null })
         }
         if ($Case.ContainsKey('Set')) {
             $Index = 0
@@ -74,7 +75,8 @@ function global:New-DsoFakeRecord {
             $Observe = { param([string]$Phase)
                 $Started = Get-VmAutostartExpectedStart -Case $Case -Phase $Phase
                 [pscustomobject]@{ BootUtc = '2026-11-02T10:00:00.0000000Z'; ControlsStarted = @($Case.Controls)
-                    Items = @(foreach ($Item in @($Case.Items)) { [pscustomobject]@{ Id = $Item.Id; Started = $Started; Evidence = 'atrapa' } }) } }
+                    RecheckedAtUtc = '2026-11-02T10:01:40.0000000Z'
+                    Items = @(foreach ($Item in @($Case.Items)) { [pscustomobject]@{ Id = $Item.Id; Started = $Started; Late = $false; Evidence = 'atrapa' } }) } }
             $Record.StartAfterSet = & $Observe 'Set'
             $Index = 0
             foreach ($Item in @($Case.Items)) {
@@ -256,6 +258,8 @@ function global:Invoke-VmCase {
         'AutostartWrongRestoreOutcome' { if ($Case.ContainsKey('Set')) { @($R.Steps | Where-Object Step -eq 'restore-1')[0].Report.outcome = 'Refused' } }
         'AutostartOneReboot' { if ($Case.ContainsKey('Set')) { $R.Reboots = @($R.Reboots[0]) } }
         'AutostartNotMeasured' { if ($Case.ContainsKey('Set')) { foreach ($Row in @(@($R.Steps | Where-Object Step -eq 'list-after')[0].Report.autostartRows)) { $Row.cpuMs = $null } } }
+        'AutostartLateStart' { if ($Case.ContainsKey('Set')) { $R.StartAfterRestore.Items[0].Late = $true } }
+        'AutostartCheckAfterUndoFails' { if ($Case.ContainsKey('CheckAfterUndo')) { $R.CheckAfterUndoResult = 'Check zwrócił: klucz zadania nie istnieje' } }
         'AutostartWrongStateAfter' { if ($Case.ContainsKey('Set')) { @(@($R.Steps | Where-Object Step -eq 'list-after')[0].Report.autostartRows)[0].state = 'Disabled' } }
     }
     return $R
@@ -410,7 +414,7 @@ if ($Variant -like 'Autostart*') {
             }
         }
         @{
-            Name = 'as-wyl'; Flow = 'Autostart'; RunAs = 'dso'; Check = '$true'
+            Name = 'as-wyl'; Flow = 'Autostart'; RunAs = 'dso'; Check = '$true'; CheckAfterUndo = '$true'
             Items = @(@{ Id = 'run:user:DsoRunUser'; Probe = 'DsoRunUser' }, @{ Id = 'appx:Microsoft.WindowsTerminal_8wekyb3d8bbwe!StartTerminalOnLoginTask'; Process = 'WindowsTerminal' })
             Controls = @('DsoRunUserCtl'); Set = 'disabled'; Restore = 'undo'
             Expect = @{ SetExit = 0; SetOutcome = 'Applied'; RestoreExit = 0; RestoreOutcome = 'Undone'; MeasuredAfter = @('run:user:DsoRunUserCtl') }

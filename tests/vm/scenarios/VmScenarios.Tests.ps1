@@ -128,6 +128,7 @@ BeforeAll {
         param([hashtable]$Case, $Observation, [ValidateSet('Set', 'Restore')][string]$Phase)
         $Label = if ($Phase -eq 'Set') { 'rozruch po set-autostart' } else { 'rozruch po przywróceniu' }
         if ($null -eq $Observation) { throw "$Label : brak obserwacji startu - nic nie zostało sprawdzone." }
+        if ([string]::IsNullOrEmpty([string]$Observation.RecheckedAtUtc)) { throw "$Label : brak ponownego odczytu startu po pomiarze Windows - późny start nie został sprawdzony." }
         foreach ($Control in @($Case.Controls)) {
             (@($Observation.ControlsStarted) -contains $Control) | Should -BeTrue -Because "$Label : sonda kontrolna '$Control' nie wystartowała (rozruch $($Observation.BootUtc))"
         }
@@ -136,6 +137,7 @@ BeforeAll {
             $Found = @($Observation.Items | Where-Object { $null -ne $_ -and [string]$_.Id -ceq [string]$Item.Id })
             $Found.Count | Should -Be 1 -Because "$Label : brak oceny startu pozycji '$($Item.Id)' - nic nie zostało sprawdzone"
             ([bool]$Found[0].Started) | Should -Be $Expected -Because "$Label : pozycja '$($Item.Id)' wystartowała=$([bool]$Found[0].Started), oczekiwano $Expected ($($Found[0].Evidence))"
+            ([bool]$Found[0].Late) | Should -BeFalse -Because "$Label : późny start pozycji '$($Item.Id)' - brak w pierwszym odczycie, start dopiero przed ponownym odczytem ($($Found[0].Evidence))"
         }
     }
 

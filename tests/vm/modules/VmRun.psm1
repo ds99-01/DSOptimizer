@@ -18,8 +18,9 @@ Opis działania:
     Flow Autostart: pliki z tests\vm\fixtures do VM -> Setup (sondy Install-DsoAutostartProbe.ps1) -> --list-autostart (odczyt
     istnienia kluczy Expect.ListDoesNotWrite przed i po) -> bez Set: Check -> Cleanup. Z Set: --set-autostart <id> <Set> dla
     każdej pozycji Items -> restart -> Wait-VmAutostartStart (sondy Controls w probe.log po rozruchu, 20 s zapasu, ocena startu
-    pozycji) -> przywrócenie (--undo-autostart <id> albo --set-autostart <id> enabled|disabled) -> restart -> Wait-VmAutostartStart
-    + Wait-VmStartupInfo -> --list-autostart -> Check -> Cleanup. Przypadek z Set ma osobny przebieg od czystego checkpointu.
+    pozycji) -> Wait-VmStartupInfo -> Confirm-VmAutostartStart (ponowna ocena, późny start = Late) -> przywrócenie (--undo-autostart <id>
+    albo --set-autostart <id> enabled|disabled) -> CheckAfterUndo (przed restartem) -> restart -> Wait-VmAutostartStart -> Wait-VmStartupInfo
+    -> Confirm-VmAutostartStart -> --list-autostart -> Check -> Cleanup. Sonda = linia w probe.log zgodna z procesem konta (rozbieżność = błąd). Przypadek z Set ma osobny przebieg od czystego checkpointu.
     Hasło VM nigdy nie trafia do wyjścia.
 #>
 Set-StrictMode -Version Latest
@@ -29,7 +30,7 @@ $script:CaseKeys = @('Name', 'TweakId', 'AppId', 'RunAs', 'Flow', 'RestorePoint'
 # Flow Autostart: klucze przypadku, Expect i wiersza Expect.Listed. Items = @{ Id; Probe } albo @{ Id; Process } (id bez spacji),
 # Controls = sondy, które muszą wystartować w każdym rozruchu; bez Set przypadek tylko czyta listę (przebieg main, bez restartu).
 $script:AutostartOnlyKeys = @('Items', 'Controls', 'Initial', 'Set', 'Restore')
-$script:AutostartKeys = @('Name', 'Flow', 'RunAs', 'Setup', 'Items', 'Controls', 'Initial', 'Set', 'Restore', 'Check', 'Cleanup', 'Expect', 'Hypothesis', 'Skip')
+$script:AutostartKeys = @('Name', 'Flow', 'RunAs', 'Setup', 'Items', 'Controls', 'Initial', 'Set', 'Restore', 'Check', 'CheckAfterUndo', 'Cleanup', 'Expect', 'Hypothesis', 'Skip')
 $script:AutostartExpectKeys = @('Listed', 'ListDoesNotWrite', 'SetExit', 'SetOutcome', 'RestoreExit', 'RestoreOutcome', 'MeasuredAfter')
 $script:AutostartSetExpectKeys = @('SetExit', 'SetOutcome', 'RestoreExit', 'RestoreOutcome')
 $script:AutostartListedKeys = @('State', 'CanToggle', 'MissingFile', 'Verdict')
@@ -237,7 +238,7 @@ function Assert-VmAutostartCase {
     if ($Case.ContainsKey('Skip') -and ($Case.Skip -isnot [string] -or [string]::IsNullOrWhiteSpace($Case.Skip))) {
         throw "Przypadek '$Label': klucz 'Skip' musi być niepustym tekstem z powodem pominięcia."
     }
-    foreach ($Key in @('Check', 'Cleanup')) {
+    foreach ($Key in @('Check', 'CheckAfterUndo', 'Cleanup')) {
         if ($Case.ContainsKey($Key) -and ($Case.$Key -isnot [string] -or [string]::IsNullOrWhiteSpace($Case.$Key))) { throw "Przypadek '$Label': klucz '$Key' musi być niepustym skryptem PowerShell (tekst)." }
     }
     if ($Case.ContainsKey('Setup')) {
@@ -282,7 +283,7 @@ function Assert-VmAutostartCase {
         }
     }
     else {
-        foreach ($Key in @('Restore', 'Items', 'Controls', 'Initial')) {
+        foreach ($Key in @('Restore', 'Items', 'Controls', 'Initial', 'CheckAfterUndo')) {
             if ($Case.ContainsKey($Key)) { throw "Przypadek '$Label': klucz '$Key' wymaga klucza 'Set' (bez Set przypadek tylko czyta listę)." }
         }
         foreach ($Key in $script:AutostartSetExpectKeys + @('MeasuredAfter')) {
@@ -514,7 +515,8 @@ function Import-VmCases {
 
 function Split-VmCaseRuns {
     # Dzieli przypadki na przebiegi: grupa "main" (aktywne zwykłe przypadki; dołączone są do niej też pominięte, żeby były
-    # widoczne w raporcie), po jednym przebiegu "reboot-<nazwa>" na każdy aktywny przypadek Reboot i - tylko gdy nie ma
+    # widoczne w raporcie), po jednym przebiegu "reboot-<nazwa>" na każdy aktywny przypadek Reboot i "autostart-<nazwa>" na każdy
+    # aktywny Autostart z Set, oraz - tylko gdy nie ma
     # żadnego aktywnego zwykłego przypadku - przebieg "skipped" (SkipOnly): same rekordy pominięcia, bez VM i bez Pestera.
     # Main złożony wyłącznie z pominiętych kończyłby się błędem "Pester nie wykonał żadnego testu" i blokował przebiegi Reboot.
     [CmdletBinding()]
@@ -1199,10 +1201,84 @@ function Get-VmProbeStarts {
     return $Starts
 }
 
+function Get-VmAutostartProcessNames {
+    # Nazwy procesów do odczytu: pozycje Process oraz każda sonda (Probe pozycji i Controls) - sonda śpi godzinę, więc jej proces musi być widoczny.
+    param([AllowEmptyCollection()][object[]]$Items = @(), [AllowEmptyCollection()][string[]]$Controls = @())
+    $Names = [System.Collections.Generic.List[string]]::new()
+    foreach ($Item in @($Items)) {
+        if ($Item.ContainsKey('Process')) { $Names.Add([string]$Item.Process) }
+        if ($Item.ContainsKey('Probe')) { $Names.Add([string]$Item.Probe) }
+    }
+    foreach ($Control in @($Controls)) { $Names.Add([string]$Control) }
+    return [string[]]@($Names | Select-Object -Unique)
+}
+
+function Measure-VmAutostartObservation {
+    # Ocena jednego odczytu (bez VM): start sond (linia probe.log po rozruchu), start procesów konta UserName po rozruchu i rozbieżności:
+    # sonda z linią po rozruchu bez procesu albo z procesem bez linii (np. sonda nie zdołała dopisać linii) to błąd, nie "nie wystartowała".
+    param([Parameter(Mandatory)]$Observation, [AllowEmptyCollection()][object[]]$Items = @(), [AllowEmptyCollection()][string[]]$Controls = @(), [string]$UserName = 'dso')
+    $Starts = Get-VmProbeStarts -Observation $Observation
+    $Boot = ConvertFrom-VmUtcText -Text ([string]$Observation.BootUtc)
+    $FindProcesses = {
+        param([string]$Name)
+        @($Observation.Processes | Where-Object {
+                $null -ne $_ -and [string]$_.Name -ieq $Name -and [string]$_.UserName -like "*\$UserName" -and
+                $null -ne (ConvertFrom-VmUtcText -Text ([string]$_.StartUtc)) -and (ConvertFrom-VmUtcText -Text ([string]$_.StartUtc)) -gt $Boot
+            })
+    }
+    $Disagreements = [System.Collections.Generic.List[string]]::new()
+    $ProbeNames = @(@($Items | Where-Object { $_.ContainsKey('Probe') } | ForEach-Object { [string]$_.Probe }) + @($Controls) | Select-Object -Unique)
+    foreach ($Name in $ProbeNames) {
+        $Logged = $Starts.ContainsKey($Name)
+        $Running = @(& $FindProcesses $Name).Count -gt 0
+        if ($Logged -and -not $Running) { $Disagreements.Add("sonda '$Name' ma linię w probe.log po rozruchu ($($Starts[$Name])), ale nie ma jej procesu konta $UserName") }
+        if ($Running -and -not $Logged) { $Disagreements.Add("sonda '$Name' działa jako proces konta $UserName po rozruchu, ale nie ma jej linii w probe.log") }
+    }
+    $Results = foreach ($Item in @($Items)) {
+        if ($Item.ContainsKey('Probe')) {
+            $Started = $Starts.ContainsKey([string]$Item.Probe)
+            $Evidence = if ($Started) { $Starts[[string]$Item.Probe] } else { "brak linii '$($Item.Probe)' w probe.log i procesu po rozruchu" }
+        }
+        else {
+            $Matching = @(& $FindProcesses ([string]$Item.Process))
+            $Started = $Matching.Count -gt 0
+            $All = @($Observation.Processes | Where-Object { $null -ne $_ -and [string]$_.Name -ieq [string]$Item.Process } | ForEach-Object { "$($_.Name) $($_.UserName) $($_.StartUtc)" })
+            $Evidence = if ($Started) { "proces $($Matching[0].Name) (PID $($Matching[0].Id)) konta $($Matching[0].UserName) od $($Matching[0].StartUtc)" } else { "brak procesu '$($Item.Process)' konta $UserName po rozruchu (procesy o tej nazwie: $(if ($All) { $All -join '; ' } else { 'brak' }))" }
+        }
+        [pscustomobject]@{ Id = [string]$Item.Id; Probe = $(if ($Item.ContainsKey('Probe')) { [string]$Item.Probe } else { $null }); Process = $(if ($Item.ContainsKey('Process')) { [string]$Item.Process } else { $null }); Started = [bool]$Started; Evidence = $Evidence }
+    }
+    return [pscustomobject]@{
+        BootUtc         = [string]$Observation.BootUtc
+        Starts          = $Starts
+        ControlsStarted = @($Controls | Where-Object { $Starts.ContainsKey($_) })
+        ProbeLines      = @($Starts.Values | Sort-Object)
+        Items           = @($Results)
+        Disagreements   = $Disagreements.ToArray()
+    }
+}
+
+function Read-VmAutostartState {
+    # Odczyt do oceny startu: błąd odczytu probe.log albo rozbieżność probe.log z listą procesów -> jedno ponowienie po RetrySeconds
+    # (sonda mogła być w trakcie dopisywania), potem wyjątek. Nigdy nie zamienia błędu odczytu w "pozycja nie wystartowała".
+    param($Session, [object[]]$Items, [string[]]$Controls, [string]$UserName, [int]$RetrySeconds, [string]$When)
+    $ProcessNames = Get-VmAutostartProcessNames -Items $Items -Controls $Controls
+    $Problem = $null
+    for ($Attempt = 1; $Attempt -le 2; $Attempt++) {
+        if ($Attempt -gt 1) { Start-Sleep -Seconds $RetrySeconds }
+        $Observation = Get-VmAutostartObservation -Session $Session -ProcessNames $ProcessNames
+        if ($Observation.LogError) { $Problem = "nie udało się odczytać C:\dsotest\probe.log ($When): $($Observation.LogError)"; continue }
+        $Measured = Measure-VmAutostartObservation -Observation $Observation -Items $Items -Controls $Controls -UserName $UserName
+        if (@($Measured.Disagreements).Count -eq 0) { return $Measured }
+        $Problem = "rozbieżność probe.log i listy procesów ($When): $(@($Measured.Disagreements) -join '; ')"
+    }
+    throw "Ocena startu niemożliwa - $Problem."
+}
+
 function Wait-VmAutostartStart {
     # Po restarcie: czeka (najwyżej TimeoutSeconds, co PollSeconds), aż każda sonda z Controls zapisze w probe.log linię z czasem po
-    # rozruchu, potem SettleSeconds zapasu i świeży odczyt; ocenia start każdej pozycji Items (Probe = linia po rozruchu, Process =
-    # proces konta UserName ze StartTime po rozruchu). Kontrola bez startu po limicie = wyjątek (bez niej brak startu pozycji nic nie znaczy).
+    # rozruchu, potem SettleSeconds zapasu i świeży odczyt; ocenia start każdej pozycji Items (Probe = linia po rozruchu zgodna z procesem,
+    # Process = proces konta UserName ze StartTime po rozruchu). Kontrola bez startu po limicie = wyjątek (bez niej brak startu pozycji nic
+    # nie znaczy). Ponowna ocena po pomiarze Windows: Confirm-VmAutostartStart.
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
@@ -1213,7 +1289,7 @@ function Wait-VmAutostartStart {
         [ValidateRange(1, 60)][int]$PollSeconds = $script:AutostartPollSeconds,
         [ValidatePattern('^[A-Za-z0-9_-]+\z')][string]$UserName = $script:AutostartUserName
     )
-    $ProcessNames = [string[]]@($Items | Where-Object { $_.ContainsKey('Process') } | ForEach-Object { [string]$_.Process })
+    $ProcessNames = Get-VmAutostartProcessNames -Items $Items -Controls $Controls
     $MaxPolls = [int][Math]::Ceiling($TimeoutSeconds / $PollSeconds)
     $Poll = 0
     while ($true) {
@@ -1224,40 +1300,61 @@ function Wait-VmAutostartStart {
         if ($Poll -ge $MaxPolls) {
             $Seen = @($Starts.Keys | Sort-Object) -join ', '
             $LogNote = if ($Observation.LogError) { " Błąd odczytu probe.log: $($Observation.LogError)." } else { '' }
-            throw "Sondy kontrolne nie wystartowały w ciągu $TimeoutSeconds s po rozruchu $($Observation.BootUtc): $($Missing -join ', ') (sondy po rozruchu: $(if ($Seen) { $Seen } else { 'brak' })).$LogNote"
+            $Running = @($Observation.Processes | Where-Object { $null -ne $_ -and $Missing -contains [string]$_.Name } | ForEach-Object { "$($_.Name) $($_.UserName) $($_.StartUtc)" })
+            $ProcessNote = if ($Running) { " Procesy brakujących sond: $($Running -join '; ')." } else { '' }
+            throw "Sondy kontrolne nie wystartowały w ciągu $TimeoutSeconds s po rozruchu $($Observation.BootUtc): $($Missing -join ', ') (sondy po rozruchu: $(if ($Seen) { $Seen } else { 'brak' })).$LogNote$ProcessNote"
         }
         $Poll++
         Start-Sleep -Seconds $PollSeconds
     }
     if ($SettleSeconds -gt 0) { Start-Sleep -Seconds $SettleSeconds }
-    $Observation = Get-VmAutostartObservation -Session $Session -ProcessNames $ProcessNames
-    # Nieudany odczyt probe.log nie może zamienić się w "pozycja nie wystartowała".
-    if ($Observation.LogError) { throw "Nie udało się odczytać C:\dsotest\probe.log po zapasie $SettleSeconds s: $($Observation.LogError)" }
-    $Starts = Get-VmProbeStarts -Observation $Observation
-    $Boot = ConvertFrom-VmUtcText -Text ([string]$Observation.BootUtc)
-    $Results = foreach ($Item in $Items) {
-        if ($Item.ContainsKey('Probe')) {
-            $Started = $Starts.ContainsKey([string]$Item.Probe)
-            $Evidence = if ($Started) { $Starts[[string]$Item.Probe] } else { "brak linii '$($Item.Probe)' w probe.log po rozruchu" }
+    $Measured = Read-VmAutostartState -Session $Session -Items $Items -Controls $Controls -UserName $UserName -RetrySeconds $PollSeconds -When "po zapasie $SettleSeconds s"
+    return [pscustomobject]@{
+        BootUtc         = $Measured.BootUtc
+        ControlsStarted = @($Measured.ControlsStarted)
+        ProbeLines      = @($Measured.ProbeLines)
+        Items           = @($Measured.Items)
+        Polls           = $Poll
+        RecheckedAtUtc  = $null
+    }
+}
+
+function Confirm-VmAutostartStart {
+    # Drugi odczyt tego samego rozruchu (po Wait-VmStartupInfo, ok. 96 s po rozruchu): pozycja, która nie wystartowała w pierwszym odczycie,
+    # a wystartowała później, ma Late = $true (późny start = porażka scenariusza). Started = start w którymkolwiek odczycie. Inny rozruch = wyjątek.
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)]$Observation,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$Controls,
+        [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Items,
+        [ValidateRange(1, 60)][int]$PollSeconds = $script:AutostartPollSeconds,
+        [ValidatePattern('^[A-Za-z0-9_-]+\z')][string]$UserName = $script:AutostartUserName
+    )
+    $Measured = Read-VmAutostartState -Session $Session -Items $Items -Controls $Controls -UserName $UserName -RetrySeconds $PollSeconds -When 'po pomiarze Windows'
+    if ([string]$Measured.BootUtc -ne [string]$Observation.BootUtc) {
+        throw "Ponowny odczyt startu dotyczy innego rozruchu ($($Measured.BootUtc) zamiast $($Observation.BootUtc)) - VM zrestartowała się bez polecenia."
+    }
+    $Merged = foreach ($Item in @($Items)) {
+        $First = @($Observation.Items | Where-Object { [string]$_.Id -ceq [string]$Item.Id })
+        $Again = @($Measured.Items | Where-Object { [string]$_.Id -ceq [string]$Item.Id })
+        if ($First.Count -ne 1 -or $Again.Count -ne 1) { throw "Brak oceny startu pozycji '$($Item.Id)' w jednym z odczytów." }
+        $AtSettle = [bool]$First[0].Started
+        $AtRecheck = [bool]$Again[0].Started
+        [pscustomobject]@{
+            Id = [string]$Item.Id; Probe = $First[0].Probe; Process = $First[0].Process
+            Started = ($AtSettle -or $AtRecheck); Late = ((-not $AtSettle) -and $AtRecheck)
+            StartedAtSettle = $AtSettle; StartedAtRecheck = $AtRecheck
+            Evidence = "$($First[0].Evidence) | po pomiarze Windows: $($Again[0].Evidence)"
         }
-        else {
-            $Matching = @($Observation.Processes | Where-Object {
-                    $null -ne $_ -and [string]$_.Name -ieq [string]$Item.Process -and [string]$_.UserName -like "*\$UserName" -and
-                    $null -ne (ConvertFrom-VmUtcText -Text ([string]$_.StartUtc)) -and (ConvertFrom-VmUtcText -Text ([string]$_.StartUtc)) -gt $Boot
-                })
-            $Started = $Matching.Count -gt 0
-            $All = @($Observation.Processes | Where-Object { $null -ne $_ } | ForEach-Object { "$($_.Name) $($_.UserName) $($_.StartUtc)" })
-            $Evidence = if ($Started) { "proces $($Matching[0].Name) (PID $($Matching[0].Id)) konta $($Matching[0].UserName) od $($Matching[0].StartUtc)" } else { "brak procesu '$($Item.Process)' konta $UserName po rozruchu (procesy: $(if ($All) { $All -join '; ' } else { 'brak' }))" }
-        }
-        [pscustomobject]@{ Id = [string]$Item.Id; Probe = $(if ($Item.ContainsKey('Probe')) { [string]$Item.Probe } else { $null }); Process = $(if ($Item.ContainsKey('Process')) { [string]$Item.Process } else { $null }); Started = [bool]$Started; Evidence = $Evidence }
     }
     return [pscustomobject]@{
         BootUtc         = [string]$Observation.BootUtc
-        ControlsStarted = @($Controls | Where-Object { $Starts.ContainsKey($_) })
-        ProbeLines      = @($Starts.Values | Sort-Object)
-        Items           = @($Results)
-        Polls           = $Poll
-        LogError        = $Observation.LogError
+        ControlsStarted = @($Observation.ControlsStarted)
+        ProbeLines      = @($Measured.ProbeLines)
+        Items           = @($Merged)
+        Polls           = $Observation.Polls
+        RecheckedAtUtc  = [DateTime]::UtcNow.ToString('o')
     }
 }
 
@@ -1347,6 +1444,8 @@ function Invoke-VmAutostartCase {
     $KeysBefore = $null
     $KeysAfter = $null
     $StartAfterSet = $null
+    $StartupInfoAfterSet = $null
+    $CheckAfterUndoResult = $null
     $StartAfterRestore = $null
     $StartupInfo = $null
     $CheckResult = $null
@@ -1354,7 +1453,8 @@ function Invoke-VmAutostartCase {
     try {
         # Sondy budują się w VM (csc.exe), więc do VM trafia tylko ich źródło i skrypt instalacji.
         Copy-VmFixtures -Session $Session -Destination (Join-Path $Layout.Root 'fixtures')
-        $SetupOutput = @(Invoke-VmSetup -Session $Session -Setup $Setup -PassThru)
+        # Invoke-VmSetup -PassThru zwraca jedną tablicę (return ,): bez @() wokół, inaczej rekord ma tablicę w tablicy.
+        $SetupOutput = Invoke-VmSetup -Session $Session -Setup $Setup -PassThru
         if ($WatchedKeys.Count -gt 0) { $KeysBefore = @(Get-VmKeyExistence -Session $Session -Keys $WatchedKeys) }
         & $Run 'list-before' 'list-autostart'
         if ($WatchedKeys.Count -gt 0) { $KeysAfter = @(Get-VmKeyExistence -Session $Session -Keys $WatchedKeys) }
@@ -1364,7 +1464,10 @@ function Invoke-VmAutostartCase {
             $Restart = Restart-VmAndReconnect -Session $Session -Reconnect $Reconnect -Step 'reboot-after-set'
             $Session = $Restart.Session
             $Reboots.Add($Restart.Record)
-            $StartAfterSet = Wait-VmAutostartStart -Session $Session -Controls $Controls -Items $Items
+            # Pierwsza ocena ok. 20 s po sondach kontrolnych, druga po pomiarze Windows (ok. 96 s po rozruchu): późny start = porażka.
+            $FirstLook = Wait-VmAutostartStart -Session $Session -Controls $Controls -Items $Items
+            $StartupInfoAfterSet = Wait-VmStartupInfo -Session $Session
+            $StartAfterSet = Confirm-VmAutostartStart -Session $Session -Observation $FirstLook -Controls $Controls -Items $Items
             $Index = 0
             foreach ($Item in $Items) {
                 $Index++
@@ -1374,11 +1477,14 @@ function Invoke-VmAutostartCase {
                     'disable' { & $Run "restore-$Index" 'set-autostart' ([string]$Item.Id) 'disabled' }
                 }
             }
+            # CheckAfterUndo: stan zaraz po przywróceniu, przed restartem (np. klucz, który Windows po logowaniu odtworzyłby sam).
+            if ($Case.ContainsKey('CheckAfterUndo')) { $CheckAfterUndoResult = Invoke-VmCheck -Session $Session -Script $Case.CheckAfterUndo }
             $Restart = Restart-VmAndReconnect -Session $Session -Reconnect $Reconnect -Step 'reboot-after-restore'
             $Session = $Restart.Session
             $Reboots.Add($Restart.Record)
-            $StartAfterRestore = Wait-VmAutostartStart -Session $Session -Controls $Controls -Items $Items
+            $FirstLook = Wait-VmAutostartStart -Session $Session -Controls $Controls -Items $Items
             $StartupInfo = Wait-VmStartupInfo -Session $Session
+            $StartAfterRestore = Confirm-VmAutostartStart -Session $Session -Observation $FirstLook -Controls $Controls -Items $Items
             & $Run 'list-after' 'list-autostart'
         }
         $CheckResult = Invoke-VmCheck -Session $Session -Script $Case.Check
@@ -1401,12 +1507,14 @@ function Invoke-VmAutostartCase {
         Flow              = 'Autostart'
         RunAs             = $RunAsUser
         Hypothesis        = if ($Case.ContainsKey('Hypothesis')) { $Case.Hypothesis } else { $null }
-        SetupOutput       = @($SetupOutput)
+        SetupOutput       = [string[]]@($SetupOutput | Where-Object { $null -ne $_ })
         Steps             = $Steps.ToArray()
         KeysBeforeList    = $KeysBefore
         KeysAfterList     = $KeysAfter
         Reboots           = $Reboots.ToArray()
         StartAfterSet     = $StartAfterSet
+        StartupInfoAfterSet = $StartupInfoAfterSet
+        CheckAfterUndoResult = $CheckAfterUndoResult
         StartAfterRestore = $StartAfterRestore
         StartupInfo       = $StartupInfo
         CheckResult       = $CheckResult
@@ -1682,4 +1790,4 @@ function Invoke-VmCase {
     }
 }
 
-Export-ModuleMember -Function Import-VmCases, Split-VmCaseRuns, Expand-VmCasePlaceholders, ConvertTo-DsoCliArguments, Invoke-DsoCli, Get-DsoStateSnapshot, Get-VmStateSnapshot, Compare-VmSnapshot, Test-VmSnapshotMatches, Invoke-VmSetup, Get-VmRestorePointCount, Invoke-VmCase, Restart-VmAndReconnect, New-VmRestartMarker, Test-VmRestartMarker, Get-VmAutostartExpectedStart, Wait-VmAutostartStart, Wait-VmStartupInfo
+Export-ModuleMember -Function Import-VmCases, Split-VmCaseRuns, Expand-VmCasePlaceholders, ConvertTo-DsoCliArguments, Invoke-DsoCli, Get-DsoStateSnapshot, Get-VmStateSnapshot, Compare-VmSnapshot, Test-VmSnapshotMatches, Invoke-VmSetup, Get-VmRestorePointCount, Invoke-VmCase, Restart-VmAndReconnect, New-VmRestartMarker, Test-VmRestartMarker, Get-VmAutostartExpectedStart, Wait-VmAutostartStart, Confirm-VmAutostartStart, Wait-VmStartupInfo
