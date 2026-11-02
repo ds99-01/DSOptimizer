@@ -35,7 +35,7 @@ public sealed class AutostartViewModelTests : IDisposable
               "match": { "file": "Spotify.exe", "folders": ["%ProgramFiles%\\Spotify\\"], "publishers": ["Spotify AB"] },
               "verdict": "can-disable",
               "summary": "Odtwarzacz muzyki (test).",
-              "source": ["docs/zrodla/test.md", "https://support.spotify.com/test"],
+              "source": ["docs/zrodla/2026-11-02-autostart-programy.md", "https://support.spotify.com/test"],
               "confirmed": true
             },
             {
@@ -43,7 +43,7 @@ public sealed class AutostartViewModelTests : IDisposable
               "match": { "file": "Realtek.exe", "folders": ["%ProgramFiles%\\Realtek\\"], "publishers": ["Realtek"] },
               "verdict": "protected",
               "summary": "Dźwięk (test).",
-              "source": ["docs/zrodla/test.md", "https://www.realtek.com/test"],
+              "source": ["docs/zrodla/2026-11-02-autostart-programy.md", "https://www.realtek.com/test"],
               "confirmed": true
             }
           ]
@@ -112,6 +112,50 @@ public sealed class AutostartViewModelTests : IDisposable
 
         Assert.Equal(new[] { "New" }, Names(vm));
         Assert.False(vm.IsLoading);
+    }
+
+    [Fact]
+    public async Task Refresh_OlderRead_WarningsNotLogged()
+    {
+        using var reader = new GatedReader(
+            Reading(new[] { Entry("Old") }, "ostrzeżenie starszego odczytu"),
+            Reading(new[] { Entry("New") }, "ostrzeżenie nowszego odczytu"));
+        var vm = Create(reader);
+
+        var older = Task.Run(vm.RefreshAsync);
+        Assert.True(SpinWait.SpinUntil(() => reader.Calls >= 1, TimeSpan.FromSeconds(30)));
+        await Task.Run(vm.RefreshAsync);
+        reader.Release.Set();
+        await older;
+
+        Assert.Contains(_log, line => line.Text == "ostrzeżenie nowszego odczytu");
+        Assert.DoesNotContain(_log, line => line.Text == "ostrzeżenie starszego odczytu");
+    }
+
+    [Fact]
+    public void Deselect_OnlyGivenIds_RestStaySelected()
+    {
+        Refresh(Vm);
+        Row(Vm, "Alpha").IsSelected = true;
+        Row(Vm, "Spotify").IsSelected = true;
+        Vm.SelectGroupCommand.Execute(Vm.Groups[1]);
+        Row(Vm, "Delta").IsSelected = true;
+        Assert.Equal("Wyłącz (2)", Vm.DisableText);
+
+        Vm.Deselect(new[] { AutostartIds.For(AutostartSource.RunUser, "Alpha"), "run:user:nie-ma-takiej" });
+
+        Assert.True(Row(Vm, "Delta").IsSelected);
+        Assert.Equal(new[] { "Delta", "Spotify" }, Selected(Vm));
+        Assert.Equal("Wyłącz (1)", Vm.DisableText);
+        Assert.Equal("Włącz (1)", Vm.EnableText);
+        Assert.Equal("Zaznaczono 2 pozycje", Vm.SelectionBarTitle);
+
+        Vm.Deselect(new[] { Row(Vm, "Delta").Id, AutostartIds.For(AutostartSource.RunUser, "Spotify") });
+
+        Assert.Equal("Wyłącz (0)", Vm.DisableText);
+        Assert.Equal("Włącz (0)", Vm.EnableText);
+        Assert.False(Vm.ClearSelectionCommand.CanExecute(null));
+        Assert.Throws<ArgumentNullException>(() => Vm.Deselect(null!));
     }
 
     [Fact]
@@ -394,12 +438,12 @@ public sealed class AutostartViewModelTests : IDisposable
         return names.OrderBy(name => name, StringComparer.Ordinal).ToArray();
     }
 
-    private static AutostartReading Reading(IReadOnlyList<AutostartEntry> entries)
+    private static AutostartReading Reading(IReadOnlyList<AutostartEntry> entries, string warning = "ostrzeżenie odczytu (test)")
         => new(
             entries,
             UserEnvironment.FromVariables(new Dictionary<string, string> { ["ProgramFiles"] = ProgramFiles }),
             MeasuredAt,
-            new[] { "ostrzeżenie odczytu (test)" });
+            new[] { warning });
 
     private AutostartViewModel Create(IAutostartReader reader)
     {

@@ -522,6 +522,10 @@
       "en": "File: not determined"
     },
     {
+      "pl": "Plik z polecenia nie istnieje, więc po włączeniu nic nie wystartuje.",
+      "en": "The file in the command doesn't exist, so nothing will start after you enable it."
+    },
+    {
       "pl": "Wbudowana baza autostartu jest nieprawidłowa:{0}{1}",
       "en": "The built-in startup apps list is invalid:{0}{1}"
     }

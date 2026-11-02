@@ -8,6 +8,7 @@ using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using DSOptimizer.Tests.Unit.Engine;
 using DSOptimizer.Tests.Unit.Fakes;
@@ -213,6 +214,34 @@ public class AutostartSessionTests
         var machine = confirmation.Items[1];
         Assert.Equal("wszystkie konta", machine.Summary);
         Assert.Equal(new[] { "Dotyczy wszystkich kont na tym komputerze." }, machine.Warnings);
+    }
+
+    [Fact]
+    public void ConfirmationFor_MissingFile_NotesSayNothingStarts()
+    {
+        var f = new Fixture();
+        f.Registry.Set(ApprovedKey(AutostartSource.RunUser), "Wylaczona", RegValue.FromBinary(DisabledValue));
+        var rows = f.Load(
+            f.Entry(AutostartSource.RunUser, "Brak") with { FileStatus = AutostartFileStatus.Missing },
+            f.Entry(AutostartSource.RunUser, "Wylaczona") with { FileStatus = AutostartFileStatus.Missing },
+            f.Entry(AutostartSource.RunUser, "Jest"));
+
+        var disable = f.Session.ConfirmationFor(new[] { Row(rows, "Brak"), Row(rows, "Jest") }, AutostartState.Disabled);
+        var enable = f.Session.ConfirmationFor(new[] { Row(rows, "Wylaczona") }, AutostartState.Enabled);
+
+        Assert.Equal(new[] { AutostartText.MissingFileSummary }, disable.Items[0].Notes);
+        Assert.Equal(
+            "Plik z polecenia nie istnieje, więc ta pozycja niczego nie uruchamia. Wyłączenie niczego nie psuje.",
+            Assert.Single(disable.Items[0].Notes));
+        Assert.Equal(new[] { "Program zostaje zainstalowany, tylko przestaje startować sam." }, disable.Items[1].Notes);
+        Assert.Equal(new[] { "Plik z polecenia nie istnieje, więc po włączeniu nic nie wystartuje." }, Assert.Single(enable.Items).Notes);
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal(
+                "The file in the command doesn't exist, so nothing will start after you enable it.",
+                AutostartText.ItemNote(AutostartState.Enabled, missingFile: true));
+            Assert.Equal(AutostartText.ItemNote(AutostartState.Disabled), AutostartText.ItemNote(AutostartState.Disabled, missingFile: false));
+        }
     }
 
     [Fact]

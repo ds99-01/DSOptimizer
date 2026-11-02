@@ -125,9 +125,12 @@ public class MainViewModelTests
 
     /// <summary>
     /// Autostart na atrapie czytnika (bez wpisów, chyba że test poda własny): prawdziwy autostart hosta nie jest czytany, a rejestr Windows
-    /// służy sesji tylko do sprawdzenia gałęzi konta (<see cref="IRegistry.KeyStatus"/>). Bez wierszy silnik nie ma czego zapisać.
+    /// służy sesji tylko do sprawdzenia gałęzi konta (<see cref="IRegistry.KeyStatus"/>). Bez wierszy silnik nie ma czego zapisać; wiersze
+    /// testu mają przełączniki w <see cref="RegistrySandbox"/>, a silnik pisze wyłącznie pod kluczem przełącznika wiersza. Konto autostartu
+    /// stałe i pewne (<see cref="AutostartToggleTests.UserSid"/>), żeby seria nie zależała od sesji hosta. <paramref name="seriesDialogs"/> =
+    /// atrapa okna serii (domyślnie prawdziwe, którego testy nie otwierają).
     /// </summary>
-    internal static MainViewModel Create(TempDirectory temp, FakeAutostartReader? autostartReader = null)
+    internal static MainViewModel Create(TempDirectory temp, FakeAutostartReader? autostartReader = null, ISeriesDialogs? seriesDialogs = null)
     {
         var composition = AppComposition.Create(temp.AppRoot, null);
         var services = composition.Services;
@@ -166,8 +169,8 @@ public class MainViewModelTests
             autostartReader ?? new FakeAutostartReader(),
             new AutostartEngine(services.Registry, services.Journal, log, services.Clock),
             AutostartKnownCatalog.Load("{ \"entries\": [] }"),
-            services.User,
-            sid,
+            new AutostartToggleTests.FixedUser(),
+            AutostartToggleTests.UserSid,
             services.Registry,
             log,
             services.Clock);
@@ -192,7 +195,7 @@ public class MainViewModelTests
         return new MainViewModel(
             session,
             sink,
-            new SeriesDialogs(log, sink.Add, services.Clock),
+            seriesDialogs ?? new SeriesDialogs(log, sink.Add, services.Clock),
             services.Clock,
             new NoLastBoot(),
             new NoRestart(),

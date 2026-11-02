@@ -279,7 +279,7 @@ public sealed class AutostartSession
         var scope = AutostartText.Scope(row.Entry.Scope);
         var summary = string.IsNullOrWhiteSpace(row.Entry.Publisher) ? scope : row.Entry.Publisher!.Trim() + " · " + scope;
         var warnings = row.Entry.Scope == AutostartScope.Machine ? new[] { AutostartText.AllAccountsWarning } : Array.Empty<string>();
-        return new SeriesItem(row.Id, row.Entry.Name, RiskLevel.Safe, summary, new[] { AutostartText.ItemNote(target) }, warnings, Array.Empty<SeriesFact>());
+        return new SeriesItem(row.Id, row.Entry.Name, RiskLevel.Safe, summary, new[] { AutostartText.ItemNote(target, row.MissingFile) }, warnings, Array.Empty<SeriesFact>());
     }
 
     /// <summary>Ta sama reguła co liczniki „Wyłącz (N)”/„Włącz (M)” na stronie: przełączalny wiersz w stanie przeciwnym do docelowego.</summary>

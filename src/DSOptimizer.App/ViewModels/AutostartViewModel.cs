@@ -238,21 +238,19 @@ public sealed class AutostartViewModel : ObservableObject
             IsLoading = true;
             var page = await _session.LoadAsync().ConfigureAwait(true);
             var userName = page.List is null ? null : await Task.Run(() => _names.NameOf(_session.UserSid)).ConfigureAwait(true);
-            if (page.List is { } list)
-            {
-                foreach (var warning in list.Warnings.Where(_loggedWarnings.Add))
-                {
-                    _log(GuiLogLevel.Warning, warning);
-                }
-            }
-
             if (version != _version)
             {
+                // Wynik starszego odczytu – ani lista, ani jego ostrzeżenia nie trafiają na stronę i do dziennika.
                 return;
             }
 
             if (page.List is { } read)
             {
+                foreach (var warning in read.Warnings.Where(_loggedWarnings.Add))
+                {
+                    _log(GuiLogLevel.Warning, warning);
+                }
+
                 Rebuild(read, userName);
             }
             else
@@ -272,6 +270,34 @@ public sealed class AutostartViewModel : ObservableObject
                 OnPropertyChanged(nameof(Subtitle));
             }
         }
+    }
+
+    /// <summary>
+    /// Odznacza pozycje o podanych Id (po serii: te zmienione z powodzeniem); reszta zaznaczenia – np. pozycje, których nie udało się
+    /// zmienić – zostaje. Liczniki i pasek przeliczane raz na końcu.
+    /// </summary>
+    public void Deselect(IEnumerable<string> ids)
+    {
+        if (ids is null)
+        {
+            throw new ArgumentNullException(nameof(ids));
+        }
+
+        var done = new HashSet<string>(ids, StringComparer.Ordinal);
+        _rebuilding = true;
+        try
+        {
+            foreach (var row in _rows.Where(row => done.Contains(row.Id)))
+            {
+                row.IsSelected = false;
+            }
+        }
+        finally
+        {
+            _rebuilding = false;
+        }
+
+        RefreshSelection();
     }
 
     /// <summary>Przelicza liczniki „Wyłącz (N)”/„Włącz (M)” i pasek serii po zmianie zaznaczenia.</summary>

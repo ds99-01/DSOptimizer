@@ -1435,7 +1435,10 @@ public sealed class MainViewModel : ObservableObject
         _ = Autostart.RefreshAsync();
     }
 
-    /// <summary>Raport serii autostartu: linie do dziennika i Historia (restart nie jest potrzebny).</summary>
+    /// <summary>
+    /// Raport serii autostartu: linie do dziennika, odznaczenie pozycji zmienionych z powodzeniem (jak w serii tweaków i instalacji –
+    /// inaczej od razu uzbroiłyby przycisk w drugą stronę) i Historia (restart nie jest potrzebny).
+    /// </summary>
     private void ApplyAutostartReport(GuiOperationReport report)
     {
         foreach (var line in report.Lines)
@@ -1443,6 +1446,7 @@ public sealed class MainViewModel : ObservableObject
             _sink.Add(line);
         }
 
+        Autostart.Deselect(report.SucceededIds);
         RefreshHistory();
     }
 

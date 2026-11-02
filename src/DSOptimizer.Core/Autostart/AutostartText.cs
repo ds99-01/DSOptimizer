@@ -410,6 +410,22 @@ public static class AutostartText
         ? L.T("Program zostaje zainstalowany, tylko przestaje startować sam.")
         : L.T("Program znowu będzie startował sam po zalogowaniu.");
 
+    /// <summary>
+    /// Uwaga pozycji w oknie potwierdzenia z uwzględnieniem pewnego braku pliku: wtedy pozycja niczego nie uruchamia, więc wyłączenie
+    /// ma opis pozycji bez pliku, a włączenie mówi, że nic nie wystartuje.
+    /// </summary>
+    public static string ItemNote(AutostartState target, bool missingFile)
+    {
+        if (!missingFile)
+        {
+            return ItemNote(target);
+        }
+
+        return target == AutostartState.Disabled
+            ? MissingFileSummary
+            : L.T("Plik z polecenia nie istnieje, więc po włączeniu nic nie wystartuje.");
+    }
+
     /// <summary>Ostrzeżenie pozycji „wszystkie konta” (HKLM: Run, Run 32-bit, folder wspólny).</summary>
     public static string AllAccountsWarning => L.T("Dotyczy wszystkich kont na tym komputerze.");
 
