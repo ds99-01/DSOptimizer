@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Install;
 using DSOptimizer.Core.Localization;
@@ -53,11 +54,14 @@ public sealed class BatchRun
     private readonly bool _remove;
     private readonly bool _install;
     private readonly bool _restorePointRequired;
+
+    /// <summary>Kierunek serii autostartu (własne teksty wyniku); null dla pozostałych operacji.</summary>
+    private readonly AutostartState? _autostartTarget;
     private readonly int _itemCount;
     private readonly List<BatchRunStep> _steps = new();
 
-    /// <summary>Ostatni wynik kroku w trybie instalacji (podsumowanie „N z M zainstalowane” także po <see cref="Fail"/>).</summary>
-    private readonly Dictionary<BatchRunStep, TweakOutcome> _installOutcomes = new();
+    /// <summary>Ostatni wynik kroku w trybie instalacji i autostartu (podsumowanie „N z M” także po <see cref="Fail"/>).</summary>
+    private readonly Dictionary<BatchRunStep, TweakOutcome> _outcomes = new();
     private readonly BatchRunStep? _restorePointStep;
     private DateTimeOffset? _restorePointStarted;
     private DateTimeOffset? _restorePointFinished;
@@ -75,6 +79,12 @@ public sealed class BatchRun
         _remove = confirmation.Operation == GuiOperation.RemoveApps;
         _install = confirmation.Operation == GuiOperation.InstallApps;
         _restorePointRequired = confirmation.RestorePointRequired;
+        _autostartTarget = confirmation.Operation switch
+        {
+            GuiOperation.DisableAutostart => AutostartState.Disabled,
+            GuiOperation.EnableAutostart => AutostartState.Enabled,
+            _ => null,
+        };
         _itemCount = confirmation.Items.Count;
         if (confirmation.CreatesRestorePoint)
         {
@@ -87,7 +97,9 @@ public sealed class BatchRun
             _steps.Add(new BatchRunStep(item.Id, item.Title));
         }
 
-        Title = _install ? L.T("Instalowanie aplikacji") : _remove ? L.T("Usuwanie aplikacji") : _undo ? L.T("Cofanie zmian") : L.T("Zastosowywanie zmian");
+        Title = _install ? L.T("Instalowanie aplikacji")
+            : _autostartTarget is { } target ? AutostartText.SeriesTitle(target)
+            : _remove ? L.T("Usuwanie aplikacji") : _undo ? L.T("Cofanie zmian") : L.T("Zastosowywanie zmian");
         Subtitle = ProgressSubtitle();
     }
 
@@ -237,6 +249,7 @@ public sealed class BatchRun
         Title = batch.Stopped ? L.T("Zatrzymano") : L.T("Zakończono");
         Subtitle = _install
             ? InstallText.BatchSummary(batch.Results.Count(r => InstallPage.CountsAsInstalled(r.Outcome)), _itemCount)
+            : _autostartTarget is { } target ? AutostartText.Summary(target, batch.Results.Count(r => AutostartText.CountsAsChanged(r.Outcome)), _itemCount)
             : SucceededSubtitle(batch.SucceededCount);
         IsFinished = true;
         RaiseChanged();
@@ -254,7 +267,8 @@ public sealed class BatchRun
 
         Title = L.T("Zakończono z błędem");
         Subtitle = _install
-            ? InstallText.BatchSummary(_installOutcomes.Values.Count(InstallPage.CountsAsInstalled), _itemCount)
+            ? InstallText.BatchSummary(_outcomes.Values.Count(InstallPage.CountsAsInstalled), _itemCount)
+            : _autostartTarget is { } target ? AutostartText.Summary(target, _outcomes.Values.Count(AutostartText.CountsAsChanged), _itemCount)
             : SucceededSubtitle(_steps.Count(step => step.TweakId is not null && step.State == BatchStepState.Done));
         IsFinished = true;
         RaiseChanged();
@@ -349,10 +363,51 @@ public sealed class BatchRun
         {
             ApplyInstallResult(step, result);
         }
+        else if (_autostartTarget is { } target)
+        {
+            ApplyAutostartResult(step, result, target);
+        }
         else
         {
             ApplyResult(step, result, _remove);
         }
+    }
+
+    /// <summary>
+    /// Wynik pozycji autostartu: kierunek zmiany zamiast „Zastosowane i sprawdzone”, „Bez zmian” przy stanie już docelowym, „Nie wykonano”
+    /// przy porażce (z komunikatem silnika i rekordami, których nie wycofano); pozostałe wyniki jak w serii tweaków.
+    /// </summary>
+    private void ApplyAutostartResult(BatchRunStep step, TweakResult result, AutostartState target)
+    {
+        _outcomes[step] = result.Outcome;
+        var details = new List<string>();
+        switch (result.Outcome)
+        {
+            case TweakOutcome.Applied:
+            case TweakOutcome.Undone:
+            case TweakOutcome.AlreadyApplied:
+                Set(step, BatchStepState.Done, AutostartText.ResultStatus(result.Outcome, target));
+                AddMessage(details, result);
+                break;
+            case TweakOutcome.Failed:
+            case TweakOutcome.FailedRolledBack:
+            case TweakOutcome.FailedRollbackIncomplete:
+                Set(step, BatchStepState.Failed, AutostartText.ResultStatus(result.Outcome, target));
+                AddMessage(details, result);
+                if (result.Outcome == TweakOutcome.FailedRollbackIncomplete)
+                {
+                    details.Add(L.T("Nie wszystko udało się wycofać:"));
+                    details.AddRange(result.NotRestored);
+                }
+
+                break;
+            default:
+                ApplyResult(step, result, remove: false);
+                return;
+        }
+
+        details.AddRange(result.Warnings);
+        step.Details = details;
     }
 
     /// <summary>
@@ -361,7 +416,7 @@ public sealed class BatchRun
     /// </summary>
     private void ApplyInstallResult(BatchRunStep step, TweakResult result)
     {
-        _installOutcomes[step] = result.Outcome;
+        _outcomes[step] = result.Outcome;
         var state = result.Outcome switch
         {
             TweakOutcome.Installed or TweakOutcome.AlreadyInstalled => BatchStepState.Done,

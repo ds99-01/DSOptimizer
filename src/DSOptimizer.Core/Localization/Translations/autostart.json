@@ -204,6 +204,258 @@
     {
       "pl": "Cofanie rozpoczęte",
       "en": "Undo started"
+    },
+    {
+      "pl": "Włączone",
+      "en": "Enabled"
+    },
+    {
+      "pl": "Wyłączone",
+      "en": "Disabled"
+    },
+    {
+      "pl": "Bez pliku",
+      "en": "File missing"
+    },
+    {
+      "pl": "{0} włączona",
+      "en": "{0} enabled"
+    },
+    {
+      "pl": "{0} włączone",
+      "en": "{0} enabled"
+    },
+    {
+      "pl": "{0} włączonych",
+      "en": "{0} enabled"
+    },
+    {
+      "pl": "{0} · brak pomiaru Windows",
+      "en": "{0} · no Windows measurement"
+    },
+    {
+      "pl": "{0} · pomiar Windows {1}",
+      "en": "{0} · Windows measurement {1}"
+    },
+    {
+      "pl": "Nie udało się odczytać listy autostartu.",
+      "en": "Couldn't read the startup apps list."
+    },
+    {
+      "pl": "lista autostartu",
+      "en": "startup apps list"
+    },
+    {
+      "pl": "Pozycje innych kont nie są pokazywane.",
+      "en": "Items of other accounts aren't shown."
+    },
+    {
+      "pl": "Szukaj po nazwie, wydawcy albo poleceniu",
+      "en": "Search by name, publisher or command"
+    },
+    {
+      "pl": "nie zmierzono",
+      "en": "not measured"
+    },
+    {
+      "pl": "plik nie istnieje",
+      "en": "file missing"
+    },
+    {
+      "pl": "Niski (progi Windows)",
+      "en": "Low (Windows thresholds)"
+    },
+    {
+      "pl": "Średni (progi Windows)",
+      "en": "Medium (Windows thresholds)"
+    },
+    {
+      "pl": "Wysoki (progi Windows)",
+      "en": "High (Windows thresholds)"
+    },
+    {
+      "pl": "To czas procesora zużyty przy starcie, nie czas rozruchu komputera.",
+      "en": "This is processor time used at startup, not the time the PC takes to start."
+    },
+    {
+      "pl": "Tego programu nie ma w ostatnim pomiarze rozruchu Windows.",
+      "en": "This program isn't in the latest Windows startup measurement."
+    },
+    {
+      "pl": "Plik nie istnieje, więc Windows nie miał czego zmierzyć.",
+      "en": "The file doesn't exist, so Windows had nothing to measure."
+    },
+    {
+      "pl": " (ostatni start)",
+      "en": " (last start)"
+    },
+    {
+      "pl": "Włączona",
+      "en": "Enabled"
+    },
+    {
+      "pl": "Wyłączona {0}",
+      "en": "Disabled {0}"
+    },
+    {
+      "pl": "Wyłączona",
+      "en": "Disabled"
+    },
+    {
+      "pl": "Stan nieznany",
+      "en": "Unknown state"
+    },
+    {
+      "pl": "Włączona, ale pliku nie ma – nic nie startuje",
+      "en": "Enabled, but the file is gone – nothing starts"
+    },
+    {
+      "pl": "Chroniona",
+      "en": "Protected"
+    },
+    {
+      "pl": "Można wyłączyć",
+      "en": "Can be disabled"
+    },
+    {
+      "pl": "Sugerowana – plik nie istnieje",
+      "en": "Suggested – file missing"
+    },
+    {
+      "pl": "Bez oceny",
+      "en": "Not assessed"
+    },
+    {
+      "pl": "Źródło: {0}",
+      "en": "Source: {0}"
+    },
+    {
+      "pl": "Źródło: pomiar DSOptimizera",
+      "en": "Source: DSOptimizer measurement"
+    },
+    {
+      "pl": "Rejestr: {0}",
+      "en": "Registry: {0}"
+    },
+    {
+      "pl": "Aplikacja ze Sklepu: {0}",
+      "en": "Store app: {0}"
+    },
+    {
+      "pl": "{0} (zalogowane konto)",
+      "en": "{0} (signed-in account)"
+    },
+    {
+      "pl": "Wszystkie konta na tym komputerze",
+      "en": "All accounts on this PC"
+    },
+    {
+      "pl": "Kliknij dwukrotnie wiersz albo pole wyboru, żeby zaznaczyć.",
+      "en": "Double-click a row or tick its box to select it."
+    },
+    {
+      "pl": "Od następnego logowania. Cofniesz w Historii zmian.",
+      "en": "From the next sign-in. Undo in Change history."
+    },
+    {
+      "pl": "Zaznaczona",
+      "en": "Selected"
+    },
+    {
+      "pl": "Wyłącz ({0})",
+      "en": "Disable ({0})"
+    },
+    {
+      "pl": "Włącz ({0})",
+      "en": "Enable ({0})"
+    },
+    {
+      "pl": "Wyłącz",
+      "en": "Disable"
+    },
+    {
+      "pl": "Włącz",
+      "en": "Enable"
+    },
+    {
+      "pl": "{0} pozycja autostartu",
+      "en": "{0} startup item"
+    },
+    {
+      "pl": "{0} pozycje autostartu",
+      "en": "{0} startup items"
+    },
+    {
+      "pl": "{0} pozycji autostartu",
+      "en": "{0} startup items"
+    },
+    {
+      "pl": "Wyłącz w autostarcie",
+      "en": "Disable at startup"
+    },
+    {
+      "pl": "Włącz w autostarcie",
+      "en": "Enable at startup"
+    },
+    {
+      "pl": "Wyłączanie w autostarcie",
+      "en": "Disabling at startup"
+    },
+    {
+      "pl": "Włączanie w autostarcie",
+      "en": "Enabling at startup"
+    },
+    {
+      "pl": "Cofnij zmianę w autostarcie",
+      "en": "Undo the startup apps change"
+    },
+    {
+      "pl": "Działa od",
+      "en": "Takes effect"
+    },
+    {
+      "pl": "Następnego logowania",
+      "en": "At the next sign-in"
+    },
+    {
+      "pl": "Niepotrzebny – zmianę cofniesz w Historii zmian",
+      "en": "Not needed – you can undo it in Change history"
+    },
+    {
+      "pl": "W Historii zmian",
+      "en": "In Change history"
+    },
+    {
+      "pl": "Program zostaje zainstalowany, tylko przestaje startować sam.",
+      "en": "The program stays installed; it just stops starting by itself."
+    },
+    {
+      "pl": "Program znowu będzie startował sam po zalogowaniu.",
+      "en": "The program will start by itself again after sign-in."
+    },
+    {
+      "pl": "Dotyczy wszystkich kont na tym komputerze.",
+      "en": "Applies to all accounts on this PC."
+    },
+    {
+      "pl": "Wśród zaznaczonych jest pozycja, której nie można tak przełączyć – nic nie zmieniono. Odśwież listę.",
+      "en": "The selection includes an item that can't be switched this way – nothing was changed. Refresh the list."
+    },
+    {
+      "pl": "Bez zmian",
+      "en": "No change"
+    },
+    {
+      "pl": "Wyłączono {0} z {1}.",
+      "en": "Disabled {0} of {1}."
+    },
+    {
+      "pl": "Włączono {0} z {1}.",
+      "en": "Enabled {0} of {1}."
+    },
+    {
+      "pl": "Nie udało się w pełni przywrócić stanu sprzed zmiany: {0}",
+      "en": "Couldn't fully restore the state from before the change: {0}"
     }
   ]
 }

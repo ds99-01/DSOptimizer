@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
 using Xunit;
 
@@ -174,6 +175,27 @@ public class GuiTextTests
     public void AppsCounterDescription_Plural(int count, string expected)
     {
         Assert.Equal(expected, GuiText.AppsCounterDescription(count));
+    }
+
+    [Fact]
+    public void OperationName_Autostart()
+    {
+        Assert.Equal("Wyłącz", GuiText.OperationName(GuiOperation.DisableAutostart));
+        Assert.Equal("Włącz", GuiText.OperationName(GuiOperation.EnableAutostart));
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("Disable", GuiText.OperationName(GuiOperation.DisableAutostart));
+            Assert.Equal("Enable", GuiText.OperationName(GuiOperation.EnableAutostart));
+        }
+    }
+
+    [Theory]
+    [InlineData(1, "1 pozycja autostartu")]
+    [InlineData(3, "3 pozycje autostartu")]
+    [InlineData(12, "12 pozycji autostartu")]
+    public void AutostartCounterDescription_Plural(int count, string expected)
+    {
+        Assert.Equal(expected, GuiText.AutostartCounterDescription(count));
     }
 
     [Theory]

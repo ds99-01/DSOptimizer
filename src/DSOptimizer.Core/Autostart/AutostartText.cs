@@ -1,4 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using DSOptimizer.Core.Engine;
+using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Localization;
 
 namespace DSOptimizer.Core.Autostart;
@@ -84,4 +88,302 @@ public static class AutostartText
         AutostartScope.Store => L.T("Sklep"),
         _ => throw new ArgumentOutOfRangeException(nameof(scope), scope, null),
     };
+
+    // --- Strona „Autostart” ---
+
+    public static string PageTitle => L.T("Autostart");
+
+    public static string GroupName(AutostartGroup group) => group switch
+    {
+        AutostartGroup.Enabled => L.T("Włączone"),
+        AutostartGroup.Disabled => L.T("Wyłączone"),
+        AutostartGroup.MissingFile => L.T("Bez pliku"),
+        _ => throw new ArgumentOutOfRangeException(nameof(group), group, null),
+    };
+
+    /// <summary>
+    /// Podtytuł strony: liczba włączonych i data pomiaru Windows w czasie lokalnym. Po polsku format zaakceptowanego renderu
+    /// („02.11, 08:14”), po angielsku pełna data programu (<see cref="L.DateTimePattern"/>), bo „02/11” czyta się jak 11 lutego.
+    /// </summary>
+    public static string Subtitle(int enabled, DateTimeOffset? measuredAt)
+    {
+        if (enabled < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(enabled), enabled, null);
+        }
+
+        var count = L.P("{0} włączona", "{0} włączone", "{0} włączonych", enabled);
+        if (measuredAt is not { } at)
+        {
+            return L.F("{0} · brak pomiaru Windows", count);
+        }
+
+        var local = at.ToLocalTime();
+        var date = L.Current == UiLanguage.English ? local.ToString(L.DateTimePattern, L.Culture) : local.ToString("dd.MM, HH:mm", L.Culture);
+        return L.F("{0} · pomiar Windows {1}", count, date);
+    }
+
+    public static string Reading => L.T("Odczyt listy w toku");
+
+    public static string NotRead => L.T("Lista nie została jeszcze odczytana");
+
+    /// <summary>Błąd odczytu strony (limit czasu albo wyjątek czytnika); szczegół jest w dzienniku.</summary>
+    public static string ReadFailed => L.T("Nie udało się odczytać listy autostartu.");
+
+    /// <summary>Nazwa odczytu w linii dziennika o limicie czasu.</summary>
+    public static string ReadPartName => L.T("lista autostartu");
+
+    /// <summary>Stała linia pod listą (w podtytule się nie mieści).</summary>
+    public static string OtherAccountsNote => L.T("Pozycje innych kont nie są pokazywane.");
+
+    public static string SearchPlaceholder => L.T("Szukaj po nazwie, wydawcy albo poleceniu");
+
+    /// <summary>
+    /// Czas procesora w wierszu: sekundy z jednym miejscem po przecinku w kulturze języka („4,8 s” / „4.8 s”), zaokrąglone połówką w górę;
+    /// poniżej 0,05 s – „&lt; 0,1 s”.
+    /// </summary>
+    public static string CpuSeconds(long microseconds)
+    {
+        if (microseconds < 50_000)
+        {
+            return string.Format(L.Culture, "< {0:0.0} s", 0.1m);
+        }
+
+        var tenths = (microseconds + 50_000) / 100_000;
+        return string.Format(L.Culture, "{0:0.0} s", tenths / 10m);
+    }
+
+    public static string NotMeasured => L.T("nie zmierzono");
+
+    public static string FileMissing => L.T("plik nie istnieje");
+
+    public static string Impact(StartupImpactLevel level) => level switch
+    {
+        StartupImpactLevel.Low => L.T("Niski (progi Windows)"),
+        StartupImpactLevel.Medium => L.T("Średni (progi Windows)"),
+        StartupImpactLevel.High => L.T("Wysoki (progi Windows)"),
+        _ => throw new ArgumentOutOfRangeException(nameof(level), level, null),
+    };
+
+    /// <summary>Dopisek pod pomiarem: liczba to czas procesora, nie czas rozruchu (bez obietnic przyspieszenia).</summary>
+    public static string CpuNote => L.T("To czas procesora zużyty przy starcie, nie czas rozruchu komputera.");
+
+    public static string NotInMeasurement => L.T("Tego programu nie ma w ostatnim pomiarze rozruchu Windows.");
+
+    public static string FileMissingNote => L.T("Plik nie istnieje, więc Windows nie miał czego zmierzyć.");
+
+    /// <summary>Dopisek daty pomiaru pozycji wyłączonej (liczby z ostatniego rozruchu, w którym startowała).</summary>
+    public static string LastStart => L.T(" (ostatni start)");
+
+    /// <summary>Stan pozycji: „Włączona”, „Wyłączona 02.11.2026” (data wyłączenia, czas lokalny), „Wyłączona”, „Stan nieznany”.</summary>
+    public static string State(AutostartRow row)
+    {
+        if (row is null)
+        {
+            throw new ArgumentNullException(nameof(row));
+        }
+
+        return row.State switch
+        {
+            AutostartState.Enabled => L.T("Włączona"),
+            AutostartState.Disabled => row.Entry.Switch.DisabledAt is { } at
+                ? L.F("Wyłączona {0}", at.ToLocalTime().ToString(L.DatePattern, L.Culture))
+                : L.T("Wyłączona"),
+            _ => L.T("Stan nieznany"),
+        };
+    }
+
+    /// <summary>
+    /// Druga linia wiersza pod wydawcą; null = bez linii. Bez pliku: stan (grupa „Bez pliku” go nie mówi), włączona – że nic nie startuje.
+    /// Potem powód blokady innej niż ochrona (kłódka ma własną podpowiedź), na końcu data wyłączenia.
+    /// </summary>
+    public static string? RowNote(AutostartRow row)
+    {
+        if (row is null)
+        {
+            throw new ArgumentNullException(nameof(row));
+        }
+
+        if (row.MissingFile)
+        {
+            return row.State == AutostartState.Enabled ? L.T("Włączona, ale pliku nie ma – nic nie startuje") : State(row);
+        }
+
+        if (row.Blocker is not (AutostartBlocker.None or AutostartBlocker.Protected))
+        {
+            return row.BlockedReason;
+        }
+
+        return row.State == AutostartState.Disabled ? State(row) : null;
+    }
+
+    /// <summary>Ocena w panelu; „Sugerowana – plik nie istnieje” tylko dla sugerowanej pozycji spoza bazy z pewnym brakiem pliku.</summary>
+    public static string Verdict(AutostartRow row)
+    {
+        if (row is null)
+        {
+            throw new ArgumentNullException(nameof(row));
+        }
+
+        return row.Verdict switch
+        {
+            AutostartVerdict.Protected => L.T("Chroniona"),
+            AutostartVerdict.CanDisable => L.T("Można wyłączyć"),
+            _ => row.MissingFile && row.Suggested ? L.T("Sugerowana – plik nie istnieje") : L.T("Bez oceny"),
+        };
+    }
+
+    /// <summary>
+    /// Źródło oceny: „Źródło: ” i domeny adresów https wpisu bazy (bez powtórzeń, w kolejności); wpis tylko z dokumentem pomiaru –
+    /// „Źródło: pomiar DSOptimizera”; nic z tego – null.
+    /// </summary>
+    public static string? SourceLine(IReadOnlyList<string> sources)
+    {
+        if (sources is null)
+        {
+            throw new ArgumentNullException(nameof(sources));
+        }
+
+        var hosts = new List<string>();
+        foreach (var source in sources)
+        {
+            if (Uri.TryCreate(source, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps
+                && !hosts.Contains(uri.Host, StringComparer.OrdinalIgnoreCase))
+            {
+                hosts.Add(uri.Host);
+            }
+        }
+
+        if (hosts.Count > 0)
+        {
+            return L.F("Źródło: {0}", string.Join(", ", hosts));
+        }
+
+        return sources.Any(source => source is not null && source.StartsWith("docs/zrodla/", StringComparison.Ordinal))
+            ? L.T("Źródło: pomiar DSOptimizera")
+            : null;
+    }
+
+    /// <summary>
+    /// Miejsce pozycji w panelu: klucz Run w zapisie dla człowieka (gałąź konta jako <c>HKEY_CURRENT_USER</c> zalogowanego, maszyna jako
+    /// <c>HKEY_LOCAL_MACHINE</c>), rozwinięty folder Autostart albo rodzina pakietu aplikacji ze Sklepu.
+    /// </summary>
+    public static string Location(AutostartEntry entry)
+    {
+        if (entry is null)
+        {
+            throw new ArgumentNullException(nameof(entry));
+        }
+
+        return entry.Source switch
+        {
+            AutostartSource.RunUser => L.F("Rejestr: {0}", ReadableKey(entry.Location, @"HKU\", "HKEY_CURRENT_USER", skipSegment: true)),
+            AutostartSource.RunMachine or AutostartSource.Run32 => L.F("Rejestr: {0}", ReadableKey(entry.Location, @"HKLM\", "HKEY_LOCAL_MACHINE", skipSegment: false)),
+            AutostartSource.StartupTask => L.F("Aplikacja ze Sklepu: {0}", entry.PackageFamily ?? entry.Location),
+            _ => entry.Location,
+        };
+    }
+
+    /// <summary>Konto w panelu: pozycja konta i Sklepu – nazwa zalogowanego konta, pozycja maszyny – wszystkie konta.</summary>
+    public static string Account(AutostartScope scope, string accountName) => scope switch
+    {
+        AutostartScope.User or AutostartScope.Store => L.F("{0} (zalogowane konto)", accountName),
+        AutostartScope.Machine => L.T("Wszystkie konta na tym komputerze"),
+        _ => throw new ArgumentOutOfRangeException(nameof(scope), scope, null),
+    };
+
+    /// <summary>Tekst „Kopiuj nazwę”: nazwa, wydawca i plik, każde w osobnej linii; puste pominięte.</summary>
+    public static string CopyNameText(AutostartRow row)
+    {
+        if (row is null)
+        {
+            throw new ArgumentNullException(nameof(row));
+        }
+
+        var lines = new[] { row.Entry.Name, row.Entry.Publisher, row.Entry.FilePath }.Where(line => !string.IsNullOrWhiteSpace(line));
+        return string.Join("\r\n", lines);
+    }
+
+    public static string SelectionBarTitle(int selected) => selected <= 0
+        ? L.T("Kliknij dwukrotnie wiersz albo pole wyboru, żeby zaznaczyć.")
+        : L.P("Zaznaczono {0} pozycję", "Zaznaczono {0} pozycje", "Zaznaczono {0} pozycji", selected);
+
+    public static string SelectionBarDetails => L.T("Od następnego logowania. Cofniesz w Historii zmian.");
+
+    /// <summary>Linia zaznaczenia w panelu szczegółów.</summary>
+    public static string SelectedLine => L.T("Zaznaczona");
+
+    public static string DisableButton(int count) => L.F("Wyłącz ({0})", count);
+
+    public static string EnableButton(int count) => L.F("Włącz ({0})", count);
+
+    // --- Okno serii i wynik ---
+
+    public static string ConfirmTitle(AutostartState target)
+        => target == AutostartState.Disabled ? L.T("Wyłącz w autostarcie") : L.T("Włącz w autostarcie");
+
+    /// <summary>Tytuł okna w trakcie serii.</summary>
+    public static string SeriesTitle(AutostartState target)
+        => target == AutostartState.Disabled ? L.T("Wyłączanie w autostarcie") : L.T("Włączanie w autostarcie");
+
+    public static string UndoConfirmTitle => L.T("Cofnij zmianę w autostarcie");
+
+    public static string TakesEffectFact => L.T("Działa od");
+
+    public static string TakesEffectValue => L.T("Następnego logowania");
+
+    public static string RestorePointNotNeeded => L.T("Niepotrzebny – zmianę cofniesz w Historii zmian");
+
+    public static string UndoInHistory => L.T("W Historii zmian");
+
+    /// <summary>Uwaga pozycji w oknie potwierdzenia.</summary>
+    public static string ItemNote(AutostartState target) => target == AutostartState.Disabled
+        ? L.T("Program zostaje zainstalowany, tylko przestaje startować sam.")
+        : L.T("Program znowu będzie startował sam po zalogowaniu.");
+
+    /// <summary>Ostrzeżenie pozycji „wszystkie konta” (HKLM: Run, Run 32-bit, folder wspólny).</summary>
+    public static string AllAccountsWarning => L.T("Dotyczy wszystkich kont na tym komputerze.");
+
+    public static string SelectionRefused => L.T("Wśród zaznaczonych jest pozycja, której nie można tak przełączyć – nic nie zmieniono. Odśwież listę.");
+
+    /// <summary>
+    /// Status wyniku pozycji (krok okna serii i linia dziennika): sukces nazwany kierunkiem zmiany (także cofnięcie aktywnego wpisu przy
+    /// przełączeniu w drugą stronę), „Bez zmian” przy stanie docelowym już na miejscu, „Nie wykonano” przy porażce; reszta – nazwa wyniku.
+    /// </summary>
+    public static string ResultStatus(TweakOutcome outcome, AutostartState target) => outcome switch
+    {
+        TweakOutcome.Applied or TweakOutcome.Undone => target == AutostartState.Disabled ? L.T("Wyłączono i sprawdzono") : L.T("Włączono i sprawdzono"),
+        TweakOutcome.AlreadyApplied => L.T("Bez zmian"),
+        TweakOutcome.Failed or TweakOutcome.FailedRolledBack or TweakOutcome.FailedRollbackIncomplete => L.T("Nie wykonano"),
+        _ => GuiText.OutcomeName(outcome),
+    };
+
+    /// <summary>Wynik, który naprawdę zmienił stan pozycji (licznik „Wyłączono N z M.”); „było już” się nie liczy.</summary>
+    public static bool CountsAsChanged(TweakOutcome outcome) => outcome is TweakOutcome.Applied or TweakOutcome.Undone;
+
+    public static string Summary(AutostartState target, int changed, int total) => target == AutostartState.Disabled
+        ? L.F("Wyłączono {0} z {1}.", changed, total)
+        : L.F("Włączono {0} z {1}.", changed, total);
+
+    /// <summary>Linia cofnięcia niepełnego (silnik nie daje komunikatu, tylko rekordy, których nie przywrócono).</summary>
+    public static string UndoIncomplete(IReadOnlyList<string> notRestored)
+        => L.F("Nie udało się w pełni przywrócić stanu sprzed zmiany: {0}", string.Join("; ", notRestored ?? Array.Empty<string>()));
+
+    /// <summary>Klucz rejestru dla człowieka: przedrostek gałęzi zamieniony na pełną nazwę (przy gałęzi konta razem z SID); inny – bez zmian.</summary>
+    private static string ReadableKey(string key, string prefix, string root, bool skipSegment)
+    {
+        if (!key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return key;
+        }
+
+        var rest = key.Substring(prefix.Length);
+        if (skipSegment)
+        {
+            var slash = rest.IndexOf('\\');
+            rest = slash < 0 ? string.Empty : rest.Substring(slash + 1);
+        }
+
+        return rest.Length == 0 ? root : root + @"\" + rest;
+    }
 }

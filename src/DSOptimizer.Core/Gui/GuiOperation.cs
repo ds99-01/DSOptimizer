@@ -12,4 +12,10 @@ public enum GuiOperation
 
     /// <summary>Instalacja aplikacji przez winget ze strony „Instalacja” (osobna seria, bez punktu przywracania i bez cofania).</summary>
     InstallApps,
+
+    /// <summary>Wyłączenie pozycji ze strony „Autostart” (wpis w Historii zmian, cofanie tamże, bez punktu przywracania).</summary>
+    DisableAutostart,
+
+    /// <summary>Włączenie pozycji ze strony „Autostart”.</summary>
+    EnableAutostart,
 }

@@ -117,6 +117,8 @@ public static class GuiText
         GuiOperation.Execute => L.T("Uruchom"),
         GuiOperation.RemoveApps => L.T("Usuń"),
         GuiOperation.InstallApps => L.T("Zainstaluj"),
+        GuiOperation.DisableAutostart => L.T("Wyłącz"),
+        GuiOperation.EnableAutostart => L.T("Włącz"),
         _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, null),
     };
 
@@ -186,6 +188,9 @@ public static class GuiText
 
     /// <summary>Opis licznika strony „Aplikacje” w menu: „34 aplikacje”.</summary>
     public static string AppsCounterDescription(int count) => L.P("{0} aplikacja", "{0} aplikacje", "{0} aplikacji", count);
+
+    /// <summary>Opis licznika pozycji „Autostart” w menu (czytnik ekranu, podpowiedź).</summary>
+    public static string AutostartCounterDescription(int count) => L.P("{0} pozycja autostartu", "{0} pozycje autostartu", "{0} pozycji autostartu", count);
 
     /// <summary>Opis licznika strony „Instalacja” w menu (pozycje listy apps.json): „35 aplikacji na liście”.</summary>
     public static string InstallCounterDescription(int count)

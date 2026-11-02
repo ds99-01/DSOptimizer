@@ -301,6 +301,12 @@ How to read the tables:
 | zmienne konta | account variables | Environment variables of the signed-in account, read from its registry hive (`Environment`, `Volatile Environment`), not from the program's process |
 | zadanie startowe | startup task | Startup entry of a Store app (`windows.startupTask` in the package manifest); "Skipped package {0} while reading startup tasks" |
 | skrót (plik .lnk) | shortcut | A `.lnk` file in a Startup folder; not "skrót SHA256" (= hash) |
+| Pomiar Windows (nagłówek panelu) / progi Windows | Windows measurement / Windows thresholds | Startup apps details; "Wysoki/Średni/Niski (progi Windows)" = "High/Medium/Low (Windows thresholds)", the Task Manager thresholds; the number is processor time, never "boot time" |
+| Kopiuj nazwę | Copy name | Startup apps details button: copies name, publisher and file, one per line |
+| Wyłącz (N) / Włącz (M) / Wyłącz / Włącz | Disable (N) / Enable (M) / Disable / Enable | Startup apps selection bar and series window; window titles "Wyłącz/Włącz w autostarcie" = "Disable/Enable at startup", progress "Wyłączanie/Włączanie w autostarcie" = "Disabling/Enabling at startup" |
+| Wyłączono N z M. / Włączono N z M. / Bez zmian | Disabled N of M. / Enabled N of M. / No change | Startup apps series result: counts only items whose state changed; "Bez zmian" = item was already in the target state |
+| Działa od: Następnego logowania | Takes effect: At the next sign-in | Startup apps series window fact; see "od następnego logowania" |
+| {0} (zalogowane konto) / Wszystkie konta na tym komputerze | {0} (signed-in account) / All accounts on this PC | Account of a startup item in the details |
 | punkt ponownej analizy | reparse point | Junction or symbolic link (Windows term) |
 | potok / Job Object | pipe / Job Object | Process plumbing in Windows layer errors; "Job Object" kept as the Windows name |
 | Ponowne uruchomienie programu: {0} | Restarting the program: {0} | Startup log line before the program restarts itself |

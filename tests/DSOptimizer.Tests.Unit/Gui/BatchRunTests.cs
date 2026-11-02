@@ -801,4 +801,79 @@ public class BatchRunTests
     [InlineData(5, "5 aplikacji potrzebuje ponownego uruchomienia komputera.")]
     public void InstallText_RebootText(int count, string expected)
         => Assert.Equal(expected, InstallText.RebootText(count));
+
+    // --- Autostart (GuiOperation.DisableAutostart / EnableAutostart) ---
+
+    [Fact]
+    public void Title_DisableEnableAutostart()
+    {
+        var disable = new BatchRun(Confirmation(GuiOperation.DisableAutostart, false, 2));
+        var enable = new BatchRun(Confirmation(GuiOperation.EnableAutostart, false, 2));
+
+        Assert.Equal("Wyłączanie w autostarcie", disable.Title);
+        Assert.Equal("Włączanie w autostarcie", enable.Title);
+        Assert.Equal(new[] { "Pozycja 1", "Pozycja 2" }, disable.Steps.Select(s => s.Title));
+        Assert.Equal("krok 1 z 2", disable.Subtitle);
+    }
+
+    [Fact]
+    public void Autostart_StepTextsAndSummary_OwnTexts()
+    {
+        var run = new BatchRun(Confirmation(GuiOperation.DisableAutostart, false, 6));
+
+        run.Complete(Report(new BatchResult
+        {
+            Results = new[]
+            {
+                Result("id1", TweakOutcome.Applied, "Wyłączona – zadziała od następnego logowania."),
+                Result("id2", TweakOutcome.Undone, "Cofnięto wcześniejszą zmianę z Historii zmian – zadziała od następnego logowania."),
+                Result("id3", TweakOutcome.AlreadyApplied, "Była już wyłączona – nic nie zmieniono."),
+                Result("id4", TweakOutcome.FailedRolledBack, "Odczyt po zapisie nie potwierdził zmiany – przywrócono poprzedni stan."),
+                Result("id5", TweakOutcome.FailedRollbackIncomplete, "Odczyt po zapisie nie potwierdził zmiany, a poprzedniego stanu nie udało się przywrócić.", notRestored: new[] { @"HKLM\x\y = brak" }),
+                Result("id6", TweakOutcome.Refused, "Zapis stanu zmienił się od odczytu listy – nic nie zmieniono. Odśwież listę."),
+            },
+        }));
+
+        Assert.Equal("Zakończono", run.Title);
+        Assert.Equal("Wyłączono 2 z 6.", run.Subtitle);
+        Assert.Equal(
+            new[]
+            {
+                (BatchStepState.Done, "Wyłączono i sprawdzono"),
+                (BatchStepState.Done, "Wyłączono i sprawdzono"),
+                (BatchStepState.Done, "Bez zmian"),
+                (BatchStepState.Failed, "Nie wykonano"),
+                (BatchStepState.Failed, "Nie wykonano"),
+                (BatchStepState.Warning, "Odmowa"),
+            },
+            run.Steps.Select(s => (s.State, s.StatusText)));
+        Assert.Equal(new[] { "Wyłączona – zadziała od następnego logowania." }, run.Steps[0].Details);
+        Assert.Equal(new[] { "Była już wyłączona – nic nie zmieniono." }, run.Steps[2].Details);
+        Assert.Equal(new[] { "Odczyt po zapisie nie potwierdził zmiany – przywrócono poprzedni stan." }, run.Steps[3].Details);
+        Assert.Equal(
+            new[] { "Odczyt po zapisie nie potwierdził zmiany, a poprzedniego stanu nie udało się przywrócić.", "Nie wszystko udało się wycofać:", @"HKLM\x\y = brak" },
+            run.Steps[4].Details);
+        Assert.DoesNotContain(run.Steps, s => s.StatusText == "Zastosowane i sprawdzone");
+        Assert.Null(run.RebootText);
+    }
+
+    [Fact]
+    public void Autostart_Enable_SummaryAndFail()
+    {
+        var run = new BatchRun(Confirmation(GuiOperation.EnableAutostart, false, 2));
+        run.OnStep(Started("id1", 0, 2));
+        run.OnStep(new BatchStepEvent(0, 2, BatchStepKind.Item, "id1", BatchStepPhase.Finished, T0, Result("id1", TweakOutcome.Applied, "Włączona – zadziała od następnego logowania.")));
+
+        Assert.Equal("Włączono i sprawdzono", run.Steps[0].StatusText);
+
+        run.Fail("Nieoczekiwany błąd.");
+
+        Assert.Equal("Zakończono z błędem", run.Title);
+        Assert.Equal("Włączono 1 z 2.", run.Subtitle);
+        Assert.Equal(BatchStepState.Failed, run.Steps[1].State);
+
+        var complete = new BatchRun(Confirmation(GuiOperation.EnableAutostart, false, 1));
+        complete.Complete(Report(new BatchResult { Results = new[] { Result("id1", TweakOutcome.AlreadyApplied, "Była już włączona – nic nie zmieniono.") } }));
+        Assert.Equal("Włączono 0 z 1.", complete.Subtitle);
+    }
 }

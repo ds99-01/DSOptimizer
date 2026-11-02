@@ -50,3 +50,4 @@ src/DSOptimizer.App/Views/LanguageChoiceWindow.xaml	Język / Language	okno wybor
 src/DSOptimizer.App/Views/LanguageChoiceWindow.xaml	Wybierz język programu · Choose the program language	okno wyboru języka – teksty dwujęzyczne
 src/DSOptimizer.App/Views/LanguageChoiceWindow.xaml	Możesz to zmienić później w Ustawieniach.	okno wyboru języka – teksty dwujęzyczne
 src/DSOptimizer.App/Views/LanguageChoiceWindow.xaml	You can change this later in Settings.	okno wyboru języka – teksty dwujęzyczne
+src/DSOptimizer.Core/Autostart/AutostartSession.cs	"Metody sesji strony wołane przez widok na instancji, jak w AppsSession."	uzasadnienie SuppressMessage dla analizatora kodu (dla programisty, nie trafia do programu)
