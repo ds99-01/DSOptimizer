@@ -232,6 +232,27 @@ public class AutostartTextTests
     }
 
     [Fact]
+    public void RowNote_MissingFileWithBlocker_ShowsBoth()
+    {
+        Assert.Equal(
+            "Włączona, ale pliku nie ma – nic nie startuje. Nie udało się ustalić zalogowanego użytkownika.",
+            AutostartText.RowNote(Row(file: AutostartFileStatus.Missing, blocker: AutostartBlocker.UserUncertain)));
+        Assert.Equal(
+            "Wyłączona 28.10.2026. Nieznany zapis stanu – DSOptimizer tej pozycji nie zmienia.",
+            AutostartText.RowNote(Row(state: AutostartState.Disabled, disabledAt: DisabledAt, file: AutostartFileStatus.Missing, blocker: AutostartBlocker.UnknownFormat)));
+        // Kłódka ma własną podpowiedź – bez powodu w linii.
+        Assert.Equal(
+            "Włączona, ale pliku nie ma – nic nie startuje",
+            AutostartText.RowNote(Row(file: AutostartFileStatus.Missing, blocker: AutostartBlocker.Protected)));
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal(
+                "Enabled, but the file is gone – nothing starts. Unknown state format – DSOptimizer doesn't change this item.",
+                AutostartText.RowNote(Row(file: AutostartFileStatus.Missing, blocker: AutostartBlocker.UnknownFormat)));
+        }
+    }
+
+    [Fact]
     public void Verdict_FourTexts()
     {
         Assert.Equal("Można wyłączyć", AutostartText.Verdict(Row(known: Known(AutostartVerdict.CanDisable))));
@@ -247,14 +268,17 @@ public class AutostartTextTests
     public void Location_PerSource()
     {
         Assert.Equal(
-            @"Rejestr: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run",
-            AutostartText.Location(Entry(AutostartSource.RunUser, Locations.RunKey(AutostartSource.RunUser))));
+            @"Rejestr: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run, wartość „Spotify”",
+            AutostartText.Location(Entry(AutostartSource.RunUser, Locations.RunKey(AutostartSource.RunUser), "Spotify")));
         Assert.Equal(
-            @"Rejestr: HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
-            AutostartText.Location(Entry(AutostartSource.RunMachine, Locations.RunKey(AutostartSource.RunMachine))));
+            @"Rejestr: HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run, wartość „SecurityHealth”",
+            AutostartText.Location(Entry(AutostartSource.RunMachine, Locations.RunKey(AutostartSource.RunMachine), "SecurityHealth")));
         Assert.Equal(
-            @"Rejestr: HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run",
-            AutostartText.Location(Entry(AutostartSource.Run32, Locations.RunKey(AutostartSource.Run32))));
+            @"Rejestr: HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run, wartość „Adobe ARM”",
+            AutostartText.Location(Entry(AutostartSource.Run32, Locations.RunKey(AutostartSource.Run32), "Adobe ARM")));
+        Assert.Equal(
+            @"Rejestr: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run, wartość „(bez nazwy)”",
+            AutostartText.Location(Entry(AutostartSource.RunUser, Locations.RunKey(AutostartSource.RunUser), string.Empty)));
         var folder = @"C:\Users\Jan\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup";
         Assert.Equal(folder, AutostartText.Location(Entry(AutostartSource.FolderUser, folder)));
         Assert.Equal(
@@ -263,8 +287,11 @@ public class AutostartTextTests
         using (L.Use(UiLanguage.English))
         {
             Assert.Equal(
-                @"Registry: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run",
-                AutostartText.Location(Entry(AutostartSource.RunUser, Locations.RunKey(AutostartSource.RunUser))));
+                @"Registry: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run, value ""Spotify""",
+                AutostartText.Location(Entry(AutostartSource.RunUser, Locations.RunKey(AutostartSource.RunUser), "Spotify")));
+            Assert.Equal(
+                @"Registry: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run, value ""(no name)""",
+                AutostartText.Location(Entry(AutostartSource.RunUser, Locations.RunKey(AutostartSource.RunUser), string.Empty)));
             Assert.Equal("Store app: Fam_1", AutostartText.Location(Entry(AutostartSource.StartupTask, "Fam_1")));
         }
 
@@ -335,11 +362,11 @@ public class AutostartTextTests
     private static AutostartKnownEntry Known(AutostartVerdict verdict)
         => new("test", new AutostartMatchRule("a.exe", new[] { @"%ProgramFiles%\*" }, new[] { "*" }, null, null), verdict, "Opis.", new[] { "https://example.com/" }, true);
 
-    private static AutostartEntry Entry(AutostartSource source, string location) => new()
+    private static AutostartEntry Entry(AutostartSource source, string location, string entryName = "x") => new()
     {
-        Id = AutostartIds.For(source, "x", source == AutostartSource.StartupTask ? location : null),
+        Id = "test:" + source + ":" + entryName,
         Source = source,
-        EntryName = "x",
+        EntryName = entryName,
         Name = "x",
         Location = location,
         FileStatus = AutostartFileStatus.Exists,

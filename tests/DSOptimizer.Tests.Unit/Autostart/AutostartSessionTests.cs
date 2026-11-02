@@ -389,6 +389,41 @@ public class AutostartSessionTests
     }
 
     [Fact]
+    public void Set_ContextFails_ErrorLineNoCrash()
+    {
+        var f = new Fixture();
+        var rows = f.Load(f.Entry(AutostartSource.RunUser, "OneDrive"));
+        // Kontekst liczony pod blokadą rzuca (SID z „\” odrzuca AutostartLocations.ForUser) – silnik nie rusza.
+        f.Engine.User.Sid = @"S-1-5-21\zly";
+
+        var report = f.Session.Set(rows, AutostartState.Disabled, new AutostartRunOptions());
+
+        Assert.Null(report.Batch);
+        Assert.Equal(GuiOperation.DisableAutostart, report.Operation);
+        Assert.Equal("autostart", report.TweakId);
+        var line = Assert.Single(report.Lines);
+        Assert.Equal(GuiLogLevel.Error, line.Level);
+        Assert.StartsWith("Nieoczekiwany błąd: Nieprawidłowy SID", line.Text, StringComparison.Ordinal);
+        Assert.Contains(f.Engine.Log.Lines, logged => logged.StartsWith("ERROR [Autostart] Nieoczekiwany błąd w serii przy autostart.", StringComparison.Ordinal));
+        Assert.Empty(f.Registry.WriteLog);
+        Assert.Empty(f.Engine.Journal.Current.Entries);
+        Assert.True(f.Gui.TryRunExclusive(() => 0, out _));
+    }
+
+    [Fact]
+    public void Undo_ContextFails_FailedResult()
+    {
+        var f = new Fixture();
+        f.Engine.User.Sid = @"S-1-5-21\zly";
+
+        var report = f.Session.Undo(History(Guid.NewGuid(), "run:user:OneDrive"), new AutostartRunOptions());
+
+        Assert.Equal(TweakOutcome.Failed, report.Result!.Outcome);
+        Assert.Equal(GuiLogLevel.Error, Assert.Single(report.Lines).Level);
+        Assert.StartsWith("Autostart: wyłączono OneDrive app: Błąd – Nieoczekiwany błąd: Nieprawidłowy SID", report.Lines[0].Text, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Set_NoRebootFlag()
     {
         var f = new Fixture();

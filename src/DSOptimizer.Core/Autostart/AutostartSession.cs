@@ -185,7 +185,23 @@ public sealed class AutostartSession
 
     private GuiOperationReport SetLocked(IReadOnlyList<AutostartRow> rows, AutostartState target, AutostartRunOptions options)
     {
-        var batch = _engine.Set(rows, target, Context(), options, CancellationToken.None);
+        BatchResult batch;
+        try
+        {
+            batch = _engine.Set(rows, target, Context(), options, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            // Jak w cofaniu: błąd kontekstu albo silnika kończy się raportem z linią błędu (Batch = null), nie wyjątkiem z serii.
+            _log.Fail(AutostartText.PageTitle, L.F("Nieoczekiwany błąd w serii przy {0}.", ReportId), ex);
+            return new GuiOperationReport
+            {
+                TweakId = ReportId,
+                Operation = OperationOf(target),
+                Lines = new[] { Line(GuiLogLevel.Error, L.F("Nieoczekiwany błąd: {0}", GuiText.OneLine(ex.Message, GuiText.MaxResultMessageLength))) },
+            };
+        }
+
         var names = rows.GroupBy(row => row.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First().Entry.Name, StringComparer.Ordinal);
         var lines = new List<GuiLogLine>();
         foreach (var result in batch.Results)

@@ -261,7 +261,9 @@ public sealed class BatchRun
         foreach (var step in _steps.Where(step => step.State is BatchStepState.Waiting or BatchStepState.Running))
         {
             step.State = BatchStepState.Failed;
-            step.StatusText = _install ? InstallText.NotDone : _remove ? AppsPageText.FailedStatus : L.T("Błąd");
+            step.StatusText = _install ? InstallText.NotDone
+                : _autostartTarget is not null ? L.T("Nie wykonano")
+                : _remove ? AppsPageText.FailedStatus : L.T("Błąd");
             step.Details = new[] { message };
         }
 

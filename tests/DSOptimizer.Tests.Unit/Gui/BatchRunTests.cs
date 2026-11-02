@@ -871,6 +871,14 @@ public class BatchRunTests
         Assert.Equal("Zakończono z błędem", run.Title);
         Assert.Equal("Włączono 1 z 2.", run.Subtitle);
         Assert.Equal(BatchStepState.Failed, run.Steps[1].State);
+        Assert.Equal("Nie wykonano", run.Steps[1].StatusText);
+        Assert.Equal(new[] { "Nieoczekiwany błąd." }, run.Steps[1].Details);
+        Assert.Equal("Włączono i sprawdzono", run.Steps[0].StatusText);
+
+        // Inne serie bez zmian: „Błąd”.
+        var tweaks = new BatchRun(Confirmation(GuiOperation.Apply, false, 1));
+        tweaks.Fail("Nieoczekiwany błąd.");
+        Assert.Equal("Błąd", tweaks.Steps[0].StatusText);
 
         var complete = new BatchRun(Confirmation(GuiOperation.EnableAutostart, false, 1));
         complete.Complete(Report(new BatchResult { Results = new[] { Result("id1", TweakOutcome.AlreadyApplied, "Była już włączona – nic nie zmieniono.") } }));

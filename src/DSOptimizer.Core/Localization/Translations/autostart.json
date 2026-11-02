@@ -334,8 +334,12 @@
       "en": "Source: DSOptimizer measurement"
     },
     {
-      "pl": "Rejestr: {0}",
-      "en": "Registry: {0}"
+      "pl": "Rejestr: {0}, wartość „{1}”",
+      "en": "Registry: {0}, value \"{1}\""
+    },
+    {
+      "pl": "{0}. {1}",
+      "en": "{0}. {1}"
     },
     {
       "pl": "Aplikacja ze Sklepu: {0}",

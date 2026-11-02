@@ -195,7 +195,8 @@ public static class AutostartText
 
     /// <summary>
     /// Druga linia wiersza pod wydawcą; null = bez linii. Bez pliku: stan (grupa „Bez pliku” go nie mówi), włączona – że nic nie startuje.
-    /// Potem powód blokady innej niż ochrona (kłódka ma własną podpowiedź), na końcu data wyłączenia.
+    /// Wiersz bez pola wyboru z blokadą inną niż ochrona (kłódka ma własną podpowiedź) zawsze pokazuje powód – przy braku pliku obok stanu,
+    /// jako osobne zdanie. Bez blokady i z plikiem: data wyłączenia albo nic.
     /// </summary>
     public static string? RowNote(AutostartRow row)
     {
@@ -204,14 +205,16 @@ public static class AutostartText
             throw new ArgumentNullException(nameof(row));
         }
 
+        var reason = row.Blocker is not (AutostartBlocker.None or AutostartBlocker.Protected) ? row.BlockedReason : null;
         if (row.MissingFile)
         {
-            return row.State == AutostartState.Enabled ? L.T("Włączona, ale pliku nie ma – nic nie startuje") : State(row);
+            var note = row.State == AutostartState.Enabled ? L.T("Włączona, ale pliku nie ma – nic nie startuje") : State(row);
+            return reason is null ? note : L.F("{0}. {1}", note, reason);
         }
 
-        if (row.Blocker is not (AutostartBlocker.None or AutostartBlocker.Protected))
+        if (reason is not null)
         {
-            return row.BlockedReason;
+            return reason;
         }
 
         return row.State == AutostartState.Disabled ? State(row) : null;
@@ -275,10 +278,13 @@ public static class AutostartText
             throw new ArgumentNullException(nameof(entry));
         }
 
+        // Nazwa wartości Run nie pojawia się nigdzie indziej w panelu (nazwa wiersza pochodzi z opisu pliku).
+        var valueName = string.IsNullOrEmpty(entry.EntryName) ? NoName : entry.EntryName;
         return entry.Source switch
         {
-            AutostartSource.RunUser => L.F("Rejestr: {0}", ReadableKey(entry.Location, @"HKU\", "HKEY_CURRENT_USER", skipSegment: true)),
-            AutostartSource.RunMachine or AutostartSource.Run32 => L.F("Rejestr: {0}", ReadableKey(entry.Location, @"HKLM\", "HKEY_LOCAL_MACHINE", skipSegment: false)),
+            AutostartSource.RunUser => L.F("Rejestr: {0}, wartość „{1}”", ReadableKey(entry.Location, @"HKU\", "HKEY_CURRENT_USER", skipSegment: true), valueName),
+            AutostartSource.RunMachine or AutostartSource.Run32
+                => L.F("Rejestr: {0}, wartość „{1}”", ReadableKey(entry.Location, @"HKLM\", "HKEY_LOCAL_MACHINE", skipSegment: false), valueName),
             AutostartSource.StartupTask => L.F("Aplikacja ze Sklepu: {0}", entry.PackageFamily ?? entry.Location),
             _ => entry.Location,
         };
