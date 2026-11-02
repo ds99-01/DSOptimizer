@@ -18,7 +18,7 @@ namespace DSOptimizer.App.ViewModels;
 public sealed class HistoryViewModel : ObservableObject
 {
     private readonly Func<Task<HistorySnapshot>> _load;
-    private readonly Func<string, Task> _undo;
+    private readonly Func<HistoryEntry, Task> _undo;
     private readonly Action _showApps;
     private readonly Action<GuiLogLevel, string> _log;
     private IReadOnlyList<HistoryRowViewModel> _all = Array.Empty<HistoryRowViewModel>();
@@ -34,10 +34,13 @@ public sealed class HistoryViewModel : ObservableObject
     private int _version;
 
     /// <param name="load">Wczytanie historii; samo idzie poza wątek UI (journal pod blokadą sesji, nazwy kont przez LSA).</param>
-    /// <param name="undo">„Cofnij” dla id pozycji (operacja głównego okna z potwierdzeniem).</param>
+    /// <param name="undo">
+    /// „Cofnij” zaznaczonego wpisu (operacja głównego okna z potwierdzeniem): cały wpis, bo wpis autostartu cofa się po
+    /// <see cref="HistoryEntry.EntryId"/>, a nie po id pozycji katalogu.
+    /// </param>
     /// <param name="showApps">Przejście na stronę „Aplikacje” (link w szczegółach wpisu instalacji).</param>
     /// <param name="log">Linia do dziennika w oknie.</param>
-    public HistoryViewModel(Func<Task<HistorySnapshot>> load, Func<string, Task> undo, Action showApps, Action<GuiLogLevel, string> log)
+    public HistoryViewModel(Func<Task<HistorySnapshot>> load, Func<HistoryEntry, Task> undo, Action showApps, Action<GuiLogLevel, string> log)
     {
         _load = load ?? throw new ArgumentNullException(nameof(load));
         _undo = undo ?? throw new ArgumentNullException(nameof(undo));
@@ -308,7 +311,7 @@ public sealed class HistoryViewModel : ObservableObject
 
         try
         {
-            await _undo(row.TweakId).ConfigureAwait(true);
+            await _undo(row.Entry).ConfigureAwait(true);
         }
         catch (Exception ex)
         {

@@ -155,14 +155,15 @@ public sealed class MainViewModel : ObservableObject
         Specification = specification ?? throw new ArgumentNullException(nameof(specification));
         Prep = prep ?? throw new ArgumentNullException(nameof(prep));
         // Historia: odczyt journala i nazw kont poza wątkiem UI, z tym samym czasem startu systemu co baner restartu.
-        // „Cofnij” idzie tą samą ścieżką co z listy (potwierdzenie, raport, baner, odświeżenie historii).
+        // „Cofnij” tweaka idzie tą samą ścieżką co z listy (potwierdzenie, raport, baner, odświeżenie historii); wpis autostartu – przez
+        // okno serii i sesję autostartu (UndoFromHistoryAsync).
         History = new HistoryViewModel(
             async () =>
             {
                 var lastBoot = await LastBootAsync().ConfigureAwait(true);
                 return await Task.Run(() => _session.LoadHistory(lastBoot, _sessionStart, accountNames)).ConfigureAwait(true);
             },
-            id => RunAsync(id, GuiOperation.Undo),
+            UndoFromHistoryAsync,
             () => SelectedPage = Apps,
             (level, text) => _sink.Add(level, text));
         // Aplikacje: własne zaznaczenie i „Usuń (N)” zawsze przez okno serii (RemoveAppsAsync), osobno od „Zastosuj/Cofnij”.
@@ -735,6 +736,20 @@ public sealed class MainViewModel : ObservableObject
         // trzyma blokadę sesji tylko na Journal.Load (milisekundy), a kolizja z klikiem to nieszkodliwe „Trwa inna operacja –
         // nic nie zmieniono”; tłumaczenie SID-ów poza blokadą może trwać sekundy i nie może wydłużać IsBusy.
         RefreshHistory();
+    }
+
+    /// <summary>
+    /// „Cofnij” w Historii zmian: wpis autostartu = <see cref="UndoAutostartAsync"/> (okno serii, cofanie po
+    /// <see cref="HistoryEntry.EntryId"/>); każdy inny wpis = <see cref="RunAsync(string, GuiOperation)"/> po id pozycji, jak dotąd.
+    /// </summary>
+    public Task UndoFromHistoryAsync(HistoryEntry entry)
+    {
+        if (entry is null)
+        {
+            throw new ArgumentNullException(nameof(entry));
+        }
+
+        return entry.Kind == HistoryKind.Autostart ? UndoAutostartAsync(entry) : RunAsync(entry.TweakId, GuiOperation.Undo);
     }
 
     /// <summary>
@@ -1373,20 +1388,57 @@ public sealed class MainViewModel : ObservableObject
     /// bez pytania o punkt przywracania i bez banera restartu (zmiana działa od następnego logowania). Seria biegnie poza wątkiem UI pod
     /// blokadą sesji. Po serii: dziennik, Historia i świeży odczyt strony.
     /// </summary>
-    private async Task ToggleAutostartAsync(IReadOnlyList<AutostartRow> rows, AutostartState target)
+    private Task ToggleAutostartAsync(IReadOnlyList<AutostartRow> rows, AutostartState target)
     {
-        if (IsBusy || _isConfirming || rows.Count == 0)
+        if (rows.Count == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        var operation = target == AutostartState.Disabled ? GuiOperation.DisableAutostart : GuiOperation.EnableAutostart;
+        return RunAutostartSeriesAsync(
+            () => _autostart.ConfirmationFor(rows, target),
+            rows.Select(row => row.Id).ToList(),
+            SelectedOperationText(operation, rows.Count),
+            options => _autostart.Set(rows, target, options),
+            () => GuiText.CancelledBatch(operation, rows.Select(row => row.Entry.Name).ToList()));
+    }
+
+    /// <summary>
+    /// „Cofnij” wpisu autostartu z Historii zmian – w oknie serii z jedną pozycją (<see cref="AutostartSession.ConfirmationForUndo"/>), ta sama
+    /// ścieżka co <see cref="ToggleAutostartAsync"/>: cofanie po <see cref="HistoryEntry.EntryId"/> poza wątkiem UI pod blokadą sesji (silnik sam
+    /// sprawdza jeszcze raz, czy wpis jest aktywny, najnowszy i tego konta), linie do dziennika, Historia i świeży odczyt strony „Autostart”.
+    /// Katalog tweaków nie jest pytany o id pozycji.
+    /// </summary>
+    private Task UndoAutostartAsync(HistoryEntry entry)
+        => RunAutostartSeriesAsync(
+            () => _autostart.ConfirmationForUndo(entry),
+            new[] { entry.TweakId },
+            $"{GuiText.OperationName(GuiOperation.Undo)}: {entry.Title}…",
+            options => _autostart.Undo(entry, options),
+            () => CanceledText(GuiOperation.Undo, entry.Title));
+
+    /// <summary>
+    /// Wspólny przebieg serii autostartu w oknie serii (wzorzec <see cref="RemoveAppsAsync"/>): potwierdzenie, IsBusy od zgody, praca
+    /// <paramref name="run"/> przez Task.Run, raport w dzienniku i Historia; anulowanie = linia <paramref name="cancelledText"/> i nic więcej.
+    /// Odczyt strony „Autostart” po zwolnieniu IsBusy (w trakcie serii odświeżenie jest nieaktywne).
+    /// </summary>
+    private async Task RunAutostartSeriesAsync(
+        Func<SeriesConfirmation> confirmationFor,
+        IReadOnlyList<string> ids,
+        string operationText,
+        Func<AutostartRunOptions, GuiOperationReport> run,
+        Func<string> cancelledText)
+    {
+        if (IsBusy || _isConfirming)
         {
             return;
         }
 
         IsConfirming = true;
-        var ids = rows.Select(row => row.Id).ToList();
-        var operation = target == AutostartState.Disabled ? GuiOperation.DisableAutostart : GuiOperation.EnableAutostart;
         try
         {
-            var confirmation = _autostart.ConfirmationFor(rows, target);
-            var operationText = SelectedOperationText(operation, rows.Count);
+            var confirmation = confirmationFor();
             var applied = false;
             var result = await _seriesDialogs.RunSeriesAsync(confirmation, async (steps, stop) =>
             {
@@ -1397,7 +1449,7 @@ public sealed class MainViewModel : ObservableObject
                 GuiOperationReport report;
                 using (_sink.BeginOperation(ids))
                 {
-                    report = await Task.Run(() => _autostart.Set(rows, target, options)).ConfigureAwait(true);
+                    report = await Task.Run(() => run(options)).ConfigureAwait(true);
                     _sink.CompleteOperation(report);
                 }
 
@@ -1411,7 +1463,7 @@ public sealed class MainViewModel : ObservableObject
 
             if (result.Report is null)
             {
-                _sink.Add(GuiLogLevel.Info, GuiText.CancelledBatch(operation, rows.Select(row => row.Entry.Name).ToList()));
+                _sink.Add(GuiLogLevel.Info, cancelledText());
                 return;
             }
 
