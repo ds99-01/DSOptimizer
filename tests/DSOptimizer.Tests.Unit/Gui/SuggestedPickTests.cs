@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Linq;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Model;
 using Xunit;
@@ -57,4 +59,42 @@ public class SuggestedPickTests
     [Fact]
     public void Apps_EmptyInput_ReturnsEmpty()
         => Assert.Empty(SuggestedPick.Apps(System.Array.Empty<AppRow>()));
+
+    [Fact]
+    public void Autostart_OnlySuggestedIds()
+    {
+        var known = new AutostartKnownEntry(
+            "k",
+            new AutostartMatchRule("x.exe", new[] { @"%ProgramFiles%\*" }, new[] { "X" }, null, null),
+            AutostartVerdict.CanDisable,
+            "S",
+            new[] { "docs/zrodla/2026-11-02-autostart-pomiar.md", "https://example.com/x" },
+            true);
+        var rows = new List<AutostartRow>
+        {
+            AutostartRowFor("missing", AutostartFileStatus.Missing, AutostartState.Enabled, null, AutostartBlocker.None),
+            AutostartRowFor("verdict", AutostartFileStatus.Exists, AutostartState.Enabled, known, AutostartBlocker.None),
+            AutostartRowFor("plain", AutostartFileStatus.Exists, AutostartState.Enabled, null, AutostartBlocker.None),
+            AutostartRowFor("disabled", AutostartFileStatus.Missing, AutostartState.Disabled, known, AutostartBlocker.None),
+            AutostartRowFor("blocked", AutostartFileStatus.Missing, AutostartState.Enabled, known, AutostartBlocker.UserUncertain),
+        };
+
+        Assert.Equal(new[] { "missing", "verdict" }, SuggestedPick.Autostart(rows));
+        Assert.Empty(SuggestedPick.Autostart(System.Array.Empty<AutostartRow>()));
+    }
+
+    private static AutostartRow AutostartRowFor(string id, AutostartFileStatus file, AutostartState state, AutostartKnownEntry? known, AutostartBlocker blocker)
+        => new(
+            new AutostartEntry
+            {
+                Id = id,
+                Source = AutostartSource.RunMachine,
+                EntryName = id,
+                Name = id,
+                Location = "loc",
+                FileStatus = file,
+                Switch = new AutostartSwitch(AutostartSwitchKind.StartupApproved, "key", id, AutostartSwitchFormat.Valid, state, null, null),
+            },
+            known,
+            blocker);
 }

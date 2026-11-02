@@ -6,7 +6,10 @@ namespace DSOptimizer.Core.Autostart;
 
 /// <summary>
 /// Konto, którego autostart jest czytany i zmieniany: SID zalogowanego użytkownika (pewny albo nie), SID procesu programu, czy gałęzie
-/// konta (<c>HKU\&lt;SID&gt;</c>, <c>HKU\&lt;SID&gt;_Classes</c>) są załadowane, miejsca autostartu i źródła z potwierdzonym zapisem od zera.
+/// konta (<c>HKU\&lt;SID&gt;</c>, <c>HKU\&lt;SID&gt;_Classes</c>) są załadowane, miejsca autostartu i dowód zapisu od zera: źródła
+/// <c>StartupApproved</c> (<see cref="WriteFromZeroConfirmed"/>) i dwa osobne stany zadania startowego Sklepu – klucz nie istnieje
+/// (<see cref="StartupTaskKeyAbsentEnable"/>) i klucz systemowy ze <c>State</c> 0 (<see cref="StartupTaskState0Enable"/>), oba tylko dla
+/// manifestu <c>Enabled="false"</c> (<see cref="AutostartEvidence"/>).
 /// </summary>
 public sealed record AutostartContext(
     string UserSid,
@@ -15,7 +18,9 @@ public sealed record AutostartContext(
     bool UserHiveLoaded,
     bool ClassesHiveLoaded,
     AutostartLocations Locations,
-    IReadOnlyCollection<AutostartSource> WriteFromZeroConfirmed)
+    IReadOnlyCollection<AutostartSource> WriteFromZeroConfirmed,
+    bool StartupTaskKeyAbsentEnable,
+    bool StartupTaskState0Enable)
 {
     /// <summary>Kontekst zalogowanego konta; gałąź jest załadowana, gdy <see cref="IRegistry.KeyStatus"/> zwraca <see cref="ReadStatus.Found"/>.</summary>
     public static AutostartContext Create(IUserContext user, string processSid, IRegistry registry)
@@ -43,6 +48,8 @@ public sealed record AutostartContext(
             registry.KeyStatus(locations.UserRoot) == ReadStatus.Found,
             registry.KeyStatus(locations.UserClassesRoot) == ReadStatus.Found,
             locations,
-            AutostartEvidence.WriteFromZeroConfirmed);
+            AutostartEvidence.WriteFromZeroConfirmed,
+            AutostartEvidence.StartupTaskKeyAbsentEnable,
+            AutostartEvidence.StartupTaskState0Enable);
     }
 }

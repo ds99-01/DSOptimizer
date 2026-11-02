@@ -96,6 +96,7 @@ How to read the tables:
 | Jasny / Ciemny / Systemowy | Light / Dark / System | Theme options |
 | Język | Language | Already translated (language settings) |
 | Uruchomienie | Startup | Log component name |
+| Autostart | Startup apps | Page (programs started at sign-in), as "Startup apps" in Windows Settings and Task Manager. Not the same text as "Autostart (wszystkich kont)" in the RustDesk warning (the Startup folder, see Catalog) |
 | Seria | Batch | Log component name; see Key decisions |
 
 ## Buttons and commands
@@ -289,6 +290,9 @@ How to read the tables:
 | klucz / podklucz / drzewo kluczy | key / subkey / key tree | Registry |
 | nazwy wartości | value names | Registry; "Error reading the value names of {0}: {1}" |
 | pomiar Windows / nie zmierzono / plik pomiaru Windows | Windows measurement / not measured / Windows measurement file | Startup data Windows writes after sign-in (`StartupInfo`): processor time and disk reads of each startup app; "not measured" as in Task Manager's "Startup impact" column |
+| chroniona / można wyłączyć / bez oceny | protected / can be disabled / not assessed | Verdict of a startup item from the program's list of known items; "protected" items get a lock and no checkbox |
+| bez pliku | file missing | Startup item whose command points to a file that doesn't exist (group and row note) |
+| to konto / wszystkie konta | this account / all accounts | Scope of a startup item: the signed-in account or the whole computer; Store items show "Store" |
 | zmienne konta | account variables | Environment variables of the signed-in account, read from its registry hive (`Environment`, `Volatile Environment`), not from the program's process |
 | punkt ponownej analizy | reparse point | Junction or symbolic link (Windows term) |
 | potok / Job Object | pipe / Job Object | Process plumbing in Windows layer errors; "Job Object" kept as the Windows name |

@@ -63,7 +63,8 @@ public class AutostartScannerTests
     }
 
     private static AutostartContext Context(bool userHive = true, bool classesHive = true)
-        => new(Sid, UserCertain: true, Sid, userHive, classesHive, AutostartLocations.ForUser(Sid), AutostartEvidence.WriteFromZeroConfirmed);
+        => new(Sid, UserCertain: true, Sid, userHive, classesHive, AutostartLocations.ForUser(Sid), AutostartEvidence.WriteFromZeroConfirmed,
+            AutostartEvidence.StartupTaskKeyAbsentEnable, AutostartEvidence.StartupTaskState0Enable);
 
     private AutostartScanner Scanner(IRegistry? registry = null)
         => new(registry ?? _registry, _files, _tasks, _startupInfo, _machine, _log);

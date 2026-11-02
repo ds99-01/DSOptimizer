@@ -272,6 +272,7 @@ public static class TranslationCallScanner
     {
         "src/DSOptimizer.Core/Catalog/CatalogTranslation.cs",
         "src/DSOptimizer.Core/Apps/AppsBloatCatalog.cs",
+        "src/DSOptimizer.Core/Autostart/AutostartKnownCatalog.cs",
         "src/DSOptimizer.Core/Install/AppsInstallCatalog.cs",
         "src/DSOptimizer.Core/Scripts/ScriptWrapper.cs",
         "src/DSOptimizer.Core/Operations/RegistryValueOperation.cs",

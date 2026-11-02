@@ -25,6 +25,8 @@ public class AutostartContextTests
         Assert.True(context.ClassesHiveLoaded);
         Assert.Equal(AutostartLocations.ForUser(Sid), context.Locations);
         Assert.Equal(AutostartEvidence.WriteFromZeroConfirmed, context.WriteFromZeroConfirmed);
+        Assert.Equal(AutostartEvidence.StartupTaskKeyAbsentEnable, context.StartupTaskKeyAbsentEnable);
+        Assert.Equal(AutostartEvidence.StartupTaskState0Enable, context.StartupTaskState0Enable);
     }
 
     [Fact]

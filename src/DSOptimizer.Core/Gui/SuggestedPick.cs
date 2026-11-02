@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Gui;
@@ -26,5 +27,15 @@ public static class SuggestedPick
         => visibleRows
             .Where(row => row.Group == AppGroup.Suggested && row.CanRemove)
             .Select(row => row.App.Id)
+            .ToList();
+
+    /// <summary>
+    /// Sugerowane pozycje autostartu (<see cref="AutostartRow.Suggested"/>: włączone, przełączalne, z bazy „można wyłączyć” albo bez pliku).
+    /// Wywołujący podaje wiersze pasujące do wyszukiwania ze wszystkich grup, także „Bez pliku”; nic nie jest odznaczane.
+    /// </summary>
+    public static IReadOnlyList<string> Autostart(IReadOnlyList<AutostartRow> rows)
+        => rows
+            .Where(row => row.Suggested)
+            .Select(row => row.Id)
             .ToList();
 }

@@ -28,6 +28,82 @@
     {
       "pl": "Nie udało się odczytać aplikacji ze Sklepu: {0}",
       "en": "Couldn't read the Store apps: {0}"
+    },
+    {
+      "pl": "Bez oceny – brak tej pozycji w bazie programu.",
+      "en": "Not assessed – this item isn't in the program's list."
+    },
+    {
+      "pl": "Plik z polecenia nie istnieje, więc ta pozycja niczego nie uruchamia. Wyłączenie niczego nie psuje.",
+      "en": "The file in the command doesn't exist, so this item starts nothing. Disabling it breaks nothing."
+    },
+    {
+      "pl": "Chroniona – DSOptimizer jej nie wyłącza",
+      "en": "Protected – DSOptimizer doesn't disable it"
+    },
+    {
+      "pl": "Ustawienia tego konta są niedostępne – uruchom DSOptimizer na zalogowanym koncie.",
+      "en": "This account's settings aren't available – run DSOptimizer on the signed-in account."
+    },
+    {
+      "pl": "Nie udało się odczytać stanu – DSOptimizer tej pozycji nie zmienia.",
+      "en": "Couldn't read the state – DSOptimizer doesn't change this item."
+    },
+    {
+      "pl": "Nieznany zapis stanu – DSOptimizer tej pozycji nie zmienia.",
+      "en": "Unknown state format – DSOptimizer doesn't change this item."
+    },
+    {
+      "pl": "Stan ustawiony zasadami albo nieznany – DSOptimizer tej pozycji nie zmienia.",
+      "en": "State set by policy or unknown – DSOptimizer doesn't change this item."
+    },
+    {
+      "pl": "Tej pozycji nikt jeszcze nie przełączał – DSOptimizer jej nie zmienia, wyłączysz ją Menedżerem zadań.",
+      "en": "Nobody has switched this item yet – DSOptimizer doesn't change it, but you can disable it in Task Manager."
+    },
+    {
+      "pl": "Wpis bez nazwy – DSOptimizer go nie zmienia.",
+      "en": "Entry without a name – DSOptimizer doesn't change it."
+    },
+    {
+      "pl": "to konto",
+      "en": "this account"
+    },
+    {
+      "pl": "wszystkie konta",
+      "en": "all accounts"
+    },
+    {
+      "pl": "autostart-known: {0}, pole {1}: {2}",
+      "en": "autostart-known: {0}, field {1}: {2}"
+    },
+    {
+      "pl": "sama nazwa pliku, bez folderu",
+      "en": "file name only, without a folder"
+    },
+    {
+      "pl": "wzorzec folderu: jedna ze zmiennych {0}, po niej \\, na końcu \\ albo *",
+      "en": "folder pattern: one of the variables {0}, followed by \\, ending with \\ or *"
+    },
+    {
+      "pl": "wymagana niepusta tablica niepustych tekstów",
+      "en": "a non-empty array of non-empty texts is required"
+    },
+    {
+      "pl": "źródło to bezwzględny adres https albo dokument docs/zrodla/<nazwa>.md",
+      "en": "a source is an absolute https URL or a docs/zrodla/<name>.md document"
+    },
+    {
+      "pl": "werdykt can-disable wymaga confirmed: true",
+      "en": "the can-disable verdict requires confirmed: true"
+    },
+    {
+      "pl": "werdykt can-disable wymaga dokumentu pomiaru z docs/zrodla/",
+      "en": "the can-disable verdict requires a measurement document from docs/zrodla/"
+    },
+    {
+      "pl": "werdykt can-disable wymaga adresu https ze źródłem skutku",
+      "en": "the can-disable verdict requires an https URL with the source of the effect"
     }
   ]
 }

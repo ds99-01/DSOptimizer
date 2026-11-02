@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DSOptimizer.Core.Localization;
+using DSOptimizer.Core.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -44,7 +45,7 @@ public sealed record AppMatch(string? PackageName, string? DisplayName, string? 
 
         if (app.Kind == AppKind.Store)
         {
-            return PackageName is not null && app.Appx is not null && Wildcard(PackageName, app.Appx.PackageName);
+            return PackageName is not null && app.Appx is not null && WildcardText.Matches(PackageName, app.Appx.PackageName);
         }
 
         if (PackageName is not null || (DisplayName is null && Publisher is null))
@@ -52,44 +53,8 @@ public sealed record AppMatch(string? PackageName, string? DisplayName, string? 
             return false;
         }
 
-        return (DisplayName is null || Wildcard(DisplayName, app.Name))
-            && (Publisher is null || (app.Publisher is not null && Wildcard(Publisher, app.Publisher)));
-    }
-
-    private static bool Wildcard(string pattern, string text)
-    {
-        // Dopasowanie z gwiazdkami: kolejne fragmenty wzorca muszą wystąpić w tekście w tej kolejności.
-        var parts = pattern.Split('*');
-        var position = 0;
-        for (var i = 0; i < parts.Length; i++)
-        {
-            var part = parts[i];
-            if (i == 0)
-            {
-                if (!text.StartsWith(part, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                position = part.Length;
-                continue;
-            }
-
-            if (i == parts.Length - 1)
-            {
-                return text.Length - position >= part.Length && text.EndsWith(part, StringComparison.OrdinalIgnoreCase);
-            }
-
-            var found = text.IndexOf(part, position, StringComparison.OrdinalIgnoreCase);
-            if (found < 0)
-            {
-                return false;
-            }
-
-            position = found + part.Length;
-        }
-
-        return position == text.Length;
+        return (DisplayName is null || WildcardText.Matches(DisplayName, app.Name))
+            && (Publisher is null || (app.Publisher is not null && WildcardText.Matches(Publisher, app.Publisher)));
     }
 }
 
