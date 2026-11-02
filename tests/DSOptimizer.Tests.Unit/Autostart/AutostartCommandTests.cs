@@ -69,16 +69,41 @@ public class AutostartCommandTests
         var target = AutostartCommand.Parse(@"C:\Tools\app", Environment, Probe(@"C:\Tools\app.exe"));
 
         Assert.Equal(new CommandTarget(@"C:\Tools\app.exe", FileProbe.Exists, Definite: true, IsInterpreter: false, null), target);
-        Assert.Equal(new[] { @"C:\Tools\app", @"C:\Tools\app.exe" }, _probed);
+        Assert.Equal(new[] { @"C:\Tools\app.exe" }, _probed);
     }
 
     [Fact]
-    public void UnquotedSingleToken_NoExtension_FileAsGivenExists_Wins()
+    public void UnquotedSingleToken_NoExtension_BothExist_ExeWins()
     {
         var target = AutostartCommand.Parse(@"C:\Tools\app", Environment, Probe(@"C:\Tools\app", @"C:\Tools\app.exe"));
 
-        Assert.Equal(new CommandTarget(@"C:\Tools\app", FileProbe.Exists, Definite: true, IsInterpreter: false, null), target);
-        Assert.Single(_probed);
+        Assert.Equal(new CommandTarget(@"C:\Tools\app.exe", FileProbe.Exists, Definite: true, IsInterpreter: false, null), target);
+        Assert.DoesNotContain(@"C:\Tools\app", _probed);
+    }
+
+    [Theory]
+    [InlineData(@"C:\Tools\app")]
+    [InlineData("\"C:\\Tools\\app\" --min")]
+    public void NoExtension_OnlyFileWithoutExeExists_NotExists_NotDefinite(string command)
+    {
+        var target = AutostartCommand.Parse(command, Environment, Probe(@"C:\Tools\app"));
+
+        Assert.Equal(FileProbe.Unknown, target.Probe);
+        Assert.False(target.Definite);
+        Assert.Equal(@"C:\Tools\app", target.FilePath);
+    }
+
+    [Theory]
+    [InlineData(@"C:\Tools\app.v2")]
+    [InlineData("\"C:\\Tools\\app.v2\" --min")]
+    public void DottedName_TreatedAsExtension_MissingWithoutExe(string command)
+    {
+        var target = AutostartCommand.Parse(command, Environment, Probe());
+
+        Assert.Equal(@"C:\Tools\app.v2", target.FilePath);
+        Assert.Equal(FileProbe.Missing, target.Probe);
+        Assert.True(target.Definite);
+        Assert.Equal(new[] { @"C:\Tools\app.v2" }, _probed);
     }
 
     [Fact]
@@ -363,6 +388,25 @@ public class AutostartCommandTests
         var target = AutostartCommand.FromShortcut(@"%SystemRoot%\System32\notepad.exe", "  a.txt ", advertised: false, Environment, Probe(@"C:\Windows\System32\notepad.exe"));
 
         Assert.Equal(new CommandTarget(@"C:\Windows\System32\notepad.exe", FileProbe.Exists, Definite: true, IsInterpreter: false, "a.txt"), target);
+    }
+
+    [Fact]
+    public void Shortcut_NoExtension_Absent_Missing_NoExeAppended()
+    {
+        var target = AutostartCommand.FromShortcut(@"C:\Tools\app", null, advertised: false, Environment, Probe(@"C:\Tools\app.exe"));
+
+        Assert.Equal(new CommandTarget(@"C:\Tools\app", FileProbe.Missing, Definite: true, IsInterpreter: false, null), target);
+        Assert.Equal(new[] { @"C:\Tools\app" }, _probed);
+    }
+
+    [Fact]
+    public void Shortcut_DirectoryTarget_NotExists()
+    {
+        // Prawdziwe sprawdzenie zwraca dla katalogu Unknown (nigdy Exists), jak AutostartFiles.Probe.
+        var target = AutostartCommand.FromShortcut(@"C:\Tools\folder", null, advertised: false, Environment, _ => FileProbe.Unknown);
+
+        Assert.NotEqual(FileProbe.Exists, target.Probe);
+        Assert.NotEqual(FileProbe.Missing, target.Probe);
     }
 
     [Fact]

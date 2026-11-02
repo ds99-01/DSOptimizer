@@ -406,6 +406,39 @@ public class AutostartScannerTests
     }
 
     [Fact]
+    public void RunWithoutExtension_OnlyFileWithoutExe_NotDetermined_NotSuggested()
+    {
+        _registry.Set(RunUserKey, "Tool", RegValue.FromString(@"C:\Tools\app"));
+        _files.Existing.Add(@"C:\Tools\app");
+
+        var reading = Read();
+        var row = Assert.Single(
+            AutostartClassifier.Classify(reading, AutostartKnownCatalog.Load(AutostartKnownCatalogTests.Wrap()), AutostartClassifierTests.Context()),
+            r => r.Entry.Id == "run:user:Tool");
+
+        Assert.Equal(AutostartFileStatus.NotDetermined, row.Entry.FileStatus);
+        Assert.Null(row.Entry.FilePath);
+        Assert.False(row.MissingFile);
+        Assert.False(row.Suggested);
+    }
+
+    [Fact]
+    public void RunWithExtension_Absent_Missing_Suggested()
+    {
+        _registry.Set(RunUserKey, "Old", RegValue.FromString("\"C:\\Tools\\old.exe\" --min"));
+
+        var reading = Read();
+        var row = Assert.Single(
+            AutostartClassifier.Classify(reading, AutostartKnownCatalog.Load(AutostartKnownCatalogTests.Wrap()), AutostartClassifierTests.Context()),
+            r => r.Entry.Id == "run:user:Old");
+
+        Assert.Equal(AutostartFileStatus.Missing, row.Entry.FileStatus);
+        Assert.Equal(@"C:\Tools\old.exe", row.Entry.FilePath);
+        Assert.Equal(AutostartGroup.MissingFile, row.Group);
+        Assert.True(row.Suggested);
+    }
+
+    [Fact]
     public void UnquotedNoCandidate_NotDetermined()
     {
         _registry.Set(RunMachineKey, "SunJavaUpdateSched", RegValue.FromString(@"C:\Program Files (x86)\Common Files\Java\Java Update\jusched.exe"));

@@ -29,9 +29,9 @@ public static class AutostartCommand
     public static IReadOnlyCollection<string> Interpreters => InterpreterNames;
 
     /// <summary>
-    /// Plik polecenia Run. W cudzysłowie – do drugiego cudzysłowu. Bez cudzysłowu i bez białych znaków – całość. Taki plik bez rozszerzenia:
-    /// najpierw jak podany, potem z dopisanym <c>.exe</c> (jak <c>CreateProcess</c>); wygrywa pierwszy istniejący, a gdy nie ma żadnego, plik
-    /// jest nieustalony – nie wiadomo, co uruchomiłby Windows. Bez cudzysłowu ze spacjami –
+    /// Plik polecenia Run. W cudzysłowie – do drugiego cudzysłowu. Bez cudzysłowu i bez białych znaków – całość. Taki plik bez rozszerzenia
+    /// sprawdzany tylko z dopisanym <c>.exe</c> (jak <c>CreateProcess</c>), a gdy go nie ma, plik jest nieustalony – nie wiadomo, co uruchomiłby
+    /// Windows. Bez cudzysłowu ze spacjami –
     /// najpierw sama nazwa interpretera w pierwszym tokenie, potem prefiksy kończące się przed kolejnymi spacjami (od najkrótszego) i całość,
     /// kandydat bez rozszerzenia tylko z dopisanym <c>.exe</c> (jak <c>CreateProcess</c>, więc prefiks w rodzaju <c>C:\Program Files</c>
     /// nigdy nie trafia w katalog); wygrywa pierwszy istniejący, a brak kandydata = plik nieustalony. <paramref name="probe"/> zwraca
@@ -146,8 +146,8 @@ public static class AutostartCommand
     }
 
     /// <summary>
-    /// <paramref name="appendsExe"/> = polecenie Run: plik bez rozszerzenia, którego nie ma, sprawdzany też z <c>.exe</c>; gdy i tego nie ma,
-    /// plik jest nieustalony, nigdy <see cref="FileProbe.Missing"/>.
+    /// <paramref name="appendsExe"/> = polecenie Run: plik bez rozszerzenia sprawdzany tylko z dopisanym <c>.exe</c> (jak <c>CreateProcess</c>);
+    /// gdy go nie ma, plik jest nieustalony, nigdy <see cref="FileProbe.Missing"/>.
     /// </summary>
     private static CommandTarget ResolvePath(string file, string? arguments, UserEnvironment environment, Func<string, FileProbe> probe, bool appendsExe = false)
     {
@@ -158,10 +158,9 @@ public static class AutostartCommand
             return new CommandTarget(expanded, FileProbe.Unknown, Definite: false, interpreter, arguments);
         }
 
-        var found = probe(expanded);
-        if (!appendsExe || found == FileProbe.Exists || HasExtension(expanded))
+        if (!appendsExe || HasExtension(expanded))
         {
-            return new CommandTarget(expanded, found, Definite: true, interpreter, arguments);
+            return new CommandTarget(expanded, probe(expanded), Definite: true, interpreter, arguments);
         }
 
         return TryExistingFile(expanded, probe, out var exe)
