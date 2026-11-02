@@ -580,6 +580,34 @@
     {
       "pl": "Ścieżka kopii prowadzi przez junction albo dowiązanie: {0}",
       "en": "The copy's path goes through a junction or link: {0}"
+    },
+    {
+      "pl": "Brak uprawnień, by wylistować folder {0}: {1}",
+      "en": "No permission to list the folder {0}: {1}"
+    },
+    {
+      "pl": "Nie można wylistować folderu {0}: {1}",
+      "en": "Can't list the folder {0}: {1}"
+    },
+    {
+      "pl": "Nie można odczytać skrótu {0}: {1}",
+      "en": "Can't read the shortcut {0}: {1}"
+    },
+    {
+      "pl": "Skrypt odczytu zadań startowych zakończył się kodem {0}.",
+      "en": "The startup task read script ended with code {0}."
+    },
+    {
+      "pl": "Skrypt odczytu zadań startowych nie zwrócił wyniku.",
+      "en": "The startup task read script returned no result."
+    },
+    {
+      "pl": "Pominięto pakiet {0} przy odczycie zadań startowych: {1}",
+      "en": "Skipped package {0} while reading startup tasks: {1}"
+    },
+    {
+      "pl": "Plik pomiaru Windows {0} jest większy niż {1} B – pominięto.",
+      "en": "Windows measurement file {0} is larger than {1} B – skipped."
     }
   ]
 }

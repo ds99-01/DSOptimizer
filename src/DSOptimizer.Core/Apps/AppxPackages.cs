@@ -142,7 +142,8 @@ public static class AppxPackages
         return "@{" + packageFullName + "?" + uri + "}";
     }
 
-    private static List<JObject> ReadItems(string json)
+    /// <summary>Obiekty wyniku skryptu AppX (tablica albo jeden obiekt, także skryptu zadań startowych); zły JSON = <see cref="FormatException"/>.</summary>
+    internal static List<JObject> ReadItems(string json)
     {
         JToken root;
         try
@@ -179,12 +180,14 @@ public static class AppxPackages
         throw new FormatException(L.T("Wynik odczytu AppX nie jest tablicą ani obiektem."));
     }
 
-    private static string RequiredText(JObject item, string name)
+    /// <summary>Niepusty tekst pola; brak = <see cref="FormatException"/>.</summary>
+    internal static string RequiredText(JObject item, string name)
         => OptionalText(item, name) is { Length: > 0 } value
             ? value
             : throw new FormatException(L.F("W wyniku odczytu AppX brakuje pola {0}.", name));
 
-    private static string? OptionalText(JObject item, string name)
+    /// <summary>Niepusty tekst pola albo null (brak pola, inny typ, same białe znaki).</summary>
+    internal static string? OptionalText(JObject item, string name)
         => item.TryGetValue(name, StringComparison.Ordinal, out var token)
             && token.Type == JTokenType.String
             && token.Value<string>() is { } text

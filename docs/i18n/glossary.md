@@ -294,6 +294,8 @@ How to read the tables:
 | bez pliku | file missing | Startup item whose command points to a file that doesn't exist (group and row note) |
 | to konto / wszystkie konta | this account / all accounts | Scope of a startup item: the signed-in account or the whole computer; Store items show "Store" |
 | zmienne konta | account variables | Environment variables of the signed-in account, read from its registry hive (`Environment`, `Volatile Environment`), not from the program's process |
+| zadanie startowe | startup task | Startup entry of a Store app (`windows.startupTask` in the package manifest); "Skipped package {0} while reading startup tasks" |
+| skrót (plik .lnk) | shortcut | A `.lnk` file in a Startup folder; not "skrót SHA256" (= hash) |
 | punkt ponownej analizy | reparse point | Junction or symbolic link (Windows term) |
 | potok / Job Object | pipe / Job Object | Process plumbing in Windows layer errors; "Job Object" kept as the Windows name |
 | Ponowne uruchomienie programu: {0} | Restarting the program: {0} | Startup log line before the program restarts itself |
