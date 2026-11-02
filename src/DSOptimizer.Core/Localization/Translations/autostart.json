@@ -460,6 +460,70 @@
     {
       "pl": "Nie udało się w pełni przywrócić stanu sprzed zmiany: {0}",
       "en": "Couldn't fully restore the state from before the change: {0}"
+    },
+    {
+      "pl": "Szukaj w autostarcie",
+      "en": "Search startup apps"
+    },
+    {
+      "pl": "Grupy autostartu",
+      "en": "Startup app groups"
+    },
+    {
+      "pl": "Brak pozycji w tej grupie.",
+      "en": "No items in this group."
+    },
+    {
+      "pl": "Żadna pozycja w tej grupie nie pasuje do wyszukiwania.",
+      "en": "No item in this group matches the search."
+    },
+    {
+      "pl": "Kopiuj nazwę",
+      "en": "Copy name"
+    },
+    {
+      "pl": "Skopiowano nazwę do schowka.",
+      "en": "Name copied to the clipboard."
+    },
+    {
+      "pl": "Nie udało się skopiować nazwy do schowka: {0}",
+      "en": "Couldn't copy the name to the clipboard: {0}"
+    },
+    {
+      "pl": "Pomiar Windows",
+      "en": "Windows measurement"
+    },
+    {
+      "pl": "Odczyt z dysku",
+      "en": "Disk read"
+    },
+    {
+      "pl": "Wpływ",
+      "en": "Impact"
+    },
+    {
+      "pl": "Pomiar",
+      "en": "Measured"
+    },
+    {
+      "pl": "Ocena",
+      "en": "Assessment"
+    },
+    {
+      "pl": "Miejsce",
+      "en": "Location"
+    },
+    {
+      "pl": "Plik: {0}",
+      "en": "File: {0}"
+    },
+    {
+      "pl": "Plik: nie ustalono",
+      "en": "File: not determined"
+    },
+    {
+      "pl": "Wbudowana baza autostartu jest nieprawidłowa:{0}{1}",
+      "en": "The built-in startup apps list is invalid:{0}{1}"
     }
   ]
 }

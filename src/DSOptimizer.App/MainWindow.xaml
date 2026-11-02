@@ -178,7 +178,43 @@
       </DataTemplate.Triggers>
     </DataTemplate>
 
-    <!-- Instalacja (tuż pod Aplikacjami): jak kategoria, ikona I2, licznik = pozycje listy (pusty przed pierwszym odczytem) -->
+    <!-- Autostart (tuż pod Aplikacjami): jak kategoria, ikona zasilania, licznik = wszystkie pozycje (pusty przed pierwszym odczytem) -->
+    <DataTemplate DataType="{x:Type vm:AutostartViewModel}">
+      <Grid x:Name="Root" Background="Transparent" ToolTipService.IsEnabled="False">
+        <Grid.ToolTip>
+          <ToolTip Style="{StaticResource BrandToolTip}" Content="{Binding NavToolTip}" />
+        </Grid.ToolTip>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <views:BrandIcon x:Name="Icon" Margin="16,0,12,0" Size="20" Kind="{Binding IconKind}" Foreground="{StaticResource SideForegroundBrush}"
+                         VerticalAlignment="Center" />
+        <TextBlock x:Name="PageName" Grid.Column="1" Margin="0,0,8,0" VerticalAlignment="Center" FontSize="14" FontWeight="Normal"
+                   Foreground="{StaticResource SideForegroundBrush}" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+        <TextBlock x:Name="Counter" Grid.Column="2" Margin="0,0,16,0" VerticalAlignment="Center" FontSize="12.5" FontWeight="Normal"
+                   Foreground="{StaticResource SideCountBrush}" Text="{Binding CounterText}"
+                   AutomationProperties.Name="{Binding CounterDescription}">
+          <TextBlock.ToolTip>
+            <ToolTip Style="{StaticResource BrandToolTip}" Content="{Binding CounterDescription}" />
+          </TextBlock.ToolTip>
+        </TextBlock>
+      </Grid>
+      <DataTemplate.Triggers>
+        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+          <Setter TargetName="PageName" Property="FontWeight" Value="SemiBold" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding IsNavCompact, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+          <Setter TargetName="Icon" Property="Margin" Value="18,0,18,0" />
+          <Setter TargetName="PageName" Property="Visibility" Value="Collapsed" />
+          <Setter TargetName="Counter" Property="Visibility" Value="Collapsed" />
+          <Setter TargetName="Root" Property="ToolTipService.IsEnabled" Value="True" />
+        </DataTrigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Instalacja (tuż pod Autostartem): jak kategoria, ikona I2, licznik = pozycje listy (pusty przed pierwszym odczytem) -->
     <DataTemplate DataType="{x:Type vm:InstallViewModel}">
       <Grid x:Name="Root" Background="Transparent" ToolTipService.IsEnabled="False">
         <Grid.ToolTip>
@@ -554,6 +590,12 @@
     <Grid Grid.Row="2" Grid.Column="1" Margin="22,16,16,8"
           Visibility="{Binding IsAppsSelected, Converter={StaticResource BoolToVisibility}}">
       <views:AppsView x:Name="AppsPage" DataContext="{Binding Apps}" />
+    </Grid>
+
+    <!-- Treść strony Autostart: lista z przełącznikiem grup, szczegóły i własny pasek „Wyłącz (N)”/„Włącz (M)” (jak Aplikacje) -->
+    <Grid Grid.Row="2" Grid.Column="1" Margin="22,16,16,8"
+          Visibility="{Binding IsAutostartSelected, Converter={StaticResource BoolToVisibility}}">
+      <views:AutostartView x:Name="AutostartPage" DataContext="{Binding Autostart}" />
     </Grid>
 
     <!-- Treść strony Instalacja: kategorie z licznikami, wyszukiwanie w winget, wiersze i własny pasek „Zainstaluj (N)” (jak Aplikacje) -->

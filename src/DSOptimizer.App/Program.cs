@@ -13,6 +13,7 @@ using DSOptimizer.Catalog;
 using DSOptimizer.Core;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Cli;
 using DSOptimizer.Core.Gui;
@@ -24,6 +25,7 @@ using DSOptimizer.Core.Settings;
 using DSOptimizer.Core.Updates;
 using DSOptimizer.Windows;
 using DSOptimizer.Windows.Apps;
+using DSOptimizer.Windows.Autostart;
 using DSOptimizer.Windows.Hardware;
 using DSOptimizer.Windows.Prep;
 
@@ -136,6 +138,17 @@ internal static class Program
             return (int)CliExitCode.CatalogError;
         }
 
+        AutostartSession autostart;
+        try
+        {
+            autostart = CreateAutostart(composition, session);
+        }
+        catch (AutostartCatalogException ex)
+        {
+            MessageBox.Show(AutostartText.CatalogInvalid(ex.Message), "DSOptimizer", MessageBoxButton.OK, MessageBoxImage.Error);
+            return (int)CliExitCode.CatalogError;
+        }
+
         InstallSession install;
         try
         {
@@ -187,6 +200,7 @@ internal static class Program
             () => MachineSummary.ResolveUserName(user),
             accountNames,
             apps,
+            autostart,
             install,
             specification,
             prep,
@@ -253,6 +267,27 @@ internal static class Program
             processSid,
             File.Exists,
             Environment.SystemDirectory,
+            services.Clock);
+    }
+
+    /// <summary>
+    /// Strona „Autostart”: odczyt przez <see cref="AutostartComposition.CreateReader(AppComposition)"/> (tylko odczyt), silnik zmian na
+    /// rejestrze i journalu programu, baza znanych pozycji z zasobu Catalog (uszkodzona = <see cref="AutostartCatalogException"/>). Konto
+    /// zalogowanego użytkownika, SID procesu do reguły „inne konto”. Konstruktory niczego nie czytają ani nie uruchamiają.
+    /// </summary>
+    private static AutostartSession CreateAutostart(AppComposition composition, GuiSession session)
+    {
+        var services = composition.Services;
+        var processSid = WindowsIdentity.GetCurrent().User?.Value ?? services.User.Sid;
+        return new AutostartSession(
+            session,
+            AutostartComposition.CreateReader(composition),
+            new AutostartEngine(services.Registry, services.Journal, composition.Log, services.Clock),
+            AutostartComposition.LoadCatalog(),
+            services.User,
+            processSid,
+            services.Registry,
+            composition.Log,
             services.Clock);
     }
 

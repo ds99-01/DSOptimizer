@@ -208,6 +208,75 @@ public class AutostartTextTests
     }
 
     [Fact]
+    public void PanelTexts_Verbatim()
+    {
+        Assert.Equal("Pomiar Windows", AutostartText.MeasurementHeader);
+        Assert.Equal("Procesor", AutostartText.CpuLabel);
+        Assert.Equal("Odczyt z dysku", AutostartText.DiskLabel);
+        Assert.Equal("Wpływ", AutostartText.ImpactLabel);
+        Assert.Equal("Pomiar", AutostartText.MeasuredAtLabel);
+        Assert.Equal("Ocena", AutostartText.VerdictLabel);
+        Assert.Equal("Miejsce", AutostartText.LocationLabel);
+        Assert.Equal("Kopiuj nazwę", AutostartText.CopyNameButton);
+        Assert.Equal("Szukaj w autostarcie", AutostartText.SearchName);
+        Assert.Equal("Grupy autostartu", AutostartText.GroupsName);
+        Assert.Equal("Niezaznaczona – kliknij dwukrotnie wiersz, żeby dodać", AutostartText.NotSelectedLine);
+        Assert.Equal("nieznany", AutostartText.UnknownPublisher);
+        Assert.Equal("nieznane", AutostartText.UnknownAccount);
+        Assert.Equal("Brak pozycji w tej grupie.", AutostartText.EmptyGroup);
+        Assert.Equal("Żadna pozycja w tej grupie nie pasuje do wyszukiwania.", AutostartText.EmptySearch);
+        Assert.Equal("Polecenie: a.exe /x", AutostartText.CommandLine("a.exe /x"));
+        Assert.Equal(@"Plik: C:\a.exe", AutostartText.FileLine(@"C:\a.exe"));
+        Assert.Equal("Plik: nie ustalono", AutostartText.FileLine(null));
+        Assert.Equal("Skopiowano nazwę do schowka.", AutostartText.NameCopied);
+        Assert.Equal("Nie udało się skopiować nazwy do schowka: zajęty", AutostartText.NameCopyFailed("zajęty"));
+        Assert.Equal("1 pozycja", AutostartText.CounterDescription(1));
+        Assert.Equal("16 pozycji", AutostartText.CounterDescription(16));
+        Assert.Equal("Wbudowana baza autostartu jest nieprawidłowa:" + Environment.NewLine + "x", AutostartText.CatalogInvalid("x"));
+    }
+
+    [Fact]
+    public void PanelTexts_Translated()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("Windows measurement", AutostartText.MeasurementHeader);
+            Assert.Equal("Processor", AutostartText.CpuLabel);
+            Assert.Equal("Disk read", AutostartText.DiskLabel);
+            Assert.Equal("Impact", AutostartText.ImpactLabel);
+            Assert.Equal("Measured", AutostartText.MeasuredAtLabel);
+            Assert.Equal("Assessment", AutostartText.VerdictLabel);
+            Assert.Equal("Location", AutostartText.LocationLabel);
+            Assert.Equal("Copy name", AutostartText.CopyNameButton);
+            Assert.Equal("Search startup apps", AutostartText.SearchName);
+            Assert.Equal("Startup app groups", AutostartText.GroupsName);
+            Assert.Equal("No items in this group.", AutostartText.EmptyGroup);
+            Assert.Equal("No item in this group matches the search.", AutostartText.EmptySearch);
+            Assert.Equal("File: not determined", AutostartText.FileLine(null));
+            Assert.Equal(@"File: C:\a.exe", AutostartText.FileLine(@"C:\a.exe"));
+            Assert.Equal("Name copied to the clipboard.", AutostartText.NameCopied);
+            Assert.Equal("Couldn't copy the name to the clipboard: busy", AutostartText.NameCopyFailed("busy"));
+            Assert.Equal("16 items", AutostartText.CounterDescription(16));
+            Assert.Equal("The built-in startup apps list is invalid:" + Environment.NewLine + "x", AutostartText.CatalogInvalid("x"));
+        }
+    }
+
+    [Fact]
+    public void MeasuredAt_DateAndTime_LastStartSuffix()
+    {
+        var local = new DateTime(2026, 11, 2, 8, 14, 0, DateTimeKind.Unspecified);
+        var at = new DateTimeOffset(local, TimeZoneInfo.Local.GetUtcOffset(local));
+
+        Assert.Equal("02.11.2026, 08:14", AutostartText.MeasuredAt(new StartupMeasurement(1, 1, at, false)));
+        Assert.Equal("02.11.2026, 08:14 (ostatni start)", AutostartText.MeasuredAt(new StartupMeasurement(1, 1, at, true)));
+        Assert.Throws<ArgumentNullException>(() => AutostartText.MeasuredAt(null!));
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("02/11/2026, 08:14 (last start)", AutostartText.MeasuredAt(new StartupMeasurement(1, 1, at, true)));
+        }
+    }
+
+    [Fact]
     public void State_FourTexts()
     {
         Assert.Equal("Włączona", AutostartText.State(Row()));

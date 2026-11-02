@@ -307,6 +307,10 @@ How to read the tables:
 | Wyłączono N z M. / Włączono N z M. / Bez zmian | Disabled N of M. / Enabled N of M. / No change | Startup apps series result: counts only items whose state changed; "Bez zmian" = item was already in the target state |
 | Działa od: Następnego logowania | Takes effect: At the next sign-in | Startup apps series window fact; see "od następnego logowania" |
 | {0} (zalogowane konto) / Wszystkie konta na tym komputerze | {0} (signed-in account) / All accounts on this PC | Account of a startup item in the details |
+| Procesor / Odczyt z dysku / Wpływ / Pomiar / Ocena / Miejsce | Processor / Disk read / Impact / Measured / Assessment / Location | Startup apps detail labels; "Ocena" = the verdict from the program's list, "Miejsce" = registry key, Startup folder or Store package |
+| Polecenie: {0} / Plik: {0} / Plik: nie ustalono | Command: {0} / File: {0} / File: not determined | Startup apps technical details; "not determined" = the program couldn't work out the file (never "missing") |
+| Szukaj w autostarcie / Grupy autostartu | Search startup apps / Startup app groups | Screen reader names of the search box and the group switch on the Startup apps page |
+| Wbudowana baza autostartu jest nieprawidłowa | The built-in startup apps list is invalid | Startup message when the built-in list of known startup items is damaged |
 | punkt ponownej analizy | reparse point | Junction or symbolic link (Windows term) |
 | potok / Job Object | pipe / Job Object | Process plumbing in Windows layer errors; "Job Object" kept as the Windows name |
 | Ponowne uruchomienie programu: {0} | Restarting the program: {0} | Startup log line before the program restarts itself |

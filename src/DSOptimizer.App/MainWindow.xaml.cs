@@ -313,6 +313,13 @@ public partial class MainWindow
             return;
         }
 
+        // Strona „Autostart”: własna wyszukiwarka (nazwa, wydawca, polecenie).
+        if (_viewModel.IsAutostartSelected)
+        {
+            AutostartPage.FocusSearch();
+            return;
+        }
+
         // Strona „Instalacja”: pole filtra listy (Enter albo „Szukaj też w winget” = także winget).
         if (_viewModel.IsInstallSelected)
         {

@@ -8,6 +8,7 @@ using DSOptimizer.App.ViewModels;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Hardware;
@@ -71,7 +72,62 @@ public class MainViewModelTests
         });
     }
 
-    internal static MainViewModel Create(TempDirectory temp)
+    [Fact]
+    public void NavItems_AutostartBetweenAppsAndInstall()
+    {
+        RunOnSta(() =>
+        {
+            using var temp = new TempDirectory();
+            var vm = Create(temp);
+
+            var apps = vm.NavItems.ToList().IndexOf(vm.Apps);
+            Assert.Same(vm.Autostart, vm.NavItems[apps + 1]);
+            Assert.Same(vm.Install, vm.NavItems[apps + 2]);
+            Assert.Same(vm.History, vm.NavItems[vm.NavItems.Count - 1]);
+            Assert.False(vm.IsAutostartSelected);
+        });
+    }
+
+    [Fact]
+    public void EnteringAutostart_Refreshes()
+    {
+        RunOnSta(() =>
+        {
+            using var temp = new TempDirectory();
+            var reader = new FakeAutostartReader();
+            var vm = Create(temp, reader);
+            Assert.Empty(reader.Contexts);
+
+            vm.SelectedPage = vm.Autostart;
+
+            Assert.True(vm.IsAutostartSelected);
+            Assert.True(SpinWait.SpinUntil(() => reader.Contexts.Count == 1 && !vm.Autostart.IsLoading, TimeSpan.FromSeconds(30)));
+        });
+    }
+
+    [Fact]
+    public void F5_RefreshesAutostart()
+    {
+        RunOnSta(() =>
+        {
+            using var temp = new TempDirectory();
+            var reader = new FakeAutostartReader();
+            var vm = Create(temp, reader);
+            vm.SelectedPage = vm.Autostart;
+            Assert.True(SpinWait.SpinUntil(() => reader.Contexts.Count == 1 && !vm.Autostart.IsLoading, TimeSpan.FromSeconds(30)));
+
+            Assert.True(vm.RefreshCurrentPageCommand.CanExecute(null));
+            vm.RefreshCurrentPageCommand.Execute(null);
+
+            Assert.True(SpinWait.SpinUntil(() => reader.Contexts.Count == 2 && !vm.Autostart.IsLoading, TimeSpan.FromSeconds(30)));
+        });
+    }
+
+    /// <summary>
+    /// Autostart na atrapie czytnika (bez wpisów, chyba że test poda własny): prawdziwy autostart hosta nie jest czytany, a rejestr Windows
+    /// służy sesji tylko do sprawdzenia gałęzi konta (<see cref="IRegistry.KeyStatus"/>). Bez wierszy silnik nie ma czego zapisać.
+    /// </summary>
+    internal static MainViewModel Create(TempDirectory temp, FakeAutostartReader? autostartReader = null)
     {
         var composition = AppComposition.Create(temp.AppRoot, null);
         var services = composition.Services;
@@ -105,6 +161,16 @@ public class MainViewModelTests
             sid,
             accountNames,
             services.Clock);
+        var autostart = new AutostartSession(
+            session,
+            autostartReader ?? new FakeAutostartReader(),
+            new AutostartEngine(services.Registry, services.Journal, log, services.Clock),
+            AutostartKnownCatalog.Load("{ \"entries\": [] }"),
+            services.User,
+            sid,
+            services.Registry,
+            log,
+            services.Clock);
         var shell = new ShellActions(
             new ShellFileRevealer(new WindowsExplorerProcessQuery(), temp.AppRoot.FullPath),
             new ShellUrlOpener(new WindowsExplorerProcessQuery()),
@@ -134,6 +200,7 @@ public class MainViewModelTests
             null,
             accountNames,
             apps,
+            autostart,
             install,
             specification,
             prep,

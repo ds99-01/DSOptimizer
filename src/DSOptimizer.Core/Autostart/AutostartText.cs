@@ -323,6 +323,69 @@ public static class AutostartText
 
     public static string EnableButton(int count) => L.F("Włącz ({0})", count);
 
+    /// <summary>Linia zaznaczenia w panelu, gdy wiersz można zaznaczyć, a nie jest zaznaczony (ten sam tekst co w Aplikacjach).</summary>
+    public static string NotSelectedLine => L.T("Niezaznaczona – kliknij dwukrotnie wiersz, żeby dodać");
+
+    /// <summary>Opis licznika w menu (podpowiedź, czytnik ekranu): „16 pozycji”.</summary>
+    public static string CounterDescription(int count) => L.P("{0} pozycja", "{0} pozycje", "{0} pozycji", count);
+
+    /// <summary>Nazwa wyszukiwarki strony dla czytnika ekranu.</summary>
+    public static string SearchName => L.T("Szukaj w autostarcie");
+
+    /// <summary>Nazwa przełącznika grup dla czytnika ekranu.</summary>
+    public static string GroupsName => L.T("Grupy autostartu");
+
+    public static string EmptyGroup => L.T("Brak pozycji w tej grupie.");
+
+    public static string EmptySearch => L.T("Żadna pozycja w tej grupie nie pasuje do wyszukiwania.");
+
+    // --- Panel szczegółów ---
+
+    public static string CopyNameButton => L.T("Kopiuj nazwę");
+
+    public static string NameCopied => L.T("Skopiowano nazwę do schowka.");
+
+    public static string NameCopyFailed(string error) => L.F("Nie udało się skopiować nazwy do schowka: {0}", error);
+
+    public static string MeasurementHeader => L.T("Pomiar Windows");
+
+    public static string CpuLabel => L.T("Procesor");
+
+    public static string DiskLabel => L.T("Odczyt z dysku");
+
+    public static string ImpactLabel => L.T("Wpływ");
+
+    public static string MeasuredAtLabel => L.T("Pomiar");
+
+    public static string VerdictLabel => L.T("Ocena");
+
+    public static string LocationLabel => L.T("Miejsce");
+
+    public static string UnknownPublisher => L.T("nieznany");
+
+    public static string UnknownAccount => L.T("nieznane");
+
+    /// <summary>Data i godzina pomiaru w czasie lokalnym („02.11.2026, 08:14”), przy pozycji wyłączonej z dopiskiem „ (ostatni start)”.</summary>
+    public static string MeasuredAt(StartupMeasurement measurement)
+    {
+        if (measurement is null)
+        {
+            throw new ArgumentNullException(nameof(measurement));
+        }
+
+        var at = measurement.MeasuredAt.ToLocalTime().ToString(L.DatePattern + ", HH:mm", L.Culture);
+        return measurement.FromEarlierStart ? at + LastStart : at;
+    }
+
+    /// <summary>Linia „Szczegółów technicznych” z poleceniem pozycji.</summary>
+    public static string CommandLine(string command) => L.F("Polecenie: {0}", command);
+
+    /// <summary>Linia „Szczegółów technicznych” z plikiem pozycji; null = pliku nie da się ustalić.</summary>
+    public static string FileLine(string? path) => path is null ? L.T("Plik: nie ustalono") : L.F("Plik: {0}", path);
+
+    /// <summary>Komunikat przy starcie okna, gdy wbudowana baza znanych pozycji jest uszkodzona.</summary>
+    public static string CatalogInvalid(string reason) => L.F("Wbudowana baza autostartu jest nieprawidłowa:{0}{1}", Environment.NewLine, reason);
+
     // --- Okno serii i wynik ---
 
     public static string ConfirmTitle(AutostartState target)

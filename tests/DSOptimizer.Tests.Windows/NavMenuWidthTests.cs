@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Media;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Install;
@@ -84,7 +85,7 @@ public class NavMenuWidthTests
     }
 
     /// <summary>
-    /// Nazwy kategorii z katalogu wbudowanego i z kolejności menu oraz „Przygotowanie”, „Aplikacje”, „Instalacja” i „Historia zmian” (pomiar z licznikiem
+    /// Nazwy kategorii z katalogu wbudowanego i z kolejności menu oraz „Przygotowanie”, „Aplikacje”, „Autostart”, „Instalacja” i „Historia zmian” (pomiar z licznikiem
     /// także dla stron bez licznika – zapas na przyszłość).
     /// </summary>
     private static IEnumerable<string> MenuNames()
@@ -96,6 +97,7 @@ public class NavMenuWidthTests
             .Select(GuiText.CategoryName)
             .Append(PrepText.PageTitle)
             .Append(AppsPageText.PageTitle)
+            .Append(AutostartText.PageTitle)
             .Append(InstallText.PageTitle)
             .Append(HistoryText.PageTitle)
             .Distinct(StringComparer.Ordinal);

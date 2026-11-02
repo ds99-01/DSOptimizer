@@ -13,6 +13,7 @@ using CommunityToolkit.Mvvm.Input;
 using DSOptimizer.App.Gui;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
+using DSOptimizer.Core.Autostart;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Errors;
 using DSOptimizer.Core.Gui;
@@ -42,6 +43,7 @@ public sealed class MainViewModel : ObservableObject
 
     private readonly GuiSession _session;
     private readonly AppsSession _apps;
+    private readonly AutostartSession _autostart;
     private readonly InstallSession _install;
     private readonly UiLogSink _sink;
     private readonly ISeriesDialogs _seriesDialogs;
@@ -80,6 +82,7 @@ public sealed class MainViewModel : ObservableObject
     /// <param name="resolveUserName">Nazwa użytkownika na pasek marki; wołana poza wątkiem UI w <see cref="LoadUserNameAsync"/>.</param>
     /// <param name="accountNames">SID → nazwa konta na stronie „Historia zmian”; wołane tylko w Task.Run (LSA może blokować).</param>
     /// <param name="apps">Strona „Aplikacje”: odczyt, potwierdzenie i seria usuwania (ta sama blokada co seria tweaków).</param>
+    /// <param name="autostart">Strona „Autostart”: odczyt, potwierdzenie i seria „Wyłącz/Włącz” (ta sama blokada).</param>
     /// <param name="install">Strona „Instalacja”: odczyt, wyszukiwanie w winget, potwierdzenie i seria instalacji (ta sama blokada).</param>
     /// <param name="specification">Strona „Specyfikacja” – pierwsza pozycja menu i strona startowa.</param>
     /// <param name="prep">Strona „Przygotowanie” – druga pozycja menu, tuż pod „Specyfikacją”.</param>
@@ -95,6 +98,7 @@ public sealed class MainViewModel : ObservableObject
         Func<string?>? resolveUserName,
         IAccountNames accountNames,
         AppsSession apps,
+        AutostartSession autostart,
         InstallSession install,
         SpecificationViewModel specification,
         PrepViewModel prep,
@@ -102,6 +106,7 @@ public sealed class MainViewModel : ObservableObject
     {
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _apps = apps ?? throw new ArgumentNullException(nameof(apps));
+        _autostart = autostart ?? throw new ArgumentNullException(nameof(autostart));
         _install = install ?? throw new ArgumentNullException(nameof(install));
         _sink = sink ?? throw new ArgumentNullException(nameof(sink));
         _seriesDialogs = seriesDialogs ?? throw new ArgumentNullException(nameof(seriesDialogs));
@@ -162,9 +167,11 @@ public sealed class MainViewModel : ObservableObject
             (level, text) => _sink.Add(level, text));
         // Aplikacje: własne zaznaczenie i „Usuń (N)” zawsze przez okno serii (RemoveAppsAsync), osobno od „Zastosuj/Cofnij”.
         Apps = new AppsViewModel(apps, accountNames, RemoveAppsAsync, () => _session.CreateRestorePoint, (level, text) => _sink.Add(level, text), _clock);
+        // Autostart: własne zaznaczenie i „Wyłącz (N)”/„Włącz (M)” zawsze przez okno serii (ToggleAutostartAsync).
+        Autostart = new AutostartViewModel(autostart, accountNames, ToggleAutostartAsync, WpfClipboardText.Instance, (level, text) => _sink.Add(level, text), _clock);
         // Instalacja: własne zaznaczenie i „Zainstaluj (N)” zawsze przez okno serii (InstallAppsAsync); „Napraw winget” = Naprawy.
         Install = new InstallViewModel(install, InstallAppsAsync, ShowRepairWinget, (level, text) => _sink.Add(level, text), _clock);
-        NavItems = new object[] { specification, prep }.Concat(Categories).Concat(new object[] { Apps, Install, History }).ToList();
+        NavItems = new object[] { specification, prep }.Concat(Categories).Concat(new object[] { Apps, Autostart, Install, History }).ToList();
         Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         PinnedNavItems = new object[] { settings };
         // Zmiana punktu przywracania od razu w drugiej linii paska serii (GuiText.SelectionBarDetails).
@@ -213,7 +220,10 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Strona „Aplikacje” – między kategoriami a „Instalacją”.</summary>
     public AppsViewModel Apps { get; }
 
-    /// <summary>Strona „Instalacja” – tuż pod „Aplikacjami” (spec 6), przed „Historią zmian”.</summary>
+    /// <summary>Strona „Autostart” – tuż pod „Aplikacjami”, przed „Instalacją”.</summary>
+    public AutostartViewModel Autostart { get; }
+
+    /// <summary>Strona „Instalacja” – tuż pod „Autostartem”, przed „Historią zmian”.</summary>
     public InstallViewModel Install { get; }
 
     /// <summary>Strona „Historia zmian” – ostatnia pozycja górnej listy menu.</summary>
@@ -221,7 +231,7 @@ public sealed class MainViewModel : ObservableObject
 
     /// <summary>
     /// Menu w lewej kolumnie: Specyfikacja, Przygotowanie, kategorie w kolejności <see cref="GuiSession.Categories"/>, Aplikacje,
-    /// Instalacja, na końcu Historia zmian.
+    /// Autostart, Instalacja, na końcu Historia zmian.
     /// </summary>
     public IReadOnlyList<object> NavItems { get; }
 
@@ -273,12 +283,13 @@ public sealed class MainViewModel : ObservableObject
             OnPropertyChanged(nameof(IsSettingsSelected));
             OnPropertyChanged(nameof(IsHistorySelected));
             OnPropertyChanged(nameof(IsAppsSelected));
+            OnPropertyChanged(nameof(IsAutostartSelected));
             OnPropertyChanged(nameof(IsInstallSelected));
             OnPropertyChanged(nameof(PageTitle));
             OnPropertyChanged(nameof(DetailItem));
             OnHiddenChanged();
 
-            // Historia, Aplikacje, Instalacja i Przygotowanie wczytują się przy każdym wejściu na stronę (RefreshAsync nigdy nie rzuca;
+            // Historia, Aplikacje, Autostart, Instalacja i Przygotowanie wczytują się przy każdym wejściu na stronę (RefreshAsync nigdy nie rzuca;
             // Instalacja w trakcie operacji odkłada odczyt na jej koniec).
             if (value is HistoryViewModel history)
             {
@@ -291,6 +302,10 @@ public sealed class MainViewModel : ObservableObject
             else if (value is AppsViewModel apps)
             {
                 _ = apps.RefreshAsync();
+            }
+            else if (value is AutostartViewModel autostart)
+            {
+                _ = autostart.RefreshAsync();
             }
             else if (value is InstallViewModel install)
             {
@@ -452,6 +467,8 @@ public sealed class MainViewModel : ObservableObject
 
     public bool IsAppsSelected => SelectedPage is AppsViewModel;
 
+    public bool IsAutostartSelected => SelectedPage is AutostartViewModel;
+
     public bool IsInstallSelected => SelectedPage is InstallViewModel;
 
     public ObservableCollection<GuiLogLine> LogLines => _sink.Lines;
@@ -468,7 +485,7 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>
     /// F5: odświeżenie otwartej strony – kategoria = <see cref="RefreshCommand"/>, Specyfikacja i Przygotowanie = ich ponowny odczyt,
     /// Historia = <see cref="HistoryViewModel.RefreshAsync"/>, Aplikacje = <see cref="AppsViewModel.RefreshAsync"/>,
-    /// Instalacja = <see cref="InstallViewModel.RefreshAsync"/>, Ustawienia = nic.
+    /// Autostart = <see cref="AutostartViewModel.RefreshAsync"/>, Instalacja = <see cref="InstallViewModel.RefreshAsync"/>, Ustawienia = nic.
     /// W trakcie operacji nieaktywne.
     /// </summary>
     public IAsyncRelayCommand RefreshCurrentPageCommand { get; }
@@ -507,6 +524,7 @@ public sealed class MainViewModel : ObservableObject
                 Settings.IsEditable = !value;
                 History.IsBusy = value;
                 Apps.IsBusy = value;
+                Autostart.IsBusy = value;
                 Install.IsBusy = value;
                 OnPropertyChanged(nameof(StatusText));
                 OnPropertyChanged(nameof(PageSubtitle));
@@ -666,6 +684,7 @@ public sealed class MainViewModel : ObservableObject
             PrepViewModel prep => prep.RefreshAsync(),
             HistoryViewModel history => history.RefreshAsync(),
             AppsViewModel apps => apps.RefreshAsync(),
+            AutostartViewModel autostart => autostart.RefreshAsync(),
             InstallViewModel install => install.RefreshAsync(),
             _ => Task.CompletedTask,
         };
@@ -1347,6 +1366,84 @@ public sealed class MainViewModel : ObservableObject
         await RefreshRebootAsync().ConfigureAwait(true);
         RefreshHistory();
         _ = Apps.RefreshAsync();
+    }
+
+    /// <summary>
+    /// „Wyłącz (N)”/„Włącz (M)” ze strony „Autostart” – zawsze w oknie serii, także dla jednej pozycji (wzorzec <see cref="RemoveAppsAsync"/>),
+    /// bez pytania o punkt przywracania i bez banera restartu (zmiana działa od następnego logowania). Seria biegnie poza wątkiem UI pod
+    /// blokadą sesji. Po serii: dziennik, Historia i świeży odczyt strony.
+    /// </summary>
+    private async Task ToggleAutostartAsync(IReadOnlyList<AutostartRow> rows, AutostartState target)
+    {
+        if (IsBusy || _isConfirming || rows.Count == 0)
+        {
+            return;
+        }
+
+        IsConfirming = true;
+        var ids = rows.Select(row => row.Id).ToList();
+        var operation = target == AutostartState.Disabled ? GuiOperation.DisableAutostart : GuiOperation.EnableAutostart;
+        try
+        {
+            var confirmation = _autostart.ConfirmationFor(rows, target);
+            var operationText = SelectedOperationText(operation, rows.Count);
+            var applied = false;
+            var result = await _seriesDialogs.RunSeriesAsync(confirmation, async (steps, stop) =>
+            {
+                _operationText = operationText;
+                IsBusy = true;
+                IsConfirming = false;
+                var options = new AutostartRunOptions { Steps = steps, Stop = stop };
+                GuiOperationReport report;
+                using (_sink.BeginOperation(ids))
+                {
+                    report = await Task.Run(() => _autostart.Set(rows, target, options)).ConfigureAwait(true);
+                    _sink.CompleteOperation(report);
+                }
+
+                applied = true;
+                ApplyAutostartReport(report);
+                _operationText = null;
+                OnPropertyChanged(nameof(StatusText));
+                OnPropertyChanged(nameof(PageSubtitle));
+                return report;
+            }).ConfigureAwait(true);
+
+            if (result.Report is null)
+            {
+                _sink.Add(GuiLogLevel.Info, GuiText.CancelledBatch(operation, rows.Select(row => row.Entry.Name).ToList()));
+                return;
+            }
+
+            if (!applied)
+            {
+                ApplyAutostartReport(result.Report);
+            }
+        }
+        catch (Exception ex)
+        {
+            ReportUnexpected(ex);
+        }
+        finally
+        {
+            _operationText = null;
+            IsConfirming = false;
+            IsBusy = false;
+        }
+
+        // Odczyt strony po zwolnieniu IsBusy (w trakcie serii odświeżenie jest nieaktywne).
+        _ = Autostart.RefreshAsync();
+    }
+
+    /// <summary>Raport serii autostartu: linie do dziennika i Historia (restart nie jest potrzebny).</summary>
+    private void ApplyAutostartReport(GuiOperationReport report)
+    {
+        foreach (var line in report.Lines)
+        {
+            _sink.Add(line);
+        }
+
+        RefreshHistory();
     }
 
     /// <summary>

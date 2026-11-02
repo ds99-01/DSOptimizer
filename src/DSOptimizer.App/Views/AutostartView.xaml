@@ -1,0 +1,314 @@
+<UserControl x:Class="DSOptimizer.App.Views.AutostartView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:DSOptimizer.App.ViewModels"
+             xmlns:views="clr-namespace:DSOptimizer.App.Views"
+             xmlns:l="clr-namespace:DSOptimizer.App.Gui"
+             xmlns:autostart="clr-namespace:DSOptimizer.Core.Autostart;assembly=DSOptimizer.Core"
+             xmlns:gui="clr-namespace:DSOptimizer.Core.Gui;assembly=DSOptimizer.Core">
+  <!-- Strona „Autostart” (wariant A wskaźnika): układ jak „Aplikacje” – nagłówek z „Zaznacz sugerowane” i „Odśwież listę”,
+       wyszukiwarka strony, przełącznik grup z licznikami, lista (pole wyboru albo kłódka | nazwa, wydawca · zakres, notatka | żarówka
+       sugerowanej | wskaźnik: liczba, pod nią pasek 3 px), linia o kontach pod listą, panel szczegółów i pasek serii „L” z „Włącz (M)”
+       i „Wyłącz (N)”. Bez kart, ramek i teł do wyróżniania. Teksty z AutostartText. -->
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+    <!-- Przełącznik grup: jak w AppsView; nazwa dla czytnika ekranu z licznikiem („Włączone, 11”) -->
+    <Style x:Key="GroupSwitchItem" TargetType="ListBoxItem">
+      <Setter Property="FocusVisualStyle" Value="{StaticResource BrandFocusVisual}" />
+      <Setter Property="AutomationProperties.Name" Value="{Binding AutomationName}" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ListBoxItem">
+            <Grid Margin="0,0,24,0" Background="Transparent">
+              <StackPanel Orientation="Horizontal" Margin="0,2,0,9">
+                <TextBlock x:Name="GroupName" FontSize="13.5" FontWeight="Normal" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Text="{Binding Name}" />
+                <TextBlock FontSize="12.5" Margin="7,1,0,0" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Text="{Binding Count}" />
+              </StackPanel>
+              <Rectangle x:Name="Accent" Width="16" Height="3" RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource TextFillColorPrimaryBrush}"
+                         HorizontalAlignment="Center" VerticalAlignment="Bottom" Visibility="Collapsed" />
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="GroupName" Property="FontWeight" Value="SemiBold" />
+                <Setter TargetName="GroupName" Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                <Setter TargetName="Accent" Property="Visibility" Value="Visible" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Wiersz: pole wyboru (przełączalna) albo kłódka z podpowiedzią (chroniona) albo nic z powodem w notatce | nazwa, wydawca · zakres,
+         notatka | żarówka sugerowanej | wskaźnik (kolumna 104 px): liczba, pod nią pasek – najcięższa pozycja 72 px, bez pomiaru sam tekst.
+         Krawędź w kolorze akcentu = zaznaczona do serii (jak Aplikacje). -->
+    <DataTemplate x:Key="AutostartRowTemplate" DataType="{x:Type vm:AutostartRowViewModel}">
+      <Border x:Name="SeriesEdge" BorderThickness="3,0,0,0" BorderBrush="Transparent">
+        <Grid Margin="9,10,0,10">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="32" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="104" />
+          </Grid.ColumnDefinitions>
+          <CheckBox Style="{StaticResource BrandCheckBox}" IsChecked="{Binding IsSelected, Mode=TwoWay}" AutomationProperties.Name="{Binding Name}"
+                    Visibility="{Binding IsSelectable, Converter={StaticResource BoolToVisibility}}" />
+          <Grid Background="Transparent" VerticalAlignment="Center" HorizontalAlignment="Left"
+                Visibility="{Binding IsProtected, Converter={StaticResource BoolToVisibility}}">
+            <Grid.ToolTip>
+              <ToolTip Style="{StaticResource BrandToolTip}" Content="{x:Static autostart:AutostartText.ProtectedTooltip}" />
+            </Grid.ToolTip>
+            <views:BrandIcon Kind="{x:Static gui:GuiIcons.Lock}" Size="16" Margin="1,0,0,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+          </Grid>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <TextBlock Style="{StaticResource ItemTitleText}" Text="{Binding Name}" ToolTip="{Binding Name}" />
+            <TextBlock Style="{StaticResource SubText}" Text="{Binding PublisherText}" ToolTip="{Binding PublisherText}" />
+            <TextBlock Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" TextTrimming="None" Text="{Binding RowNote}"
+                       Visibility="{Binding HasRowNote, Converter={StaticResource BoolToVisibility}}" />
+          </StackPanel>
+          <Grid Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center" Background="Transparent"
+                Visibility="{Binding IsSuggested, Converter={StaticResource BoolToVisibility}}">
+            <Grid.ToolTip>
+              <ToolTip Style="{StaticResource BrandToolTip}" Content="{x:Static gui:GuiText.SuggestedTooltip}" />
+            </Grid.ToolTip>
+            <views:BrandIcon Kind="Suggested" Size="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+          </Grid>
+          <StackPanel Grid.Column="3" Margin="12,3,0,0" VerticalAlignment="Top">
+            <TextBlock Style="{StaticResource SubText}" TextTrimming="None" TextWrapping="Wrap" Text="{Binding IndicatorText}" />
+            <Rectangle Height="3" RadiusX="1.5" RadiusY="1.5" Margin="0,5,0,0" HorizontalAlignment="Left" Width="{Binding BarWidth}"
+                       Fill="{DynamicResource TextFillColorSecondaryBrush}"
+                       Visibility="{Binding IsMeasured, Converter={StaticResource BoolToVisibility}}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+      <DataTemplate.Triggers>
+        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+          <Setter TargetName="SeriesEdge" Property="BorderBrush" Value="{DynamicResource BrandAccentBrush}" />
+        </DataTrigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Wiersz „nazwa – wartość” panelu szczegółów (zawijany, bez wielokropka) -->
+    <Style x:Key="DetailValueWrap" TargetType="TextBlock" BasedOn="{StaticResource DetailValueText}">
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="TextTrimming" Value="None" />
+      <Setter Property="Margin" Value="0,0,0,5" />
+    </Style>
+  </UserControl.Resources>
+
+  <Grid>
+    <!-- Treść (lista i szczegóły) | pasek serii (8 + 56, jak na stronach kategorii) -->
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <Grid x:Name="ContentGrid" SizeChanged="OnContentSizeChanged">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition x:Name="DetailColumn" Width="246" />
+      </Grid.ColumnDefinitions>
+
+      <!-- Tab: szukaj → „Zaznacz sugerowane” → „Odśwież listę” → grupy → lista (TabIndex lokalnie, jak Aplikacje).
+           „Zaznacz sugerowane” jest widoczny w każdej grupie: bierze sugerowane ze wszystkich grup. -->
+      <DockPanel Margin="0,0,20,0" KeyboardNavigation.TabNavigation="Local">
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <StackPanel>
+            <TextBlock Style="{StaticResource PageTitleText}" Text="{Binding Name}" />
+            <TextBlock Style="{StaticResource SubText}" Text="{Binding Subtitle}" ToolTip="{Binding Subtitle}" />
+          </StackPanel>
+          <Button Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
+                  Content="{l:T 'Zaznacz sugerowane'}" Command="{Binding SelectSuggestedCommand}" KeyboardNavigation.TabIndex="2" />
+          <Button Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
+                  Content="{l:T 'Odśwież listę'}" Tag="Refresh" Command="{Binding RefreshCommand}" KeyboardNavigation.TabIndex="2" />
+        </Grid>
+
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+          <TextBox x:Name="SearchBox" Style="{StaticResource SearchTextBox}" Tag="{Binding SearchPlaceholder}" KeyboardNavigation.TabIndex="1"
+                   AutomationProperties.Name="{x:Static autostart:AutostartText.SearchName}" AutomationProperties.HelpText="{Binding SearchPlaceholder}"
+                   Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
+            <TextBox.InputBindings>
+              <KeyBinding Key="Escape" Command="{Binding ClearSearchCommand}" />
+            </TextBox.InputBindings>
+          </TextBox>
+        </Grid>
+
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,12,0">
+          <ListBox x:Name="GroupList" ItemsSource="{Binding Groups}" SelectedValuePath="Value" SelectedValue="{Binding SelectedGroup}"
+                   ItemContainerStyle="{StaticResource GroupSwitchItem}" Background="Transparent" BorderThickness="0" Padding="0"
+                   AutomationProperties.Name="{x:Static autostart:AutostartText.GroupsName}" KeyboardNavigation.TabIndex="3"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+            <ListBox.Template>
+              <ControlTemplate TargetType="ListBox">
+                <ItemsPresenter />
+              </ControlTemplate>
+            </ListBox.Template>
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+          </ListBox>
+          <Border Height="1" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+        </StackPanel>
+
+        <!-- Stała linia pod listą: pozycji innych kont strona nie pokazuje (w podtytule się nie mieści) -->
+        <TextBlock DockPanel.Dock="Bottom" Margin="0,8,0,0" Style="{StaticResource SubText}" Text="{Binding OtherAccountsNote}" />
+
+        <Grid>
+          <TextBlock VerticalAlignment="Top" Margin="0,10,0,0" Style="{StaticResource BodyText}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                     Text="{Binding EmptyText}" />
+          <ListBox x:Name="AutostartList" Style="{StaticResource ItemListBox}" ItemTemplate="{StaticResource AutostartRowTemplate}"
+                   KeyboardNavigation.TabIndex="4" ItemsSource="{Binding VisibleRows}" SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
+                   AutomationProperties.Name="{Binding Name}" MouseDoubleClick="OnListDoubleClick" PreviewKeyDown="OnListKeyDown"
+                   SelectionChanged="OnListSelectionChanged" />
+        </Grid>
+      </DockPanel>
+
+      <!-- Szczegóły pozycji: nazwa, opis, źródło, „Kopiuj nazwę”, linia zaznaczenia, pomiar Windows, tabela, szczegóły techniczne -->
+      <DockPanel Grid.Column="1" DataContext="{Binding SelectedRow}">
+        <DockPanel.Style>
+          <Style TargetType="DockPanel">
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                <Setter Property="Visibility" Value="Collapsed" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </DockPanel.Style>
+        <ScrollViewer x:Name="DetailScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      Focusable="True" FocusVisualStyle="{StaticResource BrandFocusVisual}" AutomationProperties.Name="{Binding Name}">
+          <StackPanel Margin="0,0,12,12" Grid.IsSharedSizeScope="True">
+            <TextBlock Style="{StaticResource DetailTitleText}" Text="{Binding Name}" />
+            <TextBlock Style="{StaticResource SummaryText}" Margin="0,10,0,0" Text="{Binding Summary}" />
+            <TextBlock Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" TextTrimming="None" Text="{Binding SourceText}"
+                       Visibility="{Binding HasSource, Converter={StaticResource BoolToVisibility}}" />
+            <Button Style="{StaticResource TextLinkButton}" Margin="0,8,0,0" HorizontalAlignment="Left"
+                    Content="{x:Static autostart:AutostartText.CopyNameButton}"
+                    Command="{Binding DataContext.CopyNameCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+            <TextBlock Margin="0,10,0,0" FontWeight="SemiBold" Text="{Binding SelectionLineText}">
+              <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource BodyText}">
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding SelectionLineText}" Value="{x:Null}">
+                      <Setter Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </TextBlock.Style>
+            </TextBlock>
+
+            <TextBlock Style="{StaticResource SectionHeaderText}" Margin="0,16,0,4" Text="{x:Static autostart:AutostartText.MeasurementHeader}" />
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="Key" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+              </Grid.RowDefinitions>
+              <TextBlock Style="{StaticResource DetailKeyText}" Text="{x:Static autostart:AutostartText.CpuLabel}" />
+              <TextBlock Grid.Column="1" Style="{StaticResource DetailValueWrap}" FontWeight="SemiBold" Text="{Binding CpuText}" />
+              <Grid Grid.Row="1" Grid.ColumnSpan="2" Visibility="{Binding IsMeasured, Converter={StaticResource BoolToVisibility}}">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" SharedSizeGroup="Key" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition />
+                  <RowDefinition />
+                  <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBlock Style="{StaticResource DetailKeyText}" Text="{x:Static autostart:AutostartText.DiskLabel}" />
+                <TextBlock Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding DiskText}" />
+                <TextBlock Grid.Row="1" Style="{StaticResource DetailKeyText}" Text="{x:Static autostart:AutostartText.ImpactLabel}" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding ImpactText}" />
+                <TextBlock Grid.Row="2" Style="{StaticResource DetailKeyText}" Text="{x:Static autostart:AutostartText.MeasuredAtLabel}" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding MeasuredAtText}" />
+              </Grid>
+            </Grid>
+            <TextBlock Style="{StaticResource BodyText}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding MeasureNote}" />
+
+            <Grid Margin="0,14,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="Key" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+              </Grid.RowDefinitions>
+              <TextBlock Style="{StaticResource DetailKeyText}" Text="{l:T 'Stan'}" />
+              <TextBlock Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding StateText}" />
+              <TextBlock Grid.Row="1" Style="{StaticResource DetailKeyText}" Text="{x:Static autostart:AutostartText.VerdictLabel}" />
+              <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding VerdictText}" />
+              <TextBlock Grid.Row="2" Style="{StaticResource DetailKeyText}" Text="{l:T 'Wydawca'}" />
+              <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding PublisherDetail}" />
+              <TextBlock Grid.Row="3" Style="{StaticResource DetailKeyText}" Text="{l:T 'Konto'}" />
+              <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding AccountText}" />
+              <TextBlock Grid.Row="4" Style="{StaticResource DetailKeyText}" Text="{x:Static autostart:AutostartText.LocationLabel}" />
+              <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding LocationText}" />
+              <TextBlock Grid.Row="5" Style="{StaticResource DetailKeyText}" Text="{l:T 'Cofanie'}" />
+              <TextBlock Grid.Row="5" Grid.Column="1" Style="{StaticResource DetailValueWrap}" Text="{Binding UndoText}" />
+            </Grid>
+            <TextBlock Style="{StaticResource SectionHeaderText}" Margin="0,16,0,4" Text="{l:T 'Szczegóły techniczne'}" />
+            <TextBlock Style="{StaticResource BodyText}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding CommandText}"
+                       Visibility="{Binding HasCommand, Converter={StaticResource BoolToVisibility}}" />
+            <TextBlock Style="{StaticResource BodyText}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding FileText}" />
+          </StackPanel>
+        </ScrollViewer>
+      </DockPanel>
+    </Grid>
+
+    <!-- Pasek serii: obramowanie „L” w kolorze marki (lewa 3 px + dolna 1 px) jak Aplikacje; „Włącz (M)” jak „Cofnij (N)”,
+         „Wyłącz (N)” jak „Zastosuj (N)” – kolejność ze strony kategorii; przycisk z zerem nieaktywny -->
+    <Border Grid.Row="1" Height="56" Margin="0,8,0,0" Padding="14,0,12,0"
+            BorderThickness="3,0,0,1" BorderBrush="{DynamicResource BrandAccentBrush}"
+            Background="{DynamicResource SubtleFillColorSecondaryBrush}">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Text="{Binding SelectionBarTitle}"
+                     ToolTip="{Binding SelectionBarTitle}" />
+          <TextBlock TextTrimming="CharacterEllipsis" Text="{Binding SelectionBarDetails}" ToolTip="{Binding SelectionBarDetails}">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock" BasedOn="{StaticResource SubText}">
+                <Style.Triggers>
+                  <Trigger Property="Text" Value="">
+                    <Setter Property="ToolTipService.IsEnabled" Value="False" />
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
+        </StackPanel>
+        <Button Grid.Column="1" Margin="12,0,12,0" Style="{StaticResource TextLinkButton}" Content="{l:T 'Odznacz wszystko'}"
+                Command="{Binding ClearSelectionCommand}" />
+        <Button x:Name="EnableButton" Grid.Column="2" Margin="0,0,8,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
+                Content="{Binding EnableText}" Command="{Binding EnableCommand}" />
+        <Button x:Name="DisableButton" Grid.Column="3" VerticalAlignment="Center" Style="{StaticResource PrimaryButton}"
+                Content="{Binding DisableText}" Command="{Binding DisableCommand}" />
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>
