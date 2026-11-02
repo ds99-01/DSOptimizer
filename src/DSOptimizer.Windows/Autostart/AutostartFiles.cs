@@ -18,8 +18,8 @@ namespace DSOptimizer.Windows.Autostart;
 /// <summary>
 /// Pliki autostartu na Windows – wyłącznie odczyt. Foldery: <see cref="Directory.EnumerateFiles(string)"/> bez podfolderów. Skróty: nagłówek
 /// <c>.lnk</c> czytany z <c>FileShare.ReadWrite | FileShare.Delete</c>, potem COM <c>ShellLink</c> w procesie (<c>IPersistFile.Load</c> z
-/// <c>STGM_READ</c>, ścieżka surowa <c>SLGP_RAWPATH</c>, bez <c>Resolve</c>). Sprawdzenie pliku: tylko lokalny dysk stały, przez atrybuty
-/// (<c>GetFileAttributesExW</c>), bez otwierania pliku. Wersja: <see cref="FileVersionInfo"/>.
+/// <c>STGM_READ | STGM_SHARE_DENY_NONE</c>, ścieżka surowa <c>SLGP_RAWPATH</c>, bez <c>Resolve</c>); każdy błąd odczytu skrótu =
+/// <see cref="OperationException"/>. Sprawdzenie pliku: tylko lokalny dysk stały, przez atrybuty (<c>GetFileAttributesExW</c>), bez otwierania pliku. Wersja: <see cref="FileVersionInfo"/>.
 /// </summary>
 public sealed class AutostartFiles : IAutostartFiles
 {
@@ -39,17 +39,25 @@ public sealed class AutostartFiles : IAutostartFiles
 
     private readonly Func<string, uint> _driveType;
     private readonly Func<string, (bool Found, uint Attributes, int Error)> _attributes;
+    private readonly Func<string, ShortcutInfo> _readLink;
 
     public AutostartFiles()
         : this(NativeMethods.GetDriveType, NativeAttributes)
     {
     }
 
-    /// <summary>Szew testów: typ dysku (korzeń <c>X:\</c>) i atrybuty pliku zamiast wywołań systemu.</summary>
-    internal AutostartFiles(Func<string, uint> driveType, Func<string, (bool Found, uint Attributes, int Error)> attributes)
+    /// <summary>
+    /// Szew testów: typ dysku (korzeń <c>X:\</c>) i atrybuty pliku zamiast wywołań systemu; <paramref name="readLink"/> zastępuje odczyt
+    /// przez COM <c>ShellLink</c> (wołany dopiero po zgodnym nagłówku <c>.lnk</c>).
+    /// </summary>
+    internal AutostartFiles(
+        Func<string, uint> driveType,
+        Func<string, (bool Found, uint Attributes, int Error)> attributes,
+        Func<string, ShortcutInfo>? readLink = null)
     {
         _driveType = driveType ?? throw new ArgumentNullException(nameof(driveType));
         _attributes = attributes ?? throw new ArgumentNullException(nameof(attributes));
+        _readLink = readLink ?? ReadWithShellLink;
     }
 
     public IReadOnlyList<string> ListFolder(string folder)
@@ -89,32 +97,19 @@ public sealed class AutostartFiles : IAutostartFiles
             return null;
         }
 
-        IShellLinkW? link = null;
+        // Treść pliku za nagłówkiem jest dowolna (plik w folderze Autostart konta), a CLR zamienia HRESULT-y COM na różne typy wyjątków
+        // (OutOfMemoryException, BadImageFormatException, NotImplementedException …): każdy z nich = błąd jednej pozycji, nigdy całego odczytu.
         try
         {
-            link = ShellLinkInterop.Create();
-            ((IPersistFile)link).Load(path, ShellLinkInterop.StgmRead);
-            var target = new StringBuilder(TextChars);
-            link.GetPath(target, target.Capacity, IntPtr.Zero, ShellLinkInterop.SlgpRawPath);
-            var arguments = new StringBuilder(TextChars);
-            link.GetArguments(arguments, arguments.Capacity);
-            ((IShellLinkDataList)link).GetFlags(out var flags);
-            return new ShortcutInfo(Text(target), Text(arguments), (flags & ShellLinkInterop.SldfHasDarwinId) != 0);
+            return _readLink(path);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or SecurityException)
         {
             throw new OperationException(OperationErrorKind.AccessDenied, L.F("Brak uprawnień, by odczytać plik {0}: {1}", path, ex.Message), ex);
         }
-        catch (Exception ex) when (ex is COMException or IOException or InvalidCastException or ArgumentException)
+        catch (Exception ex) when (ex is not OperationException)
         {
             throw new OperationException(OperationErrorKind.Unexpected, L.F("Nie można odczytać skrótu {0}: {1}", path, ex.Message), ex);
-        }
-        finally
-        {
-            if (link is not null)
-            {
-                Marshal.FinalReleaseComObject(link);
-            }
         }
     }
 
@@ -169,6 +164,33 @@ public sealed class AutostartFiles : IAutostartFiles
             && path[1] == ':'
             && path[2] == '\\'
             && path.IndexOf('\0') < 0;
+
+    /// <summary>
+    /// Odczyt skrótu przez COM <c>ShellLink</c>: <c>IPersistFile.Load</c> z <c>STGM_READ | STGM_SHARE_DENY_NONE</c>, ścieżka surowa
+    /// <c>SLGP_RAWPATH</c> (bez <c>Resolve</c>), argumenty i flagi; obiekt zwalniany w <c>finally</c>.
+    /// </summary>
+    private static ShortcutInfo ReadWithShellLink(string path)
+    {
+        IShellLinkW? link = null;
+        try
+        {
+            link = ShellLinkInterop.Create();
+            ((IPersistFile)link).Load(path, ShellLinkInterop.StgmRead | ShellLinkInterop.StgmShareDenyNone);
+            var target = new StringBuilder(TextChars);
+            link.GetPath(target, target.Capacity, IntPtr.Zero, ShellLinkInterop.SlgpRawPath);
+            var arguments = new StringBuilder(TextChars);
+            link.GetArguments(arguments, arguments.Capacity);
+            ((IShellLinkDataList)link).GetFlags(out var flags);
+            return new ShortcutInfo(Text(target), Text(arguments), (flags & ShellLinkInterop.SldfHasDarwinId) != 0);
+        }
+        finally
+        {
+            if (link is not null)
+            {
+                Marshal.FinalReleaseComObject(link);
+            }
+        }
+    }
 
     private static (bool Found, uint Attributes, int Error) NativeAttributes(string path)
         => NativeMethods.GetFileAttributesEx(path, NativeMethods.FileExInfoStandard, out var data)

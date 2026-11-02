@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using DSOptimizer.Core.Autostart;
@@ -141,6 +142,79 @@ public class AutostartFilesTests
 
         var ex = Assert.Throws<OperationException>(() => _files.ReadShortcut(temp.Sub("nie-ma.lnk")));
         Assert.Equal(OperationErrorKind.NotFound, ex.Kind);
+    }
+
+    private static readonly byte[] LinkHeader =
+    {
+        0x4C, 0x00, 0x00, 0x00, 0x01, 0x14, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46,
+    };
+
+    // Plik z nagłówkiem skrótu i dowolną treścią (folder Autostart jest zapisywalny przez konto): wynik null albo OperationException,
+    // nigdy inny wyjątek, który przerwałby odczyt całej strony.
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(56)]
+    [InlineData(4096)]
+    public void ReadShortcut_HeaderValidGarbage_NullOrOperationException(int garbageBytes)
+    {
+        using var temp = new TempDirectory();
+        var garbage = new byte[garbageBytes];
+        new Random(garbageBytes).NextBytes(garbage);
+        var bytes = new byte[LinkHeader.Length + garbage.Length];
+        LinkHeader.CopyTo(bytes, 0);
+        garbage.CopyTo(bytes, LinkHeader.Length);
+        File.WriteAllBytes(temp.Sub("zepsuty.lnk"), bytes);
+
+        var error = Record.Exception(() => _files.ReadShortcut(temp.Sub("zepsuty.lnk")));
+
+        Assert.True(error is null or OperationException, error?.GetType().FullName + ": " + error?.Message);
+    }
+
+    // HRESULT-y COM CLR zamienia na różne typy wyjątków; każdy (poza brakiem uprawnień) = OperationException(Unexpected) z oryginałem w środku.
+    [Theory]
+    [InlineData(typeof(OutOfMemoryException))]
+    [InlineData(typeof(BadImageFormatException))]
+    [InlineData(typeof(NotImplementedException))]
+    [InlineData(typeof(NullReferenceException))]
+    [InlineData(typeof(COMException))]
+    [InlineData(typeof(InvalidCastException))]
+    [InlineData(typeof(FileNotFoundException))]
+    public void ReadShortcut_AnyComFailure_OperationExceptionUnexpected(Type failure)
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllBytes(temp.Sub("a.lnk"), LinkHeader);
+        var files = new AutostartFiles(_ => 3, _ => (true, 0u, 0), _ => throw (Exception)Activator.CreateInstance(failure)!);
+
+        var ex = Assert.Throws<OperationException>(() => files.ReadShortcut(temp.Sub("a.lnk")));
+
+        Assert.Equal(OperationErrorKind.Unexpected, ex.Kind);
+        Assert.IsType(failure, ex.InnerException);
+    }
+
+    [Fact]
+    public void ReadShortcut_ComAccessDenied_OperationExceptionAccessDenied()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllBytes(temp.Sub("a.lnk"), LinkHeader);
+        var files = new AutostartFiles(_ => 3, _ => (true, 0u, 0), _ => throw new UnauthorizedAccessException());
+
+        Assert.Equal(OperationErrorKind.AccessDenied, Assert.Throws<OperationException>(() => files.ReadShortcut(temp.Sub("a.lnk"))).Kind);
+    }
+
+    // Plik otwarty przez kogoś innego do zapisu i usuwania: odczyt skrótu (nagłówek i COM z STGM_SHARE_DENY_NONE) nie odmawia ani nie blokuje.
+    [Fact]
+    public void ReadShortcut_FileOpenForWriting_StillReads()
+    {
+        using var temp = new TempDirectory();
+        var target = temp.Sub("sonda.exe");
+        File.WriteAllText(target, "x");
+        ShortcutWriter.Save(temp.Sub("Sonda.lnk"), target, "--tray");
+
+        using (new FileStream(temp.Sub("Sonda.lnk"), FileMode.Open, FileAccess.ReadWrite, FileShare.Read | FileShare.Write | FileShare.Delete))
+        {
+            Assert.Equal("--tray", _files.ReadShortcut(temp.Sub("Sonda.lnk"))!.Arguments);
+        }
     }
 
     [Fact]

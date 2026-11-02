@@ -1,4 +1,5 @@
 using System;
+using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Autostart;
 
 namespace DSOptimizer.Windows.Autostart;
@@ -17,12 +18,16 @@ public static class AutostartComposition
             throw new ArgumentNullException(nameof(composition));
         }
 
-        return new AutostartScanner(
-            composition.Services.Registry,
+        return CreateReader(composition.Services.Registry, composition.Services.Scripts, composition.Log);
+    }
+
+    /// <summary>Składanie z podanych usług (szew testów: dowód, że składanie nie woła rejestru, skryptów ani dziennika).</summary>
+    internal static AutostartScanner CreateReader(IRegistry registry, IScriptRunner scripts, ILog log)
+        => new(
+            registry,
             new AutostartFiles(),
-            new StartupTaskReader(composition.Services.Scripts),
+            new StartupTaskReader(scripts),
             StartupInfoFolder.ForSystem(),
             MachineEnvironment.FromProcess(),
-            composition.Log);
-    }
+            log);
 }

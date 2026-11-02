@@ -20,6 +20,9 @@ internal static class ShellLinkInterop
     /// <summary><c>STGM_READ</c>.</summary>
     internal const int StgmRead = 0;
 
+    /// <summary><c>STGM_SHARE_DENY_NONE</c>: inni mogą plik czytać, zapisywać i usuwać, gdy jest otwarty do odczytu.</summary>
+    internal const int StgmShareDenyNone = 0x40;
+
     internal static IShellLinkW Create() => (IShellLinkW)new ShellLink();
 
     /// <summary>CoClass <c>ShellLink</c> (<c>CLSID_ShellLink</c>).</summary>
