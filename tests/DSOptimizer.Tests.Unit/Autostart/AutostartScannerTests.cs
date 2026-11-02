@@ -374,6 +374,38 @@ public class AutostartScannerTests
     }
 
     [Fact]
+    public void RunWithoutExtension_ResolvesExe()
+    {
+        _registry.Set(RunUserKey, "Tool", RegValue.FromString("\"C:\\Tools\\app\" --min"));
+        _files.Existing.Add(@"C:\Tools\app.exe");
+
+        var entry = Entry(Read(), "run:user:Tool");
+
+        Assert.Equal(AutostartFileStatus.Exists, entry.FileStatus);
+        Assert.Equal(@"C:\Tools\app.exe", entry.FilePath);
+    }
+
+    [Theory]
+    [InlineData(@"C:\Tools\app")]
+    [InlineData("\"C:\\Tools\\app\" --min")]
+    public void RunWithoutExtension_NothingExists_NotDetermined_NotSuggested(string command)
+    {
+        _registry.Set(RunUserKey, "Tool", RegValue.FromString(command));
+
+        var reading = Read();
+        var entry = Entry(reading, "run:user:Tool");
+        var row = Assert.Single(
+            AutostartClassifier.Classify(reading, AutostartKnownCatalog.Load(AutostartKnownCatalogTests.Wrap()), AutostartClassifierTests.Context()),
+            r => r.Entry.Id == "run:user:Tool");
+
+        Assert.Equal(AutostartFileStatus.NotDetermined, entry.FileStatus);
+        Assert.Null(entry.FilePath);
+        Assert.False(row.MissingFile);
+        Assert.Equal(AutostartGroup.Enabled, row.Group);
+        Assert.False(row.Suggested);
+    }
+
+    [Fact]
     public void UnquotedNoCandidate_NotDetermined()
     {
         _registry.Set(RunMachineKey, "SunJavaUpdateSched", RegValue.FromString(@"C:\Program Files (x86)\Common Files\Java\Java Update\jusched.exe"));

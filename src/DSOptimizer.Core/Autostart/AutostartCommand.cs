@@ -5,8 +5,8 @@ using System.Text;
 namespace DSOptimizer.Core.Autostart;
 
 /// <summary>
-/// Plik wykonywalny pozycji. <see cref="Definite"/> = ścieżka w pełni rozwinięta zmiennymi konta i zakorzeniona (<c>X:\…</c>, <c>\\…</c>),
-/// więc <see cref="Probe"/> mówi coś o tym pliku; inaczej plik jest nieustalony („nie ustalono pliku”, nigdy „nie istnieje”).
+/// Plik wykonywalny pozycji. <see cref="Definite"/> = ścieżka w pełni rozwinięta zmiennymi konta, zakorzeniona (<c>X:\…</c>, <c>\\…</c>)
+/// i jednoznaczna, więc <see cref="Probe"/> mówi coś o tym pliku; inaczej plik jest nieustalony („nie ustalono pliku”, nigdy „nie istnieje”).
 /// </summary>
 public sealed record CommandTarget(string? FilePath, FileProbe Probe, bool Definite, bool IsInterpreter, string? Arguments);
 
@@ -29,7 +29,9 @@ public static class AutostartCommand
     public static IReadOnlyCollection<string> Interpreters => InterpreterNames;
 
     /// <summary>
-    /// Plik polecenia Run. W cudzysłowie – do drugiego cudzysłowu. Bez cudzysłowu i bez białych znaków – całość. Bez cudzysłowu ze spacjami –
+    /// Plik polecenia Run. W cudzysłowie – do drugiego cudzysłowu. Bez cudzysłowu i bez białych znaków – całość. Taki plik bez rozszerzenia:
+    /// najpierw jak podany, potem z dopisanym <c>.exe</c> (jak <c>CreateProcess</c>); wygrywa pierwszy istniejący, a gdy nie ma żadnego, plik
+    /// jest nieustalony – nie wiadomo, co uruchomiłby Windows. Bez cudzysłowu ze spacjami –
     /// najpierw sama nazwa interpretera w pierwszym tokenie, potem prefiksy kończące się przed kolejnymi spacjami (od najkrótszego) i całość,
     /// kandydat bez rozszerzenia tylko z dopisanym <c>.exe</c> (jak <c>CreateProcess</c>, więc prefiks w rodzaju <c>C:\Program Files</c>
     /// nigdy nie trafia w katalog); wygrywa pierwszy istniejący, a brak kandydata = plik nieustalony. <paramref name="probe"/> zwraca
@@ -140,15 +142,30 @@ public static class AutostartCommand
                 : new CommandTarget(file, FileProbe.Unknown, Definite: false, IsInterpreter: false, arguments);
         }
 
-        return ResolvePath(file, arguments, environment, probe);
+        return ResolvePath(file, arguments, environment, probe, appendsExe: true);
     }
 
-    private static CommandTarget ResolvePath(string file, string? arguments, UserEnvironment environment, Func<string, FileProbe> probe)
+    /// <summary>
+    /// <paramref name="appendsExe"/> = polecenie Run: plik bez rozszerzenia, którego nie ma, sprawdzany też z <c>.exe</c>; gdy i tego nie ma,
+    /// plik jest nieustalony, nigdy <see cref="FileProbe.Missing"/>.
+    /// </summary>
+    private static CommandTarget ResolvePath(string file, string? arguments, UserEnvironment environment, Func<string, FileProbe> probe, bool appendsExe = false)
     {
         var complete = environment.TryExpand(file, out var expanded);
         var interpreter = IsInterpreterFile(expanded);
-        return complete && IsRooted(expanded)
-            ? new CommandTarget(expanded, probe(expanded), Definite: true, interpreter, arguments)
+        if (!complete || !IsRooted(expanded))
+        {
+            return new CommandTarget(expanded, FileProbe.Unknown, Definite: false, interpreter, arguments);
+        }
+
+        var found = probe(expanded);
+        if (!appendsExe || found == FileProbe.Exists || HasExtension(expanded))
+        {
+            return new CommandTarget(expanded, found, Definite: true, interpreter, arguments);
+        }
+
+        return TryExistingFile(expanded, probe, out var exe)
+            ? Found(exe, arguments)
             : new CommandTarget(expanded, FileProbe.Unknown, Definite: false, interpreter, arguments);
     }
 
@@ -171,20 +188,15 @@ public static class AutostartCommand
     private static bool TryExisting(string candidate, UserEnvironment environment, Func<string, FileProbe> probe, out string path)
     {
         path = string.Empty;
-        if (!environment.TryExpand(candidate, out var expanded) || !IsRooted(expanded))
-        {
-            return false;
-        }
+        return environment.TryExpand(candidate, out var expanded) && IsRooted(expanded) && TryExistingFile(expanded, probe, out path);
+    }
 
-        // Bez rozszerzenia tylko z dopisanym .exe, jak CreateProcess: sam prefiks bez rozszerzenia to zwykle katalog (C:\Program Files).
+    // Bez rozszerzenia tylko z dopisanym .exe, jak CreateProcess: sam prefiks bez rozszerzenia to zwykle katalog (C:\Program Files).
+    private static bool TryExistingFile(string expanded, Func<string, FileProbe> probe, out string path)
+    {
         var file = HasExtension(expanded) ? expanded : expanded + ".exe";
-        if (probe(file) == FileProbe.Exists)
-        {
-            path = file;
-            return true;
-        }
-
-        return false;
+        path = probe(file) == FileProbe.Exists ? file : string.Empty;
+        return path.Length > 0;
     }
 
     private static CommandTarget Found(string path, string? arguments)

@@ -64,6 +64,90 @@ public class AutostartCommandTests
     }
 
     [Fact]
+    public void UnquotedSingleToken_NoExtension_ResolvesExe()
+    {
+        var target = AutostartCommand.Parse(@"C:\Tools\app", Environment, Probe(@"C:\Tools\app.exe"));
+
+        Assert.Equal(new CommandTarget(@"C:\Tools\app.exe", FileProbe.Exists, Definite: true, IsInterpreter: false, null), target);
+        Assert.Equal(new[] { @"C:\Tools\app", @"C:\Tools\app.exe" }, _probed);
+    }
+
+    [Fact]
+    public void UnquotedSingleToken_NoExtension_FileAsGivenExists_Wins()
+    {
+        var target = AutostartCommand.Parse(@"C:\Tools\app", Environment, Probe(@"C:\Tools\app", @"C:\Tools\app.exe"));
+
+        Assert.Equal(new CommandTarget(@"C:\Tools\app", FileProbe.Exists, Definite: true, IsInterpreter: false, null), target);
+        Assert.Single(_probed);
+    }
+
+    [Fact]
+    public void UnquotedSingleToken_NoExtension_NothingExists_NotDefinite()
+    {
+        var target = AutostartCommand.Parse(@"C:\Tools\app", Environment, Probe());
+
+        Assert.Equal(new CommandTarget(@"C:\Tools\app", FileProbe.Unknown, Definite: false, IsInterpreter: false, null), target);
+        Assert.NotEqual(FileProbe.Missing, target.Probe);
+    }
+
+    [Fact]
+    public void Quoted_NoExtension_ResolvesExe()
+    {
+        var target = AutostartCommand.Parse("\"C:\\Tools\\app\" --min", Environment, Probe(@"C:\Tools\app.exe"));
+
+        Assert.Equal(new CommandTarget(@"C:\Tools\app.exe", FileProbe.Exists, Definite: true, IsInterpreter: false, "--min"), target);
+    }
+
+    [Fact]
+    public void Quoted_NoExtension_NothingExists_NotDefinite()
+    {
+        var target = AutostartCommand.Parse("\"C:\\Tools\\app\" --min", Environment, Probe());
+
+        Assert.Equal(new CommandTarget(@"C:\Tools\app", FileProbe.Unknown, Definite: false, IsInterpreter: false, "--min"), target);
+    }
+
+    [Fact]
+    public void NoExtension_ExpandedVariable_ResolvesExe()
+    {
+        var target = AutostartCommand.Parse("\"%windir%\\System32\\cmd\" /c x", Environment, Probe(@"C:\Windows\System32\cmd.exe"));
+
+        Assert.Equal(new CommandTarget(@"C:\Windows\System32\cmd.exe", FileProbe.Exists, Definite: true, IsInterpreter: true, "/c x"), target);
+    }
+
+    [Theory]
+    [InlineData(@"C:\Tools\app.exe")]
+    [InlineData("\"C:\\Tools\\app.exe\" --min")]
+    public void WithExtension_Absent_StillMissing_NoExeAppended(string command)
+    {
+        var target = AutostartCommand.Parse(command, Environment, Probe());
+
+        Assert.Equal(@"C:\Tools\app.exe", target.FilePath);
+        Assert.Equal(FileProbe.Missing, target.Probe);
+        Assert.True(target.Definite);
+        Assert.Equal(new[] { @"C:\Tools\app.exe" }, _probed);
+    }
+
+    [Theory]
+    [InlineData(@"C:\Tools\app")]
+    [InlineData("\"C:\\Tools\\app\" --min")]
+    public void NoExtension_DirectoryOfThatName_NeverExists(string command)
+    {
+        // Prawdziwe sprawdzenie zwraca dla katalogu Unknown (nigdy Exists), jak AutostartFiles.Probe.
+        Func<string, FileProbe> folderOnly = path =>
+        {
+            _probed.Add(path);
+            return string.Equals(path, @"C:\Tools\app", StringComparison.OrdinalIgnoreCase) ? FileProbe.Unknown : FileProbe.Missing;
+        };
+
+        var target = AutostartCommand.Parse(command, Environment, folderOnly);
+
+        Assert.NotEqual(FileProbe.Exists, target.Probe);
+        Assert.NotEqual(FileProbe.Missing, target.Probe);
+        Assert.False(target.Definite);
+        Assert.Contains(@"C:\Tools\app.exe", _probed);
+    }
+
+    [Fact]
     public void Unquoted_ProgramFilesWithSpaces_ResolvesExisting()
     {
         const string Java = @"C:\Program Files (x86)\Common Files\Java\Java Update\jusched.exe";
