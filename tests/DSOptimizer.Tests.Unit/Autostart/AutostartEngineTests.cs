@@ -227,6 +227,7 @@ public class AutostartEngineTests
 
         Assert.Equal(TweakOutcome.Refused, result.Outcome);
         Assert.Equal(AutostartText.FormatChanged, result.Message);
+        Assert.Equal(0, _journal.LoadCount);
         Assert.Equal(0, _journal.SaveCount);
         Assert.Empty(_registry.WriteLog);
     }
@@ -245,6 +246,41 @@ public class AutostartEngineTests
 
         Assert.Equal(TweakOutcome.Refused, result.Outcome);
         Assert.Equal(AutostartText.FormatChanged, result.Message);
+        Assert.Equal(0, _journal.LoadCount);
+        Assert.Equal(0, _journal.SaveCount);
+        Assert.Empty(_registry.WriteLog);
+    }
+
+    [Fact]
+    public void FreshAbsent_SourceNotConfirmed_AlreadyInTarget_AlreadyApplied_NoJournal()
+    {
+        var key = Locations.StartupApprovedKey(AutostartSource.RunMachine);
+        _registry.Set(key, Name, RegValue.FromBinary(Approved(0x03, 0, 0, 0, TaskManagerFiletime)));
+        var row = ApprovedRow(AutostartSource.RunMachine);
+        _registry.Set(key, Name, RegValue.Absent);
+        var context = Context(AllApproved.Where(source => source != AutostartSource.RunMachine).ToArray());
+
+        var result = Single(Engine().Set(new[] { row }, AutostartState.Enabled, context, new AutostartRunOptions(), CancellationToken.None));
+
+        Assert.Equal(TweakOutcome.AlreadyApplied, result.Outcome);
+        Assert.Equal(AutostartText.AlreadyEnabled, result.Message);
+        Assert.Equal(0, _journal.LoadCount);
+        Assert.Equal(0, _journal.SaveCount);
+        Assert.Empty(_registry.WriteLog);
+    }
+
+    [Fact]
+    public void FreshAbsent_StartupTaskManifestEnabled_AlreadyInTarget_AlreadyApplied_NoJournal()
+    {
+        _registry.Set(TaskKey, "State", RegValue.FromDWord(1));
+        var row = TaskRow(manifestEnabled: true);
+        _registry.Set(TaskKey, "State", RegValue.FromDWord(0));
+
+        var result = Single(Set(AutostartState.Enabled, row));
+
+        Assert.Equal(TweakOutcome.AlreadyApplied, result.Outcome);
+        Assert.Equal(AutostartText.AlreadyEnabled, result.Message);
+        Assert.Equal(0, _journal.LoadCount);
         Assert.Equal(0, _journal.SaveCount);
         Assert.Empty(_registry.WriteLog);
     }
@@ -261,6 +297,7 @@ public class AutostartEngineTests
 
         Assert.Equal(TweakOutcome.Refused, result.Outcome);
         Assert.Equal(AutostartText.FormatChanged, result.Message);
+        Assert.Equal(0, _journal.LoadCount);
         Assert.Equal(0, _journal.SaveCount);
         Assert.Empty(_registry.WriteLog);
     }

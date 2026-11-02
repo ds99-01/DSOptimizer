@@ -136,8 +136,7 @@ public sealed class AutostartEngine
 
         // 1. Świeży odczyt tym samym czytnikiem co lista; dane z wiersza służą tylko do wskazania przełącznika.
         var fresh = AutostartSwitchReader.Reread(_registry, row.Entry.Switch);
-        if (fresh.Format is not (AutostartSwitchFormat.Valid or AutostartSwitchFormat.Absent)
-            || !AutostartClassifier.WriteFromZeroAllowed(fresh, row.Entry.Source, context))
+        if (fresh.Format is not (AutostartSwitchFormat.Valid or AutostartSwitchFormat.Absent))
         {
             return Finish(row.Id, TweakOutcome.Refused, AutostartText.FormatChanged, warnings);
         }
@@ -145,6 +144,12 @@ public sealed class AutostartEngine
         if (fresh.State == target)
         {
             return Finish(row.Id, TweakOutcome.AlreadyApplied, target == AutostartState.Disabled ? AutostartText.AlreadyDisabled : AutostartText.AlreadyEnabled, warnings);
+        }
+
+        // Bramka zapisu od zera dopiero po „już w stanie docelowym”: bez zapisu nie ma czego bramkować.
+        if (!AutostartClassifier.WriteFromZeroAllowed(fresh, row.Entry.Source, context))
+        {
+            return Finish(row.Id, TweakOutcome.Refused, AutostartText.FormatChanged, warnings);
         }
 
         // 2. Journal i reguła jednego aktywnego wpisu.
