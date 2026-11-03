@@ -113,6 +113,20 @@ function Get-SmokeUninstallValues {
     finally { $Base.Dispose() }
 }
 
+function Get-SmokeProgramDataPath { return $env:ProgramData }
+
+function Get-SmokeDisplayVersion {
+    $Values = Get-SmokeUninstallValues
+    if ($null -eq $Values -or -not $Values.ContainsKey('DisplayVersion')) { return '' }
+    return [string]$Values['DisplayVersion']
+}
+
+function Resolve-SmokePath {
+    param([Parameter(Mandatory)][string]$Path)
+    if ([System.IO.Path]::IsPathRooted($Path)) { return [System.IO.Path]::GetFullPath($Path) }
+    return [System.IO.Path]::GetFullPath((Join-Path -Path $PWD.ProviderPath -ChildPath $Path))
+}
+
 function Invoke-SmokeProcess {
     param(
         [Parameter(Mandatory)][string]$FilePath,
@@ -123,9 +137,16 @@ function Invoke-SmokeProcess {
 }
 
 function Invoke-SmokeRun {
+    param(
+        [Parameter(Mandatory)][string]$InstallerPath,
+        [Parameter(Mandatory)][string]$ZipPath,
+        [Parameter(Mandatory)][string]$Version,
+        [Parameter(Mandatory)][string]$LogDirectory
+    )
+    $Script:Held = $null
     $Script:Checks = New-Object System.Collections.Generic.List[object]
     $AppDir = Join-Path -Path $env:ProgramFiles -ChildPath 'DSOptimizer'
-    $DataDir = Join-Path -Path $env:ProgramData -ChildPath 'DSOptimizer'
+    $DataDir = Join-Path -Path (Get-SmokeProgramDataPath) -ChildPath 'DSOptimizer'
     $StartMenuLink = Join-Path -Path ([Environment]::GetFolderPath('CommonPrograms')) -ChildPath 'DSOptimizer.lnk'
     $DesktopLink = Join-Path -Path ([Environment]::GetFolderPath('CommonDesktopDirectory')) -ChildPath 'DSOptimizer.lnk'
     $BadDir = Join-Path -Path $env:SystemDrive -ChildPath 'dso-zly-folder'
@@ -228,11 +249,11 @@ function Invoke-SmokeRun {
     try {
         Invoke-Step -Step 'running' -Body {
             $Before = Get-SmokeDirectoryHashes -Path $AppDir
-            $VersionBefore = [string](Get-SmokeUninstallValues)['DisplayVersion']
+            $VersionBefore = Get-SmokeDisplayVersion
             $Script:Held = New-Object System.Threading.Mutex($true, $SmokeMutexName)
             $Code = Invoke-Setup -Step 'running'
             Add-Check -Step 'running' -What 'instalator odmawia kodem 7' -Passed ($Code -eq 7) -Detail "kod: $Code"
-            $VersionAfter = [string](Get-SmokeUninstallValues)['DisplayVersion']
+            $VersionAfter = Get-SmokeDisplayVersion
             Add-Check -Step 'running' -What 'DisplayVersion bez zmian' -Passed ($VersionAfter -ceq $VersionBefore) -Detail "$VersionBefore -> $VersionAfter"
             $Diff = @(Compare-SmokeFiles -Expected $Before -Actual (Get-SmokeDirectoryHashes -Path $AppDir))
             Add-Check -Step 'running' -What 'sumy plików bez zmian po instalatorze' -Passed ($Diff.Count -eq 0) -Detail ($Diff -join '; ')
@@ -300,6 +321,10 @@ if ($MyInvocation.InvocationName -ne '.') {
         Write-Host "Test-InstallerSmoke działa tylko na runnerze GitHub Actions i w VM DSO-26H2-Home/Pro (komputer: '$env:COMPUTERNAME'); nic nie zostało zmienione."
         exit 2
     }
+    if (-not [Environment]::Is64BitProcess) {
+        Write-Host 'Test-InstallerSmoke wymaga 64-bitowego PowerShella (Program Files, widok 64-bit rejestru); nic nie zostalo zmienione.'
+        exit 2
+    }
     $AppDirectory = Join-Path -Path $env:ProgramFiles -ChildPath 'DSOptimizer'
     if ((Test-Path -LiteralPath $AppDirectory) -or ($null -ne (Get-SmokeUninstallValues))) {
         Write-Host 'Maszyna nie jest czysta (jest Program Files\DSOptimizer albo wpis Uninstall DSOptimizera); nic nie zostało zmienione.'
@@ -308,10 +333,13 @@ if ($MyInvocation.InvocationName -ne '.') {
 
     $ExitCode = 1
     try {
+        $InstallerPath = Resolve-SmokePath -Path $InstallerPath
+        $ZipPath = Resolve-SmokePath -Path $ZipPath
+        $LogDirectory = Resolve-SmokePath -Path $LogDirectory
         foreach ($Required in @($InstallerPath, $ZipPath)) {
             if (-not (Test-Path -LiteralPath $Required -PathType Leaf)) { throw "Brak pliku: $Required" }
         }
-        if (Invoke-SmokeRun) { $ExitCode = 0 }
+        if (Invoke-SmokeRun -InstallerPath $InstallerPath -ZipPath $ZipPath -Version $Version -LogDirectory $LogDirectory) { $ExitCode = 0 }
     }
     catch {
         Write-Host "Smoke przerwany: $($_.Exception.Message)"
