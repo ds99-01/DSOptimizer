@@ -15,6 +15,10 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
+    env:
+      INNO_URL: 'https://github.com/jrsoftware/issrc/releases/download/is-6_7_4/innosetup-6.7.4.exe'
+      INNO_SHA256: 'a549929319f9120716677c685535ca4671e4b937b5fdc87e2585f32d8eb30e8c'
+      INNO_SIGNER: 'Pyrsys B.V.'
     steps:
       - uses: actions/checkout@v4
 
@@ -33,6 +37,26 @@ jobs:
       - name: Test (Windows – piaskownica HKCU, PowerShell, journal)
         run: dotnet test tests/DSOptimizer.Tests.Windows/DSOptimizer.Tests.Windows.csproj -c Release --no-build --logger "trx;LogFileName=windows.trx"
 
+      # Inno Setup przypiety: adres, SHA256 i podpis Authenticode sprawdzane przed instalacja (kompilator instalatora).
+      - name: Inno Setup (przypieta wersja)
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $Setup = Join-Path $env:RUNNER_TEMP 'inno-setup.exe'
+          Invoke-WebRequest -UseBasicParsing -Uri $env:INNO_URL -OutFile $Setup
+          $Hash = (Get-FileHash -LiteralPath $Setup -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($Hash -ne $env:INNO_SHA256) { throw "SHA256 Inno Setup niezgodny: $Hash" }
+          $Sig = Get-AuthenticodeSignature -LiteralPath $Setup
+          if ($Sig.Status -ne 'Valid') { throw "Podpis Inno Setup: $($Sig.Status)" }
+          if ($Sig.SignerCertificate.Subject -notlike "*$env:INNO_SIGNER*") { throw "Inny wydawca podpisu Inno Setup: $($Sig.SignerCertificate.Subject)" }
+          $InnoDir = Join-Path $env:RUNNER_TEMP 'inno'
+          $Proc = Start-Process -FilePath $Setup -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', '/CURRENTUSER', ('/DIR="' + $InnoDir + '"') -Wait -PassThru
+          if ($Proc.ExitCode -ne 0) { throw "Instalacja Inno Setup: kod $($Proc.ExitCode)" }
+          $Iscc = Join-Path $InnoDir 'ISCC.exe'
+          # Build-Release po cichu pomija DSO_ISCC wskazujace brakujacy plik, wiec sprawdzamy tutaj.
+          if (-not (Test-Path -LiteralPath $Iscc)) { throw "Brak ISCC.exe po instalacji: $Iscc" }
+          $Utf8NoBom = New-Object System.Text.UTF8Encoding $false
+          [IO.File]::AppendAllText($env:GITHUB_ENV, "DSO_ISCC=$Iscc`n", $Utf8NoBom)
       - name: Wydanie (Build-Release.ps1)
         id: release
         shell: powershell
@@ -49,8 +73,17 @@ jobs:
             & .\tools\release\Build-Release.ps1 -Variant $Variant -OutRoot out
           }
           if ($LASTEXITCODE -ne 0) { throw "Build-Release.ps1 zakonczyl sie kodem $LASTEXITCODE" }
-          $Dir = Get-ChildItem -LiteralPath out -Directory | Select-Object -First 1
+          $Dirs = @(Get-ChildItem -LiteralPath out -Directory)
+          if ($Dirs.Count -ne 1) { throw "Oczekiwano jednego katalogu wydania w out, jest $($Dirs.Count)" }
+          $Dir = $Dirs[0]
           $Version = ($Dir.Name -replace '^v', '') -replace "-$Variant$", ''
+          if ($Variant -eq 'Folder') {
+            $Expected = @("DSOptimizer-$Version.zip", "DSOptimizer-$Version-setup.exe", 'SHA256SUMS.txt')
+          } else {
+            $Expected = @("DSOptimizer-$Version.exe", 'SHA256SUMS.txt')
+          }
+          $Actual = @(Get-ChildItem -LiteralPath $Dir.FullName -File | ForEach-Object { $_.Name } | Sort-Object)
+          if ((($Actual -join '|')) -ne ((@($Expected | Sort-Object)) -join '|')) { throw "Zawartosc wydania: $($Actual -join ', ') zamiast: $($Expected -join ', ')" }
           # Bez BOM: zapis z kodowaniem utf8 w PowerShell 5.1 dopisuje BOM, ktory psuje nazwe pierwszego wyjscia.
           $Utf8NoBom = New-Object System.Text.UTF8Encoding $false
           [IO.File]::AppendAllText($env:GITHUB_OUTPUT, "variant=$Variant`n", $Utf8NoBom)
@@ -62,7 +95,10 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $Dir = '${{ steps.release.outputs.dir }}'
-          foreach ($Line in Get-Content -LiteralPath (Join-Path $Dir 'SHA256SUMS.txt')) {
+          $Lines = @(Get-Content -LiteralPath (Join-Path $Dir 'SHA256SUMS.txt') | Where-Object { $_ -ne '' })
+          $Files = @(Get-ChildItem -LiteralPath $Dir -File | Where-Object { $_.Name -ne 'SHA256SUMS.txt' })
+          if ($Lines.Count -ne $Files.Count) { throw "Linii w sumach: $($Lines.Count), plikow wydania: $($Files.Count)" }
+          foreach ($Line in $Lines) {
             $Hash, $Name = $Line -split '  ', 2
             $Actual = (Get-FileHash -LiteralPath (Join-Path $Dir $Name) -Algorithm SHA256).Hash.ToLowerInvariant()
             if ($Actual -ne $Hash) { throw "SHA256 niezgodny dla $Name" }
@@ -80,6 +116,16 @@ jobs:
           dotnet test tests/DSOptimizer.Tests.Windows/DSOptimizer.Tests.Windows.csproj -c Release --no-build --filter "FullyQualifiedName~SingleExeResourcesTests"
           if ($LASTEXITCODE -ne 0) { throw "Smoke wydanego exe: kod $LASTEXITCODE" }
 
+      # Prawdziwa instalacja, aktualizacja i odinstalowanie na runnerze (nigdy na hoscie autora).
+      - name: Smoke instalatora (Folder)
+        if: ${{ steps.release.outputs.variant == 'Folder' }}
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $Dir = '${{ steps.release.outputs.dir }}'
+          $Version = '${{ steps.release.outputs.version }}'
+          & .\tools\release\Test-InstallerSmoke.ps1 -InstallerPath (Join-Path $Dir "DSOptimizer-$Version-setup.exe") -ZipPath (Join-Path $Dir "DSOptimizer-$Version.zip") -Version $Version -LogDirectory (Join-Path $env:RUNNER_TEMP 'smoke')
+          if ($LASTEXITCODE -ne 0) { throw "Smoke instalatora: kod $LASTEXITCODE" }
       - name: Artefakt wydania
         uses: actions/upload-artifact@v4
         with:
@@ -98,7 +144,7 @@ jobs:
           $Dir = '${{ steps.release.outputs.dir }}'
           $Version = '${{ steps.release.outputs.version }}'
           $Notes = Join-Path $env:RUNNER_TEMP 'notes.md'
-          $NotesText = "DSOptimizer $Version (wariant ${{ steps.release.outputs.variant }}). Sumy kontrolne w SHA256SUMS.txt: Get-FileHash <plik> -Algorithm SHA256."
+          $NotesText = "DSOptimizer $Version (wariant ${{ steps.release.outputs.variant }}). Sumy kontrolne w SHA256SUMS.txt: Get-FileHash <plik> -Algorithm SHA256.`n`n| File | Description |`n| --- | --- |`n| ``DSOptimizer-$Version.zip`` | Portable: unpack and run, nothing is installed; also runs from a USB drive. |`n| ``DSOptimizer-$Version-setup.exe`` | Installer: Program Files for all users, Start menu and desktop shortcuts, uninstall in Settings. |`n| winget | ``winget install dsoptimizer`` once the package is accepted. |`n"
           [IO.File]::WriteAllText($Notes, $NotesText, (New-Object System.Text.UTF8Encoding $false))
           $Files = @(Get-ChildItem -LiteralPath $Dir -File | ForEach-Object { $_.FullName })
           gh release create $env:REF_NAME --draft --title "DSOptimizer $Version" --notes-file $Notes @Files

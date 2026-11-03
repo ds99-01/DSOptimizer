@@ -92,6 +92,47 @@ Describe 'release.yml' {
         $script:Workflow | Should -Match 'DSO_SINGLE_EXE_PATH'
         $script:Workflow | Should -Match 'SingleExeResourcesTests'
     }
+
+    It 'Inno Setup przypięty: adres, SHA256 i podpis' {
+        $script:Workflow | Should -Match ([regex]::Escape('is-6_7_4/innosetup-6.7.4.exe'))
+        $script:Workflow | Should -Match 'a549929319f9120716677c685535ca4671e4b937b5fdc87e2585f32d8eb30e8c'
+        $script:Workflow | Should -Match 'Get-AuthenticodeSignature'
+        $script:Workflow | Should -Match ([regex]::Escape('Pyrsys B.V.'))
+    }
+
+    It 'Inno instalowane przed Build-Release.ps1' {
+        $Inno = $script:Workflow.IndexOf('innosetup-6.7.4.exe')
+        $Build = $script:Workflow.IndexOf('-Variant $Variant')
+        $Inno | Should -BeGreaterThan -1
+        $Build | Should -BeGreaterThan $Inno
+    }
+
+    It 'ISCC trafia do Build-Release przez DSO_ISCC' {
+        $script:Workflow | Should -Match 'GITHUB_ENV'
+        $script:Workflow | Should -Match 'DSO_ISCC'
+    }
+
+    It 'wydanie nie wyłącza instalatora' {
+        $script:Workflow | Should -Not -Match '-NoInstaller'
+    }
+
+    It 'katalog wydania bez Select-Object -First 1' {
+        $script:Workflow | Should -Not -Match ([regex]::Escape('Get-ChildItem -LiteralPath out -Directory | Select-Object -First 1'))
+    }
+
+    It 'smoke instalatora tylko dla Folder, przed artefaktem' {
+        $script:Workflow | Should -Match ([regex]::Escape('Test-InstallerSmoke.ps1'))
+        $script:Workflow | Should -Match "if: \`$\{\{ steps\.release\.outputs\.variant == 'Folder' \}\}"
+        $Smoke = $script:Workflow.IndexOf('Test-InstallerSmoke.ps1')
+        $Artifact = $script:Workflow.IndexOf('Artefakt wydania')
+        $Smoke | Should -BeGreaterThan -1
+        $Artifact | Should -BeGreaterThan $Smoke
+    }
+
+    It 'szkic opisu wymienia instalator i winget' {
+        $script:Workflow | Should -Match ([regex]::Escape('setup.exe'))
+        $script:Workflow | Should -Match ([regex]::Escape('winget install dsoptimizer'))
+    }
 }
 
 
