@@ -432,6 +432,7 @@
     { "id": "prot.corp-mcafee-endpoint", "match": { "displayName": "McAfee Endpoint*" }, "reason": "Może być oprogramowaniem firmowym (McAfee Endpoint Security): usuwa je administrator firmy." },
     { "id": "prot.corp-mcafee-encryption", "match": { "displayName": "McAfee Drive Encryption*" }, "reason": "Może być oprogramowaniem firmowym (szyfrowanie dysku): usunięcie grozi utratą dostępu do danych." },
     { "id": "prot.corp-mcafee-dlp", "match": { "displayName": "McAfee Data Loss Prevention*" }, "reason": "Może być oprogramowaniem firmowym (McAfee DLP): usuwa je administrator firmy." },
-    { "id": "prot.corp-trellix", "match": { "displayName": "Trellix*" }, "reason": "Może być oprogramowaniem firmowym (Trellix, dawniej McAfee Enterprise): usuwa je administrator firmy." }
+    { "id": "prot.corp-trellix", "match": { "displayName": "Trellix*" }, "reason": "Może być oprogramowaniem firmowym (Trellix, dawniej McAfee Enterprise): usuwa je administrator firmy." },
+    { "id": "prot.dsoptimizer", "match": { "displayName": "DSOptimizer" }, "reason": "DSOptimizer: ten program.", "source": "nazwa wpisu Uninstall z instalatora DSOptimizera (tools/release/DSOptimizer.iss, UninstallDisplayName)" }
   ]
 }

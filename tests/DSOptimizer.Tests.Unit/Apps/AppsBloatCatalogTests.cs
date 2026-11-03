@@ -274,7 +274,24 @@ public class AppsBloatCatalogTests
         Assert.Equal(AppGroup.Protected, ClassifyOne(Program(name)).Group);
     }
 
-    // R21: zależności uruchomieniowe Win32 – nazwy wpisów Uninstall widocznych na liście (bez SystemComponent), odczyt hosta Windows 11
+    [Fact]
+    public void DSOptimizer_FromInstaller_IsProtectedAsThisProgram()
+    {
+        var row = ClassifyOne(Program("DSOptimizer", "Dawid Świeboda"));
+        Assert.Equal(AppGroup.Protected, row.Group);
+        Assert.Equal(AppRemovability.Protected, row.Removability);
+        Assert.False(row.CanRemove);
+        Assert.Equal("DSOptimizer: ten program.", row.BlockedReason);
+    }
+
+    [Theory]
+    [InlineData("DSOptimizer 4.0.5")]
+    [InlineData("DSOptimizer Helper")]
+    [InlineData("My DSOptimizer")]
+    public void OtherNamesWithDSOptimizer_AreNotProtectedByThisEntry(string name)
+        => Assert.NotEqual(AppGroup.Protected, ClassifyOne(Program(name)).Group);
+
+    // R21: zależności uruchomieniowe Win32– nazwy wpisów Uninstall widocznych na liście (bez SystemComponent), odczyt hosta Windows 11
     // 2026-10-21 (Microsoft GameInput to MSI, nie pakiet AppX) oraz nazwy instalatorów .NET z Microsoft Learn.
     [Theory]
     [InlineData("Microsoft Visual C++ 2005 Redistributable")]

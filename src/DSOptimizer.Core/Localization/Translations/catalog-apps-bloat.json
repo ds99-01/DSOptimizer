@@ -393,6 +393,10 @@
     {
       "pl": "Może być oprogramowaniem firmowym (Trellix, dawniej McAfee Enterprise): usuwa je administrator firmy.",
       "en": "May be company software (Trellix, formerly McAfee Enterprise): only your company's administrator should remove it."
+    },
+    {
+      "pl": "DSOptimizer: ten program.",
+      "en": "DSOptimizer: this program."
     }
   ]
 }

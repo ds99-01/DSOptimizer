@@ -1,4 +1,4 @@
-<!-- source: docs/apps/README.md sha256: c501caae301bf457d8e3554525ebb9ccccb7bbc9b01a03751f73f0c58d77fe2a -->
+<!-- source: docs/apps/README.md sha256: ad69e3296685374b13c31068b4a3b6b38d88275de041376186847c232beed2f9 -->
 
 # Apps – classification file `apps-bloat.json`
 
@@ -111,3 +111,4 @@ An error in the file gives `AppsCatalogException` with the entry id and the fiel
 | ASP.NET Core Runtime / Shared Framework (`Microsoft ASP.NET Core*Runtime*`, `…*Shared Framework*`) | **Protected** | Without them, ASP.NET Core programs and services won't start |
 | Microsoft Update Health Tools | **Protected** | A component of the Windows Update service (KB4023057) |
 | Microsoft GameInput (`Microsoft GameInput*`, MSI program) | **Protected** | Controller support in games; games install it back |
+| DSOptimizer (installer entry) | **Protected** | The program doesn't offer to remove itself; Uninstall entry name from the installer |

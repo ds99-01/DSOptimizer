@@ -109,3 +109,4 @@ Błąd w pliku daje `AppsCatalogException` z id wpisu i nazwą pola.
 | ASP.NET Core Runtime / Shared Framework (`Microsoft ASP.NET Core*Runtime*`, `…*Shared Framework*`) | **Chronione** | Bez nich programy i usługi ASP.NET Core się nie uruchomią |
 | Microsoft Update Health Tools | **Chronione** | Składnik usługi Windows Update (KB4023057) |
 | Microsoft GameInput (`Microsoft GameInput*`, program MSI) | **Chronione** | Obsługa kontrolerów w grach; gry instalują go z powrotem |
+| DSOptimizer (wpis z instalatora) | **Chronione** | Program nie proponuje usunięcia samego siebie; nazwa wpisu Uninstall z instalatora |
