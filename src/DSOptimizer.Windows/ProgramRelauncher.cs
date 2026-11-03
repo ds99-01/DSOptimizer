@@ -9,7 +9,7 @@ using DSOptimizer.Core.Localization;
 namespace DSOptimizer.Windows;
 
 /// <summary>
-/// Ponowne uruchomienie DSOptimizera (np. po zmianie języka): własny plik exe, bez argumentów, przez
+/// Ponowne uruchomienie DSOptimizera (np. po zmianie języka): własny plik exe z argumentem <c>--relaunched</c> (nowa instancja czeka na zwolnienie mutexa przez bieżącą), przez
 /// <see cref="NativeProcessStarter"/> (CreateProcess, <c>bInheritHandles=FALSE</c>). Proces podniesiony dziedziczy token, więc bez UAC.
 /// Nie zamyka bieżącej instancji. Testy używają wyłącznie konstruktora wewnętrznego z fałszywym <c>start</c>.
 /// </summary>
@@ -46,7 +46,7 @@ public sealed class ProgramRelauncher : IProgramRelauncher
 
             var directory = Path.GetDirectoryName(exe) ?? string.Empty;
             _log.Info(Component, L.F("Ponowne uruchomienie programu: {0}", exe));
-            _start(exe, string.Empty, directory);
+            _start(exe, SingleInstanceGuard.RelaunchedArgument, directory);
         }
         catch (Win32Exception ex)
         {

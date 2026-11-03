@@ -16,7 +16,7 @@ public class ProgramRelauncherTests
     private readonly List<string> _events = new();
 
     [Fact]
-    public void Relaunch_StartsOwnExeWithoutArguments()
+    public void Relaunch_StartsOwnExeWithRelaunchedArgument()
     {
         var relauncher = new ProgramRelauncher(
             new RecordingLog(_events),
@@ -28,7 +28,7 @@ public class ProgramRelauncherTests
         Assert.Equal(2, _events.Count);
         Assert.StartsWith("Info ", _events[0], StringComparison.Ordinal);
         Assert.Contains(@"C:\Narzedzia\DSOptimizer\DSOptimizer.exe", _events[0], StringComparison.Ordinal);
-        Assert.Equal(@"start C:\Narzedzia\DSOptimizer\DSOptimizer.exe||C:\Narzedzia\DSOptimizer", _events[1]);
+        Assert.Equal(@"start C:\Narzedzia\DSOptimizer\DSOptimizer.exe|--relaunched|C:\Narzedzia\DSOptimizer", _events[1]);
     }
 
     [Fact]

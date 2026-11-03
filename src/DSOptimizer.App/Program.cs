@@ -40,7 +40,8 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
-        if (args.Length > 0)
+        var relaunched = SingleInstanceGuard.IsRelaunch(args);
+        if (args.Length > 0 && !relaunched)
         {
             // Domyślny język procesu = język CLI: wątki bez przepływu AsyncLocal (np. odczyt potoku) nie widzą L.Use z CliHost.Run.
             L.SetDefault(CliHost.ResolveLanguage(args, SecureRoot.ProgramData));
@@ -51,6 +52,18 @@ internal static class Program
         // PeekLanguage tylko czyta (nie tworzy korzenia, nie rzuca); ostateczny język (zapisany albo wybrany) ustawia się niżej.
         var detected = LanguageDetector.DetectCurrent();
         L.SetDefault(new JsonFileSettingsStore(SecureRoot.ProgramData, new SystemClock()).PeekLanguage() ?? detected);
+
+        // Jedna kopia okna (instalowana i przenośna dzielą dane). Mutex przed AppComposition.Create: druga kopia nie tworzy katalogu,
+        // nie zabezpiecza korzenia i nie pisze do logu. Po --relaunched (zmiana języka) czeka do 30 s, aż stara instancja go zwolni.
+        // using var obejmuje cały app.Run na tym samym wątku STA: uchwyt nie ma finalizatora, a zwolnienie musi iść z wątku właściciela.
+        using var instance = SingleInstanceGuard.TryEnter(
+            SingleInstanceGuard.ProgramMutexName,
+            relaunched ? SingleInstanceGuard.RelaunchWait : SingleInstanceGuard.StartWait);
+        if (instance is null)
+        {
+            MessageBox.Show(StartupText.AlreadyRunning, "DSOptimizer", MessageBoxButton.OK, MessageBoxImage.Information);
+            return (int)CliExitCode.OperationFailed;
+        }
 
         var sink = new UiLogSink(Dispatcher.CurrentDispatcher, new SystemClock());
         // Katalog wczytany po polsku (polski tekst = klucz tłumaczenia); teksty pozycji tłumaczy dopiero CatalogTranslation.Translate
@@ -205,7 +218,9 @@ internal static class Program
             specification,
             prep,
             settingsPage);
-        return app.Run(new MainWindow(viewModel, log, shell, theme, protectedRoot));
+        var exitCode = app.Run(new MainWindow(viewModel, log, shell, theme, protectedRoot));
+        GC.KeepAlive(instance);
+        return exitCode;
     }
 
     /// <summary>Okno wyboru języka; jego wyjątek nie blokuje startu: wpis w dzienniku i język wykryty (<c>null</c>).</summary>

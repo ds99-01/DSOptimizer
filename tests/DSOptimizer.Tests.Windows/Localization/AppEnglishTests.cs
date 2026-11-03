@@ -219,6 +219,7 @@ public class AppEnglishTests
             var nl = Environment.NewLine;
             Assert.Equal("DSOptimizer – warning", StartupText.WarningTitle);
             Assert.Equal("DSOptimizer – error", StartupText.ErrorTitle);
+            Assert.Equal("DSOptimizer is already running (a window or a command-line command). Switch to the open window, or wait until the command finishes.", StartupText.AlreadyRunning);
             Assert.Equal("The built-in catalog is invalid:" + nl + "a" + nl + "b", StartupText.CatalogInvalid(new[] { "a", "b" }));
             Assert.Equal("Can't prepare the DSOptimizer working folder: denied", StartupText.WorkingFolderFailed("denied"));
             Assert.Equal("Can't read the settings: denied Using default settings.", StartupText.SettingsReadFailed("denied"));

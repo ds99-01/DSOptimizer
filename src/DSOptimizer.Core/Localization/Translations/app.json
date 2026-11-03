@@ -10,6 +10,10 @@
       "en": "DSOptimizer – error"
     },
     {
+      "pl": "DSOptimizer już działa (okno albo polecenie w trybie wiersza poleceń). Przełącz się na otwarte okno albo poczekaj, aż polecenie się skończy.",
+      "en": "DSOptimizer is already running (a window or a command-line command). Switch to the open window, or wait until the command finishes."
+    },
+    {
       "pl": "Wbudowany katalog jest nieprawidłowy:{0}{1}",
       "en": "The built-in catalog is invalid:{0}{1}"
     },

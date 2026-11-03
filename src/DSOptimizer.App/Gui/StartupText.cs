@@ -14,6 +14,9 @@ internal static class StartupText
 
     public static string ErrorTitle => L.T("DSOptimizer – błąd");
 
+    public static string AlreadyRunning
+        => L.T("DSOptimizer już działa (okno albo polecenie w trybie wiersza poleceń). Przełącz się na otwarte okno albo poczekaj, aż polecenie się skończy.");
+
     public static string CatalogInvalid(IEnumerable<string> errors)
         => L.F("Wbudowany katalog jest nieprawidłowy:{0}{1}", Environment.NewLine, string.Join(Environment.NewLine, errors));
 
