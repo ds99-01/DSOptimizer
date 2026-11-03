@@ -6,6 +6,13 @@ Instrukcja uruchomienia:
         .\tools\release\Build-Release.ps1 -Variant Folder -OutRoot $env:TEMP\dso-explore\4.0.3\wydania
         .\tests\vm\explore\Invoke-NetExploration.ps1 -VmName DSO-26H2-Pro -Scenario start-on,start-off,cli `
             -ArtifactPath <katalog wydania>\DSOptimizer-4.0.3.zip -OutDirectory $env:TEMP\dso-explore\4.0.3\siec\pro
+    Wersja zainstalowana: zamiast -ArtifactPath podaj -InstallerPath <katalog wydania>\DSOptimizer-<wersja>-setup.exe (obok SHA256SUMS.txt
+    z jego sumą). Parametry wykluczają się: dokładnie jeden z dwóch jest wymagany (błąd przed dotknięciem VM). W VM zamiast rozpakowania
+    działa cicha instalacja (/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-, wymagany kod 0) do C:\Program Files\DSOptimizer, a pomiar
+    dotyczy C:\Program Files\DSOptimizer\DSOptimizer.exe (appVersion = FileVersion zainstalowanego pliku). net.json ma pole variant
+    (Folder albo Installer). Instalator uruchamia się wyłącznie w VM, nigdy na hoście.
+        .\tests\vm\explore\Invoke-NetExploration.ps1 -VmName DSO-26H2-Pro -InstallerPath <katalog wydania>\DSOptimizer-4.0.4-setup.exe `
+            -OutDirectory $env:TEMP\dso-explore\instalator\siec\pro
     -Scenario: start-on, start-off, cli (domyślnie wszystkie trzy, w tej kolejności).
     -ShowPlan: wypisuje rozstrzygnięte argumenty i plan (JSON) i kończy, nic nie uruchamia.
     -OutDirectory jest wymagany: ścieżka bezwzględna poza repo; w repo tylko katalog ignorowany przez git.
@@ -16,7 +23,7 @@ Opis działania:
     i Microsoft-Windows-DNS-Client, parser net\Parse-NetTrace.ps1 przypisuje ruch do drzewa procesów DSOptimizer.exe (PID rodzica,
     potomkowie dowolnej głębokości) i do zapytań DNS z tego drzewa. Sieć: Default Switch, podłączona dopiero po starcie VM i na czas
     scenariusza. W VM próba zatrzymania wuauserv, UsoSvc, DoSvc i BITS (wynik każdej w polu services; DoSvc odmawia zmiany: Odmowa dostępu) (usługi Windows pobierające w tle zalewały ślad i nie należą do programu).
-    Scenariusze (każdy: revert do checkpointu, start VM bez sieci, wydanie z -ArtifactPath rozpakowane do C:\dso\app, konto 'dso'):
+    Scenariusze (każdy: revert do checkpointu, start VM bez sieci, wydanie z -ArtifactPath rozpakowane do C:\dso\app albo z -InstallerPath zainstalowane po cichu, konto 'dso'):
       start-on  - settings.json z {"schemaVersion":1,"language":"pl"} (pole checkUpdatesAtStart nieobecne = test wartości domyślnej),
                   start okna i net\NavProbe.ps1 po wszystkich stronach bez klikania przycisków;
       start-off - jak start-on, ale settings.json dodatkowo z "checkUpdatesAtStart":false;
@@ -51,7 +58,9 @@ param(
     [ValidateRange(60, 7200)][int]$ReadyTimeoutSeconds = 1200,
     [switch]$ShowPlan,
     # Plik wydania Folder (DSOptimizer-<wersja>.zip z Build-Release.ps1), obok SHA256SUMS.txt.
-    [string]$ArtifactPath
+    [string]$ArtifactPath,
+    # Instalator DSOptimizer-<wersja>-setup.exe (obok SHA256SUMS.txt z jego sumą); wyklucza się z -ArtifactPath.
+    [string]$InstallerPath
 )
 
 Import-Module (Join-Path $PSScriptRoot 'ExploreCommon.psm1') -Force
@@ -297,6 +306,23 @@ function Compare-NetProcessAudit {
     if ($OnlyTrace.Count -gt 0) { $Detail += "tylko w śladzie: PID $($OnlyTrace -join ', ')" }
     return [pscustomobject]@{ Match = $false; Detail = "Rozbieżność drzewa procesów: $($Detail -join ' | ') ($($Parts -join '; '))."; OnlyInAudit = $OnlyAudit; OnlyInTrace = $OnlyTrace }
 }
+function Assert-NetSha256Sums {
+    # Plik obok SHA256SUMS.txt z tą samą sumą; zwraca sumę (małe litery). Każdy błąd = wyjątek.
+    [CmdletBinding()]
+    [OutputType([string])]
+    param([Parameter(Mandatory)][string]$FullPath, [Parameter(Mandatory)][string]$Name)
+    $Sums = Join-Path ([System.IO.Path]::GetDirectoryName($FullPath)) 'SHA256SUMS.txt'
+    if (-not [System.IO.File]::Exists($Sums)) { throw "Brak '$Sums' obok pliku wydania." }
+    $Expected = $null
+    foreach ($Line in [System.IO.File]::ReadAllLines($Sums)) {
+        if ($Line -match '^([0-9a-fA-F]{64}) [ *](.+)$' -and $Matches[2] -ceq $Name) { $Expected = $Matches[1].ToLowerInvariant() }
+    }
+    if ($null -eq $Expected) { throw "SHA256SUMS.txt nie ma sumy pliku '$Name'." }
+    $Sha = (Get-FileHash -LiteralPath $FullPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+    if ($Sha -cne $Expected) { throw "SHA256 pliku '$Name' ($Sha) różni się od SHA256SUMS.txt ($Expected)." }
+    return $Sha
+}
+
 function Resolve-NetArtifact {
     # -ArtifactPath -> opis wydania Folder z Build-Release.ps1 (DSOptimizer-<wersja>.zip obok SHA256SUMS.txt z tą samą sumą; w zipie
     # DSOptimizer\DSOptimizer.exe). Każdy błąd = wyjątek, zanim cokolwiek dotknie VM.
@@ -309,21 +335,43 @@ function Resolve-NetArtifact {
     $Name = [System.IO.Path]::GetFileName($Full)
     if ($Name -notmatch '^DSOptimizer-(\d+\.\d+\.\d+)\.zip\z') { throw "Plik '$Name' nie jest wydaniem Folder (oczekiwano DSOptimizer-<wersja>.zip)." }
     $Version = $Matches[1]
-    $Sums = Join-Path ([System.IO.Path]::GetDirectoryName($Full)) 'SHA256SUMS.txt'
-    if (-not [System.IO.File]::Exists($Sums)) { throw "Brak '$Sums' obok pliku wydania." }
-    $Expected = $null
-    foreach ($Line in [System.IO.File]::ReadAllLines($Sums)) {
-        if ($Line -match '^([0-9a-fA-F]{64}) [ *](.+)$' -and $Matches[2] -ceq $Name) { $Expected = $Matches[1].ToLowerInvariant() }
-    }
-    if ($null -eq $Expected) { throw "SHA256SUMS.txt nie ma sumy pliku '$Name'." }
-    $Sha = (Get-FileHash -LiteralPath $Full -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
-    if ($Sha -cne $Expected) { throw "SHA256 pliku '$Name' ($Sha) różni się od SHA256SUMS.txt ($Expected)." }
+    $Sha = Assert-NetSha256Sums -FullPath $Full -Name $Name
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $Zip = [System.IO.Compression.ZipFile]::OpenRead($Full)
     try { $HasExe = @($Zip.Entries | Where-Object { ($_.FullName -replace '\\', '/') -ceq 'DSOptimizer/DSOptimizer.exe' }).Count -eq 1 }
     finally { $Zip.Dispose() }
     if (-not $HasExe) { throw "Zip '$Name' nie ma DSOptimizer\DSOptimizer.exe." }
     return [ordered]@{ Variant = 'Folder'; Path = $Full; Name = $Name; Version = $Version; Sha256 = $Sha; Bytes = (New-Object System.IO.FileInfo($Full)).Length }
+}
+
+function Resolve-NetInstaller {
+    # -InstallerPath -> opis instalatora (DSOptimizer-<wersja>-setup.exe obok SHA256SUMS.txt z tą samą sumą). Plik jest tylko czytany
+    # (suma); instalator nigdy nie startuje na hoście. Każdy błąd = wyjątek, zanim cokolwiek dotknie VM.
+    [CmdletBinding()]
+    param([AllowEmptyString()][AllowNull()][string]$InstallerPath)
+    if ([string]::IsNullOrWhiteSpace($InstallerPath)) { throw '-InstallerPath jest wymagany (DSOptimizer-<wersja>-setup.exe z tools\release\Build-Release.ps1).' }
+    if ($InstallerPath -notmatch '^[A-Za-z]:\\' -and $InstallerPath -notmatch '^\\\\[^\\]+\\[^\\]+') { throw "-InstallerPath musi być ścieżką bezwzględną: '$InstallerPath'." }
+    $Full = [System.IO.Path]::GetFullPath($InstallerPath)
+    if (-not [System.IO.File]::Exists($Full)) { throw "Brak pliku instalatora '$Full'." }
+    $Name = [System.IO.Path]::GetFileName($Full)
+    if ($Name -cnotmatch '^DSOptimizer-(\d+\.\d+\.\d+)-setup\.exe\z') { throw "Plik '$Name' nie jest instalatorem (oczekiwano DSOptimizer-<wersja>-setup.exe)." }
+    $Version = $Matches[1]
+    $Sha = Assert-NetSha256Sums -FullPath $Full -Name $Name
+    return [ordered]@{ Variant = 'Installer'; Path = $Full; Name = $Name; Version = $Version; Sha256 = $Sha; Bytes = (New-Object System.IO.FileInfo($Full)).Length }
+}
+
+function Get-NetLayout {
+    # Układ katalogów w VM: wydanie Folder rozpakowane do C:\dso\app (jak reszta testów VM), instalator -> C:\Program Files\DSOptimizer
+    # (folder ze spacją: ścieżka idzie wyłącznie do pól typu Execute/FilePath/LiteralPath, nigdy do składanej linii poleceń).
+    [CmdletBinding()]
+    param([AllowNull()]$Artifact)
+    $Layout = Get-DsoVmLayout
+    $Variant = if ($null -ne $Artifact -and $Artifact.Contains('Variant')) { [string]$Artifact['Variant'] } else { 'Folder' }
+    if ($Variant -eq 'Installer') {
+        $Layout['App'] = 'C:\Program Files\DSOptimizer'
+        $Layout['Exe'] = 'C:\Program Files\DSOptimizer\DSOptimizer.exe'
+    }
+    return $Layout
 }
 
 function Get-NetRunArguments {
@@ -335,13 +383,19 @@ function Get-NetRunArguments {
         [Parameter(Mandatory)][string]$OutDirectory,
         [Parameter(Mandatory)][string]$CheckpointName,
         [Parameter(Mandatory)][int]$ReadyTimeoutSeconds,
-        [AllowEmptyString()][AllowNull()][string]$ArtifactPath
+        [AllowEmptyString()][AllowNull()][string]$ArtifactPath,
+        [AllowEmptyString()][AllowNull()][string]$InstallerPath
     )
+    $HasArtifact = -not [string]::IsNullOrWhiteSpace($ArtifactPath)
+    $HasInstaller = -not [string]::IsNullOrWhiteSpace($InstallerPath)
+    if ($HasArtifact -and $HasInstaller) { throw '-ArtifactPath i -InstallerPath wykluczają się: podaj dokładnie jeden.' }
+    if (-not $HasArtifact -and -not $HasInstaller) { throw 'Podaj -ArtifactPath (zip Folder) albo -InstallerPath (DSOptimizer-<wersja>-setup.exe).' }
     $Order = @('start-on', 'start-off', 'cli')
     $Ordered = @($Order | Where-Object { $Scenario -contains $_ })
     if ($Ordered.Count -eq 0) { throw 'Podaj co najmniej jeden scenariusz: start-on, start-off, cli.' }
+    $Artifact = if ($HasInstaller) { Resolve-NetInstaller -InstallerPath $InstallerPath } else { Resolve-NetArtifact -ArtifactPath $ArtifactPath }
     return [ordered]@{ VmName = $VmName; Scenarios = $Ordered; OutDirectory = $OutDirectory; CheckpointName = $CheckpointName; ReadyTimeoutSeconds = $ReadyTimeoutSeconds
-        Artifact = (Resolve-NetArtifact -ArtifactPath $ArtifactPath); Plan = (Get-NetPlan) }
+        Artifact = $Artifact; Layout = (Get-NetLayout -Artifact $Artifact); Plan = (Get-NetPlan) }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -386,6 +440,19 @@ $script:NetInstallBlock = {
     Move-Item -LiteralPath (Join-Path $Staging 'DSOptimizer') -Destination $AppDirectory
     Remove-Item -LiteralPath $Staging -Recurse -Force
     if (-not (Test-Path -LiteralPath $ExePath)) { throw "Po rozpakowaniu brak $ExePath." }
+    return (Get-Item -LiteralPath $ExePath).VersionInfo.FileVersion
+}
+
+$script:NetInstallerBlock = {
+    # Instalator (już skopiowany do $WorkDirectory) -> weryfikacja SHA256 w VM -> cicha instalacja do Program Files (kod 0 wymagany).
+    # Ścieżka $ExePath (folder ze spacją) trafia tylko do -LiteralPath; instalator leży w C:\dso\net (bez spacji), argumenty to tablica.
+    param([string]$InstallerPath, [string]$ExpectedSha256, [string]$ExePath)
+    $ErrorActionPreference = 'Stop'
+    $Sha = (Get-FileHash -LiteralPath $InstallerPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($Sha -ne $ExpectedSha256) { throw "SHA256 instalatora w VM ($Sha) różni się od oczekiwanego ($ExpectedSha256)." }
+    $Process = Start-Process -FilePath $InstallerPath -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-') -Wait -PassThru
+    if ($Process.ExitCode -ne 0) { throw "Instalator zakończył się kodem $($Process.ExitCode) (oczekiwano 0)." }
+    if (-not (Test-Path -LiteralPath $ExePath)) { throw "Po instalacji brak $ExePath." }
     return (Get-Item -LiteralPath $ExePath).VersionInfo.FileVersion
 }
 
@@ -586,7 +653,12 @@ function Invoke-NetScenario {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'net\Parse-NetTrace.ps1') -Destination (Join-Path $Plan.WorkDirectory 'Parse-NetTrace.ps1') -ToSession $Session -Force
     $RemoteZip = Join-Path $Plan.WorkDirectory $Context.Artifact.Name
     Copy-Item -LiteralPath $Context.Artifact.Path -Destination $RemoteZip -ToSession $Session -Force
-    $Record.appVersion = [string](Invoke-Command -Session $Session -ScriptBlock $script:NetInstallBlock -ArgumentList @($RemoteZip, $Context.Artifact.Sha256, $Layout.App, $Layout.Exe) | Select-Object -Last 1)
+    if ($Context.Artifact['Variant'] -eq 'Installer') {
+        $Record.appVersion = [string](Invoke-Command -Session $Session -ScriptBlock $script:NetInstallerBlock -ArgumentList @($RemoteZip, $Context.Artifact.Sha256, $Layout.Exe) | Select-Object -Last 1)
+    }
+    else {
+        $Record.appVersion = [string](Invoke-Command -Session $Session -ScriptBlock $script:NetInstallBlock -ArgumentList @($RemoteZip, $Context.Artifact.Sha256, $Layout.App, $Layout.Exe) | Select-Object -Last 1)
+    }
 
     $SettingsJson = if ($Scenario -eq 'start-off') { $Plan.SettingsOff } else { $Plan.SettingsOn }
     $Record.settings = Invoke-Command -Session $Session -ScriptBlock $script:NetSettingsBlock -ArgumentList @($Plan.SettingsDirectory, $SettingsJson)
@@ -688,7 +760,7 @@ function Invoke-NetVmRun {
     $Errors = @()
     $Timeline = @()
     $VmDirectory = Join-Path $OutDirectory $VmName
-    $Layout = Get-DsoVmLayout
+    $Layout = Get-NetLayout -Artifact $Artifact
     $AuthFailure = $null
     foreach ($Scenario in $Scenarios) {
         $Record = [ordered]@{ scenario = $Scenario; passed = $false; detail = $null; error = $null; problems = @() }
@@ -732,7 +804,7 @@ function Invoke-NetVmRun {
         if ($null -ne $AuthFailure) { break }
     }
     $Failed = @($Results.Values | Where-Object { -not $_.passed } | ForEach-Object { $_.scenario })
-    $Result = [ordered]@{ schema = 1; vmName = $VmName; checkpoint = $CheckpointName; startedAt = $StartedAt.ToString('o'); finishedAt = (Get-Date).ToString('o')
+    $Result = [ordered]@{ schema = 1; vmName = $VmName; checkpoint = $CheckpointName; variant = $(if ($Artifact.Contains('Variant')) { [string]$Artifact['Variant'] } else { 'Folder' }); startedAt = $StartedAt.ToString('o'); finishedAt = (Get-Date).ToString('o')
         scope = [string]$Plan.Scope; artifact = $Artifact; allPassed = ($Failed.Count -eq 0 -and $Errors.Count -eq 0 -and $Results.Count -eq $Scenarios.Count); errors = $Errors; timeline = $Timeline; scenarios = $Results }
     $Saved = Save-ExploreResult -Result $Result -OutDirectory $OutDirectory -VmName $VmName -FileName 'net.json'
     if ($null -ne $AuthFailure) { throw $AuthFailure }
@@ -755,7 +827,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         $OutDirectory = Assert-ExploreOutDirectory -Path $OutDirectory -RepoRoot $RepoRoot -Example '$env:TEMP\dso-explore\4.0.3\siec\pro'
         $OutDirectory = Resolve-ExploreOutDirectory -Path $OutDirectory
         $RunArguments = Get-NetRunArguments -VmName $VmName -Scenario $Scenario -OutDirectory $OutDirectory -CheckpointName $CheckpointName `
-            -ReadyTimeoutSeconds $ReadyTimeoutSeconds -ArtifactPath $ArtifactPath
+            -ReadyTimeoutSeconds $ReadyTimeoutSeconds -ArtifactPath $ArtifactPath -InstallerPath $InstallerPath
         if ($ShowPlan) {
             [pscustomobject]$RunArguments | ConvertTo-Json -Depth 6
             exit 0
@@ -771,7 +843,7 @@ if ($MyInvocation.InvocationName -ne '.') {
             throw 'Uruchom skrypt w sesji PowerShell jako administrator (Hyper-V i PowerShell Direct tego wymagają).'
         }
         Write-Host "Wyniki: $OutDirectory"
-        Write-Host "Wydanie: $($RunArguments.Artifact.Path) (SHA256 $($RunArguments.Artifact.Sha256))"
+        Write-Host "Wydanie ($($RunArguments.Artifact.Variant)): $($RunArguments.Artifact.Path) (SHA256 $($RunArguments.Artifact.Sha256))"
         Write-Host "Zakres: $($RunArguments.Plan.Scope)"
         Write-Host "VM: $VmName; scenariusze: $(@($RunArguments.Scenarios) -join ', ')"
         $Saved = Invoke-NetVmRun -VmName $VmName -OutDirectory $OutDirectory -Scenarios @($RunArguments.Scenarios) -Artifact $RunArguments.Artifact `

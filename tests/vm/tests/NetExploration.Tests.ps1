@@ -397,6 +397,93 @@ Describe 'Plan i argumenty' {
     }
 }
 
+Describe 'Wersja zainstalowana (-InstallerPath)' {
+    BeforeAll {
+        function script:New-FakeInstaller {
+            param([string]$Dir, [string]$Name = 'DSOptimizer-4.0.4-setup.exe', [switch]$NoSums, [switch]$BadSum)
+            $null = New-Item -ItemType Directory -Path $Dir -Force
+            $File = Join-Path $Dir $Name
+            [System.IO.File]::WriteAllBytes($File, [byte[]](77, 90, 9, 9))
+            $Sha = (Get-FileHash -LiteralPath $File -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($BadSum) { $Sha = '0' * 64 }
+            if (-not $NoSums) { [System.IO.File]::WriteAllText((Join-Path $Dir 'SHA256SUMS.txt'), "$Sha  $Name`n") }
+            return $File
+        }
+        function script:New-FakeZip {
+            param([string]$Dir)
+            $Source = Join-Path $Dir 'src\DSOptimizer'
+            $null = New-Item -ItemType Directory -Path $Source -Force
+            [System.IO.File]::WriteAllBytes((Join-Path $Source 'DSOptimizer.exe'), [byte[]](77, 90, 3))
+            $Zip = Join-Path $Dir 'DSOptimizer-4.0.4.zip'
+            Compress-Archive -Path $Source -DestinationPath $Zip
+            $Sha = (Get-FileHash -LiteralPath $Zip -Algorithm SHA256).Hash.ToLowerInvariant()
+            [System.IO.File]::WriteAllText((Join-Path $Dir 'SHA256SUMS.txt'), "$Sha  DSOptimizer-4.0.4.zip`n")
+            return $Zip
+        }
+    }
+    It 'Resolve-NetInstaller: poprawny plik z sumą przechodzi' {
+        $File = New-FakeInstaller -Dir (Join-Path $TestDrive 'i1')
+        $Installer = Resolve-NetInstaller -InstallerPath $File
+        $Installer.Variant | Should -BeExactly 'Installer'
+        $Installer.Name | Should -BeExactly 'DSOptimizer-4.0.4-setup.exe'
+        $Installer.Version | Should -BeExactly '4.0.4'
+        $Installer.Path | Should -BeExactly $File
+        $Installer.Bytes | Should -Be 4
+        $Installer.Sha256 | Should -Be (Get-FileHash -LiteralPath $File -Algorithm SHA256).Hash.ToLowerInvariant()
+    }
+    It 'Resolve-NetInstaller: zła nazwa, brak sum, zła suma i ścieżka względna to wyjątek' {
+        $Zip = Join-Path $TestDrive 'i2\DSOptimizer-4.0.4.zip'
+        $null = New-Item -ItemType Directory -Path (Split-Path $Zip) -Force
+        [System.IO.File]::WriteAllBytes($Zip, [byte[]](1, 2))
+        { Resolve-NetInstaller -InstallerPath $Zip } | Should -Throw '*nie jest instalatorem*'
+        $Upper = New-FakeInstaller -Dir (Join-Path $TestDrive 'i3') -Name 'DSOptimizer-4.0.4-Setup.exe'
+        { Resolve-NetInstaller -InstallerPath $Upper } | Should -Throw '*nie jest instalatorem*'
+        $NoSums = New-FakeInstaller -Dir (Join-Path $TestDrive 'i4') -NoSums
+        { Resolve-NetInstaller -InstallerPath $NoSums } | Should -Throw '*Brak*SHA256SUMS.txt*'
+        $Bad = New-FakeInstaller -Dir (Join-Path $TestDrive 'i5') -BadSum
+        { Resolve-NetInstaller -InstallerPath $Bad } | Should -Throw '*różni się*'
+        { Resolve-NetInstaller -InstallerPath 'DSOptimizer-4.0.4-setup.exe' } | Should -Throw '*bezwzględn*'
+        { Resolve-NetInstaller -InstallerPath '' } | Should -Throw '*-InstallerPath*'
+    }
+    It 'Get-NetRunArguments: oba parametry albo żaden to wyjątek, zanim cokolwiek dotknie VM' {
+        $File = New-FakeInstaller -Dir (Join-Path $TestDrive 'i6')
+        $Zip = New-FakeZip -Dir (Join-Path $TestDrive 'i6z')
+        $Common = @{ VmName = 'DSO-26H2-Pro'; Scenario = @('cli'); OutDirectory = 'C:\x'; CheckpointName = 'czysta-26H2'; ReadyTimeoutSeconds = 600 }
+        { Get-NetRunArguments @Common -ArtifactPath $Zip -InstallerPath $File } | Should -Throw '*wykluczają się*'
+        { Get-NetRunArguments @Common } | Should -Throw '*-ArtifactPath*-InstallerPath*'
+    }
+    It 'plan z instalatorem ma Exe w Program Files, plan z zipem zostaje w C:\dso\app' {
+        $File = New-FakeInstaller -Dir (Join-Path $TestDrive 'i7')
+        $Common = @{ VmName = 'DSO-26H2-Pro'; Scenario = @('cli'); OutDirectory = 'C:\x'; CheckpointName = 'czysta-26H2'; ReadyTimeoutSeconds = 600 }
+        $Arguments = Get-NetRunArguments @Common -InstallerPath $File
+        $Arguments.Artifact.Variant | Should -BeExactly 'Installer'
+        $Arguments.Layout.App | Should -BeExactly 'C:\Program Files\DSOptimizer'
+        $Arguments.Layout.Exe | Should -BeExactly 'C:\Program Files\DSOptimizer\DSOptimizer.exe'
+        $Zip = New-FakeZip -Dir (Join-Path $TestDrive 'i7z')
+        $Folder = Get-NetRunArguments @Common -ArtifactPath $Zip
+        $Folder.Artifact.Variant | Should -BeExactly 'Folder'
+        $Folder.Layout.Exe | Should -BeExactly 'C:\dso\app\DSOptimizer.exe'
+    }
+    It 'blok instalacji (tekst): cicha instalacja z kodem 0, bez Expand-Archive; ścieżka ze spacją tylko w -LiteralPath' {
+        $Text = $script:NetInstallerBlock.ToString()
+        $Text | Should -Match '/VERYSILENT'
+        $Text | Should -Match '/SUPPRESSMSGBOXES'
+        $Text | Should -Match '/NORESTART'
+        $Text | Should -Match '/SP-'
+        $Text | Should -Match 'ExitCode -ne 0'
+        $Text | Should -Not -Match 'Expand-Archive'
+        # Exe w Program Files (spacja) nigdy nie trafia do składanej linii poleceń ani do -ArgumentList: tylko Test-Path/Get-Item -LiteralPath.
+        $Text | Should -Match 'Test-Path -LiteralPath \$ExePath'
+        $Text | Should -Match 'Get-Item -LiteralPath \$ExePath'
+        $Text | Should -Not -Match 'ArgumentList[^\r\n]*\$ExePath'
+        $script:NetInstallBlock.ToString() | Should -Match 'Expand-Archive'
+        $Layout = Get-NetLayout -Artifact ([ordered]@{ Variant = 'Installer' })
+        $Layout.Exe | Should -Match ' '
+        # Katalogi, których ścieżki idą do nieotoczonych cudzysłowem argumentów (--out, plik instalatora), nie mają spacji.
+        (Get-NetPlan).CliDirectory | Should -Not -Match ' '
+        (Get-NetPlan).WorkDirectory | Should -Not -Match ' '
+    }
+}
 Describe 'Invoke-NetVmRun: sprzątanie i zaliczenia' {
     BeforeEach {
         $script:Calls = [System.Collections.Generic.List[string]]::new()
