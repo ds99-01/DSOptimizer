@@ -12,6 +12,7 @@
 *.png binary
 *.psd1 text eol=crlf
 *.xml text eol=crlf
+*.iss text eol=crlf
 *.ttf binary
 # Próbki wyjścia DISM/SFC i wycinki CBS.log z VM: bajt w bajt (CR bez LF, UTF-16LE, OEM 852), bez normalizacji końców linii.
 tests/DSOptimizer.Tests.Unit/Repair/Samples/** binary

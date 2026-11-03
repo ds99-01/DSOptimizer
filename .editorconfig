@@ -13,7 +13,7 @@ indent_size = 2
 [*.md]
 trim_trailing_whitespace = false
 
-[*.{ps1,psm1,psd1}]
+[*.{ps1,psm1,psd1,iss}]
 charset = utf-8-bom
 
 [*.cs]
