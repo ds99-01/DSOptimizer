@@ -258,6 +258,13 @@ public static class CliParser
     public static bool IsInstallCommand(CliCommand command)
         => command is CliCommand.ListInstall or CliCommand.InstallApps or CliCommand.SearchApps;
 
+    /// <summary>
+    /// Polecenia tylko do odczytu: działają także przy otwartym oknie (smoke GUI na VM z nich korzysta) i nie biorą mutexu programu.
+    /// Każde inne polecenie, także przyszłe, zmienia system i odmawia przy drugiej kopii.
+    /// </summary>
+    public static bool IsReadOnlyCommand(CliCommand command)
+        => command is CliCommand.Detect or CliCommand.ListApps or CliCommand.ListInstall or CliCommand.SearchApps or CliCommand.ListAutostart;
+
     /// <summary>Polecenia autostartu: lista, przełączenie jednej pozycji i cofnięcie jej aktywnej zmiany.</summary>
     public static bool IsAutostartCommand(CliCommand command)
         => command is CliCommand.ListAutostart or CliCommand.SetAutostart or CliCommand.UndoAutostart;

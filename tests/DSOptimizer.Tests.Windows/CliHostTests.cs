@@ -600,4 +600,88 @@ public class CliHostTests
         File.WriteAllText(path, new JArray(tweak).ToString(), new UTF8Encoding(true));
         return path;
     }
+
+    private sealed class GuardSpy : IDisposable
+    {
+        public bool Disposed { get; private set; }
+
+        public void Dispose() => Disposed = true;
+    }
+
+    [Fact]
+    public void Run_WriteCommand_WhenAnotherCopyRuns_Returns1_AndDoesNotTouchRoot()
+    {
+        using var sandbox = new RegistrySandbox();
+        using var temp = new TempDirectory();
+        var catalog = WriteCatalog(temp, sandbox, "Test CLI");
+        var output = temp.Sub("wynik.json");
+
+        var code = CliHost.Run(
+            new[] { "--apply", TweakId, "--catalog", catalog, "--restore-point", "skip", "--out", output }, temp.AppRoot, null, () => null);
+
+        Assert.Equal(1, code);
+        var json = JObject.Parse(File.ReadAllText(output));
+        Assert.Equal("OperationFailed", (string)json["result"]!);
+        Assert.Equal(
+            "Działa już inna kopia DSOptimizera (okno albo polecenie, które zmienia system). Nic nie zostało zmienione; spróbuj ponownie po jej zamknięciu.",
+            FirstError(output));
+        Assert.False(Directory.Exists(temp.Sub("app")));
+    }
+
+    [Fact]
+    public void Run_ReadOnlyCommand_NeverAsksForTheMutex()
+    {
+        using var sandbox = new RegistrySandbox();
+        using var temp = new TempDirectory();
+        var catalog = WriteCatalog(temp, sandbox, "Test CLI");
+        var output = temp.Sub("wynik.json");
+
+        var code = CliHost.Run(
+            new[] { "--detect", TweakId, "--catalog", catalog, "--out", output }, temp.AppRoot, null,
+            () => throw new InvalidOperationException("Polecenie tylko do odczytu nie bierze mutexu."));
+
+        Assert.Equal(0, code);
+    }
+
+    [Fact]
+    public void Run_WriteCommand_HoldsGuardUntilReportIsWritten()
+    {
+        using var sandbox = new RegistrySandbox();
+        using var temp = new TempDirectory();
+        var catalog = WriteCatalog(temp, sandbox, "Test CLI");
+        var output = temp.Sub("wynik.json");
+        var guard = new GuardSpy();
+        var disposedWhenSerializing = true;
+
+        var code = CliHost.Run(
+            new[] { "--apply", TweakId, "--catalog", catalog, "--restore-point", "skip", "--out", output }, temp.AppRoot, null,
+            File.ReadAllText, () => BuiltInCatalog.Sources,
+            report =>
+            {
+                disposedWhenSerializing = guard.Disposed;
+                return CliReportSerializer.Serialize(report);
+            },
+            enterSingleInstance: () => guard);
+
+        Assert.Equal(0, code);
+        Assert.False(disposedWhenSerializing);
+        Assert.True(guard.Disposed);
+        Assert.Equal("Applied", (string)JObject.Parse(File.ReadAllText(output))["outcome"]!);
+    }
+
+    [Fact]
+    public void Run_UsageError_ComesBeforeTheMutex()
+    {
+        using var temp = new TempDirectory();
+        var asked = false;
+
+        var code = CliHost.Run(new[] { "--apply" }, temp.AppRoot, null, () =>
+        {
+            asked = true;
+            return null;
+        });
+
+        Assert.Equal(2, code);
+        Assert.False(asked);
+    }
 }

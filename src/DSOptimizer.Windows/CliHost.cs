@@ -22,7 +22,24 @@ namespace DSOptimizer.Windows;
 /// </summary>
 public static class CliHost
 {
-    public static int Run(IReadOnlyList<string> args, SecureRoot root, string? logMirrorDirectory)
+    /// <summary>
+    /// Wejście programu. Polecenia zmieniające system biorą strażnika z <paramref name="enterSingleInstance"/> (<c>null</c> = działa
+    /// inna kopia: kod 1, nic nie zapisane); polecenia tylko do odczytu (<see cref="CliParser.IsReadOnlyCommand"/>) go nie biorą.
+    /// Strażnik jest wzięty i zwolniony na wątku wywołującym (host jest synchroniczny).
+    /// </summary>
+    public static int Run(IReadOnlyList<string> args, SecureRoot root, string? logMirrorDirectory, Func<IDisposable?> enterSingleInstance)
+    {
+        if (enterSingleInstance is null)
+        {
+            throw new ArgumentNullException(nameof(enterSingleInstance));
+        }
+
+        return Run(args, root, logMirrorDirectory, p => File.ReadAllText(p, Encoding.UTF8), () => BuiltInCatalog.Sources,
+                   enterSingleInstance: enterSingleInstance);
+    }
+
+    /// <summary>Bez blokady jednej kopii: tylko dla testów.</summary>
+    internal static int Run(IReadOnlyList<string> args, SecureRoot root, string? logMirrorDirectory)
         => Run(args, root, logMirrorDirectory, p => File.ReadAllText(p, Encoding.UTF8), () => BuiltInCatalog.Sources);
 
     /// <summary>
@@ -36,7 +53,8 @@ public static class CliHost
                             Func<string, string> readAllText, Func<IReadOnlyList<CatalogSource>> builtInSources,
                             Func<CliReport, string>? serialize = null,
                             Func<AppComposition, AppsInstallCatalog, CliInstallServices>? installServices = null,
-                            Func<AppComposition, CliAutostartServices>? autostartServices = null)
+                            Func<AppComposition, CliAutostartServices>? autostartServices = null,
+                            Func<IDisposable?>? enterSingleInstance = null)
     {
         if (args is null)
         {
@@ -56,7 +74,7 @@ public static class CliHost
         // Cały przebieg, od parsowania po zapis raportu, idzie w tym języku; domyślny język procesu ustawia Program.Main.
         using (L.Use(ResolveLanguage(args, root)))
         {
-            return RunInLanguage(args, root, logMirrorDirectory, readAllText, builtInSources, serialize, installServices, autostartServices, startedAt);
+            return RunInLanguage(args, root, logMirrorDirectory, readAllText, builtInSources, serialize, installServices, autostartServices, startedAt, enterSingleInstance);
         }
     }
 
@@ -85,7 +103,8 @@ public static class CliHost
     private static int RunInLanguage(IReadOnlyList<string> args, SecureRoot root, string? logMirrorDirectory,
                                      Func<string, string> readAllText, Func<IReadOnlyList<CatalogSource>> builtInSources,
                                      Func<CliReport, string> serialize, Func<AppComposition, AppsInstallCatalog, CliInstallServices> installServices,
-                                     Func<AppComposition, CliAutostartServices> autostartServices, DateTimeOffset startedAt)
+                                     Func<AppComposition, CliAutostartServices> autostartServices, DateTimeOffset startedAt,
+                                     Func<IDisposable?>? enterSingleInstance)
     {
         string? outPath = null;
         CliOptions? options = null;
@@ -102,7 +121,7 @@ public static class CliHost
             }
 
             options = parsed.Options!;
-            return RunParsed(options, root, logMirrorDirectory, readAllText, builtInSources, startedAt, serialize, installServices, autostartServices);
+            return RunParsed(options, root, logMirrorDirectory, readAllText, builtInSources, startedAt, serialize, installServices, autostartServices, enterSingleInstance);
         }
         catch (Exception ex)
         {
@@ -116,7 +135,8 @@ public static class CliHost
     private static int RunParsed(CliOptions options, SecureRoot root, string? logMirrorDirectory,
                                  Func<string, string> readAllText, Func<IReadOnlyList<CatalogSource>> builtInSources, DateTimeOffset startedAt,
                                  Func<CliReport, string> serialize, Func<AppComposition, AppsInstallCatalog, CliInstallServices> installServices,
-                                 Func<AppComposition, CliAutostartServices> autostartServices)
+                                 Func<AppComposition, CliAutostartServices> autostartServices,
+                                 Func<IDisposable?>? enterSingleInstance)
     {
         var sources = options.CatalogPath is null ? builtInSources() : Array.Empty<CatalogSource>();
         var catalog = CliCatalog.Load(options.CatalogPath, readAllText, sources);
@@ -141,6 +161,21 @@ public static class CliHost
                     CliRunner.Failure(CliExitCode.CatalogError, options, new[] { appsError! }, warnings, startedAt, DateTimeOffset.UtcNow),
                     options.OutPath, serialize);
             }
+        }
+
+        // Polecenia zmieniające system: jedna kopia. Strażnik obejmuje resztę metody, łącznie z zapisem raportu, i jest zwolniony na tym
+        // samym wątku. Odmowa przed AppComposition.Create: korzeń programu nie powstaje, nic nie jest zapisane poza raportem --out.
+        using var instance = enterSingleInstance is not null && !CliParser.IsReadOnlyCommand(options.Command)
+            ? enterSingleInstance()
+            : null;
+        if (enterSingleInstance is not null && !CliParser.IsReadOnlyCommand(options.Command) && instance is null)
+        {
+            return Finish(
+                CliRunner.Failure(
+                    CliExitCode.OperationFailed, options,
+                    new[] { L.T("Działa już inna kopia DSOptimizera (okno albo polecenie, które zmienia system). Nic nie zostało zmienione; spróbuj ponownie po jej zamknięciu.") },
+                    warnings, startedAt, DateTimeOffset.UtcNow),
+                options.OutPath, serialize);
         }
 
         AppComposition composition;

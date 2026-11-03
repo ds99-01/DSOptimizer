@@ -72,6 +72,25 @@ public class WindowsEnglishTests
     }
 
     [Fact]
+    public void Run_WriteCommand_WhenAnotherCopyRuns_English()
+    {
+        using var sandbox = new RegistrySandbox();
+        using var temp = new TempDirectory();
+        var catalog = WriteCatalog(temp, sandbox);
+        var output = temp.Sub("wynik.json");
+
+        var code = CliHost.Run(
+            new[] { "--apply", FirstId, "--catalog", catalog, "--restore-point", "skip", "--out", output, "--lang", "en" },
+            temp.AppRoot, null, () => null);
+
+        Assert.Equal(1, code);
+        Assert.Equal(
+            "Another copy of DSOptimizer is running (a window or a command that changes the system). Nothing was changed; try again after it closes.",
+            (string)JObject.Parse(File.ReadAllText(output))["errors"]![0]!);
+        Assert.False(Directory.Exists(temp.Sub("app")));
+    }
+
+    [Fact]
     public void Journal_UntrustedWarning_English()
     {
         using var temp = new TempDirectory();

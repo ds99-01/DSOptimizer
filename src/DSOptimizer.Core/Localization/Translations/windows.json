@@ -46,6 +46,10 @@
       "en": "Can't load the catalog {0}."
     },
     {
+      "pl": "Działa już inna kopia DSOptimizera (okno albo polecenie, które zmienia system). Nic nie zostało zmienione; spróbuj ponownie po jej zamknięciu.",
+      "en": "Another copy of DSOptimizer is running (a window or a command that changes the system). Nothing was changed; try again after it closes."
+    },
+    {
       "pl": "Nie można przygotować środowiska ({0}): {1}: {2}",
       "en": "Can't prepare the environment ({0}): {1}: {2}"
     },

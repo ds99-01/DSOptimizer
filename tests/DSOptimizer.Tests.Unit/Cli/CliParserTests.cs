@@ -315,4 +315,33 @@ public class CliParserTests
             Assert.DoesNotContain(result.Error!, c => "ąćęłńóśźżĄĆĘŁŃÓŚŹŻ".IndexOf(c) >= 0);
         }
     }
+
+    public static TheoryData<CliCommand, bool> ReadOnlyExpectations => new()
+    {
+        { CliCommand.Detect, true },
+        { CliCommand.Apply, false },
+        { CliCommand.Undo, false },
+        { CliCommand.Execute, false },
+        { CliCommand.ListApps, true },
+        { CliCommand.RemoveApp, false },
+        { CliCommand.ListInstall, true },
+        { CliCommand.InstallApps, false },
+        { CliCommand.SearchApps, true },
+        { CliCommand.ListAutostart, true },
+        { CliCommand.SetAutostart, false },
+        { CliCommand.UndoAutostart, false },
+    };
+
+    [Theory]
+    [MemberData(nameof(ReadOnlyExpectations))]
+    public void IsReadOnlyCommand_MatchesExpectation(CliCommand command, bool expected)
+        => Assert.Equal(expected, CliParser.IsReadOnlyCommand(command));
+
+    /// <summary>Nowe polecenie wymusza decyzję: dopisz je do tabeli oczekiwań wyżej.</summary>
+    [Fact]
+    public void EveryCommandHasAnExpectation()
+    {
+        Assert.Equal(12, Enum.GetValues(typeof(CliCommand)).Length);
+        Assert.Equal(12, ReadOnlyExpectations.Count);
+    }
 }

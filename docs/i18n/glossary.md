@@ -264,6 +264,8 @@ How to read the tables:
 | odczyt zwrotny | verification | Reading the state back after a change ("Verification: services are running as before the reset, …") |
 | operacja serwisowania | servicing operation | DISM, SFC or cleanmgr still running ("The previous servicing operation is still in progress – …") |
 | magazyn składników | component store | DISM term, as in Microsoft documentation; repair step "Component store" |
+| tryb wiersza poleceń | command-line mode | README, komunikaty CLI |
+| kopia (programu) | copy | „Działa już inna kopia DSOptimizera” |
 | kopia (folderu) / kopia (polityk, typów startu) | copy / backup | Renamed folder copies "…\SoftwareDistribution.dso-…" are "copies"; exported `.reg` and text files are "backups" |
 | polityki Windows Update / blokady aktualizacji | Windows Update policies / update blocks | Policy values under `Policies\Microsoft\Windows\WindowsUpdate` |
 | Pliki tymczasowe systemu / Pliki tymczasowe konta / Pobrane aktualizacje / Miniatury konta | System temporary files / Account temporary files / Downloaded updates / Account thumbnails | Disk cleanup step names (the program's own labels) |
