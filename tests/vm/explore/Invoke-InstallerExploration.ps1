@@ -30,14 +30,17 @@ Opis działania:
                 „DSOptimizer już działa”, klika „OK”; B kończy się kodem 1, A żyje; CLI --apply z kopii przenośnej jako dso = kod 1
                 i errors[0] od „Działa już inna kopia DSOptimizera”; --list-apps jako dso: wiersz DSOptimizer w grupie Protected;
                 instalator ponownie: kod 7, DisplayVersion i sumy plików bez zmian; deinstalator: pliki i klucz zostają; relaunch:
-                zadanie C z --relaunched, po 3 s Stop-Process A, po 15 s C żyje, mutex jest, okna „już działa” brak;
+                zadanie C z --relaunched, najpierw wykrycie procesu C, potem A trzyma mutex jeszcze co najmniej 8 s (dłużej niż
+                zwykłe czekanie 2 s) przy działającej sondzie okna odmowy, dopiero potem Stop-Process A; po 15 s C żyje, mutex jest,
+                okna „już działa” brak (ani przy żywym A, ani po jego zamknięciu); błąd sondy B albo C nie przerywa fazy;
                 %ProgramData%\DSOptimizer (pliki, właściciel); Stop-Process C, mutex znika w 10 s, cicha deinstalacja kod 0,
                 folder programu znika w 60 s, klucz i skróty też, %ProgramData%\DSOptimizer z tymi samymi plikami i właścicielem
                 S-1-5-32-544.
-      upgrade - instalacja wydania, usunięcie skrótu z pulpitu, okno A, instalator wyższej wersji: kod 7 i DisplayVersion bez zmian;
+      upgrade - instalacja wydania, usunięcie skrótu z pulpitu, okno A, instalator wyższej wersji: kod 7, DisplayVersion i pliki bez zmian;
                 Stop-Process A, mutex znika, instalator wyższej wersji: kod 0, nowa DisplayVersion, skrót na pulpicie nie wrócił,
                 skrót w Menu Start jest, pliki równe zipowi wyższej wersji, brak unins001.dat.
-      wizard  - (osobno dla każdego języka) zadanie dso uruchamia instalator z /LANG=<pl|en>; sonda w sesji prowadzi kreator
+      wizard  - (osobno dla każdego języka) zadanie dso uruchamia instalator z /LANG=<pl|en> /LOG=C:\dso\out\logs\wizard-<lang>.log
+                (log w raw-wizard-<lang>); sonda w sesji prowadzi kreator
                 (okno klasy TWizardForm, przyciski po nazwie UI Automation), przed każdym kliknięciem zrzut okna
                 C:\dso\out\wizard-<lang>-<n>.png i teksty strony; stan pól „ikona na pulpicie” i „Uruchom…” przez MSAA
                 (oleacc), zapasowo UI Automation (TogglePattern), pole pulpitu też z podsumowania strony „gotowe”. Po „Zakończ”
@@ -108,9 +111,14 @@ function Get-InstallerPlan {
         AppStartSeconds          = 60
         RefusalProbeSeconds      = 30
         TaskFinishSeconds        = 30
-        RelaunchStopAfterSeconds = 3
+        # Relaunch: czekanie na proces C, potem A trzyma mutex jeszcze RelaunchHoldSeconds od wykrycia C (wyraźnie dłużej niż zwykłe
+        # czekanie programu 2 s, krócej niż 30 s po --relaunched). Sonda okna odmowy działa w tym czasie (RelaunchProbeSeconds = start C
+        # + 8 s + zapas), więc C, który czekałby tylko 2 s, pokaże okno „już działa” przy żywym A i sonda je złapie.
+        RelaunchDetectSeconds    = 30
+        RelaunchHoldSeconds      = 8
+        RelaunchProbeSeconds     = 12
         RelaunchCheckAfterSeconds = 15
-        RelaunchProbeSeconds     = 10
+        RelaunchAfterProbeSeconds = 5
         MutexReleaseSeconds      = 10
         UninstallSettleSeconds   = 5
         UninstallWaitSeconds     = 60
@@ -484,9 +492,10 @@ function Get-InstallerRunningVerdict {
     $Checks += New-InstallerCheck -Name 'WindowA' -Passed ((Test-InstallerTrue $Found) -and (Test-InstallerTrue $Mutex)) `
         -Detail "okno A z $($Plan.InstalledExe): proces $(Format-InstallerValue $Found), mutex $(Format-InstallerValue $Mutex) (w $($Plan.AppStartSeconds) s)"
 
-    $Message = & $V 'portable.message'; $Clicked = & $V 'portable.clickedOk'
-    $Checks += New-InstallerCheck -Name 'PortableMessage' -Passed ((Test-InstallerStartsWith $Message $Plan.RefusalPrefix) -and (Test-InstallerTrue $Clicked)) `
-        -Detail "kopia przenośna B: okno '$($Plan.WindowTitle)' z tekstem '$(Format-InstallerValue $Message)', OK kliknięte: $(Format-InstallerValue $Clicked) (oczekiwano tekstu od '$($Plan.RefusalPrefix)')"
+    $Message = & $V 'portable.message'; $Clicked = & $V 'portable.clickedOk'; $ProbeErrorB = & $V 'portable.probeError'
+    $MessageDetail = "kopia przenośna B: okno '$($Plan.WindowTitle)' z tekstem '$(Format-InstallerValue $Message)', OK kliknięte: $(Format-InstallerValue $Clicked) (oczekiwano tekstu od '$($Plan.RefusalPrefix)')"
+    if ($ProbeErrorB) { $MessageDetail += "; błąd sondy: $ProbeErrorB" }
+    $Checks += New-InstallerCheck -Name 'PortableMessage' -Passed ((Test-InstallerStartsWith $Message $Plan.RefusalPrefix) -and (Test-InstallerTrue $Clicked) -and -not $ProbeErrorB) -Detail $MessageDetail
     $TaskResult = & $V 'portable.taskResult'
     $Checks += New-InstallerCheck -Name 'PortableExit' -Passed (Test-InstallerCode $TaskResult 1) -Detail "zadanie kopii B: LastTaskResult $(Format-InstallerValue $TaskResult) (oczekiwano 1)"
     $AAlive = & $V 'portable.aAlive'
@@ -510,12 +519,16 @@ function Get-InstallerRunningVerdict {
     $Checks += New-InstallerCheck -Name 'UninstallRefusedKeeps' -Passed ((Test-InstallerEmptyList $UnDiff) -and (Test-InstallerTrue $KeyPresent)) `
         -Detail "deinstalator przy działającym oknie (kod $(Format-InstallerValue $UnCode)): różnice plików $(Format-InstallerValue $UnDiff), klucz Uninstall jest: $(Format-InstallerValue $KeyPresent)"
 
-    $CAlive = & $V 'relaunch.cAlive'
-    $Checks += New-InstallerCheck -Name 'RelaunchAlive' -Passed (Test-InstallerTrue $CAlive) -Detail "relaunch: C z --relaunched żyje $($Plan.RelaunchCheckAfterSeconds) s po zamknięciu A: $(Format-InstallerValue $CAlive)"
+    # A zamykane dopiero po RelaunchHoldSeconds od wykrycia C (dłużej niż zwykłe czekanie 2 s): bez zamknięcia A nie ma dowodu relaunchu.
+    $AStopped = & $V 'relaunch.aStopped'; $CAlive = & $V 'relaunch.cAlive'
+    $Checks += New-InstallerCheck -Name 'RelaunchAlive' -Passed ((Test-InstallerTrue $AStopped) -and (Test-InstallerTrue $CAlive)) `
+        -Detail "relaunch: A zamknięte $($Plan.RelaunchHoldSeconds) s po wykryciu C: $(Format-InstallerValue $AStopped); C z --relaunched żyje $($Plan.RelaunchCheckAfterSeconds) s później: $(Format-InstallerValue $CAlive)"
     $CMutex = & $V 'relaunch.mutex'
     $Checks += New-InstallerCheck -Name 'RelaunchMutex' -Passed (Test-InstallerTrue $CMutex) -Detail "relaunch: mutex $($Plan.MutexName) jest: $(Format-InstallerValue $CMutex)"
-    $Seen = & $V 'relaunch.refusalSeen'
-    $Checks += New-InstallerCheck -Name 'RelaunchNoRefusal' -Passed (Test-InstallerFalse $Seen) -Detail "relaunch: okno '$($Plan.RefusalPrefix)…' widoczne: $(Format-InstallerValue $Seen) (oczekiwano False)"
+    $Seen = & $V 'relaunch.refusalSeen'; $ProbeErrorC = & $V 'relaunch.probeError'
+    $SeenDetail = "relaunch: okno '$($Plan.RefusalPrefix)…' widoczne (sonda w czasie trzymania mutexa przez A i po jego zamknięciu): $(Format-InstallerValue $Seen) (oczekiwano False)"
+    if ($ProbeErrorC) { $SeenDetail += "; błąd sondy: $ProbeErrorC" }
+    $Checks += New-InstallerCheck -Name 'RelaunchNoRefusal' -Passed ((Test-InstallerFalse $Seen) -and -not $ProbeErrorC) -Detail $SeenDetail
 
     $Released = & $V 'final.mutexReleased'
     $Checks += New-InstallerCheck -Name 'MutexReleased' -Passed (Test-InstallerTrue $Released) -Detail "mutex znika w $($Plan.MutexReleaseSeconds) s po zamknięciu C: $(Format-InstallerValue $Released)"
@@ -560,6 +573,8 @@ function Get-InstallerUpgradeVerdict {
     $VBefore = & $V 'upgradeRunning.versionBefore'; $VAfter = & $V 'upgradeRunning.versionAfter'
     $Checks += New-InstallerCheck -Name 'UpgradeRefusedVersion' -Passed ((-not [string]::IsNullOrEmpty($Release)) -and ([string]$VBefore -ceq $Release) -and ([string]$VAfter -ceq $Release)) `
         -Detail "DisplayVersion przy odmowie: $(Format-InstallerValue $VBefore) -> $(Format-InstallerValue $VAfter) (oczekiwano $(Format-InstallerValue $Release))"
+    $RefusedDiff = & $V 'upgradeRunning.filesDiff'
+    $Checks += New-InstallerCheck -Name 'UpgradeRefusedUnchanged' -Passed (Test-InstallerEmptyList $RefusedDiff) -Detail "pliki programu po odmowie aktualizacji (przed -> po): różnice $(Format-InstallerValue $RefusedDiff)"
     $Released = & $V 'mutexReleased'
     $Checks += New-InstallerCheck -Name 'MutexReleased' -Passed (Test-InstallerTrue $Released) -Detail "mutex znika w $($Plan.MutexReleaseSeconds) s po zamknięciu A: $(Format-InstallerValue $Released)"
     $UpCode = & $V 'upgrade.exitCode'
@@ -654,7 +669,7 @@ function Get-InstallerProbeHelpersText {
 if ($env:DSO_VM_TESTS_MOCK_ONLY) { throw 'DSO_VM_TESTS_MOCK_ONLY: sonda nie dziala w testach.' }
 if (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Sonda dziala tylko w VM DSO-26H2-HOME/PRO (komputer: '$env:COMPUTERNAME')." }
 if (-not ('DsoInst.Native' -as [type])) {
-    Add-Type -TypeDefinition @"
+    Add-Type -ReferencedAssemblies 'Accessibility' -TypeDefinition @"
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -696,23 +711,38 @@ namespace DsoInst
         public static IntPtr[] TopWindows() { var list = new List<IntPtr>(); EnumWindows((h, l) => { list.Add(h); return true; }, IntPtr.Zero); return list.ToArray(); }
         public static IntPtr[] Children(IntPtr parent) { var list = new List<IntPtr>(); EnumChildWindows(parent, (h, l) => { list.Add(h); return true; }, IntPtr.Zero); return list.ToArray(); }
 
+        // Ostatni blad odczytu MSAA (CheckItems nigdy nie rzuca; sonda zapisuje ten tekst w wyniku).
+        public static string LastError;
+
         // MSAA (oleacc) klienta okna: nazwa i stan kazdego dziecka (STATE_SYSTEM_CHECKED = 0x10); stan -1 = brak odczytu.
+        // Najpierw wczesne wiazanie (Accessibility.IAccessible), przy bledzie pozne (IDispatch). Kazdy wyjatek (np. E_NOTIMPL) = brak odczytu.
         public static object[] CheckItems(IntPtr hwnd)
         {
-            var iid = new Guid("618736E0-3C3D-11CF-810C-00AA00389B71");
-            object accessible;
-            if (AccessibleObjectFromWindow(hwnd, 0xFFFFFFFC, ref iid, out accessible) != 0 || accessible == null) { return new object[0]; }
-            var type = accessible.GetType();
-            int count = Convert.ToInt32(type.InvokeMember("accChildCount", BindingFlags.GetProperty, null, accessible, null));
+            LastError = null;
             var result = new List<object>();
-            for (int child = 1; child <= count; child++)
+            try
             {
-                string name = null;
-                int state = -1;
-                try { name = Convert.ToString(type.InvokeMember("accName", BindingFlags.GetProperty, null, accessible, new object[] { child })); } catch (Exception) { }
-                try { state = Convert.ToInt32(type.InvokeMember("accState", BindingFlags.GetProperty, null, accessible, new object[] { child })); } catch (Exception) { }
-                result.Add(new object[] { name, state });
+                var iid = new Guid("618736E0-3C3D-11CF-810C-00AA00389B71");
+                object accessible;
+                int hr = AccessibleObjectFromWindow(hwnd, 0xFFFFFFFC, ref iid, out accessible);
+                if (hr != 0 || accessible == null) { LastError = "AccessibleObjectFromWindow: 0x" + hr.ToString("X8"); return new object[0]; }
+                var early = accessible as Accessibility.IAccessible;
+                var type = accessible.GetType();
+                int count = 0;
+                try { count = early != null ? early.accChildCount : Convert.ToInt32(type.InvokeMember("accChildCount", BindingFlags.GetProperty, null, accessible, null)); }
+                catch (Exception error) { LastError = "accChildCount: " + error.Message; return new object[0]; }
+                for (int child = 1; child <= count; child++)
+                {
+                    string name = null;
+                    int state = -1;
+                    try { name = early != null ? early.get_accName(child) : Convert.ToString(type.InvokeMember("accName", BindingFlags.GetProperty, null, accessible, new object[] { child })); }
+                    catch (Exception error) { LastError = "accName(" + child + "): " + error.Message; }
+                    try { state = Convert.ToInt32(early != null ? early.get_accState(child) : type.InvokeMember("accState", BindingFlags.GetProperty, null, accessible, new object[] { child })); }
+                    catch (Exception error) { LastError = "accState(" + child + "): " + error.Message; }
+                    result.Add(new object[] { name, state });
+                }
             }
+            catch (Exception error) { LastError = error.Message; }
             return result.ToArray();
         }
     }
@@ -795,8 +825,9 @@ function Get-InstallerWizardProbeScript {
     param()
     $Body = @'
 $Pages = New-Object System.Collections.Generic.List[object]
+$CheckErrors = New-Object System.Collections.Generic.List[string]
 $Out = [ordered]@{ Ok = $false; Error = $null; Language = $Language; WindowFound = $false; Pages = @(); DesktopTaskChecked = $null; DesktopTaskSource = $null
-    LaunchChecked = $null; LaunchSource = $null; FinishClicked = $false; ProgramStarted = $false; ProgramSeconds = $null; ButtonNames = @() }
+    LaunchChecked = $null; LaunchSource = $null; FinishClicked = $false; ProgramStarted = $false; ProgramSeconds = $null; ButtonNames = @(); CheckErrors = @() }
 try {
     $Texts = [System.IO.File]::ReadAllText($TextsFile, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
     $W = $Texts.wizard.$Language
@@ -830,27 +861,38 @@ try {
         return $null
     }
     function Get-CheckItems([IntPtr]$Handle, $Window) {
+        # MSAA najpierw; blad odczytu (np. E_NOTIMPL) nie przerywa sondy, trafia do CheckErrors. UIA (TogglePattern) zawsze, gdy MSAA
+        # nie dalo zadnego stanu. LegacyIAccessiblePattern nie istnieje w zarzadzanym UIA .NET Framework (System.Windows.Automation),
+        # wiec stan MSAA czytany jest wprost przez oleacc (to ta sama wartosc accState).
         $Items = New-Object System.Collections.Generic.List[object]
         foreach ($Child in [DsoInst.Native]::Children($Handle)) {
-            if (-not [DsoInst.Native]::IsWindowVisible($Child)) { continue }
-            if ([DsoInst.Native]::ClassOf($Child) -notlike '*CheckListBox*') { continue }
-            foreach ($Entry in [DsoInst.Native]::CheckItems($Child)) {
-                $State = [int]$Entry[1]
-                $Checked = $null
-                if ($State -ge 0) { $Checked = (($State -band 0x10) -ne 0) }
-                $Items.Add([pscustomobject]@{ Name = [string]$Entry[0]; Checked = $Checked; Source = 'msaa' })
-            }
-        }
-        if ($Items.Count -eq 0) {
-            foreach ($Element in @($Window.FindAll($Scope::Descendants, [System.Windows.Automation.Condition]::TrueCondition))) {
-                try {
-                    $Pattern = $null
-                    if ($Element.TryGetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern, [ref]$Pattern)) {
-                        $Items.Add([pscustomobject]@{ Name = [string]$Element.Current.Name; Checked = ($Pattern.Current.ToggleState -eq [System.Windows.Automation.ToggleState]::On); Source = 'uia' })
-                    }
+            try {
+                if (-not [DsoInst.Native]::IsWindowVisible($Child)) { continue }
+                if ([DsoInst.Native]::ClassOf($Child) -notlike '*CheckListBox*') { continue }
+                $Entries = @([DsoInst.Native]::CheckItems($Child))
+                if ([DsoInst.Native]::LastError) { $CheckErrors.Add("msaa: $([DsoInst.Native]::LastError)") }
+                foreach ($Entry in $Entries) {
+                    $State = [int]$Entry[1]
+                    $Checked = $null
+                    if ($State -ge 0) { $Checked = (($State -band 0x10) -ne 0) }
+                    $Items.Add([pscustomobject]@{ Name = [string]$Entry[0]; Checked = $Checked; Source = 'msaa' })
                 }
-                catch { $null = $_ }
             }
+            catch { $CheckErrors.Add("msaa: $($_.Exception.GetBaseException().Message)") }
+        }
+        if (@($Items | Where-Object { $null -ne $_.Checked }).Count -eq 0) {
+            try {
+                foreach ($Element in @($Window.FindAll($Scope::Descendants, [System.Windows.Automation.Condition]::TrueCondition))) {
+                    try {
+                        $Pattern = $null
+                        if ($Element.TryGetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern, [ref]$Pattern)) {
+                            $Items.Add([pscustomobject]@{ Name = [string]$Element.Current.Name; Checked = ($Pattern.Current.ToggleState -eq [System.Windows.Automation.ToggleState]::On); Source = 'uia' })
+                        }
+                    }
+                    catch { $null = $_ }
+                }
+            }
+            catch { $CheckErrors.Add("uia: $($_.Exception.GetBaseException().Message)") }
         }
         return , $Items.ToArray()
     }
@@ -897,9 +939,10 @@ try {
         Save-WindowShot $Handle $Shot
         $Pages.Add([pscustomobject]@{ Index = $Index; Labels = $PageTexts; Target = $Target.Name; TargetKind = $Target.Kind; Items = $Items; Screenshot = [System.IO.Path]::GetFileName($Shot) })
         foreach ($Item in $Items) {
+            # Odczyt ze stanem wygrywa z odczytem bez stanu (np. MSAA bez accState, potem UIA z TogglePattern).
             $ItemName = Format-UiText $Item.Name
-            if ($ItemName -ceq (Format-UiText $W.desktopTask)) { $Out.DesktopTaskChecked = $Item.Checked; $Out.DesktopTaskSource = $Item.Source }
-            if ($ItemName -ceq (Format-UiText $W.launchTask)) { $Out.LaunchChecked = $Item.Checked; $Out.LaunchSource = $Item.Source }
+            if ($ItemName -ceq (Format-UiText $W.desktopTask) -and ($null -ne $Item.Checked -or $null -eq $Out.DesktopTaskChecked)) { $Out.DesktopTaskChecked = $Item.Checked; $Out.DesktopTaskSource = $Item.Source }
+            if ($ItemName -ceq (Format-UiText $W.launchTask) -and ($null -ne $Item.Checked -or $null -eq $Out.LaunchChecked)) { $Out.LaunchChecked = $Item.Checked; $Out.LaunchSource = $Item.Source }
         }
         if ($Target.Kind -eq 'install' -and $null -eq $Out.DesktopTaskChecked) {
             # Strona gotowe: podsumowanie wymienia wybrane zadania; zadanie pulpitu na liscie = pole zaznaczone.
@@ -922,6 +965,7 @@ try {
 catch { $Out.Error = [string]$_.Exception.GetBaseException().Message }
 $Out.Pages = $Pages.ToArray()
 if ($null -ne (Get-Variable -Name ButtonNames -ErrorAction SilentlyContinue)) { $Out.ButtonNames = $ButtonNames.ToArray() }
+$Out.CheckErrors = @($CheckErrors | Select-Object -Unique)
 Write-ProbeResult $Out $ResultFile
 '@
     return ("param([Parameter(Mandatory)][string]`$ResultFile, [Parameter(Mandatory)][string]`$TextsFile, [Parameter(Mandatory)][ValidateSet('pl', 'en')][string]`$Language, " +
@@ -1124,6 +1168,12 @@ $script:InstTaskResultBlock = {
         Start-Sleep -Milliseconds 500
     } while ($Watch.Elapsed.TotalSeconds -lt $Seconds)
     return [pscustomobject]@{ Finished = $false; State = $State; LastTaskResult = $Last }
+}
+
+$script:InstStopTaskBlock = {
+    # Zatrzymuje działające wystąpienie zadania (proces startowany przez zadanie; tylko w VM).
+    param([string]$TaskName)
+    Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
 }
 
 $script:InstProgramDataBlock = {
@@ -1333,18 +1383,24 @@ function Invoke-InstallerRunningPhase {
     catch { $Record.problems += "wybór języka w oknie A: $($_.Exception.Message)" }
     # (3) kopia przenośna B: okno odmowy, OK, kod 1, A żyje
     $null = Start-DsoGuiInUserSession -Session $Context.Session -Layout (Get-InstallerLayout -Kind 'Portable') -UserName $Plan.UserName -TaskName $Plan.TaskNames.B
-    $Refusal = Invoke-InstallerRefusalProbe -Context $Context -Name 'Inst-Refusal-B' -WaitSeconds ([int]$Plan.RefusalProbeSeconds) -Click
+    # Błąd sondy nie przerywa fazy: trafia do portable.probeError (niezaliczone PortableMessage), dalsze kroki idą dalej.
+    $Refusal = $null
+    $ProbeErrorB = $null
+    try { $Refusal = Invoke-InstallerRefusalProbe -Context $Context -Name 'Inst-Refusal-B' -WaitSeconds ([int]$Plan.RefusalProbeSeconds) -Click }
+    catch { $ProbeErrorB = $_.Exception.Message }
     $TaskB = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstTaskResultBlock -ArgumentList @($Plan.TaskNames.B, [int]$Plan.TaskFinishSeconds)
-    $Data.portable = [ordered]@{ message = $Refusal.Text; clickedOk = [bool]$Refusal.Clicked; windowProcessId = $Refusal.ProcessId
-        taskResult = $(if ($TaskB.Finished) { [int64]$TaskB.LastTaskResult } else { $null }); taskState = [string]$TaskB.State
+    # B wiszące na niekliknietym oknie odmowy zamykamy, żeby jego okno nie trafiło do sond relaunchu.
+    if (-not $TaskB.Finished) { $null = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStopTaskBlock -ArgumentList @($Plan.TaskNames.B) }
+    $Data.portable = [ordered]@{ message = (Get-InstallerValue $Refusal 'Text'); clickedOk = (Test-InstallerTrue (Get-InstallerValue $Refusal 'Clicked')); windowProcessId = (Get-InstallerValue $Refusal 'ProcessId')
+        probeError = $ProbeErrorB; taskResult = $(if ($TaskB.Finished) { [int64]$TaskB.LastTaskResult } else { $null }); taskState = [string]$TaskB.State
         aAlive = [bool](Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstProcessAliveBlock -ArgumentList @($PidA)) }
-    Add-InstallerTimeline -Context $Context -Text "kopia B: okno $($Refusal.Found), kod $($Data.portable.taskResult)"
+    Add-InstallerTimeline -Context $Context -Text "kopia B: okno $(Get-InstallerValue $Refusal 'Found'), kod $($Data.portable.taskResult)"
     # (4) CLI zmieniające system z kopii przenośnej jako dso
     $ApplyOut = "$($Plan.OutDirectory)\cli-apply.json"
     $Cli = Invoke-DsoCli -Session $Context.Session -ExePath $Plan.PortableExe -Arguments (@($Plan.CliApplyArguments) + @('--out', $ApplyOut)) -OutPath $ApplyOut `
         -RunAsUser $Plan.UserName -TimeoutSeconds ([int]$Plan.CliTimeoutSeconds)
     $FirstError = $null
-    if ($null -ne $Cli.Report -and $null -ne $Cli.Report.PSObject.Properties['errors']) { $FirstError = @($Cli.Report.errors)[0] }
+    if ($null -ne $Cli.Report -and $null -ne $Cli.Report.PSObject.Properties['errors']) { $FirstError = @($Cli.Report.errors) | Select-Object -First 1 }
     $Data.cliApply = [ordered]@{ exitCode = $Cli.ExitCode; timedOut = [bool]$Cli.TimedOut; firstError = $FirstError; reportError = $Cli.ReportError }
     # (5) --list-apps jako dso: wpis DSOptimizer w grupie Protected
     $ListOut = "$($Plan.OutDirectory)\list-apps.json"
@@ -1362,19 +1418,49 @@ function Invoke-InstallerRunningPhase {
     Start-Sleep -Seconds ([int]$Plan.UninstallSettleSeconds)
     $AfterUninstall = Get-InstallerState -Context $Context
     $Data.uninstallRunning = [ordered]@{ exitCode = $UnCode; filesDiff = (Compare-InstallerFiles -Expected $Before.Files -Actual $AfterUninstall.Files); keyPresent = $AfterUninstall.KeyPresent }
-    # (8) relaunch: C z --relaunched, po 3 s zamknięcie A, po 15 s C żyje, mutex jest, okna odmowy brak
+    # (8) relaunch: C z --relaunched; najpierw proces C, potem A trzyma mutex jeszcze co najmniej RelaunchHoldSeconds od wykrycia C
+    # (wyraźnie dłużej niż zwykłe czekanie 2 s), a sonda okna odmowy patrzy w tym czasie: C czekający tylko 2 s pokazałby „już działa”
+    # przy żywym A. Dopiero potem zamknięcie A, po RelaunchCheckAfterSeconds: C żyje, mutex jest, druga krótka sonda bez okna odmowy.
+    $Relaunch = [ordered]@{ cDetected = $false; cDetectSeconds = $null; holdSeconds = $null; aStopped = $false; cAlive = $false; cPid = 0; mutex = $false
+        refusalSeen = $null; refusalText = $null; refusalProcessId = $null; probeError = $null }
+    $Data.relaunch = $Relaunch
+    $ProbeErrors = @()
+    $Seen = $false
     $null = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStartTaskBlock -ArgumentList @($Plan.InstalledExe, '--relaunched', $Plan.InstallDirectory, $Plan.UserName, $Plan.TaskNames.C, 'Highest')
-    Start-Sleep -Seconds ([int]$Plan.RelaunchStopAfterSeconds)
-    $StoppedA = [bool](Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStopProcessBlock -ArgumentList @($PidA, [int]$Plan.ProcessStopSeconds))
+    $Detect = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstWaitProgramBlock -ArgumentList @($Plan.InstalledExe, $Plan.MutexName, [int]$Plan.RelaunchDetectSeconds, '--relaunched')
+    $Hold = [System.Diagnostics.Stopwatch]::StartNew()
+    $Relaunch.cDetected = [bool]$Detect.ProcessFound
+    $Relaunch.cDetectSeconds = [int]$Detect.Seconds
+    if ($Relaunch.cDetected) {
+        try {
+            $HoldProbe = Invoke-InstallerRefusalProbe -Context $Context -Name 'Inst-Refusal-Hold' -WaitSeconds ([int]$Plan.RelaunchProbeSeconds)
+            if ($HoldProbe.Found) { $Seen = $true; $Relaunch.refusalText = $HoldProbe.Text; $Relaunch.refusalProcessId = $HoldProbe.ProcessId }
+        }
+        catch { $ProbeErrors += "sonda przy żywym A: $($_.Exception.Message)" }
+        $Remaining = [int][Math]::Ceiling([double]$Plan.RelaunchHoldSeconds - $Hold.Elapsed.TotalSeconds)
+        if ($Remaining -gt 0) { Start-Sleep -Seconds $Remaining }
+    }
+    $Relaunch.holdSeconds = [int]$Hold.Elapsed.TotalSeconds
+    # A zamykane także bez C: kolejne kroki (deinstalacja) wymagają programu bez okien.
+    $Relaunch.aStopped = [bool](Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStopProcessBlock -ArgumentList @($PidA, [int]$Plan.ProcessStopSeconds))
     Start-Sleep -Seconds ([int]$Plan.RelaunchCheckAfterSeconds)
     $C = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstWaitProgramBlock -ArgumentList @($Plan.InstalledExe, $Plan.MutexName, 1, '--relaunched')
-    $Relaunch = Invoke-InstallerRefusalProbe -Context $Context -Name 'Inst-Refusal-C' -WaitSeconds ([int]$Plan.RelaunchProbeSeconds)
-    $Data.relaunch = [ordered]@{ aStopped = $StoppedA; cAlive = [bool]$C.ProcessFound; cPid = [int]$C.Pid; mutex = [bool]$C.Mutex; refusalSeen = [bool]$Relaunch.Found; refusalText = $Relaunch.Text }
-    Add-InstallerTimeline -Context $Context -Text "relaunch: C $($C.ProcessFound), mutex $($C.Mutex), odmowa $($Relaunch.Found)"
+    $Relaunch.cAlive = [bool]$C.ProcessFound
+    $Relaunch.cPid = [int]$C.Pid
+    $Relaunch.mutex = [bool]$C.Mutex
+    try {
+        $AfterProbe = Invoke-InstallerRefusalProbe -Context $Context -Name 'Inst-Refusal-C' -WaitSeconds ([int]$Plan.RelaunchAfterProbeSeconds)
+        if ($AfterProbe.Found) { $Seen = $true; $Relaunch.refusalText = $AfterProbe.Text; $Relaunch.refusalProcessId = $AfterProbe.ProcessId }
+    }
+    catch { $ProbeErrors += "sonda po zamknięciu A: $($_.Exception.Message)" }
+    # Błąd sondy bez znalezionego okna = brak odczytu ($null), nie „brak okna”.
+    $Relaunch.refusalSeen = $(if ($Seen) { $true } elseif ($ProbeErrors.Count -gt 0) { $null } else { $false })
+    if ($ProbeErrors.Count -gt 0) { $Relaunch.probeError = $ProbeErrors -join ' | ' }
+    Add-InstallerTimeline -Context $Context -Text "relaunch: C wykryty $($Relaunch.cDetected), A zamknięte po $($Relaunch.holdSeconds) s: $($Relaunch.aStopped), C żyje $($Relaunch.cAlive), mutex $($Relaunch.mutex), odmowa $($Relaunch.refusalSeen)"
     # (9) %ProgramData%\DSOptimizer przy działającym C
     $Data.programData = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstProgramDataBlock -ArgumentList @($Plan.ProgramDataDirectory)
     # (10) zamknięcie C, mutex znika, cicha deinstalacja, folder/klucz/skróty znikają, ProgramData zostaje
-    $StoppedC = [bool](Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStopProcessBlock -ArgumentList @([int]$C.Pid, [int]$Plan.ProcessStopSeconds))
+    $StoppedC = [bool](Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStopProcessBlock -ArgumentList @([int]$Relaunch.cPid, [int]$Plan.ProcessStopSeconds))
     $Released = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstWaitMutexGoneBlock -ArgumentList @($Plan.MutexName, [int]$Plan.MutexReleaseSeconds)
     $DataBefore = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstProgramDataBlock -ArgumentList @($Plan.ProgramDataDirectory)
     $FinalCode = Invoke-InstallerSetup -Context $Context -FilePath $Uninstaller -Step 'uninstall' -Uninstall
@@ -1407,7 +1493,8 @@ function Invoke-InstallerUpgradePhase {
     $Before = Get-InstallerState -Context $Context
     $RunCode = Invoke-InstallerSetup -Context $Context -FilePath $UpgradeSetup -Step 'upgrade-running'
     $After = Get-InstallerState -Context $Context
-    $Data.upgradeRunning = [ordered]@{ exitCode = $RunCode; versionBefore = $Before.DisplayVersion; versionAfter = $After.DisplayVersion }
+    $Data.upgradeRunning = [ordered]@{ exitCode = $RunCode; versionBefore = $Before.DisplayVersion; versionAfter = $After.DisplayVersion
+        filesDiff = (Compare-InstallerFiles -Expected $Before.Files -Actual $After.Files) }
     $null = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStopProcessBlock -ArgumentList @([int]$Data.windowA.pid, [int]$Plan.ProcessStopSeconds)
     $Released = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstWaitMutexGoneBlock -ArgumentList @($Plan.MutexName, [int]$Plan.MutexReleaseSeconds)
     $Data.mutexReleased = [bool]$Released.Released
@@ -1424,25 +1511,31 @@ function Invoke-InstallerWizardPhase {
     $Artifact = $Context.Artifact
     $Language = [string]$Context.Run.Language
     $Remote = Initialize-InstallerVm -Context $Context -Files @($Artifact.Setup)
-    $null = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStartTaskBlock -ArgumentList @($Remote[$Artifact.Setup.Name], "/LANG=$Language", $Plan.WorkDirectory, $Plan.UserName, $Plan.TaskNames.Wizard, 'Highest')
-    Add-InstallerTimeline -Context $Context -Text "kreator /LANG=$Language uruchomiony"
+    # Log Inno kreatora w C:\dso\out\logs (bez spacji); trafia do raw-wizard-<język> razem z resztą logów fazy.
+    $WizardLog = "$($Plan.LogDirectory)\wizard-$Language.log"
+    $null = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStartTaskBlock -ArgumentList @($Remote[$Artifact.Setup.Name], "/LANG=$Language /LOG=$WizardLog", $Plan.WorkDirectory, $Plan.UserName, $Plan.TaskNames.Wizard, 'Highest')
+    Add-InstallerTimeline -Context $Context -Text "kreator /LANG=$Language uruchomiony (log $WizardLog)"
     $Arguments = "-TextsFile $($Plan.OutDirectory)\inst-texts.json -Language $Language -ShotPrefix $($Plan.OutDirectory)\wizard-$Language -StartSeconds $([int]$Plan.WizardProgramSeconds)"
     $Json = Invoke-DsoUserSessionScript -Session $Context.Session -Layout (Get-InstallerLayout -Kind 'Portable') -Name "Inst-Wizard-$Language" -ScriptText (Get-InstallerWizardProbeScript) `
         -ArgumentText $Arguments -UserName $Plan.UserName -TimeoutSeconds ([int]$Plan.WizardProbeSeconds) -DataFiles @{ 'inst-texts.json' = (Get-InstallerProbeTexts) }
     if ([string]::IsNullOrWhiteSpace($Json)) { throw 'Sonda kreatora nie zwróciła wyniku.' }
     $Probe = $Json | ConvertFrom-Json
-    if ($Probe.Error) { $Record.problems += "sonda kreatora: $($Probe.Error)" }
-    $Pages = @(@($Probe.Pages) | Where-Object { $null -ne $_ } | ForEach-Object {
-            [pscustomobject]@{ index = $_.Index; kind = (Get-InstallerWizardPageKind -Labels @($_.Labels) -Language $Language); labels = @($_.Labels); target = $_.Target
-                targetKind = $_.TargetKind; items = @($_.Items); screenshot = [string]$_.Screenshot }
+    # Pola przez Get-InstallerValue/Get-InstallerList: wynik błędu sondy ma tylko Ok i Error, a StrictMode rzuca przy brakującej właściwości.
+    $ProbeError = Get-InstallerValue $Probe 'Error'
+    if ($ProbeError) { $Record.problems += "sonda kreatora: $ProbeError" }
+    $Pages = @(Get-InstallerList $Probe 'Pages' | Where-Object { $null -ne $_ } | ForEach-Object {
+            [pscustomobject]@{ index = (Get-InstallerValue $_ 'Index'); kind = (Get-InstallerWizardPageKind -Labels @(Get-InstallerList $_ 'Labels') -Language $Language)
+                labels = @(Get-InstallerList $_ 'Labels'); target = (Get-InstallerValue $_ 'Target'); targetKind = (Get-InstallerValue $_ 'TargetKind')
+                items = @(Get-InstallerList $_ 'Items'); screenshot = [string](Get-InstallerValue $_ 'Screenshot') }
         })
     $Copied = @()
     foreach ($Page in $Pages) { $Name = Copy-InstallerScreenshot -Context $Context -Record $Record -Name $Page.screenshot; if ($Name) { $Copied += $Name } }
     $Record.screenshots = $Copied
-    $Record.data = [ordered]@{ language = $Language; pages = $Pages; desktopTaskChecked = $Probe.DesktopTaskChecked; desktopTaskSource = $Probe.DesktopTaskSource
-        launchChecked = $Probe.LaunchChecked; launchSource = $Probe.LaunchSource; finishClicked = [bool]$Probe.FinishClicked; programStarted = [bool]$Probe.ProgramStarted
-        programSeconds = $Probe.ProgramSeconds; buttonNames = @($Probe.ButtonNames); screenshots = $Copied }
-    Add-InstallerTimeline -Context $Context -Text "kreator: stron $($Pages.Count), program $($Probe.ProgramStarted)"
+    $Record.data = [ordered]@{ language = $Language; pages = $Pages; desktopTaskChecked = (Get-InstallerValue $Probe 'DesktopTaskChecked'); desktopTaskSource = (Get-InstallerValue $Probe 'DesktopTaskSource')
+        launchChecked = (Get-InstallerValue $Probe 'LaunchChecked'); launchSource = (Get-InstallerValue $Probe 'LaunchSource'); finishClicked = (Test-InstallerTrue (Get-InstallerValue $Probe 'FinishClicked'))
+        programStarted = (Test-InstallerTrue (Get-InstallerValue $Probe 'ProgramStarted')); programSeconds = (Get-InstallerValue $Probe 'ProgramSeconds')
+        buttonNames = @(Get-InstallerList $Probe 'ButtonNames'); checkErrors = @(Get-InstallerList $Probe 'CheckErrors'); probeError = $ProbeError; log = $WizardLog; screenshots = $Copied }
+    Add-InstallerTimeline -Context $Context -Text "kreator: stron $($Pages.Count), program $($Record.data.programStarted)"
 }
 
 function Invoke-InstallerMotwPhase {
@@ -1459,12 +1552,16 @@ function Invoke-InstallerMotwPhase {
         -ArgumentText "-Shot $($Plan.OutDirectory)\motw.png" -UserName $Plan.UserName -TimeoutSeconds 120
     if ([string]::IsNullOrWhiteSpace($Json)) { throw 'Sonda okien nie zwróciła wyniku.' }
     $Probe = $Json | ConvertFrom-Json
-    if ($Probe.Error) { $Record.problems += "sonda okien: $($Probe.Error)" }
-    $Titles = @(@($Probe.Titles) + @(@($Probe.Win32Windows) | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_.Title }) | Where-Object { $_ } | Select-Object -Unique)
+    # Jak w kreatorze: wynik błędu sondy ma tylko Ok i Error, więc pola czytane bez założenia, że istnieją.
+    $ProbeError = Get-InstallerValue $Probe 'Error'
+    if ($ProbeError) { $Record.problems += "sonda okien: $ProbeError" }
+    $Win32Windows = @(Get-InstallerList $Probe 'Win32Windows' | Where-Object { $null -ne $_ })
+    $Titles = @(@(Get-InstallerList $Probe 'Titles') + @($Win32Windows | ForEach-Object { [string](Get-InstallerValue $_ 'Title') }) | Where-Object { $_ } | Select-Object -Unique)
     $Copied = $null
-    if ($Probe.Screenshot) { $Copied = Copy-InstallerScreenshot -Context $Context -Record $Record -Name 'motw.png' }
+    if (Test-InstallerTrue (Get-InstallerValue $Probe 'Screenshot')) { $Copied = Copy-InstallerScreenshot -Context $Context -Record $Record -Name 'motw.png' }
     $Record.screenshots = @($Copied | Where-Object { $_ })
-    $Record.data = [ordered]@{ zoneId = $Motw.ZoneId; path = $Motw.Path; titles = $Titles; win32Windows = @($Probe.Win32Windows); screenshot = ($null -ne $Copied); screenshotError = $Probe.ScreenshotError }
+    $Record.data = [ordered]@{ zoneId = $Motw.ZoneId; path = $Motw.Path; titles = $Titles; win32Windows = $Win32Windows; screenshot = ($null -ne $Copied)
+        screenshotError = (Get-InstallerValue $Probe 'ScreenshotError'); probeError = $ProbeError }
 }
 
 function Invoke-InstallerPhase {

@@ -57,7 +57,7 @@
             listApps         = [ordered]@{ exitCode = 0; group = 'Protected' }
             reinstall        = [ordered]@{ exitCode = 7; versionBefore = '4.0.4'; versionAfter = '4.0.4'; filesDiff = @() }
             uninstallRunning = [ordered]@{ exitCode = 1; filesDiff = @(); keyPresent = $true }
-            relaunch         = [ordered]@{ cAlive = $true; mutex = $true; refusalSeen = $false }
+            relaunch         = [ordered]@{ cDetected = $true; aStopped = $true; cAlive = $true; mutex = $true; refusalSeen = $false; probeError = $null }
             programData      = [ordered]@{ exists = $true; files = @('logs\dsoptimizer.log', 'settings.json'); owner = 'S-1-5-32-544' }
             final            = [ordered]@{ mutexReleased = $true; exitCode = 0; appDirGone = $true; keyGone = $true; startMenuGone = $true; desktopGone = $true
                 dataBefore = @('logs\dsoptimizer.log', 'settings.json'); dataAfter = @('logs\dsoptimizer.log', 'settings.json'); ownerAfter = 'S-1-5-32-544' }
@@ -71,7 +71,7 @@
             install        = [ordered]@{ exitCode = 0 }
             desktopRemoved = [ordered]@{ existed = $true; gone = $true }
             windowA        = [ordered]@{ processFound = $true; mutex = $true; pid = 1300; seconds = 3 }
-            upgradeRunning = [ordered]@{ exitCode = 7; versionBefore = '4.0.4'; versionAfter = '4.0.4' }
+            upgradeRunning = [ordered]@{ exitCode = 7; versionBefore = '4.0.4'; versionAfter = '4.0.4'; filesDiff = @() }
             mutexReleased  = $true
             upgrade        = [ordered]@{ exitCode = 0; versionAfter = '4.0.5'; desktopLink = $false; startMenuLink = $true; filesDiff = @(); unins001 = $false }
         }
@@ -184,7 +184,7 @@ Describe 'Get-InstallerVerdict: komplet danych' {
     It 'faza <Phase>: wszystkie sprawdzenia zaliczone, nazwy unikalne' -ForEach @(
         @{ Phase = 'smoke'; Builder = 'New-SmokeData'; Count = 1 }
         @{ Phase = 'running'; Builder = 'New-RunningData'; Count = 18 }
-        @{ Phase = 'upgrade'; Builder = 'New-UpgradeData'; Count = 12 }
+        @{ Phase = 'upgrade'; Builder = 'New-UpgradeData'; Count = 13 }
         @{ Phase = 'wizard'; Builder = 'New-WizardData'; Count = 6 }
         @{ Phase = 'motw'; Builder = 'New-MotwData'; Count = 3 }
     ) {
@@ -237,6 +237,11 @@ Describe 'Get-InstallerVerdict: jedno odstępstwo = jedno niezaliczone sprawdzen
         @{ Why = 'deinstalator przy oknie usunął pliki'; Name = 'UninstallRefusedKeeps'; Mutate = { param($D) $D.uninstallRunning.filesDiff = @('brak pliku: DSOptimizer.exe') } }
         @{ Why = 'deinstalator przy oknie usunął klucz'; Name = 'UninstallRefusedKeeps'; Mutate = { param($D) $D.uninstallRunning.keyPresent = $false } }
         @{ Why = 'relaunch: C nie żyje'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.cAlive = $false } }
+        @{ Why = 'relaunch: A nie zamknięte'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.aStopped = $false } }
+        @{ Why = 'relaunch: brak odczytu zamknięcia A'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.aStopped = $null } }
+        @{ Why = 'relaunch: błąd sondy bez odczytu'; Name = 'RelaunchNoRefusal'; Mutate = { param($D) $D.relaunch.refusalSeen = $null; $D.relaunch.probeError = 'sonda przy żywym A: brak wyniku' } }
+        @{ Why = 'relaunch: błąd jednej z sond'; Name = 'RelaunchNoRefusal'; Mutate = { param($D) $D.relaunch.probeError = 'sonda po zamknięciu A: brak wyniku' } }
+        @{ Why = 'kopia B: błąd sondy'; Name = 'PortableMessage'; Mutate = { param($D) $D.portable.probeError = 'Sonda Inst-Refusal-B nie zwróciła wyniku.' } }
         @{ Why = 'relaunch: brak mutexa'; Name = 'RelaunchMutex'; Mutate = { param($D) $D.relaunch.mutex = $false } }
         @{ Why = 'relaunch: okno już działa'; Name = 'RelaunchNoRefusal'; Mutate = { param($D) $D.relaunch.refusalSeen = $true } }
         @{ Why = 'mutex nie zniknął po zamknięciu C'; Name = 'MutexReleased'; Mutate = { param($D) $D.final.mutexReleased = $false } }
@@ -262,6 +267,8 @@ Describe 'Get-InstallerVerdict: jedno odstępstwo = jedno niezaliczone sprawdzen
         @{ Why = 'okno A bez mutexa'; Name = 'WindowA'; Mutate = { param($D) $D.windowA.mutex = $false } }
         @{ Why = 'nowsza wersja przy oknie kod 0'; Name = 'UpgradeRefused'; Mutate = { param($D) $D.upgradeRunning.exitCode = 0 } }
         @{ Why = 'nowsza wersja przy oknie zmieniła DisplayVersion'; Name = 'UpgradeRefusedVersion'; Mutate = { param($D) $D.upgradeRunning.versionAfter = '4.0.5' } }
+        @{ Why = 'nowsza wersja przy oknie zmieniła pliki'; Name = 'UpgradeRefusedUnchanged'; Mutate = { param($D) $D.upgradeRunning.filesDiff = @('inna suma SHA256: DSOptimizer.exe') } }
+        @{ Why = 'brak odczytu plików przy odmowie'; Name = 'UpgradeRefusedUnchanged'; Mutate = { param($D) $D.upgradeRunning.filesDiff = $null } }
         @{ Why = 'mutex nie zniknął'; Name = 'MutexReleased'; Mutate = { param($D) $D.mutexReleased = $false } }
         @{ Why = 'aktualizacja kod 7'; Name = 'UpgradeExit'; Mutate = { param($D) $D.upgrade.exitCode = 7 } }
         @{ Why = 'DisplayVersion stara'; Name = 'UpgradeVersion'; Mutate = { param($D) $D.upgrade.versionAfter = '4.0.4' } }
@@ -306,6 +313,110 @@ Describe 'Get-InstallerVerdict: jedno odstępstwo = jedno niezaliczone sprawdzen
         $Data = New-MotwData
         $Data.titles = @('Windows protected your PC')
         @(Get-Failed -Phase 'motw' -Data $Data) | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Faza running na mockach (kolejność relaunchu, błędy sond)' {
+    BeforeEach {
+        $script:Calls = [System.Collections.Generic.List[string]]::new()
+        $script:ProbeBehavior = 'ok'
+        $script:CliErrors = @('Działa już inna kopia DSOptimizera (okno albo polecenie, które zmienia system).')
+        Mock Initialize-InstallerVm { @{ 'DSOptimizer-4.0.4.zip' = 'C:\dso\instalator\DSOptimizer-4.0.4.zip'; 'DSOptimizer-4.0.4-setup.exe' = 'C:\dso\instalator\DSOptimizer-4.0.4-setup.exe' } }
+        Mock Invoke-InstallerSetup { $script:Calls.Add("setup:$Step"); if ($Step -like '*running') { if ($Uninstall) { 1 } else { 7 } } else { 0 } }
+        Mock Start-InstallerWindowA { $script:Calls.Add('windowA'); [ordered]@{ processFound = $true; mutex = $true; pid = 7; seconds = 2 } }
+        Mock Confirm-DsoLanguageChoice -RemoveParameterValidation 'Session' { [pscustomobject]@{ Shown = $true; Chosen = $true } }
+        Mock Start-DsoGuiInUserSession -RemoveParameterValidation 'Session' { $script:Calls.Add("gui:$TaskName"); '2026-11-04T10:00:00Z' }
+        Mock Invoke-InstallerRefusalProbe {
+            $script:Calls.Add("probe:$Name")
+            if ($script:ProbeBehavior -eq 'throw') { throw "Sonda $Name nie zwróciła wyniku." }
+            if ($Name -eq 'Inst-Refusal-B') { return [pscustomobject]@{ Found = $true; Text = 'DSOptimizer już działa (okno).'; Clicked = $true; ProcessId = 9 } }
+            [pscustomobject]@{ Found = $false; Text = $null; Clicked = $false; ProcessId = $null }
+        }
+        Mock Invoke-InstallerRemote {
+            $script:Calls.Add("remote:$(@($ArgumentList) -join ',')")
+            [pscustomobject]@{ Finished = $true; LastTaskResult = 1; State = 'Ready'; ProcessFound = $true; Pid = 42; Mutex = $true; Seconds = 1; Released = $true
+                Exists = $true; Files = @('settings.json'); Owner = 'S-1-5-32-544' }
+        }
+        Mock Invoke-DsoCli -RemoveParameterValidation 'Session' {
+            [pscustomobject]@{ ExitCode = 1; TimedOut = $false; ReportError = $null
+                Report = [pscustomobject]@{ errors = $script:CliErrors; apps = @([pscustomobject]@{ name = 'DSOptimizer'; group = 'Protected' }) } }
+        }
+        Mock Get-InstallerState { [pscustomobject]@{ AppExists = $true; Files = @{ 'DSOptimizer.exe' = 'AA' }; KeyPresent = $true; DisplayVersion = '4.0.4'; StartMenuLink = $true; DesktopLink = $true; Unins001 = $false } }
+        Mock Start-Sleep { $script:Calls.Add("sleep:$Seconds") }
+        $script:Context = [ordered]@{ Session = $null; Plan = (Get-InstallerPlan); Artifact = [ordered]@{ Version = '4.0.4'; Zip = @{ Name = 'DSOptimizer-4.0.4.zip' }; Setup = @{ Name = 'DSOptimizer-4.0.4-setup.exe' } }
+            VmName = 'DSO-26H2-Pro'; VmDirectory = $TestDrive; Run = [ordered]@{ Key = 'running'; Phase = 'running'; Language = $null }; Timeline = [System.Collections.Generic.List[string]]::new() }
+        $script:Record = [ordered]@{ data = $null; problems = @() }
+    }
+    It 'relaunch: wykrycie C, sonda przy żywym A, czekanie do 8 s od wykrycia C, dopiero potem zamknięcie A' {
+        Invoke-InstallerRunningPhase -Context $script:Context -Record $script:Record
+        $Calls = @($script:Calls)
+        $DetectC = [array]::IndexOf($Calls, "remote:C:\Program Files\DSOptimizer\DSOptimizer.exe,Global\DSOptimizer.SingleInstance,30,--relaunched")
+        $HoldProbe = [array]::IndexOf($Calls, 'probe:Inst-Refusal-Hold')
+        $StopA = [array]::IndexOf($Calls, 'remote:7,15')
+        $AfterProbe = [array]::IndexOf($Calls, 'probe:Inst-Refusal-C')
+        $DetectC | Should -BeGreaterThan -1
+        $HoldProbe | Should -BeGreaterThan $DetectC
+        $StopA | Should -BeGreaterThan $HoldProbe
+        $AfterProbe | Should -BeGreaterThan $StopA
+        # Mock sondy wraca od razu, więc skrypt dosypia resztę z 8 s przed zamknięciem A.
+        $Sleeps = @($Calls[$HoldProbe..$StopA] | Where-Object { $_ -like 'sleep:*' } | ForEach-Object { [int]($_ -replace 'sleep:', '') })
+        ($Sleeps | Measure-Object -Sum).Sum | Should -BeGreaterOrEqual 7
+        $script:Record.data.relaunch.aStopped | Should -BeTrue
+        $script:Record.data.relaunch.refusalSeen | Should -BeFalse
+        $script:Record.data.cliApply.firstError | Should -Match '^Działa już inna kopia'
+    }
+    It 'błąd sond B i C nie przerywa fazy: dalsze kroki wykonane, niezaliczone PortableMessage i RelaunchNoRefusal z opisem błędu' {
+        $script:ProbeBehavior = 'throw'
+        { Invoke-InstallerRunningPhase -Context $script:Context -Record $script:Record } | Should -Not -Throw
+        $script:Calls | Should -Contain 'setup:uninstall'
+        $script:Record.data.portable.probeError | Should -Match 'Inst-Refusal-B'
+        $script:Record.data.relaunch.refusalSeen | Should -BeNullOrEmpty
+        $script:Record.data.relaunch.probeError | Should -Match 'Inst-Refusal-Hold'
+        $script:Record.data.relaunch.probeError | Should -Match 'Inst-Refusal-C'
+        $script:Record.data.final | Should -Not -BeNullOrEmpty
+        $Checks = @(Get-InstallerVerdict -Phase 'running' -Data $script:Record.data)
+        ($Checks | Where-Object Name -eq 'PortableMessage').Passed | Should -BeFalse
+        ($Checks | Where-Object Name -eq 'PortableMessage').Detail | Should -Match 'błąd sondy'
+        ($Checks | Where-Object Name -eq 'RelaunchNoRefusal').Passed | Should -BeFalse
+        ($Checks | Where-Object Name -eq 'RelaunchNoRefusal').Detail | Should -Match 'błąd sondy'
+    }
+    It 'CLI bez listy errors (np. nie odmówiło) pod StrictMode: brak wyjątku, firstError pusty' {
+        $script:CliErrors = @()
+        Set-StrictMode -Version Latest
+        try { { Invoke-InstallerRunningPhase -Context $script:Context -Record $script:Record } | Should -Not -Throw }
+        finally { Set-StrictMode -Off }
+        $script:Record.data.cliApply.firstError | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Odczyt wyników sond bez pól (StrictMode)' {
+    BeforeEach {
+        Mock Initialize-InstallerVm { @{ 'DSOptimizer-4.0.4-setup.exe' = 'C:\dso\instalator\DSOptimizer-4.0.4-setup.exe' } }
+        Mock Invoke-InstallerRemote { $script:RemoteArgs.Add((@($ArgumentList) -join '|')); [pscustomobject]@{ Path = 'C:\Users\dso\Desktop\DSOptimizer-4.0.4-setup.exe'; ZoneId = 3 } }
+        Mock Invoke-DsoUserSessionScript -RemoveParameterValidation 'Session' { '{"Ok":false,"Error":"Sonda dziala tylko w VM"}' }
+        Mock Copy-InstallerScreenshot { $null }
+        Mock Start-Sleep { }
+        $script:RemoteArgs = [System.Collections.Generic.List[string]]::new()
+        $script:Context = [ordered]@{ Session = $null; Plan = (Get-InstallerPlan); Artifact = [ordered]@{ Version = '4.0.4'; Setup = @{ Name = 'DSOptimizer-4.0.4-setup.exe' } }
+            VmName = 'DSO-26H2-Pro'; VmDirectory = $TestDrive; Run = [ordered]@{ Key = 'wizard-pl'; Phase = 'wizard'; Language = 'pl' }; Timeline = [System.Collections.Generic.List[string]]::new() }
+        $script:Record = [ordered]@{ data = $null; problems = @(); screenshots = @() }
+    }
+    It 'kreator: wynik z samym Ok/Error daje problem z prawdziwym błędem sondy; start z /LOG w C:\dso\out\logs' {
+        Set-StrictMode -Version Latest
+        try { { Invoke-InstallerWizardPhase -Context $script:Context -Record $script:Record } | Should -Not -Throw }
+        finally { Set-StrictMode -Off }
+        @($script:Record.problems) | Should -Contain 'sonda kreatora: Sonda dziala tylko w VM'
+        @($script:Record.data.pages) | Should -HaveCount 0
+        @($script:RemoteArgs | Where-Object { $_ -like '*/LANG=pl /LOG=C:\dso\out\logs\wizard-pl.log*' }) | Should -HaveCount 1
+        $script:Record.data.log | Should -BeExactly 'C:\dso\out\logs\wizard-pl.log'
+    }
+    It 'motw: wynik z samym Ok/Error daje problem z prawdziwym błędem sondy' {
+        $script:Context.Run = [ordered]@{ Key = 'motw'; Phase = 'motw'; Language = $null }
+        Set-StrictMode -Version Latest
+        try { { Invoke-InstallerMotwPhase -Context $script:Context -Record $script:Record } | Should -Not -Throw }
+        finally { Set-StrictMode -Off }
+        @($script:Record.problems) | Should -Contain 'sonda okien: Sonda dziala tylko w VM'
+        $script:Record.data.screenshot | Should -BeFalse
     }
 }
 
