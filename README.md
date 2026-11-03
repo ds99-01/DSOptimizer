@@ -87,7 +87,7 @@ window opens, it asks GitHub (api.github.com) for the latest version number, and
 turn this off in Settings; command-line mode never checks. Apart from that, it connects to the network only when you
 ask it to: it downloads WinUtil and RustDesk from their authors' GitHub, and installing and searching for apps goes
 through winget from the Microsoft source. The "Preparation" page opens manufacturers' pages and
-Google in your browser, but sends nothing by itself. The measurement of the program's connections is in the [network report for version 4.0.3](docs/zrodla/2026-11-01-v4-0-3-pomiar-sieci.md) (in Polish).
+Google in your browser, but sends nothing by itself. The measurement of the program's connections is in the [network report for version 4.0.4](docs/zrodla/2026-11-03-v4-0-4-pomiar-sieci.md) (in Polish).
 
 Change history, logs and reports stay on the computer, in the `%ProgramData%\DSOptimizer` folder. When you run the
 program from a USB drive, a copy of the log and reports is also saved next to `DSOptimizer.exe`.

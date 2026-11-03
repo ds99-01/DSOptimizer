@@ -84,7 +84,7 @@ Program nie ma telemetrii i nie aktualizuje się sam: niczego sam nie pobiera an
 pyta GitHuba (api.github.com) o numer najnowszej wersji, a GitHub widzi przy tym Twój adres IP. Możesz to wyłączyć
 w Ustawieniach; tryb wiersza poleceń nigdy tego nie sprawdza. Poza tym łączy się z siecią tylko na Twoje żądanie: WinUtil
 i RustDesk pobiera z GitHuba ich autorów, a instalacja i wyszukiwanie aplikacji idą przez winget ze źródła
-Microsoftu. Strona „Przygotowanie” otwiera w przeglądarce strony producentów i Google, ale sama niczego nie wysyła. Pomiar połączeń programu jest w [raporcie sieciowym wersji 4.0.3](docs/zrodla/2026-11-01-v4-0-3-pomiar-sieci.md).
+Microsoftu. Strona „Przygotowanie” otwiera w przeglądarce strony producentów i Google, ale sama niczego nie wysyła. Pomiar połączeń programu jest w [raporcie sieciowym wersji 4.0.4](docs/zrodla/2026-11-03-v4-0-4-pomiar-sieci.md).
 
 Historia zmian, logi i raporty zostają na komputerze, w folderze `%ProgramData%\DSOptimizer`. Gdy program
 uruchomisz z pendrive'a, kopia logu i raportów trafia też obok `DSOptimizer.exe`.
