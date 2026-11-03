@@ -6,7 +6,9 @@
 .DESCRIPTION
     Instrukcja uruchomienia (Windows PowerShell 5.1, z katalogu repo, bez uprawnień administratora, wymaga .NET SDK z global.json):
         .\tools\release\Build-Release.ps1 -Variant SingleExe                    # wydania\v<wersja>-SingleExe\DSOptimizer-<wersja>.exe
-        .\tools\release\Build-Release.ps1 -Variant Folder                       # wydania\v<wersja>-Folder\DSOptimizer-<wersja>.zip
+        .\tools\release\Build-Release.ps1 -Variant Folder                       # wydania\v<wersja>-Folder\ z zipem, instalatorem i SHA256SUMS.txt
+        .\tools\release\Build-Release.ps1 -Variant Folder -NoInstaller          # tylko zip (bez Inno Setup), na wyraźne życzenie
+        .\tools\release\Build-Release.ps1 -Variant Folder -IsccPath 'C:\...\ISCC.exe'   # jawna ścieżka do ISCC.exe
         .\tools\release\Build-Release.ps1 -Variant SingleExe -Tag v4.0.0 -OutRoot out   # CI: tag musi zgadzać się z wersją
 
     Opis działania:
@@ -16,9 +18,17 @@
         /p:DsoSingleExe=false (zwykły folder exe + DLL). Potem w <OutRoot>\v<wersja>-<wariant>\ zapisuje:
           - SingleExe: DSOptimizer-<wersja>.exe (gdy obok exe zostały biblioteki .dll, Costura nie zadziałała = błąd),
           - Folder: DSOptimizer-<wersja>.zip z katalogiem DSOptimizer\ i całym folderem programu bez plików .pdb,
-        oraz SHA256SUMS.txt w formacie sha256sum („<sha256 małymi literami>  <nazwa>”, LF, UTF-8 bez BOM).
-        Istniejące pliki wydania o tych nazwach są nadpisywane, inne pliki w folderze zostają. Na wyjściu: pełna ścieżka
-        pliku wydania. Skrypt niczego nie zaciemnia, nie szyfruje ani nie pakuje (spec Etapu 5, sekcja 5).
+            oraz (bez -NoInstaller) DSOptimizer-<wersja>-setup.exe skompilowany przez ISCC z tego samego katalogu buildu co zip
+            (DSOptimizer.iss obok skryptu; /DAppVersion, /DProgramDir, /O, /F, /Q),
+        oraz SHA256SUMS.txt w formacie sha256sum („<sha256 małymi literami>  <nazwa>”, LF, UTF-8 bez BOM): jedna linia
+        dla SingleExe i dla Folder z -NoInstaller, dwie dla Folder z instalatorem (najpierw zip, potem instalator).
+        ISCC i DSOptimizer.iss są sprawdzane przed budowaniem (brak = błąd, kod 1, nic nie zbudowane). Kolejność szukania
+        ISCC bez -IsccPath: $env:DSO_ISCC, %LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe, ${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe,
+        $env:ProgramFiles\Inno Setup 6\ISCC.exe. Podany -IsccPath, którego nie ma, to błąd (bez dalszego szukania).
+        Gdy ISCC zawiedzie (kod różny od 0 albo brak pliku), skrypt usuwa z katalogu wydania zip, instalator i SHA256SUMS.txt
+        tego przebiegu. Istniejące pliki wydania o tych nazwach są nadpisywane, inne pliki w folderze zostają. Na wyjściu:
+        pełne ścieżki plików wydania (najpierw zip, potem instalator). Skrypt niczego nie zaciemnia ani nie szyfruje
+        (spec Etapu 5, sekcja 5).
 
 .PARAMETER Variant
     SingleExe (jeden exe przez Costura.Fody) albo Folder (zip folderu programu).
@@ -28,6 +38,12 @@
 
 .PARAMETER Tag
     Tag wydania (np. v4.0.0); musi być równy „v” + <Version> z Directory.Build.props.
+
+.PARAMETER NoInstaller
+    Wariant Folder bez instalatora (tylko zip i jedna linia w SHA256SUMS.txt); tylko na wyraźne życzenie.
+
+.PARAMETER IsccPath
+    Jawna ścieżka do ISCC.exe (Inno Setup 6); nieistniejąca = błąd. Bez niej: $env:DSO_ISCC i typowe katalogi instalacji.
 #>
 [CmdletBinding()]
 param(
@@ -37,7 +53,11 @@ param(
 
     [string]$OutRoot,
 
-    [string]$Tag
+    [string]$Tag,
+
+    [switch]$NoInstaller,
+
+    [string]$IsccPath
 )
 
 Set-StrictMode -Version Latest
@@ -123,19 +143,73 @@ function Write-ZipFromFolder {
     }
 }
 
+function Resolve-IsccPath {
+    param([string]$ExplicitPath)
+
+    # Podany jawnie -IsccPath, którego nie ma, to błąd, a nie dalsze szukanie.
+    if ($ExplicitPath) {
+        if (-not (Test-Path -LiteralPath $ExplicitPath -PathType Leaf)) {
+            throw "Nie znaleziono ISCC.exe pod ścieżką z -IsccPath: $ExplicitPath."
+        }
+
+        return (Get-FullPath -Path $ExplicitPath)
+    }
+
+    # Kolejność: DSO_ISCC, %LOCALAPPDATA%\Programs, ProgramFiles(x86), ProgramFiles; nieistniejący kandydat jest pomijany.
+    $Candidates = @()
+    if ($env:DSO_ISCC) { $Candidates += $env:DSO_ISCC }
+    if ($env:LOCALAPPDATA) { $Candidates += (Join-Path -Path $env:LOCALAPPDATA -ChildPath 'Programs\Inno Setup 6\ISCC.exe') }
+    if (${env:ProgramFiles(x86)}) { $Candidates += (Join-Path -Path ${env:ProgramFiles(x86)} -ChildPath 'Inno Setup 6\ISCC.exe') }
+    if ($env:ProgramFiles) { $Candidates += (Join-Path -Path $env:ProgramFiles -ChildPath 'Inno Setup 6\ISCC.exe') }
+    foreach ($Candidate in $Candidates) {
+        if (Test-Path -LiteralPath $Candidate -PathType Leaf) {
+            return $Candidate
+        }
+    }
+
+    throw 'Nie znaleziono ISCC.exe (Inno Setup 6). Podaj -IsccPath, ustaw DSO_ISCC albo zainstaluj Inno Setup; -NoInstaller buduje samo zip.'
+}
+
+function Invoke-InstallerBuild {
+    param(
+        [Parameter(Mandatory)][string]$Iscc,
+        [Parameter(Mandatory)][string]$IssFile,
+        [Parameter(Mandatory)][string]$Version,
+        [Parameter(Mandatory)][string]$ProgramDirectory,
+        [Parameter(Mandatory)][string]$OutputDirectory,
+        [Parameter(Mandatory)][string]$InstallerPath
+    )
+
+    & $Iscc "/DAppVersion=$Version" "/DProgramDir=$ProgramDirectory" "/O$OutputDirectory" "/FDSOptimizer-$Version-setup" '/Q' $IssFile | Write-Host
+    if ($LASTEXITCODE -ne 0) {
+        throw "ISCC zakończył się kodem $LASTEXITCODE."
+    }
+
+    if (-not (Test-Path -LiteralPath $InstallerPath -PathType Leaf)) {
+        throw "ISCC nie utworzył $InstallerPath."
+    }
+}
+
 function Write-Sha256Sums {
     param(
-        [Parameter(Mandatory)][string]$ReleaseFile,
+        [Parameter(Mandatory)][string[]]$ReleaseFiles,
         [Parameter(Mandatory)][string]$SumsPath
     )
 
-    $Hash = (Get-FileHash -LiteralPath $ReleaseFile -Algorithm SHA256).Hash.ToLowerInvariant()
-    $Line = '{0}  {1}' -f $Hash, (Split-Path -Path $ReleaseFile -Leaf)
-    [System.IO.File]::WriteAllText($SumsPath, $Line + "`n", (New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false))
-    return $Hash
+    $Hashes = @()
+    $Text = ''
+    foreach ($ReleaseFile in $ReleaseFiles) {
+        $Hash = (Get-FileHash -LiteralPath $ReleaseFile -Algorithm SHA256).Hash.ToLowerInvariant()
+        $Hashes += $Hash
+        $Text += ('{0}  {1}' -f $Hash, (Split-Path -Path $ReleaseFile -Leaf)) + "`n"
+    }
+
+    [System.IO.File]::WriteAllText($SumsPath, $Text, (New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false))
+    return $Hashes
 }
 
 $BuildDirectory = $null
+$OwnedFiles = @()
 try {
     $Version = Get-ReleaseVersion -PropsPath (Join-Path -Path $RepoRoot -ChildPath 'Directory.Build.props')
     if ($PSBoundParameters.ContainsKey('Tag') -and $Tag -cne "v$Version") {
@@ -145,6 +219,17 @@ try {
     $OutRootPath = if ($OutRoot) { Get-FullPath -Path $OutRoot } else { Join-Path -Path $RepoRoot -ChildPath 'wydania' }
     $ReleaseDirectory = Join-Path -Path $OutRootPath -ChildPath ('v{0}-{1}' -f $Version, $Variant)
     $BuildDirectory = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath ('dso-release-' + [guid]::NewGuid().ToString('N'))
+
+    # ISCC i .iss sprawdzane przed budowaniem: brak = błąd, nic nie zbudowane.
+    $WithInstaller = ($Variant -eq 'Folder') -and (-not $NoInstaller)
+    if ($WithInstaller) {
+        $IssPath = Join-Path -Path $PSScriptRoot -ChildPath 'DSOptimizer.iss'
+        if (-not (Test-Path -LiteralPath $IssPath -PathType Leaf)) {
+            throw "Brak skryptu instalatora $IssPath."
+        }
+
+        $Iscc = Resolve-IsccPath -ExplicitPath $IsccPath
+    }
 
     Invoke-AppBuild -OutputDirectory $BuildDirectory -SingleExe ($Variant -eq 'SingleExe')
 
@@ -156,21 +241,48 @@ try {
     }
 
     $null = New-Item -ItemType Directory -Path $ReleaseDirectory -Force
+    $SumsPath = Join-Path -Path $ReleaseDirectory -ChildPath $SumsFileName
+    $ReleaseFiles = @()
     if ($Variant -eq 'SingleExe') {
         $ReleaseFile = Join-Path -Path $ReleaseDirectory -ChildPath ('DSOptimizer-{0}.exe' -f $Version)
+        $OwnedFiles = @($ReleaseFile, $SumsPath)
         Copy-Item -LiteralPath (Join-Path -Path $BuildDirectory -ChildPath $ExeName) -Destination $ReleaseFile -Force
+        $ReleaseFiles = @($ReleaseFile)
     }
     else {
         $ReleaseFile = Join-Path -Path $ReleaseDirectory -ChildPath ('DSOptimizer-{0}.zip' -f $Version)
+        $InstallerFile = Join-Path -Path $ReleaseDirectory -ChildPath ('DSOptimizer-{0}-setup.exe' -f $Version)
+        $OwnedFiles = if ($WithInstaller) { @($ReleaseFile, $InstallerFile, $SumsPath) } else { @($ReleaseFile, $SumsPath) }
         Write-ZipFromFolder -SourceDirectory $BuildDirectory -ZipPath $ReleaseFile
+        $ReleaseFiles = @($ReleaseFile)
+        if ($WithInstaller) {
+            # Instalator z tego samego katalogu buildu co zip.
+            if (Test-Path -LiteralPath $InstallerFile) {
+                Remove-Item -LiteralPath $InstallerFile -Force
+            }
+
+            Invoke-InstallerBuild -Iscc $Iscc -IssFile $IssPath -Version $Version -ProgramDirectory $BuildDirectory -OutputDirectory $ReleaseDirectory -InstallerPath $InstallerFile
+            $ReleaseFiles += $InstallerFile
+        }
     }
 
-    $Hash = Write-Sha256Sums -ReleaseFile $ReleaseFile -SumsPath (Join-Path -Path $ReleaseDirectory -ChildPath $SumsFileName)
-    $Size = (Get-Item -LiteralPath $ReleaseFile).Length
-    Write-Information -MessageData ('Wydanie {0}: {1} ({2} B), SHA256 {3}' -f $Variant, $ReleaseFile, $Size, $Hash) -InformationAction Continue
-    Write-Output $ReleaseFile
+    $Hashes = @(Write-Sha256Sums -ReleaseFiles $ReleaseFiles -SumsPath $SumsPath)
+    $Parts = for ($Index = 0; $Index -lt $ReleaseFiles.Count; $Index++) {
+        '{0} ({1} B), SHA256 {2}' -f $ReleaseFiles[$Index], (Get-Item -LiteralPath $ReleaseFiles[$Index]).Length, $Hashes[$Index]
+    }
+
+    Write-Information -MessageData ('Wydanie {0}: {1}' -f $Variant, ($Parts -join '; ')) -InformationAction Continue
+    foreach ($File in $ReleaseFiles) {
+        Write-Output $File
+    }
 }
 catch {
+    foreach ($File in $OwnedFiles) {
+        if (Test-Path -LiteralPath $File) {
+            Remove-Item -LiteralPath $File -Force -ErrorAction SilentlyContinue
+        }
+    }
+
     Write-Error -ErrorRecord $_ -ErrorAction Continue
     exit 1
 }

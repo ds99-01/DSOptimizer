@@ -27,7 +27,51 @@ BeforeAll {
         $Props = "<Project>`r`n  <PropertyGroup>`r`n    <TargetFramework>net481</TargetFramework>`r`n    <Version>$Version</Version>`r`n  </PropertyGroup>`r`n</Project>`r`n"
         [System.IO.File]::WriteAllText((Join-Path -Path $Root -ChildPath 'Directory.Build.props'), $Props, (New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $true))
         [System.IO.File]::WriteAllText((Join-Path -Path $Root -ChildPath 'src\DSOptimizer.App\DSOptimizer.App.csproj'), '<Project Sdk="Microsoft.NET.Sdk" />')
+        [System.IO.File]::WriteAllText((Join-Path -Path $Root -ChildPath 'tools\release\DSOptimizer.iss'), '; atrapa')
         return $Root
+    }
+
+    # Atrapa ISCC: skrypt .ps1 wykonywany w procesie Pestera (nie nowy proces). Zapisuje TestDrive\iscc-call.json
+    # (argumenty i pliki z /DProgramDir bez .pdb z SHA256) i tworzy <O>\<F>.exe; z -Fail kończy się kodem 2 bez pliku.
+    function script:New-FakeIscc {
+        param([switch]$Fail)
+
+        $Path = Join-Path -Path $TestDrive -ChildPath 'fake-iscc.ps1'
+        $CallPath = Join-Path -Path $TestDrive -ChildPath 'iscc-call.json'
+        if (Test-Path -LiteralPath $CallPath) {
+            Remove-Item -LiteralPath $CallPath -Force
+        }
+
+        $Body = if ($Fail) {
+            "exit 2`r`n"
+        }
+        else {
+            @'
+$OutDir = $null; $FileName = $null; $ProgramDir = $null
+foreach ($Argument in $args) {
+    $Text = [string]$Argument
+    if ($Text.StartsWith('/DProgramDir=')) { $ProgramDir = $Text.Substring(13) }
+    elseif ($Text.StartsWith('/O')) { $OutDir = $Text.Substring(2) }
+    elseif ($Text.StartsWith('/F')) { $FileName = $Text.Substring(2) }
+}
+$Prefix = $ProgramDir.TrimEnd('\') + '\'
+$Files = @(Get-ChildItem -LiteralPath $ProgramDir -Recurse -File | Where-Object { $_.Extension -ne '.pdb' } | ForEach-Object {
+    [pscustomobject]@{ Name = $_.FullName.Substring($Prefix.Length).Replace('\', '/'); Sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant() }
+})
+$Call = [pscustomobject]@{ Args = @($args | ForEach-Object { [string]$_ }); Files = $Files }
+[System.IO.File]::WriteAllText((Join-Path -Path $PSScriptRoot -ChildPath 'iscc-call.json'), (ConvertTo-Json -InputObject $Call -Depth 5))
+$null = New-Item -ItemType Directory -Path $OutDir -Force
+[System.IO.File]::WriteAllBytes((Join-Path -Path $OutDir -ChildPath ($FileName + '.exe')), [byte[]](77, 90, 9, 9))
+exit 0
+'@
+        }
+
+        [System.IO.File]::WriteAllText($Path, $Body)
+        return $Path
+    }
+
+    function script:Get-IsccCall {
+        return (ConvertFrom-Json -InputObject ([System.IO.File]::ReadAllText((Join-Path -Path $TestDrive -ChildPath 'iscc-call.json'))))
     }
 
     function script:Get-ScriptPath {
@@ -115,7 +159,7 @@ Describe 'Build-Release.ps1 – sprawdzenie tagu i parametrów' {
     It 'nieudany dotnet build = kod 1 bez pliku wydania' {
         Mock dotnet { $global:LASTEXITCODE = 1 }
 
-        $Result = & (Get-ScriptPath -Repo $Repo) -Variant Folder -OutRoot $OutRoot 2>$null
+        $Result = & (Get-ScriptPath -Repo $Repo) -Variant Folder -NoInstaller -OutRoot $OutRoot 2>$null
 
         $LASTEXITCODE | Should -Be 1
         $Result | Should -BeNullOrEmpty
@@ -192,7 +236,7 @@ Describe 'Build-Release.ps1 – wariant Folder' {
     }
 
     It 'buduje App w Release z jawnym /p:DsoSingleExe=false' {
-        $null = & (Get-ScriptPath -Repo $Repo) -Variant Folder -OutRoot $OutRoot
+        $null = & (Get-ScriptPath -Repo $Repo) -Variant Folder -NoInstaller -OutRoot $OutRoot
 
         Should -Invoke dotnet -Times 1 -Exactly -ParameterFilter {
             $args[0] -eq 'build' -and $args -contains '/p:DsoSingleExe=false' -and $args -notcontains '/p:DsoSingleExe=true'
@@ -200,7 +244,7 @@ Describe 'Build-Release.ps1 – wariant Folder' {
     }
 
     It 'zip ma katalog DSOptimizer\ z całym folderem programu bez .pdb' {
-        $Result = & (Get-ScriptPath -Repo $Repo) -Variant Folder -OutRoot $OutRoot
+        $Result = & (Get-ScriptPath -Repo $Repo) -Variant Folder -NoInstaller -OutRoot $OutRoot
 
         $Result | Should -Be (Join-Path -Path $OutRoot -ChildPath 'v4.0.0-Folder\DSOptimizer-4.0.0.zip')
         $Entries = Get-ZipEntryNames -Path $Result
@@ -217,7 +261,7 @@ Describe 'Build-Release.ps1 – wariant Folder' {
     }
 
     It 'SHA256SUMS.txt opisuje zip w formacie sha256sum' {
-        $Result = & (Get-ScriptPath -Repo $Repo) -Variant Folder -OutRoot $OutRoot
+        $Result = & (Get-ScriptPath -Repo $Repo) -Variant Folder -NoInstaller -OutRoot $OutRoot
 
         $Text = [System.IO.File]::ReadAllText((Join-Path -Path (Split-Path -Path $Result -Parent) -ChildPath 'SHA256SUMS.txt'))
         $Text | Should -MatchExactly '^[0-9a-f]{64}  DSOptimizer-4\.0\.0\.zip\n$'
@@ -225,11 +269,146 @@ Describe 'Build-Release.ps1 – wariant Folder' {
     }
 
     It 'ponowne uruchomienie nadpisuje zip zamiast błędu' {
-        $null = & (Get-ScriptPath -Repo $Repo) -Variant Folder -OutRoot $OutRoot
-        $Result = & (Get-ScriptPath -Repo $Repo) -Variant Folder -OutRoot $OutRoot
+        $null = & (Get-ScriptPath -Repo $Repo) -Variant Folder -NoInstaller -OutRoot $OutRoot
+        $Result = & (Get-ScriptPath -Repo $Repo) -Variant Folder -NoInstaller -OutRoot $OutRoot
 
         $LASTEXITCODE | Should -Be 0
         (Get-ZipEntryNames -Path $Result).Count | Should -Be 5
+    }
+}
+
+Describe 'Build-Release.ps1 – wariant Folder z instalatorem' {
+    BeforeEach {
+        $script:Repo = New-FakeRepo -Version '4.0.0'
+        $script:OutRoot = Join-Path -Path $TestDrive -ChildPath ('out-' + [guid]::NewGuid().ToString('N'))
+        $script:Dir = Join-Path -Path $script:OutRoot -ChildPath 'v4.0.0-Folder'
+        $script:Iscc = New-FakeIscc
+        Mock dotnet {
+            Write-FakeBuildOutput -Arguments $args -ExtraFiles @('Wpf.Ui.dll', 'DSOptimizer.Core.dll', 'DSOptimizer.Core.pdb', 'pl\DSOptimizer.resources.dll')
+            $global:LASTEXITCODE = 0
+        }
+    }
+
+    It 'zip, instalator, SHA256SUMS.txt i nic więcej' {
+        $null = & (Get-ScriptPath -Repo $Repo) -Variant Folder -IsccPath $Iscc -OutRoot $OutRoot
+
+        $LASTEXITCODE | Should -Be 0
+        $Names = @(Get-ChildItem -LiteralPath $Dir | ForEach-Object { $_.Name })
+        $Names | Should -HaveCount 3
+        $Names | Should -Contain 'DSOptimizer-4.0.0-setup.exe'
+        $Names | Should -Contain 'DSOptimizer-4.0.0.zip'
+        $Names | Should -Contain 'SHA256SUMS.txt'
+    }
+
+    It 'SHA256SUMS.txt ma dwie linie: zip, potem instalator' {
+        $null = & (Get-ScriptPath -Repo $Repo) -Variant Folder -IsccPath $Iscc -OutRoot $OutRoot
+
+        $SumsPath = Join-Path -Path $Dir -ChildPath 'SHA256SUMS.txt'
+        $Text = [System.IO.File]::ReadAllText($SumsPath)
+        $Text | Should -MatchExactly '^[0-9a-f]{64}  DSOptimizer-4\.0\.0\.zip\n[0-9a-f]{64}  DSOptimizer-4\.0\.0-setup\.exe\n$'
+        $Lines = @($Text.TrimEnd("`n").Split("`n"))
+        $Lines[0].Substring(0, 64) | Should -BeExactly (Get-Sha256Hex -Path (Join-Path -Path $Dir -ChildPath 'DSOptimizer-4.0.0.zip'))
+        $Lines[1].Substring(0, 64) | Should -BeExactly (Get-Sha256Hex -Path (Join-Path -Path $Dir -ChildPath 'DSOptimizer-4.0.0-setup.exe'))
+        [System.IO.File]::ReadAllBytes($SumsPath)[0] | Should -Not -Be 0xEF   # bez BOM
+    }
+
+    It 'instalator powstaje z tego samego katalogu co zip' {
+        $Result = @(& (Get-ScriptPath -Repo $Repo) -Variant Folder -IsccPath $Iscc -OutRoot $OutRoot)
+
+        $Call = Get-IsccCall
+        $Names = @($Call.Files | ForEach-Object { $_.Name } | Sort-Object)
+        $Names | Should -Be @('DSOptimizer.Core.dll', 'DSOptimizer.exe', 'DSOptimizer.exe.config', 'pl/DSOptimizer.resources.dll', 'Wpf.Ui.dll')
+        Add-Type -AssemblyName System.IO.Compression
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $Zip = [System.IO.Compression.ZipFile]::OpenRead($Result[0])
+        try {
+            $InZip = @($Zip.Entries | ForEach-Object {
+                $Stream = $_.Open()
+                try {
+                    $Sha = [System.Security.Cryptography.SHA256]::Create()
+                    try { $Hex = -join ($Sha.ComputeHash($Stream) | ForEach-Object { $_.ToString('x2') }) } finally { $Sha.Dispose() }
+                }
+                finally { $Stream.Dispose() }
+                [pscustomobject]@{ Name = $_.FullName.Substring('DSOptimizer/'.Length); Sha256 = $Hex }
+            } | Sort-Object -Property Name)
+        }
+        finally {
+            $Zip.Dispose()
+        }
+
+        @($InZip | ForEach-Object { $_.Name }) | Should -Be $Names
+        foreach ($Entry in $InZip) {
+            ($Call.Files | Where-Object { $_.Name -ceq $Entry.Name }).Sha256 | Should -BeExactly $Entry.Sha256
+        }
+    }
+
+    It 'przekazuje wersję, katalog wyjścia i nazwę pliku' {
+        $null = & (Get-ScriptPath -Repo $Repo) -Variant Folder -IsccPath $Iscc -OutRoot $OutRoot
+
+        $Arguments = @((Get-IsccCall).Args)
+        $Arguments | Should -Contain '/DAppVersion=4.0.0'
+        $Arguments | Should -Contain ('/O' + $Dir)
+        $Arguments | Should -Contain '/FDSOptimizer-4.0.0-setup'
+        $Arguments | Where-Object { $_ -like '/DProgramDir=*' } | Should -Not -BeNullOrEmpty
+        $Arguments[-1] | Should -BeLike '*tools\release\DSOptimizer.iss'
+    }
+
+    It 'wyjście: ścieżka zipa, potem instalatora' {
+        $Result = @(& (Get-ScriptPath -Repo $Repo) -Variant Folder -IsccPath $Iscc -OutRoot $OutRoot)
+
+        $Result | Should -Be @((Join-Path -Path $Dir -ChildPath 'DSOptimizer-4.0.0.zip'), (Join-Path -Path $Dir -ChildPath 'DSOptimizer-4.0.0-setup.exe'))
+    }
+
+    It 'brak podanego ISCC = kod 1 i dotnet niewywołany' {
+        $Result = & (Get-ScriptPath -Repo $Repo) -Variant Folder -IsccPath 'C:\nie-ma\ISCC.exe' -OutRoot $OutRoot 2>$null
+
+        $LASTEXITCODE | Should -Be 1
+        $Result | Should -BeNullOrEmpty
+        Should -Invoke dotnet -Times 0 -Exactly
+    }
+
+    It 'DSO_ISCC wskazuje ISCC, gdy nie podano -IsccPath' {
+        $Previous = $env:DSO_ISCC
+        try {
+            $env:DSO_ISCC = $Iscc
+            $null = & (Get-ScriptPath -Repo $Repo) -Variant Folder -OutRoot $OutRoot
+
+            $LASTEXITCODE | Should -Be 0
+            Test-Path -LiteralPath (Join-Path -Path $Dir -ChildPath 'DSOptimizer-4.0.0-setup.exe') | Should -BeTrue
+        }
+        finally {
+            $env:DSO_ISCC = $Previous
+        }
+    }
+
+    It 'nieudany ISCC = kod 1, bez zipa, instalatora i SHA256SUMS.txt w katalogu wydania' {
+        $Failing = New-FakeIscc -Fail
+
+        $Result = & (Get-ScriptPath -Repo $Repo) -Variant Folder -IsccPath $Failing -OutRoot $OutRoot 2>$null
+
+        $LASTEXITCODE | Should -Be 1
+        $Result | Should -BeNullOrEmpty
+        foreach ($Name in 'DSOptimizer-4.0.0.zip', 'DSOptimizer-4.0.0-setup.exe', 'SHA256SUMS.txt') {
+            Test-Path -LiteralPath (Join-Path -Path $Dir -ChildPath $Name) | Should -BeFalse
+        }
+    }
+
+    It '-NoInstaller: jak dziś, jedna linia w SHA256SUMS.txt i bez wywołania ISCC' {
+        $Result = & (Get-ScriptPath -Repo $Repo) -Variant Folder -NoInstaller -IsccPath $Iscc -OutRoot $OutRoot
+
+        $Result | Should -Be (Join-Path -Path $Dir -ChildPath 'DSOptimizer-4.0.0.zip')
+        @(Get-ChildItem -LiteralPath $Dir | ForEach-Object { $_.Name } | Sort-Object) | Should -Be @('DSOptimizer-4.0.0.zip', 'SHA256SUMS.txt')
+        [System.IO.File]::ReadAllText((Join-Path -Path $Dir -ChildPath 'SHA256SUMS.txt')) | Should -MatchExactly '^[0-9a-f]{64}  DSOptimizer-4\.0\.0\.zip\n$'
+        Test-Path -LiteralPath (Join-Path -Path $TestDrive -ChildPath 'iscc-call.json') | Should -BeFalse
+    }
+
+    It 'SingleExe nie woła ISCC' {
+        Mock dotnet { Write-FakeBuildOutput -Arguments $args; $global:LASTEXITCODE = 0 }
+
+        $null = & (Get-ScriptPath -Repo $Repo) -Variant SingleExe -IsccPath $Iscc -OutRoot $OutRoot
+
+        $LASTEXITCODE | Should -Be 0
+        Test-Path -LiteralPath (Join-Path -Path $TestDrive -ChildPath 'iscc-call.json') | Should -BeFalse
     }
 }
 
