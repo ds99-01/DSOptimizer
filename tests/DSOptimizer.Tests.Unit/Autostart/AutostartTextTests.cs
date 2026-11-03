@@ -108,8 +108,8 @@ public class AutostartTextTests
         Assert.Equal("11 włączonych · pomiar Windows 02.11, 08:14", AutostartText.Subtitle(11, at));
         using (L.Use(UiLanguage.English))
         {
-            Assert.Equal("1 enabled · Windows measurement 02/11/2026 08:14", AutostartText.Subtitle(1, at));
-            Assert.Equal("11 enabled · Windows measurement 02/11/2026 08:14", AutostartText.Subtitle(11, at));
+            Assert.Equal("1 enabled · Windows measurement 2 Nov, 08:14", AutostartText.Subtitle(1, at));
+            Assert.Equal("11 enabled · Windows measurement 2 Nov, 08:14", AutostartText.Subtitle(11, at));
         }
     }
 

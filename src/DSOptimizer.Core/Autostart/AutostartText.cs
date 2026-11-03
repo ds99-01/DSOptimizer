@@ -103,7 +103,8 @@ public static class AutostartText
 
     /// <summary>
     /// Podtytuł strony: liczba włączonych i data pomiaru Windows w czasie lokalnym. Po polsku format zaakceptowanego renderu
-    /// („02.11, 08:14”), po angielsku pełna data programu (<see cref="L.DateTimePattern"/>), bo „02/11” czyta się jak 11 lutego.
+    /// („02.11, 08:14”), po angielsku dzień i skrót miesiąca („2 Nov, 08:14”): „02/11” czyta się jak 11 lutego,
+    /// a pełna data programu ucinała podtytuł przy szerokości 1229 px (decyzja Dawida 2026-11-03).
     /// </summary>
     public static string Subtitle(int enabled, DateTimeOffset? measuredAt)
     {
@@ -119,7 +120,7 @@ public static class AutostartText
         }
 
         var local = at.ToLocalTime();
-        var date = L.Current == UiLanguage.English ? local.ToString(L.DateTimePattern, L.Culture) : local.ToString("dd.MM, HH:mm", L.Culture);
+        var date = L.Current == UiLanguage.English ? local.ToString("d MMM, HH:mm", L.Culture) : local.ToString("dd.MM, HH:mm", L.Culture);
         return L.F("{0} · pomiar Windows {1}", count, date);
     }
 

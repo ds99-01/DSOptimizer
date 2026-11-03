@@ -393,7 +393,7 @@ public sealed class AutostartViewModelTests : IDisposable
         Assert.Equal("5 włączonych · pomiar Windows 02.11, 08:14", Vm.Subtitle);
         using (L.Use(UiLanguage.English))
         {
-            Assert.Equal("5 enabled · Windows measurement 02/11/2026 08:14", Vm.Subtitle);
+            Assert.Equal("5 enabled · Windows measurement 2 Nov, 08:14", Vm.Subtitle);
         }
     }
 
