@@ -63,7 +63,8 @@ Each release has two files, built from the same program files:
 
 Uninstalling keeps the change history in `%ProgramData%\DSOptimizer`, so settings changed earlier can still be undone
 after you install the program again or use the portable version. The installer refuses to install, update or uninstall
-while DSOptimizer is running; close it first.
+while DSOptimizer is running, also while a command-line command is in progress (read-only ones too); close the program
+and wait for such commands to finish first.
 
 The installer is built with Inno Setup by Jordan Russell and Martijn Laan ([jrsoftware.org](https://jrsoftware.org/)).
 
@@ -161,7 +162,7 @@ DSOptimizer.exe --undo-autostart <id> --out <file.json>
 - Installing and searching through winget work only on the signed-in user's account; on another account they end with a refusal (code 1), and winget is not started.
 - `--list-autostart` returns the rows of the "Startup apps" page for the signed-in user's account in the `autostartRows` field: `id`, `source` (`RunUser`, `RunMachine`, `Run32`, `FolderUser`, `FolderCommon`, `StartupTask`), `name`, `publisher`, `scope` (`User`, `Machine`, `Store`), `state` (`Enabled`, `Disabled`, `Unknown`), `missingFile`, `verdict` (`Protected`, `CanDisable` or `null` when not assessed), `canToggle`, `cpuMs` (processor time from the Windows measurement, in milliseconds) and `diskBytes` (disk reads in bytes); both numbers are `null` when not measured.
 - `--set-autostart` disables or enables one item by its id from the list (the state is not case-sensitive), and `--undo-autostart` restores the state from before the item's active change in the change history. An id that is not on the list gives code 1; a row with `canToggle=false` (protected or read-only) is refused (code 1) with the reason in `message`, and nothing is written; an item already in the target state gives `AlreadyApplied` (code 0). An undo that could not restore everything gives code 4 and lists what was not restored in `notRestored`. `--catalog`, `--apps-catalog` and `--restore-point` with these commands, or a missing or unknown state, give code 2.
-- Commands that change the system (`--apply`, `--undo`, `--execute`, `--remove-app`, `--install-apps`, `--set-autostart`, `--undo-autostart`) end with code 1 and change nothing while another copy of DSOptimizer is running (a window or such a command). Read-only commands (`--detect`, `--list-apps`, `--list-install`, `--search-apps`, `--list-autostart`) also work while the window is open.
+- Commands that change the system (`--apply`, `--undo`, `--execute`, `--remove-app`, `--install-apps`, `--set-autostart`, `--undo-autostart`) end with code 1 and change nothing while another copy of DSOptimizer is running (a window or such a command). Read-only commands (`--detect`, `--list-apps`, `--list-install`, `--search-apps`, `--list-autostart`) also work while the window is open, but while any command is running the installer and the uninstaller refuse to work.
 
 ### Exit codes
 

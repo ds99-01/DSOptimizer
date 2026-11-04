@@ -617,7 +617,8 @@ public class CliHostTests
         var output = temp.Sub("wynik.json");
 
         var code = CliHost.Run(
-            new[] { "--apply", TweakId, "--catalog", catalog, "--restore-point", "skip", "--out", output }, temp.AppRoot, null, () => null);
+            new[] { "--apply", TweakId, "--catalog", catalog, "--restore-point", "skip", "--out", output }, temp.AppRoot, null, () => null,
+            () => throw new InvalidOperationException("Polecenie zmieniające system nie otwiera obecności."));
 
         Assert.Equal(1, code);
         var json = JObject.Parse(File.ReadAllText(output));
@@ -635,12 +636,114 @@ public class CliHostTests
         using var temp = new TempDirectory();
         var catalog = WriteCatalog(temp, sandbox, "Test CLI");
         var output = temp.Sub("wynik.json");
+        var presence = new GuardSpy();
 
         var code = CliHost.Run(
             new[] { "--detect", TweakId, "--catalog", catalog, "--out", output }, temp.AppRoot, null,
-            () => throw new InvalidOperationException("Polecenie tylko do odczytu nie bierze mutexu."));
+            () => throw new InvalidOperationException("Polecenie tylko do odczytu nie bierze mutexu."),
+            () => presence);
 
         Assert.Equal(0, code);
+        Assert.True(presence.Disposed);
+    }
+
+    /// <summary>Instalator widzi polecenie tylko do odczytu po nazwie mutexa (CheckForMutexes): nazwa istnieje do zapisu raportu.</summary>
+    [Fact]
+    public void Run_ReadOnlyCommand_KeepsTheNameOpenUntilReportIsWritten()
+    {
+        using var sandbox = new RegistrySandbox();
+        using var temp = new TempDirectory();
+        var catalog = WriteCatalog(temp, sandbox, "Test CLI");
+        var output = temp.Sub("wynik.json");
+        var name = @"Local\DSOptimizer.Tests." + Guid.NewGuid().ToString("N");
+        var visibleWhenSerializing = false;
+
+        var code = CliHost.Run(
+            new[] { "--detect", TweakId, "--catalog", catalog, "--out", output }, temp.AppRoot, null,
+            File.ReadAllText, () => BuiltInCatalog.Sources,
+            report =>
+            {
+                visibleWhenSerializing = System.Threading.Mutex.TryOpenExisting(name, out var seen);
+                seen?.Dispose();
+                return CliReportSerializer.Serialize(report);
+            },
+            enterSingleInstance: () => throw new InvalidOperationException("Polecenie tylko do odczytu nie bierze mutexu."),
+            openPresence: () => SingleInstanceGuard.OpenPresence(name));
+
+        Assert.Equal(0, code);
+        Assert.True(visibleWhenSerializing);
+        Assert.False(System.Threading.Mutex.TryOpenExisting(name, out _));
+    }
+
+    /// <summary>Okno trzyma mutex (tu: inny wątek), a polecenie tylko do odczytu działa od razu, bez czekania i bez odmowy.</summary>
+    [Fact]
+    public void Run_ReadOnlyCommand_WhileMutexIsHeld_RunsWithoutWaiting()
+    {
+        using var sandbox = new RegistrySandbox();
+        using var temp = new TempDirectory();
+        var catalog = WriteCatalog(temp, sandbox, "Test CLI");
+        var output = temp.Sub("wynik.json");
+        var name = @"Local\DSOptimizer.Tests." + Guid.NewGuid().ToString("N");
+        using var entered = new System.Threading.ManualResetEventSlim(false);
+        using var release = new System.Threading.ManualResetEventSlim(false);
+        var holder = new System.Threading.Thread(() =>
+        {
+            using var guard = SingleInstanceGuard.TryEnter(name, TimeSpan.FromSeconds(5));
+            entered.Set();
+            release.Wait();
+        });
+        holder.Start();
+        try
+        {
+            Assert.True(entered.Wait(TimeSpan.FromSeconds(10)));
+
+            var code = CliHost.Run(
+                new[] { "--detect", TweakId, "--catalog", catalog, "--out", output }, temp.AppRoot, null,
+                () => SingleInstanceGuard.TryEnter(name, SingleInstanceGuard.StartWait),
+                () => SingleInstanceGuard.OpenPresence(name));
+
+            Assert.Equal(0, code);
+            Assert.Equal("Detect", (string)JObject.Parse(File.ReadAllText(output))["command"]!);
+        }
+        finally
+        {
+            release.Set();
+            holder.Join();
+        }
+    }
+
+    [Fact]
+    public void Run_ReadOnlyCommand_WithoutPresence_StillRuns()
+    {
+        using var sandbox = new RegistrySandbox();
+        using var temp = new TempDirectory();
+        var catalog = WriteCatalog(temp, sandbox, "Test CLI");
+        var output = temp.Sub("wynik.json");
+
+        var code = CliHost.Run(
+            new[] { "--detect", TweakId, "--catalog", catalog, "--out", output }, temp.AppRoot, null,
+            () => throw new InvalidOperationException("Polecenie tylko do odczytu nie bierze mutexu."),
+            () => null);
+
+        Assert.Equal(0, code);
+    }
+
+    [Fact]
+    public void Run_WriteCommand_DoesNotOpenPresence()
+    {
+        using var sandbox = new RegistrySandbox();
+        using var temp = new TempDirectory();
+        var catalog = WriteCatalog(temp, sandbox, "Test CLI");
+        var output = temp.Sub("wynik.json");
+        var guard = new GuardSpy();
+
+        var code = CliHost.Run(
+            new[] { "--apply", TweakId, "--catalog", catalog, "--restore-point", "skip", "--out", output }, temp.AppRoot, null,
+            () => guard,
+            () => throw new InvalidOperationException("Polecenie zmieniające system bierze mutex, nie obecność."));
+
+        Assert.Equal(0, code);
+        Assert.True(guard.Disposed);
     }
 
     [Fact]
@@ -675,11 +778,18 @@ public class CliHostTests
         using var temp = new TempDirectory();
         var asked = false;
 
-        var code = CliHost.Run(new[] { "--apply" }, temp.AppRoot, null, () =>
-        {
-            asked = true;
-            return null;
-        });
+        var code = CliHost.Run(
+            new[] { "--apply" }, temp.AppRoot, null,
+            () =>
+            {
+                asked = true;
+                return null;
+            },
+            () =>
+            {
+                asked = true;
+                return null;
+            });
 
         Assert.Equal(2, code);
         Assert.False(asked);

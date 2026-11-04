@@ -167,6 +167,73 @@ public class SingleInstanceGuardTests
     }
 
     [Fact]
+    public void OpenPresence_FreeName_ReturnsHandle_AndTheNameExistsUntilDispose()
+    {
+        var name = NewLocalName();
+        var presence = SingleInstanceGuard.OpenPresence(name);
+        Assert.NotNull(presence);
+        try
+        {
+            // Tak samo widzi to instalator: CheckForMutexes sprawdza, czy nazwa istnieje.
+            Assert.True(Mutex.TryOpenExisting(name, out var seen));
+            seen!.Dispose();
+        }
+        finally
+        {
+            presence!.Dispose();
+        }
+
+        Assert.False(Mutex.TryOpenExisting(name, out _));
+    }
+
+    [Fact]
+    public void OpenPresence_HeldByOtherThread_ReturnsHandleWithoutWaiting()
+    {
+        var name = NewLocalName();
+        using var release = new ManualResetEventSlim(false);
+        var holder = StartHolder(name, release);
+        try
+        {
+            OnOwnThread(() =>
+            {
+                var watch = Stopwatch.StartNew();
+                using var presence = SingleInstanceGuard.OpenPresence(name);
+                watch.Stop();
+                Assert.NotNull(presence);
+                Assert.True(watch.ElapsedMilliseconds < 1000, $"Otwarcie trwało {watch.ElapsedMilliseconds} ms.");
+            });
+        }
+        finally
+        {
+            release.Set();
+            holder.Join();
+        }
+    }
+
+    [Fact]
+    public void OpenPresence_DoesNotOwnTheMutex_SoTheWindowStillEnters()
+    {
+        var name = NewLocalName();
+        using var presence = SingleInstanceGuard.OpenPresence(name);
+        Assert.NotNull(presence);
+
+        OnOwnThread(() =>
+        {
+            using var guard = SingleInstanceGuard.TryEnter(name, TimeSpan.FromMilliseconds(200));
+            Assert.NotNull(guard);
+        });
+    }
+
+    [Fact]
+    public void OpenPresence_NameTakenByEvent_ReturnsNull()
+    {
+        var name = NewLocalName();
+        using var other = new EventWaitHandle(false, EventResetMode.ManualReset, name);
+
+        Assert.Null(SingleInstanceGuard.OpenPresence(name));
+    }
+
+    [Fact]
     public void ProgramMutexName_IsTheOneTheInstallerChecks()
     {
         Assert.Equal(@"Global\DSOptimizer.SingleInstance", SingleInstanceGuard.ProgramMutexName);

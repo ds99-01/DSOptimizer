@@ -45,10 +45,12 @@ internal static class Program
         {
             // Domyślny język procesu = język CLI: wątki bez przepływu AsyncLocal (np. odczyt potoku) nie widzą L.Use z CliHost.Run.
             L.SetDefault(CliHost.ResolveLanguage(args, SecureRoot.ProgramData));
-            // Polecenia zmieniające system biorą mutex programu na wątku Main (host jest synchroniczny); tylko do odczytu go pomijają.
+            // Polecenia zmieniające system biorą mutex programu na wątku Main (host jest synchroniczny); tylko do odczytu jedynie
+            // otwierają jego nazwę (bez czekania), żeby instalator i deinstalator widziały trwające polecenie.
             return CliHost.Run(
                 args, SecureRoot.ProgramData, FileLog.DefaultMirrorDirectory,
-                () => SingleInstanceGuard.TryEnter(SingleInstanceGuard.ProgramMutexName, SingleInstanceGuard.StartWait));
+                () => SingleInstanceGuard.TryEnter(SingleInstanceGuard.ProgramMutexName, SingleInstanceGuard.StartWait),
+                () => SingleInstanceGuard.OpenPresence(SingleInstanceGuard.ProgramMutexName));
         }
 
         // Komunikaty sprzed okna wyboru (katalog, korzeń, journal, ustawienia) w zapisanym języku, a bez niego w języku systemu.

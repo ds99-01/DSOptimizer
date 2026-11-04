@@ -61,7 +61,8 @@ Każde wydanie ma dwa pliki zbudowane z tych samych plików programu:
 
 Odinstalowanie zostawia historię zmian w `%ProgramData%\DSOptimizer`, więc wcześniej zmienione ustawienia można
 cofnąć także po ponownej instalacji programu albo w wersji przenośnej. Instalator odmawia instalacji, aktualizacji
-i odinstalowania, gdy DSOptimizer działa; najpierw go zamknij.
+i odinstalowania, gdy DSOptimizer działa, także gdy trwa polecenie w trybie wiersza poleceń (również tylko do odczytu);
+najpierw zamknij program i poczekaj na koniec takich poleceń.
 
 Instalator jest zbudowany w Inno Setup autorstwa Jordana Russella i Martijna Laana ([jrsoftware.org](https://jrsoftware.org/)).
 
@@ -159,7 +160,7 @@ DSOptimizer.exe --undo-autostart <id> --out <plik.json>
 - Instalacja i wyszukiwanie przez winget działają tylko na koncie zalogowanego użytkownika; na innym koncie kończą się odmową (kod 1), a winget nie jest uruchamiany.
 - `--list-autostart` zwraca wiersze strony „Autostart” dla konta zalogowanego użytkownika w polu `autostartRows`: `id`, `source` (`RunUser`, `RunMachine`, `Run32`, `FolderUser`, `FolderCommon`, `StartupTask`), `name`, `publisher`, `scope` (`User`, `Machine`, `Store`), `state` (`Enabled`, `Disabled`, `Unknown`), `missingFile`, `verdict` (`Protected`, `CanDisable` albo `null`, gdy bez oceny), `canToggle`, `cpuMs` (czas procesora z pomiaru Windows w milisekundach) i `diskBytes` (odczyt z dysku w bajtach); obie liczby są `null`, gdy nie zmierzono.
 - `--set-autostart` wyłącza albo włącza jedną pozycję po jej id z listy (stan bez rozróżniania wielkości liter), a `--undo-autostart` przywraca stan sprzed aktywnej zmiany tej pozycji z Historii zmian. Id spoza listy daje kod 1; wiersz z `canToggle=false` (chroniony albo tylko do odczytu) jest odrzucany (kod 1) z powodem w `message` i nic nie jest zapisywane; pozycja już w stanie docelowym daje `AlreadyApplied` (kod 0). Cofnięcie, które nie przywróciło wszystkiego, daje kod 4 i wymienia to w `notRestored`. `--catalog`, `--apps-catalog` i `--restore-point` przy tych poleceniach albo brak lub nieznany stan dają kod 2.
-- Polecenia, które zmieniają system (`--apply`, `--undo`, `--execute`, `--remove-app`, `--install-apps`, `--set-autostart`, `--undo-autostart`), kończą się kodem 1 i niczego nie zmieniają, gdy działa inna kopia DSOptimizera (okno albo takie polecenie). Polecenia tylko do odczytu (`--detect`, `--list-apps`, `--list-install`, `--search-apps`, `--list-autostart`) działają także przy otwartym oknie.
+- Polecenia, które zmieniają system (`--apply`, `--undo`, `--execute`, `--remove-app`, `--install-apps`, `--set-autostart`, `--undo-autostart`), kończą się kodem 1 i niczego nie zmieniają, gdy działa inna kopia DSOptimizera (okno albo takie polecenie). Polecenia tylko do odczytu (`--detect`, `--list-apps`, `--list-install`, `--search-apps`, `--list-autostart`) działają także przy otwartym oknie, ale dopóki trwa jakiekolwiek polecenie, instalator i deinstalator odmawiają pracy.
 
 ### Kody wyjścia
 

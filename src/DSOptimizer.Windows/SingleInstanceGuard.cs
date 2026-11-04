@@ -8,9 +8,10 @@ namespace DSOptimizer.Windows;
 /// <summary>
 /// Blokada jednej instancji programu. Ten sam nazwany mutex dzielą okno, polecenia CLI zmieniające system
 /// i instalator (<c>CheckForMutexes</c> w <c>tools/release/DSOptimizer.iss</c>), więc dwie kopie
-/// (przenośna i zainstalowana) nigdy nie zapisują tych samych danych naraz. Nazwa jest w przestrzeni
-/// <c>Global\</c>, bo dane w <c>%ProgramData%</c> są wspólne dla wszystkich sesji; obiekt w <c>Global\</c>
-/// może utworzyć tylko proces z <c>SeCreateGlobalPrivilege</c>, a program zawsze działa jako administrator.
+/// (przenośna i zainstalowana) nigdy nie zapisują tych samych danych naraz. Polecenia tylko do odczytu jedynie otwierają
+/// nazwę (<see cref="OpenPresence"/>): instalator, który sprawdza samo istnienie nazwy, widzi je i odmawia, a okno nadal startuje.
+/// Nazwa jest w przestrzeni <c>Global\</c>, bo dane w <c>%ProgramData%</c> są wspólne dla wszystkich sesji. Dowolny proces
+/// może utworzyć tę nazwę; skutkiem jest tylko odmowa startu programu i instalatora (DoS), nie podniesienie uprawnień.
 /// Własność mutexa jest per wątek: <see cref="Dispose"/> trzeba wołać na wątku, który wszedł.
 /// </summary>
 public sealed class SingleInstanceGuard : IDisposable
@@ -63,6 +64,23 @@ public sealed class SingleInstanceGuard : IDisposable
 
         mutex.Dispose();
         return null;
+    }
+
+    /// <summary>
+    /// Obecność polecenia tylko do odczytu: otwiera (albo tworzy) nazwę bez czekania i bez posiadania mutexa, więc nikogo nie
+    /// blokuje, a nazwa istnieje, dopóki uchwyt żyje. <c>null</c>, gdy nazwy nie da się otworzyć (polecenie działa wtedy bez niej).
+    /// Uchwyt nie ma własności, więc wolno go zwolnić na dowolnym wątku.
+    /// </summary>
+    public static IDisposable? OpenPresence(string name)
+    {
+        try
+        {
+            return new Mutex(false, name);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or WaitHandleCannotBeOpenedException or IOException)
+        {
+            return null;
+        }
     }
 
     /// <summary><c>true</c> wyłącznie dla jednego argumentu równego <see cref="RelaunchedArgument"/> (z uwzględnieniem wielkości liter).</summary>

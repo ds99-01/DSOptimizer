@@ -24,18 +24,25 @@ public static class CliHost
 {
     /// <summary>
     /// Wejście programu. Polecenia zmieniające system biorą strażnika z <paramref name="enterSingleInstance"/> (<c>null</c> = działa
-    /// inna kopia: kod 1, nic nie zapisane); polecenia tylko do odczytu (<see cref="CliParser.IsReadOnlyCommand"/>) go nie biorą.
-    /// Strażnik jest wzięty i zwolniony na wątku wywołującym (host jest synchroniczny).
+    /// inna kopia: kod 1, nic nie zapisane). Polecenia tylko do odczytu (<see cref="CliParser.IsReadOnlyCommand"/>) go nie biorą,
+    /// tylko otwierają obecność z <paramref name="openPresence"/> (bez czekania i bez odmowy; <c>null</c> = praca bez niej), żeby
+    /// instalator widział trwające polecenie. Strażnik i obecność żyją do zapisu raportu i są zwalniane na wątku wywołującym.
     /// </summary>
-    public static int Run(IReadOnlyList<string> args, SecureRoot root, string? logMirrorDirectory, Func<IDisposable?> enterSingleInstance)
+    public static int Run(IReadOnlyList<string> args, SecureRoot root, string? logMirrorDirectory,
+                          Func<IDisposable?> enterSingleInstance, Func<IDisposable?> openPresence)
     {
         if (enterSingleInstance is null)
         {
             throw new ArgumentNullException(nameof(enterSingleInstance));
         }
 
+        if (openPresence is null)
+        {
+            throw new ArgumentNullException(nameof(openPresence));
+        }
+
         return Run(args, root, logMirrorDirectory, p => File.ReadAllText(p, Encoding.UTF8), () => BuiltInCatalog.Sources,
-                   enterSingleInstance: enterSingleInstance);
+                   enterSingleInstance: enterSingleInstance, openPresence: openPresence);
     }
 
     /// <summary>Bez blokady jednej kopii: tylko dla testów.</summary>
@@ -54,7 +61,8 @@ public static class CliHost
                             Func<CliReport, string>? serialize = null,
                             Func<AppComposition, AppsInstallCatalog, CliInstallServices>? installServices = null,
                             Func<AppComposition, CliAutostartServices>? autostartServices = null,
-                            Func<IDisposable?>? enterSingleInstance = null)
+                            Func<IDisposable?>? enterSingleInstance = null,
+                            Func<IDisposable?>? openPresence = null)
     {
         if (args is null)
         {
@@ -74,7 +82,8 @@ public static class CliHost
         // Cały przebieg, od parsowania po zapis raportu, idzie w tym języku; domyślny język procesu ustawia Program.Main.
         using (L.Use(ResolveLanguage(args, root)))
         {
-            return RunInLanguage(args, root, logMirrorDirectory, readAllText, builtInSources, serialize, installServices, autostartServices, startedAt, enterSingleInstance);
+            return RunInLanguage(args, root, logMirrorDirectory, readAllText, builtInSources, serialize, installServices, autostartServices, startedAt,
+                                 enterSingleInstance, openPresence);
         }
     }
 
@@ -104,7 +113,7 @@ public static class CliHost
                                      Func<string, string> readAllText, Func<IReadOnlyList<CatalogSource>> builtInSources,
                                      Func<CliReport, string> serialize, Func<AppComposition, AppsInstallCatalog, CliInstallServices> installServices,
                                      Func<AppComposition, CliAutostartServices> autostartServices, DateTimeOffset startedAt,
-                                     Func<IDisposable?>? enterSingleInstance)
+                                     Func<IDisposable?>? enterSingleInstance, Func<IDisposable?>? openPresence)
     {
         string? outPath = null;
         CliOptions? options = null;
@@ -121,7 +130,8 @@ public static class CliHost
             }
 
             options = parsed.Options!;
-            return RunParsed(options, root, logMirrorDirectory, readAllText, builtInSources, startedAt, serialize, installServices, autostartServices, enterSingleInstance);
+            return RunParsed(options, root, logMirrorDirectory, readAllText, builtInSources, startedAt, serialize, installServices, autostartServices,
+                             enterSingleInstance, openPresence);
         }
         catch (Exception ex)
         {
@@ -136,7 +146,7 @@ public static class CliHost
                                  Func<string, string> readAllText, Func<IReadOnlyList<CatalogSource>> builtInSources, DateTimeOffset startedAt,
                                  Func<CliReport, string> serialize, Func<AppComposition, AppsInstallCatalog, CliInstallServices> installServices,
                                  Func<AppComposition, CliAutostartServices> autostartServices,
-                                 Func<IDisposable?>? enterSingleInstance)
+                                 Func<IDisposable?>? enterSingleInstance, Func<IDisposable?>? openPresence)
     {
         var sources = options.CatalogPath is null ? builtInSources() : Array.Empty<CatalogSource>();
         var catalog = CliCatalog.Load(options.CatalogPath, readAllText, sources);
@@ -165,10 +175,11 @@ public static class CliHost
 
         // Polecenia zmieniające system: jedna kopia. Strażnik obejmuje resztę metody, łącznie z zapisem raportu, i jest zwolniony na tym
         // samym wątku. Odmowa przed AppComposition.Create: korzeń programu nie powstaje, nic nie jest zapisane poza raportem --out.
-        using var instance = enterSingleInstance is not null && !CliParser.IsReadOnlyCommand(options.Command)
-            ? enterSingleInstance()
-            : null;
-        if (enterSingleInstance is not null && !CliParser.IsReadOnlyCommand(options.Command) && instance is null)
+        // Polecenia tylko do odczytu: sama obecność (nazwa otwarta bez czekania i bez posiadania), też do zapisu raportu – instalator
+        // (CheckForMutexes sprawdza istnienie nazwy) odmawia, zamiast podmieniać pliki pod działającym poleceniem, a okno nadal startuje.
+        var readOnly = CliParser.IsReadOnlyCommand(options.Command);
+        using var instance = readOnly ? openPresence?.Invoke() : enterSingleInstance?.Invoke();
+        if (!readOnly && enterSingleInstance is not null && instance is null)
         {
             return Finish(
                 CliRunner.Failure(

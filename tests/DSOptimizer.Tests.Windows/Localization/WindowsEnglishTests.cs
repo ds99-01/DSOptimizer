@@ -81,7 +81,7 @@ public class WindowsEnglishTests
 
         var code = CliHost.Run(
             new[] { "--apply", FirstId, "--catalog", catalog, "--restore-point", "skip", "--out", output, "--lang", "en" },
-            temp.AppRoot, null, () => null);
+            temp.AppRoot, null, () => null, () => null);
 
         Assert.Equal(1, code);
         Assert.Equal(
