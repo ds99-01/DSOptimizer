@@ -52,7 +52,7 @@
         return [ordered]@{
             install          = [ordered]@{ exitCode = 0 }
             windowA          = [ordered]@{ processFound = $true; mutex = $true; pid = 1200; seconds = 4 }
-            portable         = [ordered]@{ message = 'DSOptimizer już działa (okno albo polecenie w trybie wiersza poleceń). Przełącz się na otwarte okno.'; clickedOk = $true; taskResult = 1; aAlive = $true }
+            portable         = [ordered]@{ message = 'DSOptimizer już działa (okno albo polecenie w trybie wiersza poleceń). Przełącz się na otwarte okno.'; clickedOk = $true; closed = $true; taskResult = 1; aAlive = $true }
             cliApply         = [ordered]@{ exitCode = 1; firstError = 'Działa już inna kopia DSOptimizera (okno albo polecenie, które zmienia system). Nic nie zostało zmienione.' }
             listApps         = [ordered]@{ exitCode = 0; group = 'Protected' }
             reinstall        = [ordered]@{ exitCode = 7; versionBefore = '4.0.4'; versionAfter = '4.0.4'; filesDiff = @() }
@@ -224,6 +224,8 @@ Describe 'Get-InstallerVerdict: jedno odstępstwo = jedno niezaliczone sprawdzen
         @{ Why = 'kopia B: inny tekst'; Name = 'PortableMessage'; Mutate = { param($D) $D.portable.message = 'Inny komunikat' } }
         @{ Why = 'kopia B: brak okna'; Name = 'PortableMessage'; Mutate = { param($D) $D.portable.message = $null } }
         @{ Why = 'kopia B: OK nie kliknięte'; Name = 'PortableMessage'; Mutate = { param($D) $D.portable.clickedOk = $false } }
+        @{ Why = 'kopia B: okno nie zamknęło się po OK'; Name = 'PortableMessage'; Mutate = { param($D) $D.portable.closed = $false } }
+        @{ Why = 'kopia B: brak pola closed'; Name = 'PortableMessage'; Mutate = { param($D) $D.portable.Remove('closed') } }
         @{ Why = 'kopia B: LastTaskResult 0'; Name = 'PortableExit'; Mutate = { param($D) $D.portable.taskResult = 0 } }
         @{ Why = 'kopia B: zadanie nie skończyło się'; Name = 'PortableExit'; Mutate = { param($D) $D.portable.taskResult = $null } }
         @{ Why = 'okno A zamknięte po kopii B'; Name = 'WindowAAlive'; Mutate = { param($D) $D.portable.aAlive = $false } }
@@ -331,6 +333,14 @@ Describe 'Get-InstallerVerdict: jedno odstępstwo = jedno niezaliczone sprawdzen
         @($Checks | Where-Object { -not $_.Passed }) | Should -BeNullOrEmpty
         ($Checks | Where-Object { $_.Name -eq 'SmartScreenWindow' }).Detail | Should -Match 'bez sieci'
     }
+    It 'motw: brak okna SmartScreen z błędem UI Automation – błąd w opisie' {
+        $Data = New-MotwData
+        $Data.titles = @('Program Manager')
+        $Data.uiaError = 'UI Automation nie odpowiedzialo w 30 s'
+        $Check = @(Get-InstallerVerdict -Phase 'motw' -Data $Data) | Where-Object { $_.Name -eq 'SmartScreenWindow' }
+        $Check.Passed | Should -BeFalse
+        $Check.Detail | Should -Match 'błąd UI Automation: UI Automation nie odpowiedzialo w 30 s'
+    }
     It 'motw: tytuł okna z siecią w tekstach też przechodzi' {
         $Data = New-MotwData
         $Data.titles = @('Program Manager')
@@ -352,7 +362,7 @@ Describe 'Faza running na mockach (kolejność relaunchu, błędy sond)' {
         Mock Invoke-InstallerRefusalProbe {
             $script:Calls.Add("probe:$Name")
             if ($script:ProbeBehavior -eq 'throw') { throw "Sonda $Name nie zwróciła wyniku." }
-            if ($Name -eq 'Inst-Refusal-B') { return [pscustomobject]@{ Found = $true; Text = 'DSOptimizer już działa (okno).'; Clicked = $true; ProcessId = 9 } }
+            if ($Name -eq 'Inst-Refusal-B') { return [pscustomobject]@{ Found = $true; Text = 'DSOptimizer już działa (okno).'; Clicked = $true; Closed = $true; ProcessId = 9 } }
             [pscustomobject]@{ Found = $false; Text = $null; Clicked = $false; ProcessId = $null }
         }
         Mock Invoke-InstallerRemote {
@@ -683,6 +693,136 @@ Describe 'Plik skryptu i sondy' {
         $Text.IndexOf('CopyFromScreen') | Should -BeLessThan $Text.IndexOf('UIAutomationClient')
         $Text | Should -Match 'AsyncWaitHandle\.WaitOne\(\$UiaSeconds \* 1000\)'
         $Text | Should -Match 'ControlType\]::Text'
+    }
+}
+
+Describe 'Sonda okna odmowy na fałszywym Win32 (bez VM)' {
+    BeforeAll {
+        # Fałszywe DsoInst.Native (te same nazwy metod co w sondzie): okna, klasy, tytuły i teksty z tabel; TextOf zwraca null dla
+        # kontrolki bez wpisu (jak WM_GETTEXT bez odpowiedzi). Sonda jest wykonywana bez części z prawdziwym Add-Type i strażnikiem VM.
+        if (-not ('DsoInst.Native' -as [type])) {
+            Add-Type -TypeDefinition @'
+using System;
+using System.Collections.Generic;
+namespace DsoInst
+{
+    public static class Native
+    {
+        public static List<long> Tops = new List<long>();
+        public static Dictionary<long, string> Classes = new Dictionary<long, string>();
+        public static Dictionary<long, string> Titles = new Dictionary<long, string>();
+        public static Dictionary<long, string> Texts = new Dictionary<long, string>();
+        public static Dictionary<long, long[]> Kids = new Dictionary<long, long[]>();
+        public static List<long> Clicked = new List<long>();
+        public static bool CloseOnClick = true;
+        public static void Reset() { Tops.Clear(); Classes.Clear(); Titles.Clear(); Texts.Clear(); Kids.Clear(); Clicked.Clear(); CloseOnClick = true; }
+        private static IntPtr[] Ptrs(IEnumerable<long> values) { var list = new List<IntPtr>(); foreach (var value in values) { list.Add(new IntPtr(value)); } return list.ToArray(); }
+        public static IntPtr[] TopWindows() { return Ptrs(Tops); }
+        public static IntPtr[] Children(IntPtr parent) { long[] kids; return Kids.TryGetValue(parent.ToInt64(), out kids) ? Ptrs(kids) : new IntPtr[0]; }
+        public static bool IsWindowVisible(IntPtr hwnd) { return true; }
+        public static bool IsWindowEnabled(IntPtr hwnd) { return true; }
+        public static bool IsWindow(IntPtr hwnd) { return Tops.Contains(hwnd.ToInt64()); }
+        public static string ClassOf(IntPtr hwnd) { string value; return Classes.TryGetValue(hwnd.ToInt64(), out value) ? value : string.Empty; }
+        public static string TitleOf(IntPtr hwnd) { string value; return Titles.TryGetValue(hwnd.ToInt64(), out value) ? value : string.Empty; }
+        public static string TextOf(IntPtr hwnd) { string value; return Texts.TryGetValue(hwnd.ToInt64(), out value) ? value : null; }
+        public static int ProcessOf(IntPtr hwnd) { return 4242; }
+        public static bool Click(IntPtr button)
+        {
+            Clicked.Add(button.ToInt64());
+            if (CloseOnClick) { foreach (var pair in Kids) { if (Array.IndexOf(pair.Value, button.ToInt64()) >= 0) { Tops.Remove(pair.Key); } } }
+            return true;
+        }
+    }
+}
+'@
+        }
+        # Treść sondy bez części z Add-Type/strażnikiem VM (ta rzuca na hoście) + jej dwie funkcje pomocnicze (Format-UiText, Write-ProbeResult).
+        $Probe = Get-InstallerRefusalProbeScript
+        $Helpers = Get-InstallerProbeHelpersText
+        $HelperFunctions = $Helpers.Substring($Helpers.LastIndexOf('"@') + 2) -replace '^\s*\}', ''
+        $Body = $Probe.Substring($Probe.LastIndexOf('; return }') + '; return }'.Length)
+        $script:RefusalProbeFile = Join-Path $TestDrive 'refusal-probe.ps1'
+        $Text = "param([string]`$ResultFile, [string]`$TextsFile, [int]`$WaitSeconds = 1, [switch]`$Click)`n`$ErrorActionPreference = 'Stop'`n$HelperFunctions`n$Body"
+        [System.IO.File]::WriteAllText($script:RefusalProbeFile, $Text, (New-Object System.Text.UTF8Encoding($true)))
+        $script:RefusalTextsFile = Join-Path $TestDrive 'inst-texts.json'
+        [System.IO.File]::WriteAllText($script:RefusalTextsFile, (Get-InstallerProbeTexts), (New-Object System.Text.UTF8Encoding($false)))
+        function script:Invoke-FakeRefusalProbe {
+            param([switch]$Click)
+            $Result = Join-Path $TestDrive ("refusal-{0}.json" -f [guid]::NewGuid().ToString('N'))
+            & $script:RefusalProbeFile -ResultFile $Result -TextsFile $script:RefusalTextsFile -WaitSeconds 1 -Click:$Click
+            return ([System.IO.File]::ReadAllText($Result, [System.Text.Encoding]::UTF8) | ConvertFrom-Json)
+        }
+        function script:Add-FakeWindow {
+            param([long]$Handle, [string]$Class = '#32770', [string]$Title = 'DSOptimizer', [hashtable]$Statics = @{}, [AllowNull()][string]$OkText = 'OK')
+            [DsoInst.Native]::Tops.Add($Handle)
+            [DsoInst.Native]::Classes[$Handle] = $Class
+            [DsoInst.Native]::Titles[$Handle] = $Title
+            $Kids = New-Object System.Collections.Generic.List[long]
+            foreach ($Key in $Statics.Keys) {
+                $Kid = [long]$Key
+                $Kids.Add($Kid)
+                [DsoInst.Native]::Classes[$Kid] = 'Static'
+                if ($null -ne $Statics[$Key]) { [DsoInst.Native]::Texts[$Kid] = [string]$Statics[$Key] }
+            }
+            $Ok = $Handle + 99
+            $Kids.Add($Ok)
+            [DsoInst.Native]::Classes[$Ok] = 'Button'
+            if ($null -ne $OkText) { [DsoInst.Native]::Texts[$Ok] = $OkText }
+            [DsoInst.Native]::Kids[$Handle] = $Kids.ToArray()
+        }
+    }
+    BeforeEach { [DsoInst.Native]::Reset() }
+    It 'okno DSOptimizer (#32770) bez czytelnego tekstu (TextOf = null) -> Ok=false z błędem, nie „brak okna”' {
+        Add-FakeWindow -Handle 100 -Statics @{ 101 = $null; 102 = $null }
+        $Result = Invoke-FakeRefusalProbe
+        $Result.Ok | Should -BeFalse
+        $Result.Error | Should -Match 'bez czytelnego tekstu'
+    }
+    It 'okno DSOptimizer z samym pustym tekstem (ikona) -> Ok=false' {
+        Add-FakeWindow -Handle 200 -Statics @{ 201 = '' }
+        (Invoke-FakeRefusalProbe).Ok | Should -BeFalse
+    }
+    It 'brak pasującego okna -> Ok=true, Found=false (prawdziwy brak okna)' {
+        Add-FakeWindow -Handle 300 -Title 'Inne okno' -Statics @{ 301 = $null }
+        $Result = Invoke-FakeRefusalProbe
+        $Result.Ok | Should -BeTrue
+        $Result.Found | Should -BeFalse
+    }
+    It 'pasujące okno z innym czytelnym tekstem -> Ok=true, Found=false' {
+        Add-FakeWindow -Handle 400 -Statics @{ 401 = 'Inny komunikat DSOptimizera' }
+        $Result = Invoke-FakeRefusalProbe
+        $Result.Ok | Should -BeTrue
+        $Result.Found | Should -BeFalse
+        @($Result.Seen) | Should -Contain 'Inny komunikat DSOptimizera'
+    }
+    It 'okno odmowy z tekstem i -Click: klika tylko OK, okno zamknięte (Closed)' {
+        Add-FakeWindow -Handle 500 -Statics @{ 501 = ''; 502 = 'DSOptimizer już działa (okno albo polecenie).' }
+        $Result = Invoke-FakeRefusalProbe -Click
+        $Result.Ok | Should -BeTrue
+        $Result.Found | Should -BeTrue
+        $Result.Clicked | Should -BeTrue
+        $Result.Closed | Should -BeTrue
+        @([DsoInst.Native]::Clicked) | Should -Be @(599)
+    }
+    It 'okno odmowy, które po kliknięciu nie znika -> Closed=false' {
+        Add-FakeWindow -Handle 600 -Statics @{ 601 = 'DSOptimizer już działa.' }
+        [DsoInst.Native]::CloseOnClick = $false
+        $Result = Invoke-FakeRefusalProbe -Click
+        $Result.Clicked | Should -BeTrue
+        $Result.Closed | Should -BeFalse
+    }
+}
+
+Describe 'Nazwy zadań sond' {
+    It 'żadne zadanie sondy (DSO-nazwa sondy) nie ma nazwy zadania startu z Plan.TaskNames' {
+        $Text = [System.IO.File]::ReadAllText($script:InstallerScriptPath, [System.Text.Encoding]::UTF8)
+        $Names = @([regex]::Matches($Text, '(?:Invoke-DsoUserSessionScript|Invoke-InstallerRefusalProbe)\b[^\r\n]*?-Name ["'']([^"'']+)["'']') | ForEach-Object { $_.Groups[1].Value })
+        $Expanded = @($Names | ForEach-Object { if ($_ -match '\$') { foreach ($Language in 'pl', 'en') { $_ -replace '\$Language', $Language } } else { $_ } })
+        # Sondy w skrypcie: odmowa B, Hold, C, kreator (pl, en), okna motw; nazwy przekazane przez -Name wywołań wyżej.
+        $Expanded.Count | Should -BeGreaterOrEqual 4
+        @($Expanded | Where-Object { $_ -match '\$' }) | Should -BeNullOrEmpty
+        $Tasks = @((Get-InstallerPlan).TaskNames.Values)
+        @($Expanded | Where-Object { $Tasks -contains "DSO-$_" }) | Should -BeNullOrEmpty
     }
 }
 

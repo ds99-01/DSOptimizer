@@ -505,10 +505,11 @@ function Get-InstallerRunningVerdict {
     $Checks += New-InstallerCheck -Name 'WindowA' -Passed ((Test-InstallerTrue $Found) -and (Test-InstallerTrue $Mutex)) `
         -Detail "okno A z $($Plan.InstalledExe): proces $(Format-InstallerValue $Found), mutex $(Format-InstallerValue $Mutex) (w $($Plan.AppStartSeconds) s)"
 
-    $Message = & $V 'portable.message'; $Clicked = & $V 'portable.clickedOk'; $ProbeErrorB = & $V 'portable.probeError'
-    $MessageDetail = "kopia przenośna B: okno '$($Plan.WindowTitle)' z tekstem '$(Format-InstallerValue $Message)', OK kliknięte: $(Format-InstallerValue $Clicked) (oczekiwano tekstu od '$($Plan.RefusalPrefix)')"
+    $Message = & $V 'portable.message'; $Clicked = & $V 'portable.clickedOk'; $Closed = & $V 'portable.closed'; $ProbeErrorB = & $V 'portable.probeError'
+    # Clicked = komunikat WM_COMMAND wysłany; dopiero Closed (okno zniknęło w 5 s) potwierdza, że OK zadziałało.
+    $MessageDetail = "kopia przenośna B: okno '$($Plan.WindowTitle)' z tekstem '$(Format-InstallerValue $Message)', OK kliknięte: $(Format-InstallerValue $Clicked), okno zamknięte: $(Format-InstallerValue $Closed) (oczekiwano tekstu od '$($Plan.RefusalPrefix)')"
     if ($ProbeErrorB) { $MessageDetail += "; błąd sondy: $ProbeErrorB" }
-    $Checks += New-InstallerCheck -Name 'PortableMessage' -Passed ((Test-InstallerStartsWith $Message $Plan.RefusalPrefix) -and (Test-InstallerTrue $Clicked) -and -not $ProbeErrorB) -Detail $MessageDetail
+    $Checks += New-InstallerCheck -Name 'PortableMessage' -Passed ((Test-InstallerStartsWith $Message $Plan.RefusalPrefix) -and (Test-InstallerTrue $Clicked) -and (Test-InstallerTrue $Closed) -and -not $ProbeErrorB) -Detail $MessageDetail
     $TaskResult = & $V 'portable.taskResult'
     $Checks += New-InstallerCheck -Name 'PortableExit' -Passed (Test-InstallerCode $TaskResult 1) -Detail "zadanie kopii B: LastTaskResult $(Format-InstallerValue $TaskResult) (oczekiwano 1)"
     $AAlive = & $V 'portable.aAlive'
@@ -664,7 +665,11 @@ function Get-InstallerMotwVerdict {
     $Offline = @($Seen | Where-Object { $Plan.SmartScreenOfflineTitles -ccontains $_ } | Select-Object -Unique)
     $SmartDetail = if ($Matched.Count -gt 0) { "okno SmartScreen: '$($Matched -join "', '")'" }
     elseif ($Offline.Count -gt 0) { "okno SmartScreen bez sieci: '$($Offline -join "', '")' (wariant offline; okna '$($Plan.SmartScreenTitles -join "' / '")' bez sieci nie da się sprawdzić)" }
-    else { "brak okna o tytule '$((@($Plan.SmartScreenTitles) + @($Plan.SmartScreenOfflineTitles)) -join "' / '")'; okna: $(if ($Titles.Count -gt 0) { $Titles -join ' | ' } else { '(brak)' })" }
+    else {
+        $UiaError = Get-InstallerValue $Data 'uiaError'
+        "brak okna o tytule '$((@($Plan.SmartScreenTitles) + @($Plan.SmartScreenOfflineTitles)) -join "' / '")'; okna: $(if ($Titles.Count -gt 0) { $Titles -join ' | ' } else { '(brak)' })" +
+        $(if ($UiaError) { "; błąd UI Automation: $UiaError" } else { '' })
+    }
     $Shot = Get-InstallerValue $Data 'screenshot'
     return @(
         (New-InstallerCheck -Name 'MotwZone' -Passed (Test-InstallerCode $Zone $Plan.MotwZoneId) -Detail "Zone.Identifier instalatora na pulpicie: ZoneId $(Format-InstallerValue $Zone) (oczekiwano $($Plan.MotwZoneId))")
@@ -694,7 +699,8 @@ function Get-InstallerVerdict {
 # ---------------------------------------------------------------------------------------------------------------------
 
 function Get-InstallerProbeHelpersText {
-    # Wspólne funkcje sond: strażnik VM i Win32/MSAA (EnumWindows, EnumChildWindows, WM_GETTEXT, GetWindowRect, oleacc). Tylko odczyt.
+    # Wspólne funkcje sond: strażnik VM i Win32/MSAA (EnumWindows, EnumChildWindows, WM_GETTEXT, GetWindowRect, oleacc) – odczyt –
+    # oraz Click (WM_COMMAND do rodzica przycisku), którego używają wyłącznie sondy odmowy (przycisk OK) i kreatora.
     [CmdletBinding()]
     [OutputType([string])]
     param()
@@ -817,13 +823,14 @@ function Get-InstallerRefusalProbeScript {
     param()
     $Body = @'
 $Out = [ordered]@{ Ok = $false; Error = $null; Found = $false; Text = $null; Clicked = $false; Closed = $null; ProcessId = $null; WaitSeconds = $WaitSeconds; Seen = @()
-    Passes = 0; Failures = 0; LastError = $null }
+    Passes = 0; Failures = 0; LastError = $null; UnreadableWindows = 0 }
 try {
     $Texts = [System.IO.File]::ReadAllText($TextsFile, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
     $Seen = New-Object System.Collections.Generic.List[string]
     $Match = [IntPtr]::Zero
     $Passes = 0
     $Failures = 0
+    $Unreadable = 0
     $LastError = $null
     $Limit = (Get-Date).AddSeconds($WaitSeconds)
     do {
@@ -832,14 +839,19 @@ try {
             foreach ($Window in [DsoInst.Native]::TopWindows()) {
                 if (-not [DsoInst.Native]::IsWindowVisible($Window)) { continue }
                 if ([DsoInst.Native]::ClassOf($Window) -cne '#32770' -or [DsoInst.Native]::TitleOf($Window) -cne [string]$Texts.windowTitle) { continue }
+                # Okno pasuje klasa i tytulem: liczy sie tylko, jesli dalo sie przeczytac jakis tekst (TextOf = null, gdy WM_GETTEXT
+                # nie odpowiedzial). Pasujace okno bez czytelnego tekstu to brak odczytu, nie "brak okna odmowy".
+                $Readable = 0
                 foreach ($Child in [DsoInst.Native]::Children($Window)) {
                     if ([DsoInst.Native]::ClassOf($Child) -ne 'Static') { continue }
                     $Name = [string][DsoInst.Native]::TextOf($Child)
                     if ([string]::IsNullOrEmpty($Name)) { continue }
+                    $Readable++
                     if (-not $Seen.Contains($Name)) { $Seen.Add($Name) }
                     if ($Name.StartsWith([string]$Texts.refusalPrefix, [System.StringComparison]::Ordinal)) { $Match = $Window; $Out.Text = $Name; break }
                 }
                 if ($Match -ne [IntPtr]::Zero) { break }
+                if ($Readable -eq 0) { $Unreadable++; $Failures++; $LastError = "okno '$($Texts.windowTitle)' (#32770) bez czytelnego tekstu" }
             }
         }
         catch { $Match = [IntPtr]::Zero; $Failures++; $LastError = [string]$_.Exception.GetBaseException().Message }
@@ -849,8 +861,10 @@ try {
     $Out.Passes = $Passes
     $Out.Failures = $Failures
     $Out.LastError = $LastError
-    # Odczyt okien zawiodl w kazdym przebiegu: to brak odczytu (Ok=false), nie "brak okna".
+    $Out.UnreadableWindows = $Unreadable
+    # Odczyt okien zawiodl w kazdym przebiegu albo pasujace okno nie dalo tekstu: to brak odczytu (Ok=false), nie "brak okna".
     if ($Match -eq [IntPtr]::Zero -and $Passes -gt 0 -and $Failures -eq $Passes) { throw "Odczyt okien zawiodl w kazdym z $Passes przebiegow: $LastError" }
+    if ($Match -eq [IntPtr]::Zero -and $Unreadable -gt 0) { throw "Okno '$($Texts.windowTitle)' (#32770) bez czytelnego tekstu w $Unreadable odczytach: nie wiadomo, czy to okno odmowy." }
     if ($Match -ne [IntPtr]::Zero) {
         $Out.Found = $true
         $Out.ProcessId = [DsoInst.Native]::ProcessOf($Match)
@@ -1501,7 +1515,8 @@ function Invoke-InstallerRunningPhase {
     $TaskB = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstTaskResultBlock -ArgumentList @($Plan.TaskNames.B, [int]$Plan.TaskFinishSeconds)
     # B wiszące na niekliknietym oknie odmowy zamykamy, żeby jego okno nie trafiło do sond relaunchu.
     if (-not $TaskB.Finished) { $null = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStopTaskBlock -ArgumentList @($Plan.TaskNames.B) }
-    $Data.portable = [ordered]@{ message = (Get-InstallerValue $Refusal 'Text'); clickedOk = (Test-InstallerTrue (Get-InstallerValue $Refusal 'Clicked')); windowProcessId = (Get-InstallerValue $Refusal 'ProcessId')
+    $Data.portable = [ordered]@{ message = (Get-InstallerValue $Refusal 'Text'); clickedOk = (Test-InstallerTrue (Get-InstallerValue $Refusal 'Clicked'))
+        closed = (Test-InstallerTrue (Get-InstallerValue $Refusal 'Closed')); windowProcessId = (Get-InstallerValue $Refusal 'ProcessId')
         probeError = $ProbeErrorB; taskResult = $(if ($TaskB.Finished) { [int64]$TaskB.LastTaskResult } else { $null }); taskState = [string]$TaskB.State
         aAlive = [bool](Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstProcessAliveBlock -ArgumentList @($PidA)) }
     Add-InstallerTimeline -Context $Context -Text "kopia B: okno $(Get-InstallerValue $Refusal 'Found'), kod $($Data.portable.taskResult)"
