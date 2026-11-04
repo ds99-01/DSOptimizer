@@ -11,7 +11,8 @@
         wszystkich użytkowników do Program Files (bez strony wyboru folderu), tylko x64, nazwa wpisu „DSOptimizer”
         równa nazwie z katalogu ochrony (apps-bloat.json, prot.dsoptimizer), mutex równy stałej programu
         (SingleInstanceGuard.cs), odmowa instalacji i deinstalacji przy działającym programie, żadnych zmian
-        w danych programu (ProgramData), ikona na pulpicie tylko przy pierwszej instalacji, języki en i pl.
+        w danych programu (ProgramData), ikona na pulpicie tylko przy pierwszej instalacji, języki en i pl,
+        grafika kreatora (każdy PNG z WizardImageFile i WizardSmallImageFile istnieje i ma wymiary z nazwy).
         Blok z tagiem Inno kompiluje skrypt lokalnym ISCC.exe (Inno Setup 6) z atrapą programu w TestDrive.
         Powstały instalator nie jest uruchamiany. Bez ISCC.exe blok jest pomijany.
 #>
@@ -158,6 +159,30 @@ Describe 'DSOptimizer.iss (tekst)' {
         foreach ($Name in @('en.ProgramRunning', 'pl.ProgramRunning', 'en.ProgramRunningUninstall', 'pl.ProgramRunningUninstall', 'en.WrongFolder', 'pl.WrongFolder')) {
             $Messages | Should -Match ('(?m)^' + [regex]::Escape($Name) + '=\S')
         }
+    }
+
+    It 'grafika kreatora: <Directive> to pliki PNG o zadeklarowanych wymiarach' -ForEach @(
+        @{ Directive = 'WizardImageFile'; Expected = @('202x386', '269x515', '336x643', '430x824', '534x1022') }
+        @{ Directive = 'WizardSmallImageFile'; Expected = @('58x58', '77x77', '97x97', '124x124', '159x159') }
+    ) {
+        $Line = [regex]::Match($script:Iss, '(?m)^' + $Directive + '=(.+?)\s*$')
+        $Line.Success | Should -BeTrue
+        $Files = @($Line.Groups[1].Value -split ',' | ForEach-Object { $_.Trim() })
+        $Sizes = foreach ($File in $Files) {
+            $File | Should -Match '^wizard\\wizard-(image|small)-\d+x\d+\.png$'
+            $Path = Join-Path -Path $script:RepoRoot -ChildPath ('tools\release\' + $File)
+            Test-Path -LiteralPath $Path -PathType Leaf | Should -BeTrue -Because $File
+            # Nagłówek PNG: sygnatura, potem IHDR z szerokością i wysokością (big-endian, bajty 16-23).
+            $Bytes = [System.IO.File]::ReadAllBytes($Path)
+            [System.BitConverter]::ToString($Bytes, 0, 8) | Should -Be '89-50-4E-47-0D-0A-1A-0A' -Because $File
+            [System.Text.Encoding]::ASCII.GetString($Bytes, 12, 4) | Should -Be 'IHDR' -Because $File
+            $Width = ([int]$Bytes[16] -shl 24) -bor ([int]$Bytes[17] -shl 16) -bor ([int]$Bytes[18] -shl 8) -bor [int]$Bytes[19]
+            $Height = ([int]$Bytes[20] -shl 24) -bor ([int]$Bytes[21] -shl 16) -bor ([int]$Bytes[22] -shl 8) -bor [int]$Bytes[23]
+            $Declared = [regex]::Match($File, '(\d+)x(\d+)\.png$')
+            "${Width}x${Height}" | Should -Be ($Declared.Groups[1].Value + 'x' + $Declared.Groups[2].Value) -Because $File
+            "${Width}x${Height}"
+        }
+        @($Sizes) | Should -Be $Expected
     }
 
     It 'wymaga AppVersion i ProgramDir (#error)' {

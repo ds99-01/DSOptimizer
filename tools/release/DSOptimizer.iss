@@ -42,6 +42,9 @@ ShowLanguageDialog=no
 WizardStyle=modern
 SetupLogging=yes
 SetupIconFile=..\..\src\DSOptimizer.App\Assets\dsoptimizer.ico
+; Znak DSO z wizard\*.svg, PNG dla DPI 100-250%; Setup wybiera najbliższy rozmiar obszaru obrazka.
+WizardImageFile=wizard\wizard-image-202x386.png,wizard\wizard-image-269x515.png,wizard\wizard-image-336x643.png,wizard\wizard-image-430x824.png,wizard\wizard-image-534x1022.png
+WizardSmallImageFile=wizard\wizard-small-58x58.png,wizard\wizard-small-77x77.png,wizard\wizard-small-97x97.png,wizard\wizard-small-124x124.png,wizard\wizard-small-159x159.png
 VersionInfoVersion={#AppVersion}
 VersionInfoProductName=DSOptimizer
 VersionInfoCompany=Dawid Świeboda
