@@ -30,6 +30,7 @@ Opis działania:
                 „DSOptimizer już działa”, klika „OK”; B kończy się kodem 1, A żyje; CLI --apply z kopii przenośnej jako dso = kod 1
                 i errors[0] od „Działa już inna kopia DSOptimizera”; --list-apps jako dso: wiersz DSOptimizer w grupie Protected;
                 instalator ponownie: kod 7, DisplayVersion i sumy plików bez zmian; deinstalator: pliki i klucz zostają; relaunch:
+                A z mutexem żyje przed startem C i tuż przed zamknięciem (odczyt zapisany, zamknięcie liczy się tylko dla żywego A);
                 zadanie C z --relaunched, najpierw wykrycie procesu C, potem A trzyma mutex jeszcze co najmniej 8 s (dłużej niż
                 zwykłe czekanie 2 s) przy działającej sondzie okna odmowy, dopiero potem Stop-Process A; po 15 s C żyje, mutex jest,
                 okna „już działa” brak (ani przy żywym A, ani po jego zamknięciu); błąd sondy B albo C nie przerywa fazy;
@@ -519,10 +520,23 @@ function Get-InstallerRunningVerdict {
     $Checks += New-InstallerCheck -Name 'UninstallRefusedKeeps' -Passed ((Test-InstallerEmptyList $UnDiff) -and (Test-InstallerTrue $KeyPresent)) `
         -Detail "deinstalator przy działającym oknie (kod $(Format-InstallerValue $UnCode)): różnice plików $(Format-InstallerValue $UnDiff), klucz Uninstall jest: $(Format-InstallerValue $KeyPresent)"
 
-    # A zamykane dopiero po RelaunchHoldSeconds od wykrycia C (dłużej niż zwykłe czekanie 2 s): bez zamknięcia A nie ma dowodu relaunchu.
-    $AStopped = & $V 'relaunch.aStopped'; $CAlive = & $V 'relaunch.cAlive'
-    $Checks += New-InstallerCheck -Name 'RelaunchAlive' -Passed ((Test-InstallerTrue $AStopped) -and (Test-InstallerTrue $CAlive)) `
-        -Detail "relaunch: A zamknięte $($Plan.RelaunchHoldSeconds) s po wykryciu C: $(Format-InstallerValue $AStopped); C z --relaunched żyje $($Plan.RelaunchCheckAfterSeconds) s później: $(Format-InstallerValue $CAlive)"
+    # Relaunch dowodzi czekania tylko wtedy, gdy A żyło z mutexem przed startem C i tuż przed zamknięciem, C wystartowało, A trzymało
+    # mutex co najmniej RelaunchHoldSeconds od wykrycia C (dłużej niż zwykłe czekanie 2 s), zamknięto żywe A, a C potem żyje.
+    $HoldValue = & $V 'relaunch.holdSeconds'
+    $HoldOk = ($null -ne $HoldValue) -and ([string]$HoldValue -match '^\d+\z') -and ([int64][string]$HoldValue -ge [int64]$Plan.RelaunchHoldSeconds)
+    $Conditions = [ordered]@{
+        "A żyło przed startem C"                         = (Test-InstallerTrue (& $V 'relaunch.aAliveBeforeC'))
+        "mutex był przed startem C"                      = (Test-InstallerTrue (& $V 'relaunch.mutexBeforeC'))
+        "C wykryte"                                      = (Test-InstallerTrue (& $V 'relaunch.cDetected'))
+        "A trzymało mutex co najmniej $($Plan.RelaunchHoldSeconds) s od wykrycia C" = $HoldOk
+        "A żyło tuż przed zamknięciem"                   = (Test-InstallerTrue (& $V 'relaunch.aAliveBeforeStop'))
+        "mutex był tuż przed zamknięciem A"              = (Test-InstallerTrue (& $V 'relaunch.mutexBeforeStop'))
+        "zamknięto żywe A"                               = (Test-InstallerTrue (& $V 'relaunch.aStopped'))
+        "C z --relaunched żyje $($Plan.RelaunchCheckAfterSeconds) s po zamknięciu A" = (Test-InstallerTrue (& $V 'relaunch.cAlive'))
+    }
+    $Missing = @($Conditions.Keys | Where-Object { -not $Conditions[$_] })
+    $AliveDetail = if ($Missing.Count -eq 0) { "relaunch: $(@($Conditions.Keys) -join '; ') (trzymanie $(& $V 'relaunch.holdSeconds') s)" } else { "relaunch: niespełnione: $($Missing -join '; ') (trzymanie $(Format-InstallerValue (& $V 'relaunch.holdSeconds')) s)" }
+    $Checks += New-InstallerCheck -Name 'RelaunchAlive' -Passed ($Missing.Count -eq 0) -Detail $AliveDetail
     $CMutex = & $V 'relaunch.mutex'
     $Checks += New-InstallerCheck -Name 'RelaunchMutex' -Passed (Test-InstallerTrue $CMutex) -Detail "relaunch: mutex $($Plan.MutexName) jest: $(Format-InstallerValue $CMutex)"
     $Seen = & $V 'relaunch.refusalSeen'; $ProbeErrorC = & $V 'relaunch.probeError'
@@ -765,7 +779,8 @@ function Get-InstallerRefusalProbeScript {
     [OutputType([string])]
     param()
     $Body = @'
-$Out = [ordered]@{ Ok = $false; Error = $null; Found = $false; Text = $null; Clicked = $false; ProcessId = $null; WaitSeconds = $WaitSeconds; Seen = @() }
+$Out = [ordered]@{ Ok = $false; Error = $null; Found = $false; Text = $null; Clicked = $false; ProcessId = $null; WaitSeconds = $WaitSeconds; Seen = @()
+    UiaPasses = 0; UiaFailures = 0; LastUiaError = $null }
 try {
     $Texts = [System.IO.File]::ReadAllText($TextsFile, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
     Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
@@ -780,8 +795,12 @@ try {
         (New-Object System.Windows.Automation.PropertyCondition($AE::NameProperty, [string]$Texts.okButton)))
     $Seen = New-Object System.Collections.Generic.List[string]
     $Match = $null
+    $Passes = 0
+    $Failures = 0
+    $LastUiaError = $null
     $Limit = (Get-Date).AddSeconds($WaitSeconds)
     do {
+        $Passes++
         try {
             foreach ($Window in @($AE::RootElement.FindAll($Scope::Children, $ByWindow))) {
                 foreach ($Label in @($Window.FindAll($Scope::Descendants, $ByText))) {
@@ -792,10 +811,15 @@ try {
                 if ($null -ne $Match) { break }
             }
         }
-        catch { $Match = $null }
+        catch { $Match = $null; $Failures++; $LastUiaError = [string]$_.Exception.GetBaseException().Message }
         if ($null -ne $Match) { break }
         Start-Sleep -Milliseconds 250
     } while ((Get-Date) -lt $Limit)
+    $Out.UiaPasses = $Passes
+    $Out.UiaFailures = $Failures
+    $Out.LastUiaError = $LastUiaError
+    # UI Automation zawiodlo w kazdym przebiegu: to brak odczytu (Ok=false), nie "brak okna".
+    if ($null -eq $Match -and $Passes -gt 0 -and $Failures -eq $Passes) { throw "UI Automation zawiodlo w kazdym z $Passes przebiegow: $LastUiaError" }
     if ($null -ne $Match) {
         $Out.Found = $true
         $Out.ProcessId = [int]$Match.Current.ProcessId
@@ -1128,14 +1152,28 @@ $script:InstProcessAliveBlock = {
 }
 
 $script:InstStopProcessBlock = {
-    # Zamyka proces programu W VM (Stop-Process) i czeka na jego koniec; zwraca $true, gdy proces już nie żyje.
+    # Zamyka proces programu W VM (Stop-Process) i czeka na jego koniec. WasAlive = proces żył przed zamknięciem (zamknięcie żywego
+    # procesu, nie „już go nie było”), Gone = po wszystkim procesu nie ma.
     param([int]$ProcessId, [int]$Seconds)
     $ErrorActionPreference = 'Stop'
-    if ($ProcessId -le 0) { return $false }
+    if ($ProcessId -le 0) { return [pscustomobject]@{ WasAlive = $false; Gone = $false } }
     $Process = Get-Process -Id $ProcessId -ErrorAction SilentlyContinue
-    if ($null -eq $Process) { return $true }
+    if ($null -eq $Process -or $Process.HasExited) { return [pscustomobject]@{ WasAlive = $false; Gone = $true } }
     Stop-Process -Id $ProcessId -Force
-    return [bool]$Process.WaitForExit($Seconds * 1000)
+    return [pscustomobject]@{ WasAlive = $true; Gone = [bool]$Process.WaitForExit($Seconds * 1000) }
+}
+
+$script:InstAliveMutexBlock = {
+    # Czy proces o PID żyje i czy mutex programu istnieje (tylko odczyt).
+    param([int]$ProcessId, [string]$MutexName)
+    $ErrorActionPreference = 'Stop'
+    $Alive = $false
+    if ($ProcessId -gt 0) { $Process = Get-Process -Id $ProcessId -ErrorAction SilentlyContinue; $Alive = ($null -ne $Process -and -not $Process.HasExited) }
+    $Mutex = $null
+    $HasMutex = $false
+    try { $HasMutex = [System.Threading.Mutex]::TryOpenExisting($MutexName, [ref]$Mutex) } catch [System.UnauthorizedAccessException] { $HasMutex = $true }
+    if ($null -ne $Mutex) { $Mutex.Dispose() }
+    return [pscustomobject]@{ Alive = $Alive; Mutex = $HasMutex }
 }
 
 $script:InstStartTaskBlock = {
@@ -1421,11 +1459,16 @@ function Invoke-InstallerRunningPhase {
     # (8) relaunch: C z --relaunched; najpierw proces C, potem A trzyma mutex jeszcze co najmniej RelaunchHoldSeconds od wykrycia C
     # (wyraźnie dłużej niż zwykłe czekanie 2 s), a sonda okna odmowy patrzy w tym czasie: C czekający tylko 2 s pokazałby „już działa”
     # przy żywym A. Dopiero potem zamknięcie A, po RelaunchCheckAfterSeconds: C żyje, mutex jest, druga krótka sonda bez okna odmowy.
-    $Relaunch = [ordered]@{ cDetected = $false; cDetectSeconds = $null; holdSeconds = $null; aStopped = $false; cAlive = $false; cPid = 0; mutex = $false
-        refusalSeen = $null; refusalText = $null; refusalProcessId = $null; probeError = $null }
+    # A musi żyć (i trzymać mutex) przed startem C i tuż przed zamknięciem: inaczej wolny mutex wpuściłby C od razu i 30 s czekania
+    # po --relaunched w ogóle by się nie sprawdziło.
+    $Relaunch = [ordered]@{ aAliveBeforeC = $null; mutexBeforeC = $null; cDetected = $false; cDetectSeconds = $null; holdSeconds = $null; aAliveBeforeStop = $null
+        mutexBeforeStop = $null; aStopped = $false; cAlive = $false; cPid = 0; mutex = $false; refusalSeen = $null; refusalText = $null; refusalProcessId = $null; probeError = $null }
     $Data.relaunch = $Relaunch
     $ProbeErrors = @()
     $Seen = $false
+    $BeforeC = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstAliveMutexBlock -ArgumentList @($PidA, $Plan.MutexName)
+    $Relaunch.aAliveBeforeC = (Test-InstallerTrue (Get-InstallerValue $BeforeC 'Alive'))
+    $Relaunch.mutexBeforeC = (Test-InstallerTrue (Get-InstallerValue $BeforeC 'Mutex'))
     $null = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStartTaskBlock -ArgumentList @($Plan.InstalledExe, '--relaunched', $Plan.InstallDirectory, $Plan.UserName, $Plan.TaskNames.C, 'Highest')
     $Detect = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstWaitProgramBlock -ArgumentList @($Plan.InstalledExe, $Plan.MutexName, [int]$Plan.RelaunchDetectSeconds, '--relaunched')
     $Hold = [System.Diagnostics.Stopwatch]::StartNew()
@@ -1440,9 +1483,13 @@ function Invoke-InstallerRunningPhase {
         $Remaining = [int][Math]::Ceiling([double]$Plan.RelaunchHoldSeconds - $Hold.Elapsed.TotalSeconds)
         if ($Remaining -gt 0) { Start-Sleep -Seconds $Remaining }
     }
-    $Relaunch.holdSeconds = [int]$Hold.Elapsed.TotalSeconds
-    # A zamykane także bez C: kolejne kroki (deinstalacja) wymagają programu bez okien.
-    $Relaunch.aStopped = [bool](Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStopProcessBlock -ArgumentList @($PidA, [int]$Plan.ProcessStopSeconds))
+    $Relaunch.holdSeconds = [int][Math]::Floor($Hold.Elapsed.TotalSeconds)
+    $BeforeStop = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstAliveMutexBlock -ArgumentList @($PidA, $Plan.MutexName)
+    $Relaunch.aAliveBeforeStop = (Test-InstallerTrue (Get-InstallerValue $BeforeStop 'Alive'))
+    $Relaunch.mutexBeforeStop = (Test-InstallerTrue (Get-InstallerValue $BeforeStop 'Mutex'))
+    # A zamykane także bez C: kolejne kroki (deinstalacja) wymagają programu bez okien. aStopped = zamknięty żywy proces.
+    $StopA = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStopProcessBlock -ArgumentList @($PidA, [int]$Plan.ProcessStopSeconds)
+    $Relaunch.aStopped = (Test-InstallerTrue (Get-InstallerValue $StopA 'WasAlive')) -and (Test-InstallerTrue (Get-InstallerValue $StopA 'Gone'))
     Start-Sleep -Seconds ([int]$Plan.RelaunchCheckAfterSeconds)
     $C = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstWaitProgramBlock -ArgumentList @($Plan.InstalledExe, $Plan.MutexName, 1, '--relaunched')
     $Relaunch.cAlive = [bool]$C.ProcessFound
@@ -1460,7 +1507,7 @@ function Invoke-InstallerRunningPhase {
     # (9) %ProgramData%\DSOptimizer przy działającym C
     $Data.programData = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstProgramDataBlock -ArgumentList @($Plan.ProgramDataDirectory)
     # (10) zamknięcie C, mutex znika, cicha deinstalacja, folder/klucz/skróty znikają, ProgramData zostaje
-    $StoppedC = [bool](Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStopProcessBlock -ArgumentList @([int]$Relaunch.cPid, [int]$Plan.ProcessStopSeconds))
+    $StoppedC = Test-InstallerTrue (Get-InstallerValue (Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstStopProcessBlock -ArgumentList @([int]$Relaunch.cPid, [int]$Plan.ProcessStopSeconds)) 'Gone')
     $Released = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstWaitMutexGoneBlock -ArgumentList @($Plan.MutexName, [int]$Plan.MutexReleaseSeconds)
     $DataBefore = Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstProgramDataBlock -ArgumentList @($Plan.ProgramDataDirectory)
     $FinalCode = Invoke-InstallerSetup -Context $Context -FilePath $Uninstaller -Step 'uninstall' -Uninstall

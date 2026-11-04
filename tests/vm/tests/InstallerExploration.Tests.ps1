@@ -57,7 +57,8 @@
             listApps         = [ordered]@{ exitCode = 0; group = 'Protected' }
             reinstall        = [ordered]@{ exitCode = 7; versionBefore = '4.0.4'; versionAfter = '4.0.4'; filesDiff = @() }
             uninstallRunning = [ordered]@{ exitCode = 1; filesDiff = @(); keyPresent = $true }
-            relaunch         = [ordered]@{ cDetected = $true; aStopped = $true; cAlive = $true; mutex = $true; refusalSeen = $false; probeError = $null }
+            relaunch         = [ordered]@{ aAliveBeforeC = $true; mutexBeforeC = $true; cDetected = $true; holdSeconds = 9; aAliveBeforeStop = $true; mutexBeforeStop = $true
+                aStopped = $true; cAlive = $true; mutex = $true; refusalSeen = $false; probeError = $null }
             programData      = [ordered]@{ exists = $true; files = @('logs\dsoptimizer.log', 'settings.json'); owner = 'S-1-5-32-544' }
             final            = [ordered]@{ mutexReleased = $true; exitCode = 0; appDirGone = $true; keyGone = $true; startMenuGone = $true; desktopGone = $true
                 dataBefore = @('logs\dsoptimizer.log', 'settings.json'); dataAfter = @('logs\dsoptimizer.log', 'settings.json'); ownerAfter = 'S-1-5-32-544' }
@@ -239,6 +240,13 @@ Describe 'Get-InstallerVerdict: jedno odstępstwo = jedno niezaliczone sprawdzen
         @{ Why = 'relaunch: C nie żyje'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.cAlive = $false } }
         @{ Why = 'relaunch: A nie zamknięte'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.aStopped = $false } }
         @{ Why = 'relaunch: brak odczytu zamknięcia A'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.aStopped = $null } }
+        @{ Why = 'relaunch: A martwe przed startem C'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.aAliveBeforeC = $false } }
+        @{ Why = 'relaunch: brak mutexa przed startem C'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.mutexBeforeC = $false } }
+        @{ Why = 'relaunch: C niewykryte'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.cDetected = $false } }
+        @{ Why = 'relaunch: A martwe tuż przed zamknięciem'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.aAliveBeforeStop = $false } }
+        @{ Why = 'relaunch: brak mutexa tuż przed zamknięciem A'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.mutexBeforeStop = $false } }
+        @{ Why = 'relaunch: trzymanie krótsze niż 8 s'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.holdSeconds = 7 } }
+        @{ Why = 'relaunch: brak odczytu trzymania'; Name = 'RelaunchAlive'; Mutate = { param($D) $D.relaunch.holdSeconds = $null } }
         @{ Why = 'relaunch: błąd sondy bez odczytu'; Name = 'RelaunchNoRefusal'; Mutate = { param($D) $D.relaunch.refusalSeen = $null; $D.relaunch.probeError = 'sonda przy żywym A: brak wyniku' } }
         @{ Why = 'relaunch: błąd jednej z sond'; Name = 'RelaunchNoRefusal'; Mutate = { param($D) $D.relaunch.probeError = 'sonda po zamknięciu A: brak wyniku' } }
         @{ Why = 'kopia B: błąd sondy'; Name = 'PortableMessage'; Mutate = { param($D) $D.portable.probeError = 'Sonda Inst-Refusal-B nie zwróciła wyniku.' } }
@@ -335,7 +343,7 @@ Describe 'Faza running na mockach (kolejność relaunchu, błędy sond)' {
         Mock Invoke-InstallerRemote {
             $script:Calls.Add("remote:$(@($ArgumentList) -join ',')")
             [pscustomobject]@{ Finished = $true; LastTaskResult = 1; State = 'Ready'; ProcessFound = $true; Pid = 42; Mutex = $true; Seconds = 1; Released = $true
-                Exists = $true; Files = @('settings.json'); Owner = 'S-1-5-32-544' }
+                Exists = $true; Files = @('settings.json'); Owner = 'S-1-5-32-544'; Alive = $true; WasAlive = $true; Gone = $true }
         }
         Mock Invoke-DsoCli -RemoveParameterValidation 'Session' {
             [pscustomobject]@{ ExitCode = 1; TimedOut = $false; ReportError = $null
@@ -354,16 +362,40 @@ Describe 'Faza running na mockach (kolejność relaunchu, błędy sond)' {
         $HoldProbe = [array]::IndexOf($Calls, 'probe:Inst-Refusal-Hold')
         $StopA = [array]::IndexOf($Calls, 'remote:7,15')
         $AfterProbe = [array]::IndexOf($Calls, 'probe:Inst-Refusal-C')
-        $DetectC | Should -BeGreaterThan -1
+        # Odczyt „A żyje + mutex” (PID 7) przed startem C i tuż przed zamknięciem A.
+        $AliveChecks = @(for ($I = 0; $I -lt $Calls.Count; $I++) { if ($Calls[$I] -ceq 'remote:7,Global\DSOptimizer.SingleInstance') { $I } })
+        $AliveChecks | Should -HaveCount 2
+        $StartC = [array]::IndexOf($Calls, 'remote:C:\Program Files\DSOptimizer\DSOptimizer.exe,--relaunched,C:\Program Files\DSOptimizer,dso,DSO-Inst-C,Highest')
+        $AliveChecks[0] | Should -BeLessThan $StartC
+        $DetectC | Should -BeGreaterThan $StartC
         $HoldProbe | Should -BeGreaterThan $DetectC
+        $AliveChecks[1] | Should -BeGreaterThan $HoldProbe
+        $AliveChecks[1] | Should -BeLessThan $StopA
         $StopA | Should -BeGreaterThan $HoldProbe
         $AfterProbe | Should -BeGreaterThan $StopA
         # Mock sondy wraca od razu, więc skrypt dosypia resztę z 8 s przed zamknięciem A.
         $Sleeps = @($Calls[$HoldProbe..$StopA] | Where-Object { $_ -like 'sleep:*' } | ForEach-Object { [int]($_ -replace 'sleep:', '') })
         ($Sleeps | Measure-Object -Sum).Sum | Should -BeGreaterOrEqual 7
         $script:Record.data.relaunch.aStopped | Should -BeTrue
+        $script:Record.data.relaunch.aAliveBeforeC | Should -BeTrue
+        $script:Record.data.relaunch.aAliveBeforeStop | Should -BeTrue
         $script:Record.data.relaunch.refusalSeen | Should -BeFalse
         $script:Record.data.cliApply.firstError | Should -Match '^Działa już inna kopia'
+    }
+    It 'A martwe już przed relaunchem (wolny mutex): zamknięcie „już nieżywego” A nie liczy się, RelaunchAlive niezaliczone' {
+        Mock Invoke-InstallerRemote {
+            $script:Calls.Add("remote:$(@($ArgumentList) -join ',')")
+            [pscustomobject]@{ Finished = $true; LastTaskResult = 1; State = 'Ready'; ProcessFound = $true; Pid = 42; Mutex = $true; Seconds = 1; Released = $true
+                Exists = $true; Files = @('settings.json'); Owner = 'S-1-5-32-544'; Alive = $false; WasAlive = $false; Gone = $true }
+        }
+        Invoke-InstallerRunningPhase -Context $script:Context -Record $script:Record
+        $script:Record.data.relaunch.aAliveBeforeC | Should -BeFalse
+        $script:Record.data.relaunch.aAliveBeforeStop | Should -BeFalse
+        $script:Record.data.relaunch.aStopped | Should -BeFalse
+        $Check = @(Get-InstallerVerdict -Phase 'running' -Data $script:Record.data) | Where-Object Name -eq 'RelaunchAlive'
+        $Check.Passed | Should -BeFalse
+        $Check.Detail | Should -Match 'A żyło przed startem C'
+        $Check.Detail | Should -Match 'zamknięto żywe A'
     }
     It 'błąd sond B i C nie przerywa fazy: dalsze kroki wykonane, niezaliczone PortableMessage i RelaunchNoRefusal z opisem błędu' {
         $script:ProbeBehavior = 'throw'
@@ -603,6 +635,8 @@ Describe 'Plik skryptu i sondy' {
     }
     It 'sonda okna odmowy klika tylko przycisk OK, sonda okien niczego nie klika' {
         (Get-InstallerRefusalProbeScript) | Should -Match 'okButton'
+        # UI Automation zawodzące w każdym przebiegu = błąd sondy (Ok=false), nie „brak okna”.
+        (Get-InstallerRefusalProbeScript) | Should -Match '\$Failures -eq \$Passes\) \{ throw'
         (Get-InstallerWindowsProbeScript) | Should -Not -Match 'InvokePattern'
     }
 }
