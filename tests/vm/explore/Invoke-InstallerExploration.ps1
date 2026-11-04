@@ -133,7 +133,9 @@ function Get-InstallerPlan {
         WizardProgramSeconds     = 30
         MotwWaitSeconds          = 10
         MotwZoneId               = 3
-        TaskNames                = [ordered]@{ A = 'DSO-Inst-A'; B = 'DSO-Inst-B'; C = 'DSO-Inst-C'; Wizard = 'DSO-Inst-Wizard'; Motw = 'DSO-Inst-Motw' }
+        # Nazwy zadań startu nie mogą być równe 'DSO-<nazwa sondy>' (Invoke-DsoUserSessionScript): sonda 'Inst-Motw' podmieniała
+        # działające zadanie startu instalatora i nie ruszała (pierwszy przebieg 2026-11-04).
+        TaskNames                = [ordered]@{ A = 'DSO-Inst-A'; B = 'DSO-Inst-B'; C = 'DSO-Inst-C'; Wizard = 'DSO-Inst-Wizard'; Motw = 'DSO-Inst-MotwOpen' }
         WindowTitle              = 'DSOptimizer'
         OkButton                 = 'OK'
         RefusalPrefix            = 'DSOptimizer już działa'

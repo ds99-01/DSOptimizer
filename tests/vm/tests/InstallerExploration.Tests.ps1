@@ -465,6 +465,17 @@ Describe 'Odczyt wyników sond bez pól (StrictMode)' {
         @($script:Record.problems) | Should -Contain 'sonda okien: Sonda dziala tylko w VM'
         $script:Record.data.screenshot | Should -BeFalse
     }
+    It 'motw: zadanie sondy (DSO-nazwa sondy) ma inną nazwę niż zadanie startu instalatora' {
+        # Pierwszy przebieg: sonda „Inst-Motw” = zadanie „DSO-Inst-Motw”, czyli to samo co działające zadanie explorer.exe; Register -Force
+        # podmieniło akcję, a Start-ScheduledTask przy działającym wystąpieniu nic nie uruchomił (sonda bez wyniku w 120 s).
+        $script:ProbeNames = [System.Collections.Generic.List[string]]::new()
+        Mock Invoke-DsoUserSessionScript -RemoveParameterValidation 'Session' { $script:ProbeNames.Add($Name); '{"Ok":false,"Error":"Sonda dziala tylko w VM"}' }
+        $script:Context.Run = [ordered]@{ Key = 'motw'; Phase = 'motw'; Language = $null }
+        Invoke-InstallerMotwPhase -Context $script:Context -Record $script:Record
+        $Tasks = @($script:Context.Plan.TaskNames.Values)
+        @($script:ProbeNames) | Should -HaveCount 1
+        @($script:ProbeNames | Where-Object { $Tasks -contains "DSO-$_" }) | Should -BeNullOrEmpty
+    }
 }
 
 Describe 'Strony kreatora' {
