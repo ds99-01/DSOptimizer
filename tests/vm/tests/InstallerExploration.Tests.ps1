@@ -322,6 +322,21 @@ Describe 'Get-InstallerVerdict: jedno odstępstwo = jedno niezaliczone sprawdzen
         $Data.titles = @('Windows protected your PC')
         @(Get-Failed -Phase 'motw' -Data $Data) | Should -BeNullOrEmpty
     }
+    It 'motw: okno SmartScreen bez sieci (tekst z UI Automation) przechodzi z opisem wariantu offline' {
+        # Pierwszy przebieg na VM bez sieci (2026-11-04): SmartScreen pokazał „Obecnie nie można uzyskać dostępu do filtru SmartScreen”.
+        $Data = New-MotwData
+        $Data.titles = @('Program Manager')
+        $Data.texts = @('Obecnie nie można uzyskać dostępu do filtru SmartScreen', 'Uruchom')
+        $Checks = @(Get-InstallerVerdict -Phase 'motw' -Data $Data)
+        @($Checks | Where-Object { -not $_.Passed }) | Should -BeNullOrEmpty
+        ($Checks | Where-Object { $_.Name -eq 'SmartScreenWindow' }).Detail | Should -Match 'bez sieci'
+    }
+    It 'motw: tytuł okna z siecią w tekstach też przechodzi' {
+        $Data = New-MotwData
+        $Data.titles = @('Program Manager')
+        $Data.texts = @('System Windows ochronił ten komputer')
+        @(Get-Failed -Phase 'motw' -Data $Data) | Should -BeNullOrEmpty
+    }
 }
 
 Describe 'Faza running na mockach (kolejność relaunchu, błędy sond)' {
@@ -466,7 +481,10 @@ Describe 'Strony kreatora' {
         $Texts.installedExe | Should -BeExactly 'C:\Program Files\DSOptimizer\DSOptimizer.exe'
         $Texts.refusalPrefix | Should -BeExactly 'DSOptimizer już działa'
         $Texts.windowTitle | Should -BeExactly 'DSOptimizer'
+        # Inno 6.7 na VM (2026-11-04): przyciski „&Dalej”/„&Next” bez „>”; stara postać z „>” zostaje dopuszczona.
+        @($Texts.wizard.pl.next) | Should -Contain 'Dalej'
         @($Texts.wizard.pl.next) | Should -Contain 'Dalej >'
+        @($Texts.wizard.en.next) | Should -Contain 'Next'
         @($Texts.wizard.en.finish) | Should -Contain 'Finish'
         $Texts.wizard.pl.desktopTask | Should -BeExactly 'Utwórz skrót na pulpicie'
         $Texts.wizard.en.launchTask | Should -BeExactly 'Launch DSOptimizer'
@@ -486,6 +504,7 @@ Describe 'Plan i argumenty' {
         $Plan.RefusedExitCode | Should -Be 7
         @($Plan.CliApplyArguments) | Should -Be @('--apply', 'privacy.widgets', '--restore-point', 'skip')
         @($Plan.SmartScreenTitles) | Should -Be @('System Windows ochronił ten komputer', 'Windows protected your PC')
+        @($Plan.SmartScreenOfflineTitles) | Should -Be @('Obecnie nie można uzyskać dostępu do filtru SmartScreen')
         @($Plan.WizardPageOrder) | Should -Be @('powitanie', 'zadania', 'gotowe', 'koniec')
         $Plan.MotwZoneId | Should -Be 3
     }
@@ -638,6 +657,21 @@ Describe 'Plik skryptu i sondy' {
         # UI Automation zawodzące w każdym przebiegu = błąd sondy (Ok=false), nie „brak okna”.
         (Get-InstallerRefusalProbeScript) | Should -Match '\$Failures -eq \$Passes\) \{ throw'
         (Get-InstallerWindowsProbeScript) | Should -Not -Match 'InvokePattern'
+    }
+    It 'sondy odmowy i kreatora klikają przez Win32 (WM_COMMAND), nie przez UI Automation InvokePattern' {
+        # Na VM 26H2 zarządzane UI Automation widzi kontrolki Win32 (MessageBox, Inno) jako Pane bez wzorców (2026-11-04).
+        foreach ($Text in @((Get-InstallerRefusalProbeScript), (Get-InstallerWizardProbeScript))) {
+            $Text | Should -Not -Match 'InvokePattern'
+            $Text | Should -Match '\[DsoInst\.Native\]::Click\('
+        }
+        (Get-InstallerProbeHelpersText) | Should -Match 'public static bool Click\(IntPtr button\)'
+        (Get-InstallerWindowsProbeScript) | Should -Not -Match '::Click\('
+    }
+    It 'sonda okien: zrzut przed UI Automation, UI Automation z limitem czasu (pierwszy przebieg: sonda nie wróciła w 120 s)' {
+        $Text = Get-InstallerWindowsProbeScript
+        $Text.IndexOf('CopyFromScreen') | Should -BeLessThan $Text.IndexOf('UIAutomationClient')
+        $Text | Should -Match 'AsyncWaitHandle\.WaitOne\(\$UiaSeconds \* 1000\)'
+        $Text | Should -Match 'ControlType\]::Text'
     }
 }
 

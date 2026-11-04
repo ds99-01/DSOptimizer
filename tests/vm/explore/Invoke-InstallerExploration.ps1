@@ -26,8 +26,8 @@ Opis działania:
       smoke   - Test-InstallerSmoke.ps1 z tools\release w sesji PowerShell Direct (-LogDirectory C:\dso\out\smoke), wynik
                 smoke-result.json; sprawdzenie: passed.
       running - cicha instalacja; okno A z Program Files (do 60 s na proces i mutex Global\DSOptimizer.SingleInstance, wybór języka pl);
-                kopia przenośna B jako zadanie: sonda UI Automation w sesji dso w 30 s znajduje okno „DSOptimizer” z tekstem od
-                „DSOptimizer już działa”, klika „OK”; B kończy się kodem 1, A żyje; CLI --apply z kopii przenośnej jako dso = kod 1
+                kopia przenośna B jako zadanie: sonda Win32 (EnumWindows, WM_GETTEXT) w sesji dso w 30 s znajduje okno „DSOptimizer”
+                z tekstem od „DSOptimizer już działa”, klika „OK” (WM_COMMAND); B kończy się kodem 1, A żyje; CLI --apply z kopii przenośnej jako dso = kod 1
                 i errors[0] od „Działa już inna kopia DSOptimizera”; --list-apps jako dso: wiersz DSOptimizer w grupie Protected;
                 instalator ponownie: kod 7, DisplayVersion i sumy plików bez zmian; deinstalator: pliki i klucz zostają; relaunch:
                 A z mutexem żyje przed startem C i tuż przed zamknięciem (odczyt zapisany, zamknięcie liczy się tylko dla żywego A);
@@ -42,18 +42,22 @@ Opis działania:
                 skrót w Menu Start jest, pliki równe zipowi wyższej wersji, brak unins001.dat.
       wizard  - (osobno dla każdego języka) zadanie dso uruchamia instalator z /LANG=<pl|en> /LOG=C:\dso\out\logs\wizard-<lang>.log
                 (log w raw-wizard-<lang>); sonda w sesji prowadzi kreator
-                (okno klasy TWizardForm, przyciski po nazwie UI Automation), przed każdym kliknięciem zrzut okna
+                (okno klasy TWizardForm, przyciski po tekście Win32, klik WM_COMMAND: zarządzane UI Automation na VM 26H2 widzi
+                kontrolki Win32 jako Pane bez wzorców), przed każdym kliknięciem zrzut okna
                 C:\dso\out\wizard-<lang>-<n>.png i teksty strony; stan pól „ikona na pulpicie” i „Uruchom…” przez MSAA
                 (oleacc), zapasowo UI Automation (TogglePattern), pole pulpitu też z podsumowania strony „gotowe”. Po „Zakończ”
                 w 30 s działa DSOptimizer.exe z Program Files. Sprawdzenia: strony powitanie -> zadania -> gotowe -> koniec,
                 powitanie z „Mozilla Public License 2.0”, oba pola zaznaczone, program wystartował, zrzut każdej strony.
       motw    - instalator na pulpicie dso ze strumieniem Zone.Identifier (ZoneId=3), start explorer.exe "<plik>" z zadania dso
                 z RunLevel Limited (jak dwuklik); po 10 s sonda zbiera tytuły okien najwyższego poziomu (UI Automation i Win32)
-                i robi zrzut motw.png. Sprawdzenie: okno „System Windows ochronił ten komputer” albo „Windows protected your PC”.
+                (UI Automation z limitem 30 s, także teksty w oknach) i robi zrzut motw.png (przed UI Automation). Sprawdzenie: okno
+                „System Windows ochronił ten komputer” albo „Windows protected your PC”, a bez sieci „Obecnie nie można uzyskać dostępu
+                do filtru SmartScreen” (wariant offline, widziany na VM 2026-11-04).
                 Niczego nie klika. Faza działa bez sieci jak reszta.
     Werdykt liczy czysta funkcja Get-InstallerVerdict -Phase <nazwa> -Data <obiekt> -> lista { Name; Passed; Detail }.
     Nazwy przycisków kreatora wzięte z plików językowych Inno Setup 6.7 (Default.isl, Polish.isl): Dalej >/Next >,
-    Instaluj/Install (dopuszczone też Zainstaluj), Zakończ/Finish; potwierdzić na pierwszym prawdziwym przebiegu.
+    Instaluj/Install (dopuszczone też Zainstaluj), Zakończ/Finish; pierwszy przebieg (2026-11-04) pokazał „&Dalej” bez „>”, więc
+    dopuszczone Dalej/Next z „>” i bez.
     RISK: skrypt przywraca VM do checkpointu 'czysta-26H2' przed każdą fazą i po niej (zmiany w VM przepadają); w VM instaluje,
     aktualizuje i odinstalowuje DSOptimizera i zamyka jego procesy (Stop-Process) – wyłącznie w VM. Nie usuwa VM, nie podłącza sieci.
     Wynik: <OutDirectory>\<VmName>\installer.json (UTF-8), zrzuty PNG w <OutDirectory>\<VmName>, logi Inno i smoke
@@ -141,10 +145,11 @@ function Get-InstallerPlan {
         WizardClassName          = 'TWizardForm'
         WizardPageOrder          = @('powitanie', 'zadania', 'gotowe', 'koniec')
         # Teksty kreatora z plików językowych Inno Setup 6.7 (Default.isl / Polish.isl, [name] = DSOptimizer) bez znaku '&'.
-        # Polish.isl ma ButtonInstall=&Instaluj; „Zainstaluj” dopuszczone na wypadek innej wersji. Do potwierdzenia na pierwszym przebiegu.
+        # Polish.isl ma ButtonInstall=&Instaluj; „Zainstaluj” dopuszczone na wypadek innej wersji. Pierwszy przebieg na VM (2026-11-04):
+        # przycisk dalej to „&Dalej” (bez „>”), więc dopuszczone obie postacie; tak samo „Next”/„Next >”.
         WizardTexts              = [ordered]@{
             pl = [ordered]@{
-                Next        = @('Dalej >')
+                Next        = @('Dalej', 'Dalej >')
                 Install     = @('Instaluj', 'Zainstaluj')
                 Finish      = @('Zakończ')
                 Pages       = [ordered]@{ powitanie = 'Witamy w instalatorze aplikacji DSOptimizer'; zadania = 'Zadania dodatkowe'; gotowe = 'Gotowy do rozpoczęcia instalacji'; koniec = 'Zakończono instalację aplikacji DSOptimizer' }
@@ -152,7 +157,7 @@ function Get-InstallerPlan {
                 LaunchTask  = 'Uruchom aplikację DSOptimizer'
             }
             en = [ordered]@{
-                Next        = @('Next >')
+                Next        = @('Next', 'Next >')
                 Install     = @('Install')
                 Finish      = @('Finish')
                 Pages       = [ordered]@{ powitanie = 'Welcome to the DSOptimizer Setup Wizard'; zadania = 'Select Additional Tasks'; gotowe = 'Ready to Install'; koniec = 'Completing the DSOptimizer Setup Wizard' }
@@ -162,6 +167,11 @@ function Get-InstallerPlan {
         }
         # Tytuły okna SmartScreen (PL/EN), te same co w Invoke-E5Exploration.ps1.
         SmartScreenTitles        = @('System Windows ochronił ten komputer', 'Windows protected your PC')
+        # SmartScreen bez sieci (pierwszy przebieg na VM 26H2 PL, 2026-11-04): okno ApplicationFrameWindow bez tytułu Win32, nagłówek
+        # widoczny jako tekst UI Automation. Angielskiego odpowiednika nie widziano na VM, więc go tu nie ma.
+        SmartScreenOfflineTitles = @('Obecnie nie można uzyskać dostępu do filtru SmartScreen')
+        # Limit czasu odczytu UI Automation w sondzie okien (bez limitu sonda nie wróciła w 120 s przy oknie SmartScreen).
+        MotwUiaSeconds           = 30
     }
 }
 
@@ -645,11 +655,18 @@ function Get-InstallerMotwVerdict {
     $Plan = Get-InstallerPlan
     $Zone = Get-InstallerValue $Data 'zoneId'
     $Titles = @(Get-InstallerList $Data 'titles' | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ })
-    $Matched = @($Titles | Where-Object { $Plan.SmartScreenTitles -ccontains $_ } | Select-Object -Unique)
+    # Teksty z UI Automation (nagłówki w oknach): okno SmartScreen nie zawsze ma tytuł Win32.
+    $Texts = @(Get-InstallerList $Data 'texts' | Where-Object { $null -ne $_ } | ForEach-Object { Format-InstallerUiText $_ })
+    $Seen = @($Titles) + @($Texts)
+    $Matched = @($Seen | Where-Object { $Plan.SmartScreenTitles -ccontains $_ } | Select-Object -Unique)
+    $Offline = @($Seen | Where-Object { $Plan.SmartScreenOfflineTitles -ccontains $_ } | Select-Object -Unique)
+    $SmartDetail = if ($Matched.Count -gt 0) { "okno SmartScreen: '$($Matched -join "', '")'" }
+    elseif ($Offline.Count -gt 0) { "okno SmartScreen bez sieci: '$($Offline -join "', '")' (wariant offline; okna '$($Plan.SmartScreenTitles -join "' / '")' bez sieci nie da się sprawdzić)" }
+    else { "brak okna o tytule '$((@($Plan.SmartScreenTitles) + @($Plan.SmartScreenOfflineTitles)) -join "' / '")'; okna: $(if ($Titles.Count -gt 0) { $Titles -join ' | ' } else { '(brak)' })" }
     $Shot = Get-InstallerValue $Data 'screenshot'
     return @(
         (New-InstallerCheck -Name 'MotwZone' -Passed (Test-InstallerCode $Zone $Plan.MotwZoneId) -Detail "Zone.Identifier instalatora na pulpicie: ZoneId $(Format-InstallerValue $Zone) (oczekiwano $($Plan.MotwZoneId))")
-        (New-InstallerCheck -Name 'SmartScreenWindow' -Passed ($Matched.Count -gt 0) -Detail $(if ($Matched.Count -gt 0) { "okno SmartScreen: '$($Matched -join "', '")'" } else { "brak okna o tytule '$($Plan.SmartScreenTitles -join "' / '")'; okna: $(if ($Titles.Count -gt 0) { $Titles -join ' | ' } else { '(brak)' })" }))
+        (New-InstallerCheck -Name 'SmartScreenWindow' -Passed (($Matched.Count + $Offline.Count) -gt 0) -Detail $SmartDetail)
         (New-InstallerCheck -Name 'Screenshot' -Passed (Test-InstallerTrue $Shot) -Detail "zrzut motw.png skopiowany: $(Format-InstallerValue $Shot)")
     )
 }
@@ -705,6 +722,22 @@ namespace DsoInst
         [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "SendMessageTimeoutW")] private static extern IntPtr SendText(IntPtr hwnd, uint msg, IntPtr wParam, StringBuilder lParam, uint flags, uint timeout, out IntPtr result);
         [DllImport("user32.dll", EntryPoint = "SendMessageTimeoutW")] private static extern IntPtr SendValue(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam, uint flags, uint timeout, out IntPtr result);
         [DllImport("oleacc.dll")] private static extern int AccessibleObjectFromWindow(IntPtr hwnd, uint objectId, ref Guid iid, [MarshalAs(UnmanagedType.IUnknown)] out object accessible);
+        [DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr hwnd);
+        [DllImport("user32.dll")] public static extern bool IsWindow(IntPtr hwnd);
+        [DllImport("user32.dll")] private static extern IntPtr GetParent(IntPtr hwnd);
+        [DllImport("user32.dll")] private static extern int GetDlgCtrlID(IntPtr hwnd);
+        [DllImport("user32.dll")] private static extern bool PostMessage(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        // Klikniecie przycisku Win32 bez UI Automation: WM_COMMAND (BN_CLICKED, id kontrolki) do rodzica, jak po kliknieciu mysza.
+        // Dziala dla MessageBox (#32770) i przyciskow VCL Inno (TNewButton: rodzic odsyla CN_COMMAND -> Click). Zarzadzane UI Automation
+        // na VM 26H2 widzi te kontrolki jako Pane bez wzorcow (nie da sie ich kliknac przez UIA).
+        public static bool Click(IntPtr button)
+        {
+            IntPtr parent = GetParent(button);
+            if (parent == IntPtr.Zero) { return false; }
+            int id = GetDlgCtrlID(button);
+            return PostMessage(parent, 0x0111, (IntPtr)(id & 0xFFFF), button);
+        }
 
         public static string ClassOf(IntPtr hwnd) { var text = new StringBuilder(256); GetClassName(hwnd, text, text.Capacity); return text.ToString(); }
         public static string TitleOf(IntPtr hwnd) { var text = new StringBuilder(1024); GetWindowText(hwnd, text, text.Capacity); return text.ToString(); }
@@ -775,59 +808,61 @@ function Write-ProbeResult($Result, [string]$Path) {
 function Get-InstallerRefusalProbeScript {
     # Sonda okna odmowy: do -WaitSeconds szuka okna najwyższego poziomu „DSOptimizer” (klasa #32770, MessageBox) z tekstem od
     # refusalPrefix; z -Click klika w nim wyłącznie przycisk okButton. Zwraca Found, Text, Clicked, ProcessId i widziane teksty.
+    # Okno, teksty i przycisk przez Win32 (EnumWindows, WM_GETTEXT, WM_COMMAND): zarządzane UI Automation na VM 26H2 widzi kontrolki
+    # MessageBox jako Pane bez nazwy typu Text i bez InvokePattern (pierwszy przebieg 2026-11-04).
     [CmdletBinding()]
     [OutputType([string])]
     param()
     $Body = @'
-$Out = [ordered]@{ Ok = $false; Error = $null; Found = $false; Text = $null; Clicked = $false; ProcessId = $null; WaitSeconds = $WaitSeconds; Seen = @()
-    UiaPasses = 0; UiaFailures = 0; LastUiaError = $null }
+$Out = [ordered]@{ Ok = $false; Error = $null; Found = $false; Text = $null; Clicked = $false; Closed = $null; ProcessId = $null; WaitSeconds = $WaitSeconds; Seen = @()
+    Passes = 0; Failures = 0; LastError = $null }
 try {
     $Texts = [System.IO.File]::ReadAllText($TextsFile, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
-    Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
-    $AE = [System.Windows.Automation.AutomationElement]
-    $Scope = [System.Windows.Automation.TreeScope]
-    $ByWindow = New-Object System.Windows.Automation.AndCondition(
-        (New-Object System.Windows.Automation.PropertyCondition($AE::NameProperty, [string]$Texts.windowTitle)),
-        (New-Object System.Windows.Automation.PropertyCondition($AE::ClassNameProperty, '#32770')))
-    $ByText = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Text)
-    $ByOk = New-Object System.Windows.Automation.AndCondition(
-        (New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)),
-        (New-Object System.Windows.Automation.PropertyCondition($AE::NameProperty, [string]$Texts.okButton)))
     $Seen = New-Object System.Collections.Generic.List[string]
-    $Match = $null
+    $Match = [IntPtr]::Zero
     $Passes = 0
     $Failures = 0
-    $LastUiaError = $null
+    $LastError = $null
     $Limit = (Get-Date).AddSeconds($WaitSeconds)
     do {
         $Passes++
         try {
-            foreach ($Window in @($AE::RootElement.FindAll($Scope::Children, $ByWindow))) {
-                foreach ($Label in @($Window.FindAll($Scope::Descendants, $ByText))) {
-                    $Name = [string]$Label.Current.Name
+            foreach ($Window in [DsoInst.Native]::TopWindows()) {
+                if (-not [DsoInst.Native]::IsWindowVisible($Window)) { continue }
+                if ([DsoInst.Native]::ClassOf($Window) -cne '#32770' -or [DsoInst.Native]::TitleOf($Window) -cne [string]$Texts.windowTitle) { continue }
+                foreach ($Child in [DsoInst.Native]::Children($Window)) {
+                    if ([DsoInst.Native]::ClassOf($Child) -ne 'Static') { continue }
+                    $Name = [string][DsoInst.Native]::TextOf($Child)
+                    if ([string]::IsNullOrEmpty($Name)) { continue }
                     if (-not $Seen.Contains($Name)) { $Seen.Add($Name) }
                     if ($Name.StartsWith([string]$Texts.refusalPrefix, [System.StringComparison]::Ordinal)) { $Match = $Window; $Out.Text = $Name; break }
                 }
-                if ($null -ne $Match) { break }
+                if ($Match -ne [IntPtr]::Zero) { break }
             }
         }
-        catch { $Match = $null; $Failures++; $LastUiaError = [string]$_.Exception.GetBaseException().Message }
-        if ($null -ne $Match) { break }
+        catch { $Match = [IntPtr]::Zero; $Failures++; $LastError = [string]$_.Exception.GetBaseException().Message }
+        if ($Match -ne [IntPtr]::Zero) { break }
         Start-Sleep -Milliseconds 250
     } while ((Get-Date) -lt $Limit)
-    $Out.UiaPasses = $Passes
-    $Out.UiaFailures = $Failures
-    $Out.LastUiaError = $LastUiaError
-    # UI Automation zawiodlo w kazdym przebiegu: to brak odczytu (Ok=false), nie "brak okna".
-    if ($null -eq $Match -and $Passes -gt 0 -and $Failures -eq $Passes) { throw "UI Automation zawiodlo w kazdym z $Passes przebiegow: $LastUiaError" }
-    if ($null -ne $Match) {
+    $Out.Passes = $Passes
+    $Out.Failures = $Failures
+    $Out.LastError = $LastError
+    # Odczyt okien zawiodl w kazdym przebiegu: to brak odczytu (Ok=false), nie "brak okna".
+    if ($Match -eq [IntPtr]::Zero -and $Passes -gt 0 -and $Failures -eq $Passes) { throw "Odczyt okien zawiodl w kazdym z $Passes przebiegow: $LastError" }
+    if ($Match -ne [IntPtr]::Zero) {
         $Out.Found = $true
-        $Out.ProcessId = [int]$Match.Current.ProcessId
+        $Out.ProcessId = [DsoInst.Native]::ProcessOf($Match)
         if ($Click) {
-            $Button = $Match.FindFirst($Scope::Descendants, $ByOk)
-            if ($null -eq $Button) { throw "Okno odmowy bez przycisku '$($Texts.okButton)'." }
-            $Button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+            $Button = [IntPtr]::Zero
+            foreach ($Child in [DsoInst.Native]::Children($Match)) {
+                if ([DsoInst.Native]::ClassOf($Child) -eq 'Button' -and (Format-UiText ([DsoInst.Native]::TextOf($Child))) -ceq [string]$Texts.okButton) { $Button = $Child; break }
+            }
+            if ($Button -eq [IntPtr]::Zero) { throw "Okno odmowy bez przycisku '$($Texts.okButton)'." }
+            if (-not [DsoInst.Native]::Click($Button)) { throw "Klikniecie '$($Texts.okButton)' w oknie odmowy nie powiodlo sie." }
             $Out.Clicked = $true
+            $Gone = (Get-Date).AddSeconds(5)
+            while ([DsoInst.Native]::IsWindow($Match) -and (Get-Date) -lt $Gone) { Start-Sleep -Milliseconds 200 }
+            $Out.Closed = -not [DsoInst.Native]::IsWindow($Match)
         }
     }
     $Out.Seen = $Seen.ToArray()
@@ -858,7 +893,6 @@ try {
     Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Drawing
     $AE = [System.Windows.Automation.AutomationElement]
     $Scope = [System.Windows.Automation.TreeScope]
-    $ByButton = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)
     $ButtonNames = New-Object System.Collections.Generic.List[string]
     function Test-UiName($Value, $Names) { $N = Format-UiText $Value; foreach ($Candidate in @($Names)) { if ($N -ceq (Format-UiText $Candidate)) { return $true } }; return $false }
     function Get-PageTexts([IntPtr]$Handle) {
@@ -870,16 +904,19 @@ try {
         }
         return , $List.ToArray()
     }
-    function Find-Target($Window) {
-        $Buttons = @($Window.FindAll($Scope::Descendants, $ByButton))
-        foreach ($Button in $Buttons) { try { $Name = [string]$Button.Current.Name; if (-not $ButtonNames.Contains($Name)) { $ButtonNames.Add($Name) } } catch { $null = $_ } }
+    function Find-Target([IntPtr]$Handle) {
+        # Przyciski przez Win32 (widoczne okna potomne klasy *Button z tekstem WM_GETTEXT): zarzadzane UI Automation na VM 26H2 widzi
+        # przyciski Inno jako Pane bez wzorcow. Nazwa w ButtonNames bez zmian (z '&').
+        $Buttons = @()
+        foreach ($Child in [DsoInst.Native]::Children($Handle)) {
+            if ([DsoInst.Native]::ClassOf($Child) -notlike '*Button*') { continue }
+            $Name = [string][DsoInst.Native]::TextOf($Child)
+            if (-not $ButtonNames.Contains($Name)) { $ButtonNames.Add($Name) }
+            if ([DsoInst.Native]::IsWindowVisible($Child) -and [DsoInst.Native]::IsWindowEnabled($Child)) { $Buttons += [pscustomobject]@{ Handle = $Child; Name = $Name } }
+        }
         foreach ($Kind in @('finish', 'install', 'next')) {
             foreach ($Button in $Buttons) {
-                try {
-                    $Current = $Button.Current
-                    if ($Current.IsEnabled -and -not $Current.IsOffscreen -and (Test-UiName $Current.Name $W.$Kind)) { return [pscustomobject]@{ Kind = $Kind; Element = $Button; Name = [string]$Current.Name } }
-                }
-                catch { $null = $_ }
+                if (Test-UiName $Button.Name $W.$Kind) { return [pscustomobject]@{ Kind = $Kind; Handle = $Button.Handle; Name = (Format-UiText $Button.Name) } }
             }
         }
         return $null
@@ -904,7 +941,7 @@ try {
             }
             catch { $CheckErrors.Add("msaa: $($_.Exception.GetBaseException().Message)") }
         }
-        if (@($Items | Where-Object { $null -ne $_.Checked }).Count -eq 0) {
+        if ($null -ne $Window -and @($Items | Where-Object { $null -ne $_.Checked }).Count -eq 0) {
             try {
                 foreach ($Element in @($Window.FindAll($Scope::Descendants, [System.Windows.Automation.Condition]::TrueCondition))) {
                     try {
@@ -932,22 +969,25 @@ try {
         finally { $Bitmap.Dispose() }
     }
 
-    $ByClass = New-Object System.Windows.Automation.PropertyCondition($AE::ClassNameProperty, [string]$Texts.wizardClass)
-    $Window = $null
+    # Okno kreatora przez Win32 (widoczne okno najwyzszego poziomu klasy wizardClass); element UIA tylko dla zapasowego odczytu pol.
+    $Handle = [IntPtr]::Zero
     $Limit = (Get-Date).AddSeconds($WindowSeconds)
-    while ($null -eq $Window -and (Get-Date) -lt $Limit) {
-        $Window = $AE::RootElement.FindFirst($Scope::Children, $ByClass)
-        if ($null -eq $Window) { Start-Sleep -Milliseconds 500 }
+    while ($Handle -eq [IntPtr]::Zero -and (Get-Date) -lt $Limit) {
+        foreach ($Top in [DsoInst.Native]::TopWindows()) {
+            if ([DsoInst.Native]::IsWindowVisible($Top) -and [DsoInst.Native]::ClassOf($Top) -ceq [string]$Texts.wizardClass) { $Handle = $Top; break }
+        }
+        if ($Handle -eq [IntPtr]::Zero) { Start-Sleep -Milliseconds 500 }
     }
-    if ($null -eq $Window) { throw "Brak okna kreatora (klasa $($Texts.wizardClass)) po $WindowSeconds s." }
+    if ($Handle -eq [IntPtr]::Zero) { throw "Brak okna kreatora (klasa $($Texts.wizardClass)) po $WindowSeconds s." }
     $Out.WindowFound = $true
-    $Handle = [IntPtr]$Window.Current.NativeWindowHandle
+    $Window = $null
+    try { $Window = $AE::FromHandle($Handle) } catch { $CheckErrors.Add("uia: $($_.Exception.GetBaseException().Message)") }
     $Previous = $null
     for ($Index = 1; $Index -le 10; $Index++) {
         $Target = $null
         $Limit = (Get-Date).AddSeconds($PageSeconds)
         do {
-            $Target = Find-Target $Window
+            $Target = Find-Target $Handle
             if ($null -ne $Target) {
                 $Signature = ((Get-PageTexts $Handle) -join "`n") + '|' + $Target.Name
                 if ($Signature -ne $Previous) { break }
@@ -973,7 +1013,7 @@ try {
             if ((Format-UiText ($PageTexts -join ' ')).Contains((Format-UiText $W.desktopTask))) { $Out.DesktopTaskChecked = $true; $Out.DesktopTaskSource = 'podsumowanie' }
         }
         $Previous = ($PageTexts -join "`n") + '|' + $Target.Name
-        $Target.Element.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+        if (-not [DsoInst.Native]::Click($Target.Handle)) { throw "Kreator: klikniecie '$($Target.Name)' nie powiodlo sie (strona $Index)." }
         if ($Target.Kind -eq 'finish') { $Out.FinishClicked = $true; break }
     }
     if ($Out.FinishClicked) {
@@ -1004,8 +1044,22 @@ function Get-InstallerWindowsProbeScript {
     [OutputType([string])]
     param()
     $Body = @'
-$Out = [ordered]@{ Ok = $false; Error = $null; Titles = @(); Win32Windows = @(); Win32Error = $null; Screenshot = $false; ScreenshotError = $null }
+$Out = [ordered]@{ Ok = $false; Error = $null; Titles = @(); Texts = @(); UiaError = $null; Win32Windows = @(); Win32Error = $null; Screenshot = $false; ScreenshotError = $null }
 try {
+    # Zrzut najpierw: stan ekranu zaraz po starcie, niezalezny od tego, czy UI Automation odpowie.
+    try {
+        Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+        $Bounds = [System.Windows.Forms.SystemInformation]::VirtualScreen
+        $Bitmap = New-Object System.Drawing.Bitmap($Bounds.Width, $Bounds.Height)
+        try {
+            $Graphics = [System.Drawing.Graphics]::FromImage($Bitmap)
+            try { $Graphics.CopyFromScreen($Bounds.Left, $Bounds.Top, 0, 0, $Bitmap.Size) } finally { $Graphics.Dispose() }
+            $Bitmap.Save($Shot, [System.Drawing.Imaging.ImageFormat]::Png)
+        }
+        finally { $Bitmap.Dispose() }
+        $Out.Screenshot = $true
+    }
+    catch { $Out.ScreenshotError = [string]$_.Exception.GetBaseException().Message }
     try {
         $List = New-Object System.Collections.Generic.List[object]
         foreach ($Handle in [DsoInst.Native]::TopWindows()) {
@@ -1020,31 +1074,47 @@ try {
         $Out.Win32Windows = $List.ToArray()
     }
     catch { $Out.Win32Error = [string]$_.Exception.GetBaseException().Message }
-    Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
-    $Titles = New-Object System.Collections.Generic.List[string]
-    foreach ($Item in @([System.Windows.Automation.AutomationElement]::RootElement.FindAll([System.Windows.Automation.TreeScope]::Children, [System.Windows.Automation.Condition]::TrueCondition))) {
-        try { $Name = [string]$Item.Current.Name; if ($Name) { $Titles.Add($Name) } } catch { $null = $_ }
-    }
-    $Out.Titles = $Titles.ToArray()
-    try {
-        Add-Type -AssemblyName System.Windows.Forms, System.Drawing
-        $Bounds = [System.Windows.Forms.SystemInformation]::VirtualScreen
-        $Bitmap = New-Object System.Drawing.Bitmap($Bounds.Width, $Bounds.Height)
+    # UI Automation w osobnym runspace z limitem $UiaSeconds: nazwy okien najwyzszego poziomu i teksty (ControlType.Text) w oknach
+    # poza powloka. Okno SmartScreen (ApplicationFrameWindow) nie ma tytulu Win32, jego naglowek widac tylko jako tekst UIA.
+    $Uia = [PowerShell]::Create()
+    $null = $Uia.AddScript({
+            Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
+            $AE = [System.Windows.Automation.AutomationElement]
+            $Scope = [System.Windows.Automation.TreeScope]
+            $ByText = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Text)
+            $Titles = New-Object System.Collections.Generic.List[string]
+            $Texts = New-Object System.Collections.Generic.List[string]
+            foreach ($Item in @($AE::RootElement.FindAll($Scope::Children, [System.Windows.Automation.Condition]::TrueCondition))) {
+                try {
+                    $Name = [string]$Item.Current.Name
+                    if ($Name) { $Titles.Add($Name) }
+                    if (@('Shell_TrayWnd', 'Progman') -contains [string]$Item.Current.ClassName) { continue }
+                    foreach ($Label in @($Item.FindAll($Scope::Descendants, $ByText))) {
+                        if ($Texts.Count -ge 200) { break }
+                        try { $Text = [string]$Label.Current.Name; if ($Text -and -not $Texts.Contains($Text)) { $Texts.Add($Text) } } catch { $null = $_ }
+                    }
+                }
+                catch { $null = $_ }
+            }
+            [pscustomobject]@{ Titles = $Titles.ToArray(); Texts = $Texts.ToArray() }
+        })
+    $Pending = $Uia.BeginInvoke()
+    if ($Pending.AsyncWaitHandle.WaitOne($UiaSeconds * 1000)) {
         try {
-            $Graphics = [System.Drawing.Graphics]::FromImage($Bitmap)
-            try { $Graphics.CopyFromScreen($Bounds.Left, $Bounds.Top, 0, 0, $Bitmap.Size) } finally { $Graphics.Dispose() }
-            $Bitmap.Save($Shot, [System.Drawing.Imaging.ImageFormat]::Png)
+            $UiaResult = @($Uia.EndInvoke($Pending)) | Select-Object -Last 1
+            if ($null -ne $UiaResult) { $Out.Titles = @($UiaResult.Titles); $Out.Texts = @($UiaResult.Texts) }
         }
-        finally { $Bitmap.Dispose() }
-        $Out.Screenshot = $true
+        catch { $Out.UiaError = [string]$_.Exception.GetBaseException().Message }
     }
-    catch { $Out.ScreenshotError = [string]$_.Exception.GetBaseException().Message }
+    else { $Out.UiaError = "UI Automation nie odpowiedzialo w $UiaSeconds s" }
     $Out.Ok = $true
 }
 catch { $Out.Error = [string]$_.Exception.GetBaseException().Message }
 Write-ProbeResult $Out $ResultFile
+# Zawieszony watek UI Automation nie moze zatrzymac procesu sondy.
+[Environment]::Exit(0)
 '@
-    return ("param([Parameter(Mandatory)][string]`$ResultFile, [Parameter(Mandatory)][string]`$Shot)`n`$ErrorActionPreference = 'Stop'`n" +
+    return ("param([Parameter(Mandatory)][string]`$ResultFile, [Parameter(Mandatory)][string]`$Shot, [int]`$UiaSeconds = 30)`n`$ErrorActionPreference = 'Stop'`n" +
         "try {`n" + (Get-InstallerProbeHelpersText) + "`n} catch { [System.IO.File]::WriteAllText(`$ResultFile, (@{ Ok = `$false; Error = [string]`$_.Exception.Message } | ConvertTo-Json)); return }`n" + $Body)
 }
 
@@ -1596,7 +1666,7 @@ function Invoke-InstallerMotwPhase {
     Add-InstallerTimeline -Context $Context -Text 'motw: start przez explorer.exe'
     Start-Sleep -Seconds ([int]$Plan.MotwWaitSeconds)
     $Json = Invoke-DsoUserSessionScript -Session $Context.Session -Layout (Get-InstallerLayout -Kind 'Portable') -Name 'Inst-Motw' -ScriptText (Get-InstallerWindowsProbeScript) `
-        -ArgumentText "-Shot $($Plan.OutDirectory)\motw.png" -UserName $Plan.UserName -TimeoutSeconds 120
+        -ArgumentText "-Shot $($Plan.OutDirectory)\motw.png -UiaSeconds $([int]$Plan.MotwUiaSeconds)" -UserName $Plan.UserName -TimeoutSeconds 120
     if ([string]::IsNullOrWhiteSpace($Json)) { throw 'Sonda okien nie zwróciła wyniku.' }
     $Probe = $Json | ConvertFrom-Json
     # Jak w kreatorze: wynik błędu sondy ma tylko Ok i Error, więc pola czytane bez założenia, że istnieją.
@@ -1607,8 +1677,8 @@ function Invoke-InstallerMotwPhase {
     $Copied = $null
     if (Test-InstallerTrue (Get-InstallerValue $Probe 'Screenshot')) { $Copied = Copy-InstallerScreenshot -Context $Context -Record $Record -Name 'motw.png' }
     $Record.screenshots = @($Copied | Where-Object { $_ })
-    $Record.data = [ordered]@{ zoneId = $Motw.ZoneId; path = $Motw.Path; titles = $Titles; win32Windows = $Win32Windows; screenshot = ($null -ne $Copied)
-        screenshotError = (Get-InstallerValue $Probe 'ScreenshotError'); probeError = $ProbeError }
+    $Record.data = [ordered]@{ zoneId = $Motw.ZoneId; path = $Motw.Path; titles = $Titles; texts = @(Get-InstallerList $Probe 'Texts'); win32Windows = $Win32Windows
+        screenshot = ($null -ne $Copied); screenshotError = (Get-InstallerValue $Probe 'ScreenshotError'); uiaError = (Get-InstallerValue $Probe 'UiaError'); probeError = $ProbeError }
 }
 
 function Invoke-InstallerPhase {
