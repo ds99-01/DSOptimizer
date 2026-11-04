@@ -59,8 +59,8 @@ pl.WelcomeLabel2=Zostanie zainstalowany [name/ver] w folderze Program Files, dla
 [CustomMessages]
 en.ProgramRunning=DSOptimizer is running (the installed or the portable version). Close every DSOptimizer window, wait until command-line commands finish, then run the installer again. Nothing was changed.
 pl.ProgramRunning=DSOptimizer jest uruchomiony (wersja zainstalowana albo przenośna). Zamknij wszystkie okna DSOptimizera, poczekaj na koniec poleceń w trybie wiersza poleceń i uruchom instalator ponownie. Nic nie zostało zmienione.
-en.ProgramRunningUninstall=DSOptimizer is running. Close every DSOptimizer window and uninstall it again. Nothing was removed.
-pl.ProgramRunningUninstall=DSOptimizer jest uruchomiony. Zamknij wszystkie okna DSOptimizera i odinstaluj go ponownie. Nic nie zostało usunięte.
+en.ProgramRunningUninstall=DSOptimizer is running. Close every DSOptimizer window, wait until command-line commands finish, then uninstall it again. Nothing was removed.
+pl.ProgramRunningUninstall=DSOptimizer jest uruchomiony. Zamknij wszystkie okna DSOptimizera, poczekaj na koniec poleceń w trybie wiersza poleceń i odinstaluj go ponownie. Nic nie zostało usunięte.
 en.WrongFolder=DSOptimizer can be installed only in %1. Another folder (for example from /DIR or winget --location) is not supported. Nothing was changed.
 pl.WrongFolder=DSOptimizera można zainstalować tylko w folderze %1. Inny folder (na przykład z /DIR albo winget --location) nie jest obsługiwany. Nic nie zostało zmienione.
 
