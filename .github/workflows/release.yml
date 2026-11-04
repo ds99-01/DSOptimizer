@@ -53,7 +53,7 @@ jobs:
           $Proc = Start-Process -FilePath $Setup -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', '/CURRENTUSER', ('/DIR="' + $InnoDir + '"') -Wait -PassThru
           if ($Proc.ExitCode -ne 0) { throw "Instalacja Inno Setup: kod $($Proc.ExitCode)" }
           $Iscc = Join-Path $InnoDir 'ISCC.exe'
-          # Build-Release po cichu pomija DSO_ISCC wskazujace brakujacy plik, wiec sprawdzamy tutaj.
+          # Wczesny blad tuz po instalacji Inno (Build-Release tez odmawia DSO_ISCC bez pliku).
           if (-not (Test-Path -LiteralPath $Iscc)) { throw "Brak ISCC.exe po instalacji: $Iscc" }
           $Utf8NoBom = New-Object System.Text.UTF8Encoding $false
           [IO.File]::AppendAllText($env:GITHUB_ENV, "DSO_ISCC=$Iscc`n", $Utf8NoBom)

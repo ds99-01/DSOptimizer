@@ -24,7 +24,7 @@
         dla SingleExe i dla Folder z -NoInstaller, dwie dla Folder z instalatorem (najpierw zip, potem instalator).
         ISCC i DSOptimizer.iss są sprawdzane przed budowaniem (brak = błąd, kod 1, nic nie zbudowane). Kolejność szukania
         ISCC bez -IsccPath: $env:DSO_ISCC, %LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe, ${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe,
-        $env:ProgramFiles\Inno Setup 6\ISCC.exe. Podany -IsccPath, którego nie ma, to błąd (bez dalszego szukania).
+        $env:ProgramFiles\Inno Setup 6\ISCC.exe. Podany -IsccPath albo ustawiony DSO_ISCC, którego nie ma, to błąd (bez dalszego szukania).
         Gdy ISCC zawiedzie (kod różny od 0 albo brak pliku), skrypt usuwa z katalogu wydania zip, instalator i SHA256SUMS.txt
         tego przebiegu. Istniejące pliki wydania o tych nazwach są nadpisywane, inne pliki w folderze zostają. Na wyjściu:
         pełne ścieżki plików wydania (najpierw zip, potem instalator). Skrypt niczego nie zaciemnia ani nie szyfruje
@@ -43,7 +43,8 @@
     Wariant Folder bez instalatora (tylko zip i jedna linia w SHA256SUMS.txt); tylko na wyraźne życzenie.
 
 .PARAMETER IsccPath
-    Jawna ścieżka do ISCC.exe (Inno Setup 6); nieistniejąca = błąd. Bez niej: $env:DSO_ISCC i typowe katalogi instalacji.
+    Jawna ścieżka do ISCC.exe (Inno Setup 6); nieistniejąca = błąd. Bez niej: $env:DSO_ISCC (ustawiony, ale bez pliku = błąd)
+    i typowe katalogi instalacji.
 #>
 [CmdletBinding()]
 param(
@@ -155,9 +156,17 @@ function Resolve-IsccPath {
         return (Get-FullPath -Path $ExplicitPath)
     }
 
-    # Kolejność: DSO_ISCC, %LOCALAPPDATA%\Programs, ProgramFiles(x86), ProgramFiles; nieistniejący kandydat jest pomijany.
+    # Ustawiony DSO_ISCC, którego nie ma, to też błąd (jak -IsccPath), a nie cichy powrót do innego ISCC.
+    if ($env:DSO_ISCC) {
+        if (-not (Test-Path -LiteralPath $env:DSO_ISCC -PathType Leaf)) {
+            throw "Nie znaleziono ISCC.exe pod ścieżką ze zmiennej DSO_ISCC: $($env:DSO_ISCC)."
+        }
+
+        return $env:DSO_ISCC
+    }
+
+    # Kolejność: %LOCALAPPDATA%\Programs, ProgramFiles(x86), ProgramFiles; nieistniejący kandydat jest pomijany.
     $Candidates = @()
-    if ($env:DSO_ISCC) { $Candidates += $env:DSO_ISCC }
     if ($env:LOCALAPPDATA) { $Candidates += (Join-Path -Path $env:LOCALAPPDATA -ChildPath 'Programs\Inno Setup 6\ISCC.exe') }
     if (${env:ProgramFiles(x86)}) { $Candidates += (Join-Path -Path ${env:ProgramFiles(x86)} -ChildPath 'Inno Setup 6\ISCC.exe') }
     if ($env:ProgramFiles) { $Candidates += (Join-Path -Path $env:ProgramFiles -ChildPath 'Inno Setup 6\ISCC.exe') }

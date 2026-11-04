@@ -381,6 +381,33 @@ Describe 'Build-Release.ps1 – wariant Folder z instalatorem' {
         }
     }
 
+    It 'DSO_ISCC bez pliku = kod 1, dotnet niewywołany i bez dalszego szukania' {
+        # Typowe katalogi instalacji wskazują pusty katalog: prawdziwy ISCC z hosta nie może się tu uruchomić.
+        $Empty = Join-Path -Path $TestDrive -ChildPath ('puste-' + [guid]::NewGuid().ToString('N'))
+        $null = New-Item -ItemType Directory -Path $Empty
+        $Previous = @{ DSO_ISCC = $env:DSO_ISCC; LOCALAPPDATA = $env:LOCALAPPDATA; ProgramFiles = $env:ProgramFiles; ProgramFilesX86 = ${env:ProgramFiles(x86)} }
+        try {
+            $env:DSO_ISCC = 'C:\nie-ma\ISCC.exe'
+            $env:LOCALAPPDATA = $Empty
+            $env:ProgramFiles = $Empty
+            ${env:ProgramFiles(x86)} = $Empty
+
+            $Result = @(& (Get-ScriptPath -Repo $Repo) -Variant Folder -OutRoot $OutRoot 2>&1)
+
+            $LASTEXITCODE | Should -Be 1
+            $Messages = @($Result | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] } | ForEach-Object { $_.Exception.Message })
+            ($Messages -join "`n") | Should -Match ([regex]::Escape('DSO_ISCC: C:\nie-ma\ISCC.exe'))
+            Should -Invoke dotnet -Times 0 -Exactly
+            Test-Path -LiteralPath $Dir | Should -BeFalse
+        }
+        finally {
+            $env:DSO_ISCC = $Previous.DSO_ISCC
+            $env:LOCALAPPDATA = $Previous.LOCALAPPDATA
+            $env:ProgramFiles = $Previous.ProgramFiles
+            ${env:ProgramFiles(x86)} = $Previous.ProgramFilesX86
+        }
+    }
+
     It 'nieudany ISCC = kod 1, bez zipa, instalatora i SHA256SUMS.txt w katalogu wydania' {
         $Failing = New-FakeIscc -Fail
 
