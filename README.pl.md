@@ -36,8 +36,8 @@ i sprawdzenie sterowników. Każda zmiana ustawień trafia do historii. Większo
 - Windows 11 x64 (na ARM64 nietestowane). Program sprawdzano na Windows 11 26H2 (Home i Pro); na innych wersjach może działać,
   ale nie był na nich sprawdzany.
 - Konto z uprawnieniami administratora – przy starcie Windows zapyta o zgodę (okno UAC).
-- Nic nie trzeba instalować. .NET Framework 4.8.1, którego program potrzebuje, jest już w Windows 11.
-  Program działa także prosto z pendrive'a.
+- Wersja przenośna: nic nie trzeba instalować. .NET Framework 4.8.1, którego program potrzebuje, jest już w Windows 11.
+  Wersja przenośna działa także prosto z pendrive'a.
 
 ## Język
 
@@ -53,25 +53,38 @@ są w języku Windowsa.
 
 ## Pobieranie
 
-1. Wejdź na stronę [wydań](https://github.com/ds99-01/DSOptimizer/releases) i pobierz plik `DSOptimizer-<wersja>.zip`
-   oraz `SHA256SUMS.txt`.
-2. Sprawdź, czy plik nie został uszkodzony ani podmieniony. W PowerShellu, w folderze z pobranym plikiem:
+Każde wydanie ma dwa pliki zbudowane z tych samych plików programu:
+
+- `DSOptimizer-<wersja>.zip` – wersja przenośna: rozpakuj i uruchom, niczego nie instaluje, działa też z pendrive'a.
+- `DSOptimizer-<wersja>-setup.exe` – instalator: instaluje w `C:\Program Files\DSOptimizer` dla wszystkich użytkowników,
+  dodaje skróty w Menu Start i na pulpicie. Odinstalowanie w Ustawieniach → Aplikacje.
+
+Odinstalowanie zostawia historię zmian w `%ProgramData%\DSOptimizer`, więc wcześniej zmienione ustawienia można
+cofnąć także po ponownej instalacji programu albo w wersji przenośnej. Instalator odmawia instalacji, aktualizacji
+i odinstalowania, gdy DSOptimizer działa; najpierw go zamknij.
+
+Instalator jest zbudowany w Inno Setup autorstwa Jordana Russella i Martijna Laana ([jrsoftware.org](https://jrsoftware.org/)).
+
+1. Wejdź na stronę [wydań](https://github.com/ds99-01/DSOptimizer/releases) i pobierz wybrany plik
+   (`DSOptimizer-<wersja>.zip` albo `DSOptimizer-<wersja>-setup.exe`) oraz `SHA256SUMS.txt`.
+2. Sprawdź, czy plik nie został uszkodzony ani podmieniony. W PowerShellu, w folderze z pobranym plikiem
+   (dla instalatora podaj nazwę pliku `-setup.exe`):
 
    ```powershell
    Get-FileHash .\DSOptimizer-<wersja>.zip -Algorithm SHA256
    ```
 
    Wynik musi być taki sam jak suma przy nazwie pliku w `SHA256SUMS.txt` (wielkość liter nie ma znaczenia).
-   Jeśli jest inny, nie rozpakowuj pliku – pobierz go jeszcze raz.
-3. Rozpakuj zip. Powstanie folder `DSOptimizer` – trzymaj go w całości, bo `DSOptimizer.exe` potrzebuje plików,
-   które leżą obok niego.
-4. Uruchom `DSOptimizer.exe` i potwierdź okno UAC.
+   Jeśli jest inny, nie rozpakowuj ani nie uruchamiaj pliku – pobierz go jeszcze raz.
+3. Wersja przenośna: rozpakuj zip. Powstanie folder `DSOptimizer` – trzymaj go w całości, bo `DSOptimizer.exe`
+   potrzebuje plików, które leżą obok niego. Instalator: uruchom `DSOptimizer-<wersja>-setup.exe` i przejdź kreator.
+4. Uruchom `DSOptimizer.exe` (albo skrót z Menu Start) i potwierdź okno UAC.
 
 ### Ostrzeżenie SmartScreen
 
 Program nie ma jeszcze podpisu cyfrowego, więc przy pierwszym uruchomieniu pliku pobranego z internetu Windows
 pokaże niebieskie okno „System Windows ochronił ten komputer”. Kliknij **„Więcej informacji”**, a potem
-**„Uruchom mimo to”**. Okno pojawia się także po rozpakowaniu zipu. Jeśli pliki trafiły na pendrive inną drogą
+**„Uruchom mimo to”**. Okno pojawia się także po rozpakowaniu zipu i przy uruchomieniu instalatora. Jeśli pliki trafiły na pendrive inną drogą
 niż pobranie z internetu, okna zwykle nie ma.
 
 Microsoft Defender z aktualnymi sygnaturami nie blokuje programu ani żadnej jego funkcji – szczegóły sprawdzenia

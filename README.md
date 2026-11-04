@@ -50,30 +50,43 @@ DISM and SFC) is shown in the language of Windows.
 - Windows 11 x64 (not tested on ARM64). The program was tested on Windows 11 26H2 (Home and Pro); it may work on other versions,
   but it has not been tested on them.
 - An account with administrator rights – Windows asks for consent at startup (UAC prompt).
-- Nothing to install. The .NET Framework 4.8.1 the program needs is already part of Windows 11.
-  The program also runs straight from a USB drive.
+- Portable version: nothing to install. The .NET Framework 4.8.1 the program needs is already part of Windows 11.
+  The portable version also runs straight from a USB drive.
 
 ## Download
 
-1. Go to the [releases](https://github.com/ds99-01/DSOptimizer/releases) page and download `DSOptimizer-<version>.zip`
-   and `SHA256SUMS.txt`.
-2. Check that the file has not been damaged or replaced. In PowerShell, in the folder with the downloaded file:
+Each release has two files, built from the same program files:
+
+- `DSOptimizer-<version>.zip` – portable version: unpack and run, nothing is installed. It also works from a USB drive.
+- `DSOptimizer-<version>-setup.exe` – installer: installs to `C:\Program Files\DSOptimizer` for all users, adds Start menu
+  and desktop shortcuts. Uninstall it in Settings → Apps.
+
+Uninstalling keeps the change history in `%ProgramData%\DSOptimizer`, so settings changed earlier can still be undone
+after you install the program again or use the portable version. The installer refuses to install, update or uninstall
+while DSOptimizer is running; close it first.
+
+The installer is built with Inno Setup by Jordan Russell and Martijn Laan ([jrsoftware.org](https://jrsoftware.org/)).
+
+1. Go to the [releases](https://github.com/ds99-01/DSOptimizer/releases) page and download the file you want
+   (`DSOptimizer-<version>.zip` or `DSOptimizer-<version>-setup.exe`) and `SHA256SUMS.txt`.
+2. Check that the file has not been damaged or replaced. In PowerShell, in the folder with the downloaded file
+   (for the installer use the `-setup.exe` file name):
 
    ```powershell
    Get-FileHash .\DSOptimizer-<version>.zip -Algorithm SHA256
    ```
 
    The result must match the checksum next to the file name in `SHA256SUMS.txt` (letter case does not matter).
-   If it is different, do not unpack the file – download it again.
-3. Unpack the zip. You get a `DSOptimizer` folder – keep it whole, because `DSOptimizer.exe` needs the files
-   next to it.
-4. Run `DSOptimizer.exe` and confirm the UAC prompt.
+   If it is different, do not unpack or run the file – download it again.
+3. Portable version: unpack the zip. You get a `DSOptimizer` folder – keep it whole, because `DSOptimizer.exe` needs
+   the files next to it. Installer: run `DSOptimizer-<version>-setup.exe` and follow the wizard.
+4. Run `DSOptimizer.exe` (or the Start menu shortcut) and confirm the UAC prompt.
 
 ### SmartScreen warning
 
 The program does not have a digital signature yet, so the first time you run a file downloaded from the internet,
 Windows shows a blue window "Windows protected your PC". Click **"More info"** and then **"Run anyway"**.
-The window also appears after unpacking the zip. If the files got onto the USB drive some other way than
+The window also appears after unpacking the zip and when running the installer. If the files got onto the USB drive some other way than
 by downloading them from the internet, the window usually does not appear.
 
 Microsoft Defender with up-to-date signatures does not block the program or any of its functions – details of the

@@ -655,6 +655,8 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | z tym zastrzeżeniem / z zastrzeżeniem (wchodzi do `main`) | with this caveat / with a caveat | Not "reservation" |
 | Nie można uruchomić określonej usługi, ponieważ jest ona wyłączona… | The service cannot be started, either because it is disabled or because it has no enabled devices associated with it. | ERROR_SERVICE_DISABLED (1058), [System Error Codes (1000-1299)](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--1000-1299-) |
 | liczby w prozie `docs/en` | `4,988`, `1,200 s` | Comma thousands separator from 1,000; program texts, code spans and quoted measured output stay without it; decimals use a point |
+| wersja przenośna | portable version | README, strona, instalator |
+| instalator (DSOptimizera) | installer | pliki wydania |
 
 ## Windows names
 
