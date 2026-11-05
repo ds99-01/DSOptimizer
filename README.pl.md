@@ -47,7 +47,7 @@ później w „Ustawieniach” → „Język”; zmiana zadziała po „Uruchom 
 programu, nie komputera). W trybie wiersza poleceń służy do tego `--lang pl` albo `--lang en`.
 Nazwy stron i przycisków w tym dokumencie są takie jak w polskim interfejsie.
 
-Program sprawdzano na polskim Windows 11 26H2. Na Windows w innych językach część pozycji może nie wykryć stanu
+Program sprawdzano na Windows 11 26H2 po angielsku i po polsku. Na Windows w innych językach część pozycji może nie wykryć stanu
 poprawnie. Teksty pochodzące z samego Windowsa (nazwy aplikacji i urządzeń, wyjście winget, DISM i SFC)
 są w języku Windowsa.
 

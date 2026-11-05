@@ -17,7 +17,7 @@ language later in "Settings" → "Language"; the change takes effect after "Rest
 the program, not the computer). In command-line mode, use `--lang pl` or `--lang en` (see below).
 Page and button names in this document are given as they appear in the English interface.
 
-The program was tested on Polish Windows 11 26H2. On Windows in other languages, some items may not detect
+The program was tested on Windows 11 26H2 in English and Polish. On Windows in other languages, some items may not detect
 their state correctly. Text that comes from Windows itself (names of apps and devices, the output of winget,
 DISM and SFC) is shown in the language of Windows.
 
