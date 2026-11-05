@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.smb-harden.md sha256: 056dbd56446c080237f479fd8c7aeed77b62c346facda8c1de9e44fb425f6890 -->
+<!-- source: docs/tweaks/net.smb-harden.md sha256: b2aa621e8057f578b191c55bc06dd2a0898e0abc33ce1e8fc9809e5558165569 -->
 
 # net.smb-harden – Turn off guest logons and require SMB signing
 
@@ -46,6 +46,8 @@ No detection (`kind=action`): there's no status row in the UI, and running it ag
 - The effect on the local network isn't measured.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `net-smb-harden`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports, outside the repository: `tests/vm/out/<date>/<VM>/<RunLabel>/`.
 
 Case `net-smb-harden` (`Flow=Execute`, `Catalog=BuiltIn`), **Passed** on Home and Pro (Pester main 191/0/17):

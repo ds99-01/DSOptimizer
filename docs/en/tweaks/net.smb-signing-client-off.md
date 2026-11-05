@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.smb-signing-client-off.md sha256: ed6606c58dd9741a7b1cbd20c07771710621f301bc109d8f8cb277ad05b66bd7 -->
+<!-- source: docs/tweaks/net.smb-signing-client-off.md sha256: 7d320b33d5d5ff4c3503646e649de32fbae5634026cfbebb45155bf6c0d92321 -->
 
 # net.smb-signing-client-off – Don't require SMB signing on the client
 
@@ -41,6 +41,8 @@ Undo: journal snapshot (the previous value or none; none comes back as none, the
 - The effect on the local network isn't measured.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `net-smb-signing-client-off`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports, outside the repository: `tests/vm/out/<date>/<VM>/<RunLabel>/`.
 
 Case `net-smb-signing-client-off` (`Flow=Full`, `Catalog=BuiltIn`, no restart), **Passed** on Home and Pro (Pester main 191/0/17), both editions identical:

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.settings-account-notifications.md sha256: cf2678589af3c1405aa9ceede10d11ffef7141b9db7cfdac98d2a4efb32e3d41 -->
+<!-- source: docs/tweaks/privacy.settings-account-notifications.md sha256: 10bfc67046245331886e28c6705db4fd07176f789a020685ab5c801ae2091348 -->
 
 # privacy.settings-account-notifications – Turn off account notifications in Settings
 
@@ -25,6 +25,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `AccountNot
 - No warnings in the catalog.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-settings-account-notifications`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-settings-account-notifications` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The Administrator's HKCU unchanged, the `AccountNotifications` key stayed (`KeyPresentAfterUndo`). A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect

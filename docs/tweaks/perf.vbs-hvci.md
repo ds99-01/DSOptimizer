@@ -55,6 +55,8 @@ Blokada i polityki: gdy VBS jest zablokowane (`Control\DeviceGuard\Locked`) albo
 - Wpływu na wydajność nie mierzono (wcześniej w programie: „pomiaru nie było”; od 2026-10-26 opis mówi, że Microsoft nie podaje zysku).
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `perf-vbs-hvci`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadek `perf-vbs-hvci` (`Flow=Reboot`, `Catalog=BuiltIn`) w `tests/vm/cases.psd1`: `Snapshot` wartości `Enabled`, stan początkowy i końcowy to brak wartości i brak klucza (`KeyAbsentAfterUndo`), `CheckAfterApply`/`CheckAfterUndo` z `Win32_DeviceGuard` (`Get-CimInstance` z `-ErrorAction Stop` i jawną kontrolą, że instancja nie jest `$null`). 
 
 Przebieg VM z 2026-10-18 (13:51, stan sprzed poprawki detekcji z 2026-10-21: `detect-before` i `detect-after-undo` = `Partial`, dziś `NotApplied`, patrz niżej, build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba bez błędów (212 zaliczonych / 0 błędów / 10 pominiętych na każdej VM; pominięte to wyłącznie `disk-hibernation`). Raporty lokalne, poza repozytorium.

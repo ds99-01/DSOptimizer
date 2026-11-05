@@ -45,6 +45,8 @@ Brak detekcji (`kind=action`). **Brak cofnięcia** (brak journala): odszyfrowani
 - Potwierdzenie w UI przed uruchomieniem; CLI nie pyta.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `sec-bitlocker-decrypt-c`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Ścieżka zaszyfrowanego dysku: prawdziwy `Decrypt` przećwiczony na VM na OBU edycjach (Home i Pro), bo po starcie checkpointu działa tam automatyczne szyfrowanie urządzenia; własnego szyfrowania w VM nie robimy (przyjęta decyzja). Nie sprawdzamy więc na VM: `Decrypt` na w pełni zaszyfrowanym dysku (`ConversionStatus` = 1), kodu `0x80310029` ani wznowienia (3, 5); te ścieżki są pokryte tylko testami jednostkowymi, bez prawdziwego polecenia.
 
 Wyniki przebiegów VM (build 26300.9457, 2026-10-19):

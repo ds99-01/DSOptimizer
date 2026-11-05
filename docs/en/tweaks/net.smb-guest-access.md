@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.smb-guest-access.md sha256: 2396bb6e8140c6fb7081ba72478e6ccf0c4e2b9ac95be391be3c994a0b7b3296 -->
+<!-- source: docs/tweaks/net.smb-guest-access.md sha256: d85d05adf33f5e0e7aee2a8a59403c33fae13a47796b73e6eb3c8d21f5e36cc8 -->
 
 # net.smb-guest-access – Allow guest logons to network shares
 
@@ -58,6 +58,8 @@ Undo: the engine restores `AllowInsecureGuestAuth` from the journal snapshot (th
 - On Home, the item initially shows `Partial` (see Detection).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `net-smb-guest-access`; case `net-smb-lan-effect` skipped (no network and no SMB server on the VM). Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports, outside the repository: `tests/vm/out/<date>/<VM>/<RunLabel>/`.
 
 Case `net-smb-guest-access` (`Flow=Full`, `Catalog=BuiltIn`, no restart), **Passed** on Home and Pro (Pester main 191/0/17):

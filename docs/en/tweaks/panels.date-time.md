@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/panels.date-time.md sha256: c9de1597c12dd4f99f45ecf32a5d4f469968f1466b16379f89bdfbfd8a85169e -->
+<!-- source: docs/tweaks/panels.date-time.md sha256: cfe020cf5cdf20cb54b406507fd3095a2c229f55f3a49f612e4b5880e113054b -->
 
 # panels.date-time – Date and Time
 
@@ -31,6 +31,8 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 - The scenario "DSOptimizer elevated with a different administrator account than the signed-in user" wasn't measured on a VM for this panel (the `control.exe`/`explorer.exe` host itself uses associations and COM in the elevated process; DSOptimizer controls only the path of the file it starts).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `panels-date-time`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in each of the panel cases.
 - `panels-date-time` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: `rundll32.exe` with a command line containing `timedate.cpl` is running; `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (the Administrator account over PowerShell Direct, session 0), not that the window appeared for the user.**
 - VM measurement in the `dso` user session (elevated task, `Limited` token): the "Data i godzina" (Date and Time) window. Home = Pro.

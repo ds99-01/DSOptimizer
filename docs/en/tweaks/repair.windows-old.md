@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.windows-old.md sha256: 3590cdd04aea9abce76909624c7077d28f89e24f7db92457cc739c6e7fa16637 -->
+<!-- source: docs/tweaks/repair.windows-old.md sha256: 1bbda07b1f083c871fb7a767494e4539b9e384880d094406f70d112de00bb867 -->
 
 # repair.windows-old – Remove the previous Windows installation
 
@@ -82,6 +82,8 @@ cleanmgr finishes, and the free space before/after. A deleted previous installat
   the session 0 measurement, the expected result is `NotConfirmed` after 45 min, with the folder already deleted.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: cases `cli-language-system`, `repair-windows-old-absent`, `repair-windows-old`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Cases in `tests/vm/cases.psd1`, `Flow='Execute'`, built-in catalog, no network:
 - `repair-windows-old-absent` (without `RunAs`): a fresh VM without `Windows.old` → `NotSupported`, code 1, message "nie ma czego usuwać" (nothing to remove);
   `Check`: the folder doesn't exist, no `StateFlags7351` value under `VolumeCaches`, cleanmgr isn't running.

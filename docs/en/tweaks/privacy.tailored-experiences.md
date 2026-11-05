@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.tailored-experiences.md sha256: 4fe0a0a80ccfb3ee1a3369d090cf4a59e3ed7987daffc549c4e0290d8efc34fa -->
+<!-- source: docs/tweaks/privacy.tailored-experiences.md sha256: b1536e2c2d2ede316b3f095ece451322c48c5b7d43b5a06f0059742396f4f956 -->
 
 # privacy.tailored-experiences – Turn off personalized offers
 
@@ -29,6 +29,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `Privacy` k
 - No warnings in the catalog.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-tailored-experiences`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-tailored-experiences` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). After undo the `PersonalizedOffersEnabled` value again doesn't exist, the `Privacy` key stayed. A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect

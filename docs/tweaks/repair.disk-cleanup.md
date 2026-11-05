@@ -39,6 +39,8 @@ Nie dotyczy: `kind=action` bez detekcji i cofnięcia. Odczytem zwrotnym są licz
 - Znane ograniczenie: między kontrolą uchwytu podfolderu a jego wyliczeniem zostaje wąskie okno; podmiana w tym oknie daje najwyżej zawyżone liczniki, usunięć poza drzewem blokuje kontrola ścieżki końcowej każdego elementu.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadki `repair-disk-cleanup-admin`, `repair-disk-cleanup`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadki w `tests/vm/cases.psd1`, `Flow='Execute'`, wbudowany katalog, bez sieci:
 - `repair-disk-cleanup` (`RunAs='dso'`, CLI z zadania Harmonogramu konta `dso`, więc `IsCertain` = true i SID procesu = zalogowany);
 - `repair-disk-cleanup-admin` (bez `RunAs`, CLI jako Administrator PS Direct – kroki konta dotyczą zalogowanego `dso` po SID, nie konta procesu).

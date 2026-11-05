@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.bitlocker-prevent-auto.md sha256: 156cab47c0df14849d6b85e06a12eb5496dac1cf32535d2d1add63386d351b6f -->
+<!-- source: docs/tweaks/sec.bitlocker-prevent-auto.md sha256: a9a05cd65d673171a62f48f2b08d9ef7a04d27ec5902fac949cf3c7721666643 -->
 
 # sec.bitlocker-prevent-auto – Block automatic drive encryption (BitLocker)
 
@@ -39,6 +39,8 @@ Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457, 2026-10-18; 
 - No promises of protection or performance.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `sec-bitlocker-prevent-auto`; case `sec-bitlocker-prevent-auto-effect` skipped (requires a new OOBE, because the effect concerns encryption starting in OOBE; the VM checkpoint is after OOBE). Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Full VM run `vm-run-20261019-002807` (2026-10-19, about 00:28–00:46, build 26300.9457), Home and Pro, code 0 for this item's cases. Reports are local, outside git (`tests/vm/out/<date>/<VM>/<RunLabel>/`).
 
 - `sec-bitlocker-prevent-auto` (`Flow=Full`, `Catalog=BuiltIn`, value snapshot, `KeyPresentAfterUndo` for the `Control\BitLocker` key): **Passed** on Home and Pro. Checked: detection before `NotApplied`, apply `Applied` (DWORD `PreventDeviceEncryption` = 1 in the snapshot after apply), detection after apply `Applied`, undo `Undone`, detection after undo `NotApplied`; final state = state before (value deleted, `SnapshotDiff` empty), the `Control\BitLocker` key stays.

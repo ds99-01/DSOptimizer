@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.start-recommended-section.md sha256: f608d63706766eccaae6dc75e418a09646ff3cb5a912c0e2f89edde07c0476d5 -->
+<!-- source: docs/tweaks/privacy.start-recommended-section.md sha256: 9fdeed9b8e3e8adfc8455be4817d82e3247d37c0d4704c877832477a59431d18 -->
 
 # privacy.start-recommended-section – Hide the "Recommended" section in the Start menu
 
@@ -28,6 +28,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: value `HideReco
 - Beyond the notes in the program (in the technical details or only here): the effect of restarting File Explorer alone (`tools.restart-explorer`) wasn't checked.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-start-recommended-section`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-start-recommended-section` (`Flow=Full`) in `tests/vm/cases.psd1` (`KeyAbsentAfterUndo` for the user's `Policies\...\Explorer` key, `NotWrittenTo` for the `HKCU` of the Administrator process). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The user's `Policies\Microsoft\Windows\Explorer` key created by apply doesn't exist after undo (`KeyAbsentAfterUndo`), the Administrator's HKCU unchanged. A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect

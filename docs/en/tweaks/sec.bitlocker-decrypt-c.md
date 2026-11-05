@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.bitlocker-decrypt-c.md sha256: c926b4444f5b3859e58413ac8f7ca7f7fb16d23cff59241d2e68b729e69e87cd -->
+<!-- source: docs/tweaks/sec.bitlocker-decrypt-c.md sha256: f7d88d51cb09664ca3d1a9bbd8e44a4f961cde467604d57047a02dfa7d5f98e7 -->
 
 # sec.bitlocker-decrypt-c – Turn off BitLocker encryption on the C: drive
 
@@ -47,6 +47,8 @@ No detection (`kind=action`). **No undo** (no journal): decryption has no revers
 - Confirmation in the UI before running; the CLI doesn't ask.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `sec-bitlocker-decrypt-c`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Encrypted drive path: a real `Decrypt` exercised on the VM on BOTH editions (Home and Pro), because automatic device encryption runs there after the checkpoint starts; we don't do our own encryption in the VM (a settled decision). So we don't check on the VM: `Decrypt` on a fully encrypted drive (`ConversionStatus` = 1), the code `0x80310029`, or resuming (3, 5); these paths are covered only by unit tests, without the real command.
 
 VM run results (build 26300.9457, 2026-10-19):

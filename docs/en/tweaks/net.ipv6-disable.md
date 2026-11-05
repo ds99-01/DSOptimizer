@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.ipv6-disable.md sha256: ea16a95478ca21e5ddfd0c03b0acae38a337366fc3293276df4ede0f2226a357 -->
+<!-- source: docs/tweaks/net.ipv6-disable.md sha256: 7b40c8407a031b794d3d20479776f95a484551ce05ddb396564cf16dca83bd7b -->
 
 # net.ipv6-disable – Turn off IPv6
 
@@ -33,6 +33,8 @@ Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457), 2026-10-18 
 - No performance promises.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `net-ipv6-disable`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports, outside the repository: `tests/vm/out/<date>/<VM>/<RunLabel>/`.
 
 Case `net-ipv6-disable` (`Flow=Reboot`, run `reboot-net-ipv6-disable`, a separate run from a clean checkpoint; VM tests 14/14 on Home and Pro), **Passed**, Home and Pro identical:

@@ -41,6 +41,8 @@ Nie dotyczy: `kind=action` bez detekcji i cofnięcia. `Executed` oznacza, że pl
 - Bez presetów i bez gałęzi deweloperskiej. Zmiany robione w oknie WinUtil nie są cofane przez DSOptimizer.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `tools-winutil-offline`; przypadek `tools-winutil-effect` pominięty (skutek z siecią sprawdza osobny test z siecią; zwykły przebieg VM jest bez sieci). Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 - `tools-winutil-offline` (`Flow=Execute`, `Catalog=BuiltIn`, VM bez sieci): oczekiwane `Failed` z kodem 1 i komunikatem „brak połączenia z GitHubem”; `Check` = brak `powershell.exe` z `-File` wskazującym `C:\ProgramData\DSOptimizer\downloads\*.ps1` i brak plików `*.ps1` w `downloads`. Wynik przebiegu (`Invoke-VmTests.ps1`, VM bez sieci, 2026-10-26): **Passed na obu edycjach** – Pro 799 / 0 / 25 pominiętych, Home 799 / 0 / 25 (`tools-winutil-offline` zielony na Pro i Home).
 - `tools-winutil-effect`: **Skipped** (powód: skutek z siecią pokrywa osobny pomiar na VM z siecią). Okno i GUI WinUtil z siecią zmierzone na VM (wyżej, wariant B).
 - Dawny przypadek `tools-winutil-launch` (2026-10-19, Passed na Home i Pro) usunięty razem z poleceniem `irm … | iex`.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.menu-delay.md sha256: c0143b50c599b7369d6de7d22c8ca2ee574c5763d5cecbe3f6435bf07c960bea -->
+<!-- source: docs/tweaks/ux.menu-delay.md sha256: 959ab2d3f14fd301031e804ac10f1625365c99a15d5efde5a7c737d3992d93b3 -->
 
 # ux.menu-delay – Open submenus faster
 
@@ -33,6 +33,8 @@ Not settled (not tested): the system's behavior after the value is deleted.
 - Some Win32 applications may ignore the value (hint).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `ux-menu-delay`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports, kept outside the repository; in the `main` run VM tests passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 Case `ux-menu-delay` (`Flow=Full`, `main` run), Home and Pro:

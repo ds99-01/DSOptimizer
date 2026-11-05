@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.widgets.md sha256: 5403395aa9e8b47cb12f9202cc4a48592a4ac0c9cc86a8f3fb02626628b0c7f8 -->
+<!-- source: docs/tweaks/privacy.widgets.md sha256: a405ef4bfae0b0dadda5c0ed1f9af0b869a7f704c9124629c213c07d3a7ff2b3 -->
 
 # privacy.widgets – Turn off Widgets
 
@@ -27,6 +27,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `HKLM\SOFTWARE\
 - Beyond the notes in the program (in the technical details or only here): restarting File Explorer is the `tools.restart-explorer` item; after the change the "Widgets" toggle in Settings is grayed out (the policy locks it and this can't be avoided).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-widgets`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-widgets` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyAbsentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Dsh`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `Dsh` key created by apply doesn't exist after undo (`KeyAbsentAfterUndo`). A separate VM measurement of 2026-10-21 (write through the API and undo) passed on Home and Pro.
 
 ## Observed effect

@@ -29,6 +29,8 @@ Home i Pro (odczyt 2026-10-22): `SPP\Clients` bez wpisu, `vssadmin list shadowst
 - Samo włączenie nie tworzy punktu. Wyłączenie ochrony „z kasowaniem punktów” (`vssadmin delete shadows`) to osobna, nieodwracalna operacja, której tu nie ma i której nie mierzono.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `repair-system-protection`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadek `repair-system-protection` (`Flow=Full`, `Snapshot`: wartość `{09F7EDC5-…}` w `SPP\Clients`) dopisany w `tests/vm/cases.psd1`.
 
 Przebieg VM (2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1`; raporty poza gitem): Home i Pro po 722 zaliczone / 0 błędów / 25 pominiętych (6 przypadków ze `Skip` spoza kategorii Naprawy). `repair-system-protection`: **Passed** na Home i Pro – `NotApplied` → apply `Applied` → detekcja `Applied` → undo `Undone` → `NotApplied`, `CheckAfterApply`/`CheckAfterUndo` (wpis woluminu C: w `SPP\Clients`) zaliczone, stan końcowy wartości `SPP\Clients` = stan przed. Wyścigu zapisu `SPP\Clients` po `Enable-ComputerRestore` (drobne ustalenie) nie zaobserwowano.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.winget.md sha256: a9ce4151c9605a6a32f2a5f5c34650f7157df3a473a448e080f0f2b8711373c3 -->
+<!-- source: docs/tweaks/repair.winget.md sha256: 4aedad2bc5ceba4018ad23d4a71da5780652e870a145583aa76b88c2f80e5600 -->
 
 # repair.winget – Repair winget (App Installer)
 
@@ -34,6 +34,8 @@ Not applicable: `kind=action` has no detection or undo. The evidence of the effe
 - Only the account DSOptimizer runs on; from another administrator account it refuses.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: cases `repair-winget-dso`, `repair-winget-other-account`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Cases in `tests/vm/cases.psd1`:
 - `repair-winget-other-account` (Administrator via PS Direct, `MessageContains='uruchom DSOptimizer na koncie'`, `Check`: the package state for the accounts unchanged).
 - `repair-winget-dso` (`RunAs='dso'`; `Setup` breaks the state by deleting the `winget.exe` alias in the `dso` profile, as in the measurement; `Check`: `winget --version` run as `dso` through a Task Scheduler task ends with code 0 and a version). The "Staged" state can't be prepared for App Installer (`Remove-AppxPackage` = 0x80073CFA, "part of Windows"), so the "breakage" is the alias alone.

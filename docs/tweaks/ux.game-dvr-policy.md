@@ -29,6 +29,8 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18:
 - Zysku w grach nie mierzono (opis w programie od 2026-10-26 o nim nie mówi; wcześniej: „Zysku w grach nie zmierzono”).
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadki `ux-game-dvr-policy-prev-value`, `ux-game-dvr-policy`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przebieg VM z 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba **Passed**. Raporty lokalne, poza repozytorium; w przebiegu `main` testy na VM zaliczyły 140, 0 błędów, 10 pominiętych (Home i Pro identycznie).
 
 Dwa przypadki `Flow=Full` (przebieg `main`), Home i Pro, w obu: `detect-before` = `NotApplied`, `apply` kod 0, `detect-after-apply` = `Applied`, `undo` kod 0, `detect-after-undo` = `NotApplied`, `SnapshotDiff` pusty.

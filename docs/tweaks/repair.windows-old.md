@@ -80,6 +80,8 @@ zakończeniu cleanmgr i wolne miejsce przed/po. Usuniętej poprzedniej instalacj
   pomiaru z sesji 0 spodziewany wynik to `NotConfirmed` po 45 min, z folderem już usuniętym.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadki `cli-language-system`, `repair-windows-old-absent`, `repair-windows-old`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadki w `tests/vm/cases.psd1`, `Flow='Execute'`, wbudowany katalog, bez sieci:
 - `repair-windows-old-absent` (bez `RunAs`): świeża VM bez `Windows.old` → `NotSupported`, kod 1, komunikat „nie ma czego usuwać”;
   `Check`: folderu nie ma, żadnej wartości `StateFlags7351` pod `VolumeCaches`, cleanmgr nie działa.

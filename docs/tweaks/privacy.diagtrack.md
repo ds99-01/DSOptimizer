@@ -28,6 +28,8 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: `DiagTrack` typ startu **A
 - Zysku wydajności nie mierzono (wcześniej w programie: „Zysku wydajności nie zmierzono”; od 2026-10-26 opis mówi tylko, co się zmienia).
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `privacy-diagtrack`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadek `privacy-diagtrack` (`Flow=Full`) w `tests/vm/cases.psd1`: niepusty `Snapshot` usługi `DiagTrack` (stan przed = stan po undo), po apply `Disabled` + `Stopped`, po undo `Automatic` + `Running`. Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). Po apply usługa `Disabled` + `Stopped` (`Start`=4), po undo typ startu ze snapshotu: `Auto` + `Running` (`Start`=2), jak przed apply. Osobny pomiar na VM z 2026-10-21 przeszedł na Home i Pro.
 
 ## Obserwacja skutku

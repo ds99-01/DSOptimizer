@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.start-recommendations.md sha256: df95bcc2379018982783e3fb29e65a3891622cb0a5d6bdd36b9ebe9be2445ecd -->
+<!-- source: docs/tweaks/privacy.start-recommendations.md sha256: 26b59e897fbf74e1e3dd215d35b6d752d29f1ec7511beb76a219043c9c81a73e -->
 
 # privacy.start-recommendations – Turn off recommendations in the Start menu
 
@@ -28,6 +28,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `Explorer\A
 - Beyond the notes in the program (in the technical details or only here): the effect of restarting File Explorer alone (`tools.restart-explorer`) wasn't checked.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-start-recommendations`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-start-recommendations` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The Administrator's HKCU unchanged, the `Explorer\Advanced` key stayed (`KeyPresentAfterUndo`). A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect

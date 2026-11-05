@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.taskbar-end-task.md sha256: 32edf03c78e7d5cd01d0efdfdd6cdff623419526e6cf7c49d3b5aecfcb79c182 -->
+<!-- source: docs/tweaks/ux.taskbar-end-task.md sha256: d26d2807e259075897e0332c071e839369024f64aff8095eaea189bc6cb9d5f8 -->
 
 # ux.taskbar-end-task – Add "End task" to the taskbar menu
 
@@ -28,6 +28,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `TaskbarEndTask
 - Beyond the notes in the program (in the technical details or only here): DSOptimizer doesn't restart File Explorer by itself (restarting is the `tools.restart-explorer` item); the note about data loss describes ending a process, not a measurement.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `ux-taskbar-end-task`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `ux-taskbar-end-task` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyAbsentAfterUndo` for `TaskbarDeveloperSettings` (in `HKU\{UserSid}\…`), `NotWrittenTo` for the Administrator's HKCU. VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, the state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `TaskbarDeveloperSettings` key created by apply doesn't exist after undo (`KeyAbsentAfterUndo`), the Administrator's HKCU unchanged.
 
 ## Observed effect

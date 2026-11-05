@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/tools.restart-explorer.md sha256: 960a2fe48a546634a2a48d33e2f4128833b2cbcb866b28eba1c2eeda7071a532 -->
+<!-- source: docs/tweaks/tools.restart-explorer.md sha256: fbda530a1c71297673c117f213162f548084b8533e7c2367ab86da70ecc1f990 -->
 
 # tools.restart-explorer – Restart the taskbar and File Explorer
 
@@ -38,6 +38,8 @@ Not applicable: `kind=action` has no detection or undo (nothing is written, ther
 - On slower hardware the return may take longer than the 10 s limit: the action then reports `Failed`, although the shell may come back a moment later (the message with the instruction softens this).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `tools-restart-explorer`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); in this item's cases `CleanupError` is empty.
 - `tools-restart-explorer` (`Flow=Execute`, `Catalog=BuiltIn`): **Passed** on Home and Pro (`Executed`). `Setup` writes the PID of the only `dso` shell (without `/factory`) and the session to `C:\dso\restart-explorer-pid.txt` (it throws when the number of shells isn't 1); `Check` in a loop (15 s, every 0.5 s) looks for a `dso` shell without `/factory` with a different PID in the same session; `Cleanup` deletes the file.
 - VM test in the `dso` user session (elevated task): `Stop-Process -Force` on the `dso` shell → new shell within max. 1.42 s, parent `userinit.exe`, session 1, token `Limited`; `AutoRestartShell` = DWORD 1. The runner can't see the desktop, so the visual return of the taskbar and desktop isn't part of the Check.

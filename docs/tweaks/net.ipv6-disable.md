@@ -31,6 +31,8 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = 
 - Bez obietnic wydajności.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `net-ipv6-disable`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przebieg VM z 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba bez błędów (278 zaliczonych / 0 błędów / 17 pominiętych na każdej VM). Raporty lokalne, poza repozytorium: `tests/vm/out/<data>/<VM>/<RunLabel>/`.
 
 Przypadek `net-ipv6-disable` (`Flow=Reboot`, przebieg `reboot-net-ipv6-disable`, osobny przebieg od czystego checkpointu; testy na VM 14/14 na Home i Pro), **Passed**, Home i Pro identycznie:

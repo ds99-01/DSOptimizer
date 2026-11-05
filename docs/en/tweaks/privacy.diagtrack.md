@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.diagtrack.md sha256: ecb609e38419c9ab7b9ce483b0e2bcd1e9ff3cf39d47ce1fc96f5fdd16a47e26 -->
+<!-- source: docs/tweaks/privacy.diagtrack.md sha256: dae7a24810798e292c1c5159997870d985160c894e0a6d630401a1e63c5704d5 -->
 
 # privacy.diagtrack – Turn off the DiagTrack telemetry service
 
@@ -30,6 +30,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `DiagTrack` sta
 - The performance gain wasn't measured (previously in the program: "The performance gain wasn't measured"; since 2026-10-26 the description says only what changes).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-diagtrack`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-diagtrack` (`Flow=Full`) in `tests/vm/cases.psd1`: a non-empty `Snapshot` of the `DiagTrack` service (state before = state after undo), after apply `Disabled` + `Stopped`, after undo `Automatic` + `Running`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). After apply the service is `Disabled` + `Stopped` (`Start`=4), after undo the startup type from the snapshot: `Auto` + `Running` (`Start`=2), as before apply. A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect

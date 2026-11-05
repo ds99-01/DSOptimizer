@@ -56,6 +56,8 @@ Undo: silnik przywraca `AllowInsecureGuestAuth` ze snapshotu z journala (poprzed
 - Na Home pozycja początkowo wyświetla `Partial` (zob. Detekcja).
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `net-smb-guest-access`; przypadek `net-smb-lan-effect` pominięty (brak sieci i serwera SMB na VM). Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przebieg VM z 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba bez błędów (278 zaliczonych / 0 błędów / 17 pominiętych na każdej VM). Raporty lokalne, poza repozytorium: `tests/vm/out/<data>/<VM>/<RunLabel>/`.
 
 Przypadek `net-smb-guest-access` (`Flow=Full`, `Catalog=BuiltIn`, bez restartu), **Passed** na Home i Pro (Pester main 191/0/17):

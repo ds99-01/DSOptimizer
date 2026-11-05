@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.store.md sha256: f1d402d7e7cd993f06bc3162c2ef990a3a94e546590822d88130dcf1c9a71d8a -->
+<!-- source: docs/tweaks/repair.store.md sha256: 273d1aa35f11e98889520c7b889d7a0344f749d69fdb289215721b73795a2812 -->
 
 # repair.store – Repair Microsoft Store on this account
 
@@ -61,6 +61,8 @@ Not applicable: `kind=action` has no detection or undo (no journal). Registering
 - Store in use (Home and Pro VMs, 2026-10-22): right after sign-in, `Add-AppxPackage -Register` returns `0x80073D02` ("aplikacje trzeba zamknąć: Microsoft.WindowsStore" (the apps must be closed: Microsoft.WindowsStore)), although no process from the Store package is visible; the same registration about 76–80 s after `explorer.exe` starts goes through. The action then ends with an error with the message "Microsoft Store is in use right now … close the Store, wait a minute and run the repair again" (the details of the original error are in the same message). The program doesn't close the Store itself (no `-ForceApplicationShutdown`).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: cases `repair-store-other-account`, `repair-store-register-dso`, `repair-store-staged-dso`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. The whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + the Reboot runs); in this item's cases `CleanupError` is empty.
 - `repair-store-other-account` (formerly `tools-store-repair-other-account`) (`Flow=Execute`, `Catalog=BuiltIn`): **Passed** on Home and Pro (`ExecuteExit=1`, `Failed`, the message then contained "Rejestracja działa tylko dla konta" (Registration works only for the account); since later fixes, the case checks for "uruchom DSOptimizer na koncie" (run DSOptimizer on account)). The runner is an Administrator, while `$UserSid` is the `dso` account, so the action refuses without registration. `Setup` saves the `Get-AppxPackage -AllUsers -Name Microsoft.WindowsStore` reading (it throws when the package is missing or there's no line with `|S-1-5-21-`, which confirms the shape of `UserSecurityId.Sid`; it also saves a reading of the manifest, read-only); `Check` requires the `-AllUsers` reading after the action to be identical to the one before (no new Administrator entry); `Cleanup` deletes the helper files.
 - `tools-store-repair-register-dso` (run 2026-10-19): **Skipped** (the runner couldn't do `RunAs`). Replaced by the active `repair-store-register-dso` (`RunAs='dso'`): the `Installed` state unchanged, the action registers again and the verification stays `Installed` + `Status` = `Ok`.

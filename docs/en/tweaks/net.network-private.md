@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.network-private.md sha256: 248af04b1a9bef43cf3961614bef50226bab390a53f3f23f572e81b8c04ff0fa -->
+<!-- source: docs/tweaks/net.network-private.md sha256: d90d1f88c25419469650317f5f521d28617b079d3b3fdad9c36eec983d1df8f8 -->
 
 # net.network-private – Change the active network from public to private
 
@@ -34,6 +34,8 @@ No detection (`kind=action`). **No undo** (no journal): the action prints the pr
 - Confirmation in the UI before running.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `net-network-private-no-network`; case `net-network-private-change` skipped (no network on the VM). Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports, outside the repository: `tests/vm/out/<date>/<VM>/<RunLabel>/`.
 
 Two cases in `tests/vm/cases.psd1` (`Flow=Execute`, `Catalog=BuiltIn`):

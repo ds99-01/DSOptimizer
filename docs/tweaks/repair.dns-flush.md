@@ -31,6 +31,8 @@ Nie dotyczy: `kind=action` nie ma detekcji ani cofnięcia (nie ma journala). Dow
 - Akcja nie naprawia sieci i nie zmienia serwerów DNS.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `repair-dns-flush`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadek `repair-dns-flush` (`Flow=Execute`, `Check`: niezależny odczyt `Get-DnsClientCache` i ten sam test „tylko wpisy z `hosts`”): dopisany w `tests/vm/cases.psd1`.
 
 Przebieg VM (2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1`; raporty poza gitem): Home i Pro po 722 zaliczone / 0 błędów / 25 pominiętych (6 przypadków ze `Skip` spoza kategorii Naprawy). `repair-dns-flush`: **Passed** na Home i Pro – wynik `Executed` „Wyczyszczono pamięć DNS (przed: 2 wpisów, po: 2 – tylko wpisy z pliku hosts)”, `Check` zaliczony. W tym przebiegu `Setup` dopisuje do `hosts` wpis testowy `10.123.45.67 dso-test-hosts.invalid` (jak w pomiarze), bo bez sieci same zapytania `localhost`/`.invalid` dawały „przed: 0 wpisów” (pierwszy przebieg); `Cleanup` usuwa wpis z ponowieniem (na Pro plik `hosts` był chwilowo zajęty). Bez sieci zwykłe odpowiedzi DNS nie trafiają do pamięci, więc VM nie pokazuje usunięcia wpisu spoza `hosts` – to zostaje do obserwacji na sprzęcie.

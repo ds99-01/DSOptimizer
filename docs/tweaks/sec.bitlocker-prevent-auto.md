@@ -37,6 +37,8 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457, 2026-10-18; obie tak
 - Bez obietnic ochrony ani wydajności.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `sec-bitlocker-prevent-auto`; przypadek `sec-bitlocker-prevent-auto-effect` pominięty (wymaga nowego OOBE, bo skutek dotyczy startu szyfrowania w OOBE; punkt kontrolny VM jest po OOBE). Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Pełny przebieg VM `vm-run-20261019-002807` (2026-10-19, ok. 00:28–00:46, build 26300.9457), Home i Pro, kod 0 dla przypadków tej pozycji. Raporty lokalne poza gitem (`tests/vm/out/<data>/<VM>/<RunLabel>/`).
 
 - `sec-bitlocker-prevent-auto` (`Flow=Full`, `Catalog=BuiltIn`, snapshot wartości, `KeyPresentAfterUndo` dla klucza `Control\BitLocker`): **Passed** na Home i Pro. Sprawdzono: detekcja przed `NotApplied`, apply `Applied` (DWORD `PreventDeviceEncryption` = 1 w snapshocie po apply), detekcja po apply `Applied`, undo `Undone`, detekcja po undo `NotApplied`; stan końcowy = stan przed (wartość usunięta, `SnapshotDiff` pusty), klucz `Control\BitLocker` zostaje.

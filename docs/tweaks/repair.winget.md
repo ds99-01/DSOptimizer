@@ -32,6 +32,8 @@ Nie dotyczy: `kind=action` nie ma detekcji ani cofnięcia. Dowodem skutku jest o
 - Tylko konto, na którym działa DSOptimizer; z innego konta administratora odmawia.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadki `repair-winget-dso`, `repair-winget-other-account`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadki w `tests/vm/cases.psd1`:
 - `repair-winget-other-account` (Administrator PS Direct, `MessageContains='uruchom DSOptimizer na koncie'`, `Check`: stan pakietu dla kont bez zmian).
 - `repair-winget-dso` (`RunAs='dso'`; `Setup` psuje stan usunięciem aliasu `winget.exe` w profilu `dso`, jak w pomiarze; `Check`: `winget --version` uruchomione jako `dso` przez zadanie Harmonogramu kończy się kodem 0 z wersją). Stanu „Staged” dla App Installera nie da się przygotować (`Remove-AppxPackage` = 0x80073CFA, „part of Windows”), więc „zepsucie” to sam alias.

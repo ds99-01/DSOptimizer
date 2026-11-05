@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/perf.vbs-hvci.md sha256: fd8f3166db139031f83c123a3fdd383572f751577d53084ba2cd52c3b93cc68c -->
+<!-- source: docs/tweaks/perf.vbs-hvci.md sha256: a71ca8d65198d22178f68ae7cc30ee1cda271996eaa3ade51ca25890a4bdafd5 -->
 
 # perf.vbs-hvci – Turn off memory integrity (HVCI)
 
@@ -57,6 +57,8 @@ Lock and policies: when VBS is locked (`Control\DeviceGuard\Locked`) or memory i
 - The impact on performance wasn't measured (previously in the program: "there was no measurement"; since 2026-10-26 the description says that Microsoft doesn't give the gain).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `perf-vbs-hvci`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `perf-vbs-hvci` (`Flow=Reboot`, `Catalog=BuiltIn`) in `tests/vm/cases.psd1`: `Snapshot` of the `Enabled` value, the initial and final state is no value and no key (`KeyAbsentAfterUndo`), `CheckAfterApply`/`CheckAfterUndo` from `Win32_DeviceGuard` (`Get-CimInstance` with `-ErrorAction Stop` and an explicit check that the instance isn't `$null`).
 
 VM run of 2026-10-18 (13:51, state from before the detection fix of 2026-10-21: `detect-before` and `detect-after-undo` = `Partial`, today `NotApplied`, see below, build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (212 passed / 0 failed / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports, kept outside the repository.

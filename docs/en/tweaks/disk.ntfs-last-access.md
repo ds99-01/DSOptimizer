@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.ntfs-last-access.md sha256: 83e2c29b7ed9df0b0647f37da4d8ba945ce2617f941f02ca460ed925c5b4e084 -->
+<!-- source: docs/tweaks/disk.ntfs-last-access.md sha256: 704c347a6f38a6fae7788ca50a9a844e8b993da42edd22cc3db3fa6ea719304f -->
 
 # disk.ntfs-last-access – Turn off recording the last access time of files
 
@@ -37,6 +37,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - The performance gain wasn't measured (since 2026-10-26 the description in the program only mentions fewer small writes).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: cases `disk-ntfs-last-access-mode3`, `disk-ntfs-last-access`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (13:51, build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (212 passed / 0 failed / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports, kept outside the repository. The run was refreshed after the detection change (bit mask instead of comparing the exact value `0x80000001`); the earlier run (2026-10-18 08:04, 13/13 in the Reboot run) covered the previous detection.
 
 Case `disk-ntfs-last-access` (`Flow=Reboot`, run `reboot-disk-ntfs-last-access`, a separate run from a clean checkpoint; VM tests 14/14 on Home and Pro), Home and Pro identical:

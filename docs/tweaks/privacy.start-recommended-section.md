@@ -26,6 +26,8 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: wartość `HideRecommended
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): skutku samego restartu Eksploratora (`tools.restart-explorer`) nie sprawdzano.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `privacy-start-recommended-section`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadek `privacy-start-recommended-section` (`Flow=Full`) w `tests/vm/cases.psd1` (`KeyAbsentAfterUndo` dla klucza `Policies\...\Explorer` użytkownika, `NotWrittenTo` dla `HKCU` procesu Administratora). Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). Klucz `Policies\Microsoft\Windows\Explorer` użytkownika utworzony przez apply po undo nie istnieje (`KeyAbsentAfterUndo`), HKCU Administratora bez zmian. Osobny pomiar na VM z 2026-10-21 przeszedł na Home i Pro.
 
 ## Obserwacja skutku

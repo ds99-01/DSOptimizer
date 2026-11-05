@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.wu-reset-full.md sha256: b664acfe543baa9636b14fc97384208da5b062b5a1fef3cb8f7ab6f7309cfaeb -->
+<!-- source: docs/tweaks/repair.wu-reset-full.md sha256: 09ed440292c02cd85fa317dbfde451569291e988d5e8ba31085d7924e1f26975 -->
 
 # repair.wu-reset-full – Reset Windows Update and remove blocks
 
@@ -47,6 +47,8 @@ Not applicable: `kind=action` without detection and undo (no journal). Going bac
 - Update history in Settings will be cleared (only Microsoft Defender definition entries may stay); updates will download again.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `repair-wu-reset-full`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `repair-wu-reset-full` (`Flow=Execute`): `Setup` writes 6 test policies from the measurement (`WUServer`/`WUStatusServer` = `http://dso-wsus.invalid:8530`, `DisableWindowsUpdateAccess`/`SetDisableUXWUAccess` = 1, `AU\NoAutoUpdate` = 1, `AU\UseWUServer` = 1) and sets `UsoSvc` to `Disabled`; `Check` requires: the policy key is gone, the `wu-policies-*.reg` file in `C:\ProgramData\DSOptimizer\backups` contains `WUServer`, the startup types = the table above, `wuauserv`/`bits`/`cryptsvc` are running. `Cleanup` removes the policy key and the backup folder (the VM goes back to the checkpoint anyway). Added to `tests/vm/cases.psd1`.
 
 VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-wu-reset-full`: **Passed** on Home and Pro (`Executed`; `wu-policies-*.reg` backup with `WUServer`, `wu-services-*.txt`, the policy key removed, the startup types as on a fresh 26H2, the services running). Note: in the first run of the Repairs cases only (`repair-1`), on Home `bits` once didn't start again (`Failed` "Nie udało się ponownie uruchomić usług: bits." (Couldn't restart services: bits.), `NotRestored`: "Nie można uruchomić usługi bits" (Cannot start service bits)) – an honest result, but the cause wasn't found: in 5 further attempts (also right after `repair.wu-reset`, as in that run) and in 2 further runs `bits` started; to be watched.

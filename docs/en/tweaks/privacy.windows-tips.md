@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.windows-tips.md sha256: 90288e6d532e6986166f1e513c7266f4379f23476017782e50a4029440b153ae -->
+<!-- source: docs/tweaks/privacy.windows-tips.md sha256: 516829e410c68b7d4fe63076430735f31526a0d0b28fb99bc1468fa206460067 -->
 
 # privacy.windows-tips – Turn off Windows tips and suggestions
 
@@ -27,6 +27,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `SubscribedCont
 - No warnings in the catalog.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-windows-tips`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-windows-tips` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The value 1 from before apply came back from the snapshot, the Administrator's HKCU unchanged. A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect

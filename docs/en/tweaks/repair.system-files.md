@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.system-files.md sha256: 0d12adfbc653a7e7f68126c7eb27718605a82466b50f11c49cf91472164c33c6 -->
+<!-- source: docs/tweaks/repair.system-files.md sha256: 69150b61d162e24f9fe9e3b813e5391dddc8a25fd5e0e08b65b9f7e2a797e7e3 -->
 
 # repair.system-files – Check and repair system files
 
@@ -39,6 +39,8 @@ Not applicable: `kind=action` without detection and undo. The verification of th
 - Closing the program after the time limit doesn't interrupt DISM or SFC (measured – "VM test" section); not measured: DSOptimizer started by another program inside a Job Object with `KILL_ON_JOB_CLOSE`.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `repair-system-files`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `repair-system-files` in `tests/vm/cases.psd1`: `Flow='Execute'`, built-in catalog, `CliTimeoutSeconds = 1200`, `Expect`: `Executed`, code 0, `RequiresReboot = $false`; `Check`: `CBS.log` has an `[SR]` segment from this run (after the timestamp from before the start) and neither `dism.exe` nor `sfc.exe` is running in the VM. The case `repair-system-files-repaired` from the plan was dropped (no damage to protected files).
 
 VM run (2026-10-23, `tests/vm/Invoke-VmTests.ps1 -CasesPath <only this case>`; reports outside git): **Passed** on Home and Pro (7 passed / 0 failed each). Home: `Executed`, code 0, `requiresReboot=false`, CLI 146.5 s (DISM 87 s, SFC 60 s); Pro: the same, 149 s (DISM 85 s, SFC 63 s). Message on both: "DISM: magazyn składników jest zdrowy – nie wykryto uszkodzeń." (DISM: the component store is healthy – no corruption detected.) / "SFC: nie znaleziono naruszeń integralności plików systemowych." (SFC: didn't find any integrity violations in system files.) The run takes under 30 min, so the case is in the default run (without `Skip`).

@@ -25,6 +25,8 @@ Nie dotyczy: `kind=action` nie ma detekcji ani cofnięcia. Dowodem skutku jest l
 - Punkt nie obejmuje plików osobistych; Windows może usunąć najstarsze punkty, gdy skończy się przydzielone miejsce.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadki `repair-restore-point-created`, `repair-restore-point-disabled`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadki `repair-restore-point-disabled` (ochrona wyłączona: `Failed` z komunikatem odsyłającym do „Ochrona systemu”) i `repair-restore-point-created` (ochrona włączona w `Setup` przez `Enable-ComputerRestore -Drive 'C:\'`, `Check`: punkt „DSOptimizer – punkt ręczny” na liście) dopisane w `tests/vm/cases.psd1`.
 
 Przebieg VM (2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1`; raporty poza gitem): Home i Pro po 722 zaliczone / 0 błędów / 25 pominiętych (6 przypadków ze `Skip` spoza kategorii Naprawy). `repair-restore-point-disabled`: **Passed** na Home i Pro (`Failed`, kod 1, „Ochrona systemu na dysku C: jest wyłączona – włącz ją pozycją „Ochrona systemu” w tej kategorii.”, punkt nie powstał). `repair-restore-point-created`: **Passed** na Home i Pro (`Executed`, „Utworzono punkt przywracania „DSOptimizer – punkt ręczny” (…)”, punkt na liście `Get-ComputerRestorePoint`).

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.spotlight.md sha256: 526f9dec21f0d99cbdd732097e118c9810e46279aaf14c921b2f9d23ce5b8105 -->
+<!-- source: docs/tweaks/privacy.spotlight.md sha256: f2ff47db2708eca1ebf4377e60a86f817626e4c6523eec85472d417fa4cc0914 -->
 
 # privacy.spotlight – Turn off Windows spotlight (pictures of the day)
 
@@ -28,6 +28,8 @@ Reading from the VMs, 2026-10-21: neither the user's `...\Policies\Microsoft\Win
 - Choosing "Windows spotlight" again after undo wasn't checked: Windows on the VM isn't activated, and that blocks personalization.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-spotlight`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-spotlight` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyAbsentAfterUndo`, because the user's `CloudContent` key doesn't exist on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1` with only this case): **DSO-26H2-Home and DSO-26H2-Pro – passed (12/0)**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, the write went to the signed-in user's HKU, not to the process's HKCU, the `CloudContent` key doesn't exist after undo, final state = state before. The case checks the registry, not the background (background: observation below).
 
 ## Observed effect

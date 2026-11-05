@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/perf.paging-executive.md sha256: 1028590f0c5f95bed8af7b34377a148930953784c122dcefc33c196033617374 -->
+<!-- source: docs/tweaks/perf.paging-executive.md sha256: 1139b9def7ea419cc1561c1492877063cdcdd876d799e3409fd440a824cb71ae -->
 
 # perf.paging-executive – Keep kernel and driver code in memory
 
@@ -32,6 +32,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - The previous version's description ("drastically speeds up syscalls") and the "32 GB RAM" threshold have no MS source, so they don't go into the catalog.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `perf-paging-executive`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (13:51, build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (212 passed / 0 failed / 10 skipped on each VM; the skipped ones are only `disk-hibernation`). Local reports, kept outside the repository.
 
 Case `perf-paging-executive` (`Flow=Reboot`, run `reboot-perf-paging-executive`, a separate run from a clean checkpoint; VM tests 14/14 on Home and Pro), Home and Pro identical:

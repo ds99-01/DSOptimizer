@@ -36,6 +36,8 @@ Nie dotyczy: `kind=action` nie ma detekcji ani cofnięcia (nie ma journala). **O
 - Zabronione w tej pozycji (Global Constraints): `netcfg -d`, `ipconfig /release|/renew`, `netsh winhttp reset proxy`.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `repair-network-reset`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadek `repair-network-reset` (`Flow=Execute`, `Check`: `netsh winsock show catalog` działa; raport ma `requiresReboot=true` dzięki `Expect.RequiresReboot` w runnerze): dopisany w `tests/vm/cases.psd1`.
 
 Przebieg VM (2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1`; raporty poza gitem): Home i Pro po 722 zaliczone / 0 błędów / 25 pominiętych (6 przypadków ze `Skip` spoza kategorii Naprawy). `repair-network-reset`: **Passed** na Home i Pro – `Executed` z kodem 0, `requiresReboot=true` w raporcie, w komunikacie konfiguracja IP sprzed resetu (APIPA, bez sieci), `netsh winsock reset: kod 0` i `netsh int ip reset: kod 1` z adnotacją; `Check` (`netsh winsock show catalog` działa) zaliczony. VM nie była restartowana po resecie i nie ma sieci ani ręcznego IP na podłączonej karcie – do potwierdzenia na sprzęcie.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.dns-flush.md sha256: e9dcd08594f12584d5708d2340ac5d849b92c1d7744b0182fc38e612f37a9af3 -->
+<!-- source: docs/tweaks/repair.dns-flush.md sha256: fbff71c636a0c0e8b3542c25b22fda9296df2acedb4a25442fffa76a24cec977 -->
 
 # repair.dns-flush – Clear the DNS cache
 
@@ -33,6 +33,8 @@ Not applicable: `kind=action` has no detection or undo (no journal). The evidenc
 - The action doesn't repair the network and doesn't change the DNS servers.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `repair-dns-flush`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `repair-dns-flush` (`Flow=Execute`, `Check`: an independent `Get-DnsClientCache` read and the same "only entries from `hosts`" test): added to `tests/vm/cases.psd1`.
 
 VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-dns-flush`: **Passed** on Home and Pro – result `Executed` "Wyczyszczono pamięć DNS (przed: 2 wpisów, po: 2 – tylko wpisy z pliku hosts)" (Cleared the DNS cache (entries before: 2, after: 2 – only entries from the hosts file)), `Check` passed. In this run, `Setup` adds the test entry `10.123.45.67 dso-test-hosts.invalid` to `hosts` (as in the measurement), because without a network the plain `localhost`/`.invalid` queries gave "przed: 0 wpisów" (entries before: 0) (first run); `Cleanup` removes the entry with a retry (on Pro the `hosts` file was locked for a moment). Without a network, regular DNS answers don't get into the cache, so the VM doesn't show the removal of an entry from outside `hosts` – that remains to be observed on hardware.

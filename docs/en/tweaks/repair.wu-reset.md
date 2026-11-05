@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.wu-reset.md sha256: 893115ec11eac8eac3fe8362095d7931f0a21dc106ea50f2991fe9da02280f52 -->
+<!-- source: docs/tweaks/repair.wu-reset.md sha256: c6daa7137ad91f8f081bed04d69f6f42c9b05d2d4ad0e1f5be30d7330482c3a1 -->
 
 # repair.wu-reset – Reset Windows Update
 
@@ -34,6 +34,8 @@ Not applicable: `kind=action` has no detection or undo (no journal). Trace: the 
 - Windows Update policies are only listed, not changed (`repair.wu-reset-full` removes them).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `repair-wu-reset`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `repair-wu-reset` (`Flow=Execute`): `Setup` creates an old copy `C:\Windows\SoftwareDistribution.dso-20000101-000000`; `Check` requires that `wuauserv`, `bits`, `cryptsvc` are running, that exactly one `SoftwareDistribution.dso-*` copy and exactly one `catroot2.dso-*` copy exist, and that the old copy is gone. Added to `tests/vm/cases.psd1`. Later, `Check` also compares the state of `AppIDSvc` (`Win32_Service`) and the `applockerfltr` driver (`Win32_SystemDriver`) with the state saved in `Setup` (the dependents return to their previous state).
 
 VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-wu-reset`: **Passed** on Home and Pro (`Executed`; `wuauserv`, `bits`, `cryptsvc` stopped together with `applockerfltr` and `AppIDSvc`, folders moved to `.dso-<timestamp>`, the old copy deleted, the services and dependents back in their previous state).

@@ -30,6 +30,8 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18 (Home = 
 - Opis z poprzedniej wersji („drastycznie przyspiesza syscalle”) i próg „32 GB RAM” nie mają źródła MS, więc nie wchodzą do katalogu.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `perf-paging-executive`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przebieg VM z 2026-10-18 (13:51, build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba bez błędów (212 zaliczonych / 0 błędów / 10 pominiętych na każdej VM; pominięte to wyłącznie `disk-hibernation`). Raporty lokalne, poza repozytorium.
 
 Przypadek `perf-paging-executive` (`Flow=Reboot`, przebieg `reboot-perf-paging-executive`, osobny przebieg od czystego checkpointu; testy na VM 14/14 na Home i Pro), Home i Pro identycznie:

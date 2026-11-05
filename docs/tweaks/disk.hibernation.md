@@ -47,6 +47,8 @@ Reguły (w tej kolejności):
 - Restart: MS nie podaje wymogu; `requiresReboot` = false, niepotwierdzone.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `disk-hibernation-unsupported`; przypadek `disk-hibernation` pominięty (VM Hyper-V bez obsługi S4 – apply/undo do weryfikacji na sprzęcie). Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przebieg VM z 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba **Passed**. Raporty lokalne, poza repozytorium; w przebiegu `main` testy na VM zaliczyły 140, 0 błędów, 10 pominiętych (Home i Pro identycznie).
 
 - `disk-hibernation-unsupported` (`Flow=DetectOnly`, przebieg `main`): **Passed** na Home i Pro. `detect-before` kod 0, wynik `Success`, stan **`NotSupported`**. To potwierdza przebiegiem regułę 3 detekcji dla czystej VM; `SystemS4` = FALSE jest tu wnioskiem pośrednim (skrypt zwrócił `NotSupported`), nie osobnym odczytem. Przypadek `DetectOnly` nie ma `Snapshot`, więc brak zmian w rejestrze nie był tu osobno sprawdzany.

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/net.ipv6-prefer-ipv4.md sha256: b66e8f80e930eb02c73e15b7691d5792a44b7c7851e2868ce4888fe0033a02d1 -->
+<!-- source: docs/tweaks/net.ipv6-prefer-ipv4.md sha256: 08c2208005e64f3b1a69963b5f5823fa17003c2b03b24d59a6d3ee327f7076a9 -->
 
 # net.ipv6-prefer-ipv4 – Prefer IPv4 over IPv6
 
@@ -32,6 +32,8 @@ Read from the VMs DSO-26H2-Home and DSO-26H2-Pro (build 26300.9457), 2026-10-18 
 - No promises of performance or faster DNS.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `net-ipv6-prefer-ipv4`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (Home 19:58, Pro 20:10; build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both without errors (278 passed / 0 failed / 17 skipped on each VM). Local reports, outside the repository: `tests/vm/out/<date>/<VM>/<RunLabel>/`.
 
 Case `net-ipv6-prefer-ipv4` (`Flow=Reboot`, run `reboot-net-ipv6-prefer-ipv4`, a separate run from a clean checkpoint; VM tests 15/15 on Home and Pro), **Passed**, Home and Pro identical:

@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/panels.system-restore.md sha256: a516f625c8fd0793cc8375e97f299528a0a21223c055ecfc3f6cda273b6f1c25 -->
+<!-- source: docs/tweaks/panels.system-restore.md sha256: ade0ec913671ce8b4aadc06b8b6bc6c2b80af39c37adb8188eaf16c9c124d125 -->
 
 # panels.system-restore – System Restore
 
@@ -29,6 +29,8 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 - Measured on a VM with Polish regional settings; the window title may differ in another culture.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `panels-system-restore`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in each of the panel cases.
 - `panels-system-restore` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: `rstrui.exe` is running; `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (the Administrator account over PowerShell Direct, session 0), not that the window appeared for the user.**
 - VM measurement in the `dso` user session (elevated task, `Limited` token): the "Przywracanie systemu" (System Restore) window; side effect: the start of the `wbengine.exe` service (it stays until the checkpoint is reverted). Home = Pro.

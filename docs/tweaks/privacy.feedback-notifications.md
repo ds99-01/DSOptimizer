@@ -24,6 +24,8 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: klucz `DataCollection` ist
 - Ostrzeżenie w katalogu: „W Ustawieniach pojawi się komunikat, że niektórymi ustawieniami zarządza organizacja.” Dowód: stan strony w Ustawieniach, samych powiadomień nie obserwowano.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `privacy-feedback-notifications`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadek `privacy-feedback-notifications` (`Flow=Full`) w `tests/vm/cases.psd1`: `KeyPresentAfterUndo` dla `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection`. Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). Klucz `DataCollection` przetrwał undo (`KeyPresentAfterUndo`), `DoNotShowFeedbackNotifications` po undo nie istnieje. Osobny pomiar na VM z 2026-10-21 przeszedł na Home i Pro.
 
 ## Obserwacja skutku

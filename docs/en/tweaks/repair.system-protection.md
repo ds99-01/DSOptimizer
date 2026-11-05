@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.system-protection.md sha256: ca1bc0023848681c9cb93315507bb71191d557d1fca012dd97b6eeb5f3f2af78 -->
+<!-- source: docs/tweaks/repair.system-protection.md sha256: b07b6e1785b1465af0d80b35631a595cdeca2aecb990d5a225dc7a0168f4e655 -->
 
 # repair.system-protection – System Protection
 
@@ -31,6 +31,8 @@ Home and Pro (reading 2026-10-22): `SPP\Clients` without an entry, `vssadmin lis
 - Turning it on alone doesn't create a point. Turning protection off "with deletion of points" (`vssadmin delete shadows`) is a separate, irreversible operation that isn't here and wasn't measured.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `repair-system-protection`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `repair-system-protection` (`Flow=Full`, `Snapshot`: the `{09F7EDC5-…}` value in `SPP\Clients`) added to `tests/vm/cases.psd1`.
 
 VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-system-protection`: **Passed** on Home and Pro – `NotApplied` → apply `Applied` → detection `Applied` → undo `Undone` → `NotApplied`, `CheckAfterApply`/`CheckAfterUndo` (the entry for volume C: in `SPP\Clients`) passed, the final state of the `SPP\Clients` value = the state before. The race when writing `SPP\Clients` after `Enable-ComputerRestore` (a minor finding) wasn't observed.

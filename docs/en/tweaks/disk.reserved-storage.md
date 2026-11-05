@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.reserved-storage.md sha256: 2f4d839c1ab3bc9e50999d32004a3d2e00eaaa1597832e18485ed4b12fe3b4a1 -->
+<!-- source: docs/tweaks/disk.reserved-storage.md sha256: 8a8ee2b095364891883a59ae599066da5d31ab1532e462c8a9eb1eef2ccb8773 -->
 
 # disk.reserved-storage – Turn off reserved storage for updates
 
@@ -39,6 +39,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - Not tested on a VM: the behavior with a pending update, the actual size of the reserve (in the registry `BaseHardReserveSize` = 5 GiB, `BaseSoftReserveSize` = 1.5 GiB are base values, not a measured size).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `disk-reserved-storage`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports, kept outside the repository; in the `main` run VM tests passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 Case `disk-reserved-storage` (`Flow=Full`, `main` run), Home and Pro:

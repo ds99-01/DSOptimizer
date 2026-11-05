@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.diagnostic-data-required.md sha256: 626b8f3ab28740896a0edbfcb6c515d0fd318da5409d4094870de66a47d367ee -->
+<!-- source: docs/tweaks/privacy.diagnostic-data-required.md sha256: 72daa9814132f1cdf88b42abdeee1afcda2e12475fd3b5c627f485a3f30cd810 -->
 
 # privacy.diagnostic-data-required – Limit diagnostic data to required data
 
@@ -31,6 +31,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `HKLM\SOFTWARE\
 - No restart (no restart is required, `requiresReboot=false`); File Explorer doesn't need to be restarted.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-diagnostic-data-required`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-diagnostic-data-required` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyPresentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection` (the key exists on a fresh installation, the value doesn't exist after undo). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection` key existed before apply and survived undo (`KeyPresentAfterUndo`), and `AllowTelemetry` again doesn't exist after undo. A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect

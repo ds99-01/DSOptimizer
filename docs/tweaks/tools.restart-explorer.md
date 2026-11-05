@@ -36,6 +36,8 @@ Nie dotyczy: `kind=action` nie ma detekcji ani cofnięcia (nic nie jest zapisywa
 - Na wolniejszym sprzęcie powrót może trwać dłużej niż limit 10 s: akcja zgłosi wtedy `Failed`, choć powłoka może wrócić chwilę później (komunikat z instrukcją to łagodzi).
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `tools-restart-explorer`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przebieg VM `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) i Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Raporty lokalne poza gitem. Przebieg łącznie: Home 401 zaliczonych / 0 błędów / 29 pominiętych, Pro 401 / 0 / 29 (`main` 313/0/29 + przebiegi Reboot); w przypadkach tej pozycji `CleanupError` puste.
 - `tools-restart-explorer` (`Flow=Execute`, `Catalog=BuiltIn`): **Passed** na Home i Pro (`Executed`). `Setup` zapisuje PID jedynej powłoki `dso` (bez `/factory`) i sesję do `C:\dso\restart-explorer-pid.txt` (rzuca, gdy powłok jest inna liczba niż 1); `Check` w pętli (15 s co 0,5 s) szuka powłoki `dso` bez `/factory` o innym PID w tej samej sesji; `Cleanup` usuwa plik.
 - Test na VM w sesji użytkownika `dso` (zadanie podniesione): `Stop-Process -Force` na powłoce `dso` → nowa powłoka w maks. 1,42 s, rodzic `userinit.exe`, sesja 1, token `Limited`; `AutoRestartShell` = DWORD 1. Runner nie widzi pulpitu, więc wznowienie paska i pulpitu wzrokowo nie jest zaliczone w Check.

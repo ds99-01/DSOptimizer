@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/panels.visual-effects.md sha256: 310089c2022927c8a3e97899d2ef666419c9e470d6ef16cb54b496967aae07d7 -->
+<!-- source: docs/tweaks/panels.visual-effects.md sha256: a826f1229ae81ab507a9ad4a3bbaa8db89313559495dac5cf556d327825415a1 -->
 
 # panels.visual-effects – Visual effects (Performance Options)
 
@@ -30,6 +30,8 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 - Measured on a VM with Polish regional settings; the window title may differ in another culture.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `panels-visual-effects`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in each of the panel cases.
 - `panels-visual-effects` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: within 15 s (polling every 0.5 s) the `SystemPropertiesPerformance.exe` process is running; `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (the Administrator account over PowerShell Direct, session 0), not that the window appeared for the user.**
 - VM measurement in the `dso` user session (elevated task, `Limited` token): the "Opcje wydajności" (Performance Options) window ("Efekty wizualne" (Visual Effects) tab). Home = Pro.

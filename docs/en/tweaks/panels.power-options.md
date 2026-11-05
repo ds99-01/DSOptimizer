@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/panels.power-options.md sha256: 2639dbaf693e298240cb18297691137ae2674d7cd015cfaebedfc7d11619d1b5 -->
+<!-- source: docs/tweaks/panels.power-options.md sha256: 5d3c5a318b56f2542bbaf3ecbd03823c54aabb0b59c1eebf13ab4c08b66199aa -->
 
 # panels.power-options – Power Options
 
@@ -33,6 +33,8 @@ Not applicable: `kind=panel` has no detection and no undo. `Executed` only means
 - The scenario "DSOptimizer elevated with a different administrator account than the signed-in user" wasn't measured on a VM for this panel (the `control.exe`/`explorer.exe` host itself uses associations and COM in the elevated process; DSOptimizer controls only the path of the file it starts).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `panels-power-options`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run `20261019-110405` (2026-10-19, build 26300.9457): Home (`DSO-26H2-Home`) and Pro (`DSO-26H2-Pro`), `tests/vm/Invoke-VmTests.ps1`. Reports are local, outside git. Whole run: Home 401 passed / 0 failed / 29 skipped, Pro 401 / 0 / 29 (`main` 313/0/29 + Reboot runs); `CleanupError` empty in each of the panel cases.
 - `panels-power-options` (`Flow=Execute`, `Catalog=BuiltIn`, `RestorePoint=skip`): **Passed** on Home and Pro (`ExecuteExit=0`, `Executed`). `Check` polls in a loop: `control.exe` with a command line containing `Microsoft.PowerOptions` is running; `Cleanup` closes only processes that match `Check`. **Check proves that the process from the command is running (the Administrator account over PowerShell Direct, session 0), not that the window appeared for the user.**
 - VM measurement in the `dso` user session (elevated task, `Limited` token): the "Opcje zasilania" (Power Options) window (in `explorer.exe`; `control.exe` exits with code 1, so Check looks at the process from the Administrator account over PowerShell Direct (session 0), not at the window). Home = Pro.

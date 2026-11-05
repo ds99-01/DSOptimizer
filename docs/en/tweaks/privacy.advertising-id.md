@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.advertising-id.md sha256: a73523d79e5409b51125c184ca712860467330bf10e92d04ccdc572b5d62e680 -->
+<!-- source: docs/tweaks/privacy.advertising-id.md sha256: d1e46727ec0558c84a8c2ae8e23b30d5deca445a412b032391ca9071a7730c9e -->
 
 # privacy.advertising-id – Turn off the advertising ID
 
@@ -30,6 +30,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `Enabled` = 0, 
 - No warnings in the catalog.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-advertising-id`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-advertising-id` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The test `Id` value (String `dso-test`) existed after apply and after undo unchanged (snapshot before = after), `Enabled` and `Value` returned to 1 from the snapshot, both keys stayed (`KeyPresentAfterUndo`). Separate check of the toggle state (2026-10-21, Home and Pro, CLI `--apply`/`--undo` + UI Automation of the `ms-settings:privacy-general` page, `AutomationId` `SystemSettings_Privacy_AdvertisingIdEnabled_ToggleSwitch`, Settings closed before each reading): before apply (1/1, `Id`=`dso-test`) the toggle `On`, after apply (0/0) `Off`, after undo (1/1) `On`; detection after apply `Applied`, `user.isCertain`=true. On Pro, Windows itself replaced the test `Id` with a new ID (32 hex characters) between the reading before apply (with Settings open) and the reading after apply; DSOptimizer doesn't write `Id`, and in the `Invoke-VmTests` run (without opening Settings) `Id` stayed unchanged on both VMs. Raw result: outside git. A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect

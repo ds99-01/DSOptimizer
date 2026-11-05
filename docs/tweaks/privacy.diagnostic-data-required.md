@@ -29,6 +29,8 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: `HKLM\SOFTWARE\Policies\Mi
 - Brak restartu (żaden restart nie jest wymagany, `requiresReboot=false`); Eksploratora nie trzeba restartować.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `privacy-diagnostic-data-required`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadek `privacy-diagnostic-data-required` (`Flow=Full`) w `tests/vm/cases.psd1`: `KeyPresentAfterUndo` dla `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection` (klucz istnieje na świeżej instalacji, wartość po undo nie istnieje). Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, stan końcowy = stan przed (`SnapshotDiff` pusty). Klucz `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection` istniał przed apply i przetrwał undo (`KeyPresentAfterUndo`), a `AllowTelemetry` po undo znowu nie istnieje. Osobny pomiar na VM z 2026-10-21 przeszedł na Home i Pro.
 
 ## Obserwacja skutku

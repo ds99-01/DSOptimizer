@@ -37,6 +37,8 @@ Nie dotyczy: `kind=action` bez detekcji i cofnięcia. Odczytem zwrotnym skutku s
 - Zamknięcie programu po limicie czasu nie przerywa DISM ani SFC (zmierzone – sekcja „Test VM”); niezmierzone: uruchomienie DSOptimizera przez cudzy program w Job Objekcie z `KILL_ON_JOB_CLOSE`.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `repair-system-files`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadek `repair-system-files` w `tests/vm/cases.psd1`: `Flow='Execute'`, wbudowany katalog, `CliTimeoutSeconds = 1200`, `Expect`: `Executed`, kod 0, `RequiresReboot = $false`; `Check`: w `CBS.log` jest segment `[SR]` z tego przebiegu (po znaczniku czasu sprzed startu) i w VM nie działa `dism.exe` ani `sfc.exe`. Przypadek `repair-system-files-repaired` z planu wypadł (bez uszkadzania plików chronionych).
 
 Przebieg VM (2026-10-23, `tests/vm/Invoke-VmTests.ps1 -CasesPath <tylko ten przypadek>`; raporty poza gitem): **Passed** na Home i Pro (po 7 zaliczonych / 0 błędów). Home: `Executed`, kod 0, `requiresReboot=false`, CLI 146,5 s (DISM 87 s, SFC 60 s); Pro: to samo, 149 s (DISM 85 s, SFC 63 s). Komunikat na obu: „DISM: magazyn składników jest zdrowy – nie wykryto uszkodzeń.” / „SFC: nie znaleziono naruszeń integralności plików systemowych.” Przebieg trwa poniżej 30 min, więc przypadek jest w domyślnym przebiegu (bez `Skip`).

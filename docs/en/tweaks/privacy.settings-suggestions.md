@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.settings-suggestions.md sha256: 2977c045c86ccf4a71731573af521c97b2d7fa68df1f67e29ab42ca88a223d91 -->
+<!-- source: docs/tweaks/privacy.settings-suggestions.md sha256: 2d88929ef780852948e1803fa25267648b1b3204c6a2757095ff1858d9096a50 -->
 
 # privacy.settings-suggestions – Turn off recommendations and offers in Settings
 
@@ -27,6 +27,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `ContentDel
 - No warnings in the catalog. The item doesn't lock the toggle (it writes the toggle's values, not a policy).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-settings-suggestions`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-settings-suggestions` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user; `KeyPresentAfterUndo`, because the key exists on a fresh installation). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The Administrator's HKCU unchanged, the `ContentDeliveryManager` key stayed (`KeyPresentAfterUndo`). A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect

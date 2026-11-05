@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.ntfs-8dot3.md sha256: f7d0fd5066cd2524d43529e9ad2d280c40019ff6a94a99368e5f1419cd6e3128 -->
+<!-- source: docs/tweaks/disk.ntfs-8dot3.md sha256: d90d2d74eb51acfd98bd287a5addc05ec43fd1d05ba39eae710fb951cf57b4b7 -->
 
 # disk.ntfs-8dot3 – Turn off creating 8.3 short file names
 
@@ -36,6 +36,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - The performance gain wasn't measured (previously in the program: "the performance gain wasn't measured"; since 2026-10-26 the description only says what changes).
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `disk-ntfs-8dot3`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports, kept outside the repository; in the `main` run VM tests passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 Case `disk-ntfs-8dot3` (`Flow=Full`, `main` run), Home and Pro:

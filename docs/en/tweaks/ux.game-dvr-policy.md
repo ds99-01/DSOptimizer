@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.game-dvr-policy.md sha256: 056d7ec1287980d94116efa00ccfc578b269707b7a1526b58207ca15c5a74b0d -->
+<!-- source: docs/tweaks/ux.game-dvr-policy.md sha256: abaa9c372807585d8f235a4005551c87c7801901457d7d70774e8c285ff0188f -->
 
 # ux.game-dvr-policy – Block game recording and broadcasting on the whole computer
 
@@ -31,6 +31,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs (build 26300.9457), 2026-10-
 - The gain in games wasn't measured (since 2026-10-26 the description in the program doesn't mention it; previously: "The gain in games wasn't measured").
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: cases `ux-game-dvr-policy-prev-value`, `ux-game-dvr-policy`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports, kept outside the repository; in the `main` run VM tests passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 Two `Flow=Full` cases (`main` run), Home and Pro, in both: `detect-before` = `NotApplied`, `apply` code 0, `detect-after-apply` = `Applied`, `undo` code 0, `detect-after-undo` = `NotApplied`, `SnapshotDiff` empty.

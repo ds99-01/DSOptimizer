@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.disk-cleanup.md sha256: 011ba33a2b8e3699f6b61b4eaa1cae84c36317798485f1e51bb3e1f4d25a0142 -->
+<!-- source: docs/tweaks/repair.disk-cleanup.md sha256: fc3beca3f6e9aefd2594ad9b641c5f3d298bb63d1850da6526a8ce426b22f578 -->
 
 # repair.disk-cleanup – Clean up the disk
 
@@ -41,6 +41,8 @@ Not applicable: `kind=action` without detection and undo. The verification is th
 - Known limitation: between the handle check of a subfolder and its enumeration there's a narrow window; a swap in that window gives at most inflated counters, and deletions outside the tree are blocked by the final-path check of each element.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: cases `repair-disk-cleanup-admin`, `repair-disk-cleanup`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Cases in `tests/vm/cases.psd1`, `Flow='Execute'`, built-in catalog, no network:
 - `repair-disk-cleanup` (`RunAs='dso'`, CLI from a Task Scheduler task of the `dso` account, so `IsCertain` = true and the process SID = the signed-in user);
 - `repair-disk-cleanup-admin` (without `RunAs`, CLI as Administrator via PS Direct – the account steps apply to the signed-in `dso` by SID, not to the process account).

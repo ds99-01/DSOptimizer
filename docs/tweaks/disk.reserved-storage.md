@@ -37,6 +37,8 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro (build 26300.9457), 2026-10-18:
 - Nie testowano na VM: zachowanie przy oczekującej aktualizacji, rzeczywisty rozmiar rezerwy (w rejestrze `BaseHardReserveSize` = 5 GiB, `BaseSoftReserveSize` = 1,5 GiB to wartości bazowe, nie zmierzony rozmiar).
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `disk-reserved-storage`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przebieg VM z 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) i DSO-26H2-Pro (Professional), oba **Passed**. Raporty lokalne, poza repozytorium; w przebiegu `main` testy na VM zaliczyły 140, 0 błędów, 10 pominiętych (Home i Pro identycznie).
 
 Przypadek `disk-reserved-storage` (`Flow=Full`, przebieg `main`), Home i Pro:

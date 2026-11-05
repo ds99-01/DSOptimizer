@@ -26,6 +26,8 @@ Odczyt z VM, 2026-10-21: klucz `...\Policies\Microsoft\Windows\CloudContent` uż
 - Ponownego wyboru „W centrum uwagi Windows” po cofnięciu nie sprawdzano: nieaktywowany Windows na VM blokuje personalizację.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `privacy-spotlight`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadek `privacy-spotlight` (`Flow=Full`) w `tests/vm/cases.psd1` (`NotWrittenTo` dla `HKCU` procesu Administratora, bo pozycja jest per użytkownik; `KeyAbsentAfterUndo`, bo klucz `CloudContent` użytkownika nie istnieje na świeżej instalacji). Przebieg na VM 2026-10-21 (`Invoke-VmTests.ps1` z samym tym przypadkiem): **DSO-26H2-Home i DSO-26H2-Pro – zaliczony (12/0)**, kroki detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, stan po apply potwierdzony niezależnym odczytem, zapis trafił do HKU zalogowanego, nie do HKCU procesu, klucz `CloudContent` po undo nie istnieje, stan końcowy = stan przed. Przypadek sprawdza rejestr, nie tło (tło: obserwacja niżej).
 
 ## Obserwacja skutku

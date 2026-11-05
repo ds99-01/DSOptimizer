@@ -71,6 +71,8 @@ Odczyt z VM Home i Pro (2026-10-18): żaden z kluczy `...\shell\DSOptimizer.Take
 - Bez obietnic bezpieczeństwa ani wydajności.
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadki `sec-take-ownership-menu-en`, `sec-take-ownership-menu`; przypadek `sec-take-ownership-menu-effect` pominięty (wymaga kliknięcia z klawiszem Shift w klasycznym menu Eksploratora i zgody w UAC). Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Pełny przebieg VM `vm-run-20261019-002807` (2026-10-19, ok. 00:28–00:46, build 26300.9457), Home i Pro. Raporty lokalne poza gitem (`tests/vm/out/...`).
 
 - `sec-take-ownership-menu` (`Flow=Full`, `Catalog=BuiltIn`, `Snapshot` wszystkich wartości, `KeyAbsentAfterUndo` obu kluczy `DSOptimizer.TakeOwnership`, wartownik `KeyPresentAfterUndo` pod `*\shell`): **Passed** na Home i Pro. Sprawdza strukturę rejestru (apply, detekcja `Applied`, undo, stan końcowy = przed, obce `*\shell\runas` nietknięte), bo `Extended` ukrywa pozycję w `Verbs()`, a `Verbs()` nie rozwija podmenu.

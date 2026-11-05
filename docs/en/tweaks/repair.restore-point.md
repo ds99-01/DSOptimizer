@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.restore-point.md sha256: c8a2a2e7b7fe6e540c7d369d33e9e7f7d736a32a132a3bfe40f48c1197db873a -->
+<!-- source: docs/tweaks/repair.restore-point.md sha256: 7f9c06581cffb6d06f98bf6532deca6c3d0460e6dce305369d848b74313598c6 -->
 
 # repair.restore-point – Create a restore point now
 
@@ -27,6 +27,8 @@ Not applicable: `kind=action` has no detection or undo. The evidence of the effe
 - The point doesn't cover personal files; Windows may delete the oldest points when the allotted space runs out.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: cases `repair-restore-point-created`, `repair-restore-point-disabled`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Cases `repair-restore-point-disabled` (protection turned off: `Failed` with a message pointing to "System Protection") and `repair-restore-point-created` (protection turned on in `Setup` with `Enable-ComputerRestore -Drive 'C:\'`, `Check`: the point "DSOptimizer – punkt ręczny" (DSOptimizer – manual restore point) in the list) added to `tests/vm/cases.psd1`.
 
 VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-restore-point-disabled`: **Passed** on Home and Pro (`Failed`, code 1, "Ochrona systemu na dysku C: jest wyłączona – włącz ją pozycją „Ochrona systemu” w tej kategorii." (System Protection is turned off for the C: drive – turn it on with the "System Protection" item in this category.), no point was created). `repair-restore-point-created`: **Passed** on Home and Pro (`Executed`, "Utworzono punkt przywracania „DSOptimizer – punkt ręczny” (…)" (Created restore point "DSOptimizer – manual restore point" (…)), the point is in the `Get-ComputerRestorePoint` list).

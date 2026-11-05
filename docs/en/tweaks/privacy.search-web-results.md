@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.search-web-results.md sha256: 6e2d1f50a4dea3f7889e61f40b73f05bf8263c88c071d8b45073de3cd7604845 -->
+<!-- source: docs/tweaks/privacy.search-web-results.md sha256: b864180a9cc777b31ee68480909750f89cf197920392b90b769d92ea1f7bdfd9 -->
 
 # privacy.search-web-results – Turn off web results in Windows search
 
@@ -34,6 +34,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `SearchSett
 - Beyond the notes in the program (in the technical details or only here): the effect of restarting File Explorer alone (`tools.restart-explorer`) wasn't checked; the item turns off all providers of web results.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-search-web-results`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-search-web-results` (`Flow=Full`) in `tests/vm/cases.psd1` (`NotWrittenTo` for the `HKCU` of the Administrator process, because the item is per user). VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The Administrator's HKCU unchanged (`NotWrittenTo`), the `SearchSettings` key stayed. A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect

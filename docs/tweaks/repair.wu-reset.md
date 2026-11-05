@@ -32,6 +32,8 @@ Nie dotyczy: `kind=action` nie ma detekcji ani cofnięcia (nie ma journala). Śl
 - Polityki Windows Update tylko wypisywane, nie zmieniane (usuwa je `repair.wu-reset-full`).
 
 ## Test VM
+Przebieg VM z 2026-11-05 (build 26300.9457) na Windows 11 26H2 po angielsku i po polsku: `DSO-EN-Home` i `DSO-PL-Home` (Core), `DSO-EN-Pro` i `DSO-PL-Pro` (Professional), na każdej **Passed**: przypadek `repair-wu-reset`. Na każdej VM pełny przebieg: 861 zaliczonych, 0 błędów, 25 pominiętych. Niżej wcześniejsze przebiegi na polskim Windows.
+
 Przypadek `repair-wu-reset` (`Flow=Execute`): `Setup` tworzy starą kopię `C:\Windows\SoftwareDistribution.dso-20000101-000000`; `Check` wymaga, by `wuauserv`, `bits`, `cryptsvc` działały, istniała dokładnie jedna kopia `SoftwareDistribution.dso-*` i dokładnie jedna `catroot2.dso-*`, a stara kopia zniknęła. Dopisany w `tests/vm/cases.psd1`. Później `Check` porównuje też stan `AppIDSvc` (`Win32_Service`) i sterownika `applockerfltr` (`Win32_SystemDriver`) ze stanem zapisanym w `Setup` (zależne wracają do stanu sprzed).
 
 Przebieg VM (2026-10-22, pełny `tests/vm/Invoke-VmTests.ps1`; raporty poza gitem): Home i Pro po 722 zaliczone / 0 błędów / 25 pominiętych (6 przypadków ze `Skip` spoza kategorii Naprawy). `repair-wu-reset`: **Passed** na Home i Pro (`Executed`; zatrzymane `wuauserv`, `bits`, `cryptsvc` razem z `applockerfltr` i `AppIDSvc`, foldery przeniesione na `.dso-<znacznik>`, stara kopia usunięta, usługi i zależne z powrotem w stanie sprzed).

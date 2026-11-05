@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/sec.take-ownership-menu.md sha256: 9c71f613f9c1b154620f7ab8326dc9deb706bfde07abbde38cddb977a6e3d606 -->
+<!-- source: docs/tweaks/sec.take-ownership-menu.md sha256: e14d4ee8cc380635fae0750bacb01ab2d7cea520a565f2c7a3e1434c38eda0dc -->
 
 # sec.take-ownership-menu – Add "Take ownership" to the context menu
 
@@ -73,6 +73,8 @@ Read from the Home and Pro VMs (2026-10-18): none of the keys `...\shell\DSOptim
 - No promises of security or performance.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: cases `sec-take-ownership-menu-en`, `sec-take-ownership-menu`; case `sec-take-ownership-menu-effect` skipped (requires a Shift-click in the classic Explorer menu and UAC consent). Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Full VM run `vm-run-20261019-002807` (2026-10-19, about 00:28–00:46, build 26300.9457), Home and Pro. Reports are local, outside git (`tests/vm/out/...`).
 
 - `sec-take-ownership-menu` (`Flow=Full`, `Catalog=BuiltIn`, `Snapshot` of all values, `KeyAbsentAfterUndo` for both `DSOptimizer.TakeOwnership` keys, sentinel `KeyPresentAfterUndo` under `*\shell`): **Passed** on Home and Pro. It checks the registry structure (apply, detection `Applied`, undo, final state = before, other `*\shell\runas` untouched), because `Extended` hides the entry in `Verbs()`, and `Verbs()` doesn't expand submenus.

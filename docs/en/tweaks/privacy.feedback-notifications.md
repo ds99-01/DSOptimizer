@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.feedback-notifications.md sha256: b1ff403f41aa4d91036badc6f71eda7306a6f536342c3bbf5aab96d1f3204d8d -->
+<!-- source: docs/tweaks/privacy.feedback-notifications.md sha256: 4db7228bb3554ec767f13618c9e5aecb85bd52995e8e5b89ef9f6a17377bd9c3 -->
 
 # privacy.feedback-notifications – Turn off feedback notifications
 
@@ -26,6 +26,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: the `DataCollec
 - Warning in the catalog: "Settings will show a message that some settings are managed by your organization." Evidence: page state in Settings; the notifications themselves weren't observed.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `privacy-feedback-notifications`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `privacy-feedback-notifications` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyPresentAfterUndo` for `HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection`. VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). The `DataCollection` key survived undo (`KeyPresentAfterUndo`), `DoNotShowFeedbackNotifications` doesn't exist after undo. A separate VM measurement of 2026-10-21 passed on Home and Pro.
 
 ## Observed effect

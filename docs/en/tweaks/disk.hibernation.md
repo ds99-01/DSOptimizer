@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/disk.hibernation.md sha256: baa99286c62d18f3d19828309375f553f9fab6427397eeb44251d836afa7b027 -->
+<!-- source: docs/tweaks/disk.hibernation.md sha256: 960f12d14ade9472a55a9a9f4e04479c6d3b2b807b81a13eb2e6afe76fec38f4 -->
 
 # disk.hibernation – Turn off hibernation
 
@@ -49,6 +49,8 @@ Rules (in this order):
 - Restart: MS doesn't state a requirement; `requiresReboot` = false, unconfirmed.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `disk-hibernation-unsupported`; case `disk-hibernation` skipped (Hyper-V VM without S4 support – apply/undo to be verified on hardware). Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 VM run of 2026-10-18 (build 26300.9457), DSO-26H2-Home (Core) and DSO-26H2-Pro (Professional), both **Passed**. Local reports, kept outside the repository; in the `main` run VM tests passed 140, 0 failed, 10 skipped (Home and Pro identical).
 
 - `disk-hibernation-unsupported` (`Flow=DetectOnly`, `main` run): **Passed** on Home and Pro. `detect-before` code 0, result `Success`, state **`NotSupported`**. This confirms detection rule 3 for a clean VM with a run; `SystemS4` = FALSE is an indirect conclusion here (the script returned `NotSupported`), not a separate reading. The `DetectOnly` case has no `Snapshot`, so the absence of registry changes wasn't checked separately here.

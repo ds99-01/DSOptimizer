@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/repair.network-reset.md sha256: d2dd8bd999f63d429eab82e9ff97458e094023f275cbe215dfcd6dcf8a9fae43 -->
+<!-- source: docs/tweaks/repair.network-reset.md sha256: f2b02c88bcaf9e8566fbac0480dd9dbb994f08dcaaea0429ef5bb12d0171ad3f -->
 
 # repair.network-reset – Reset network settings
 
@@ -38,6 +38,8 @@ Not applicable: `kind=action` has no detection or undo (no journal). **There's n
 - Forbidden in this item (Global Constraints): `netcfg -d`, `ipconfig /release|/renew`, `netsh winhttp reset proxy`.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `repair-network-reset`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `repair-network-reset` (`Flow=Execute`, `Check`: `netsh winsock show catalog` works; the report has `requiresReboot=true` thanks to `Expect.RequiresReboot` in the runner): added to `tests/vm/cases.psd1`.
 
 VM run (2026-10-22, full `tests/vm/Invoke-VmTests.ps1`; reports outside git): Home and Pro 722 passed / 0 failed / 25 skipped each (6 cases with `Skip` outside the Repairs category). `repair-network-reset`: **Passed** on Home and Pro – `Executed` with code 0, `requiresReboot=true` in the report, the message contains the IP configuration from before the reset (APIPA, no network), `netsh winsock reset: kod 0` and `netsh int ip reset: kod 1` ("kod" = code) with the note; `Check` (`netsh winsock show catalog` works) passed. The VM wasn't restarted after the reset and has no network or manual IP on a connected adapter – to be confirmed on hardware.

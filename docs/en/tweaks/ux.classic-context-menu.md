@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.classic-context-menu.md sha256: fa7f1c4a00569a100d58e3e295cfd3f5f59fa1f19256fa546c9264fee4aa4af5 -->
+<!-- source: docs/tweaks/ux.classic-context-menu.md sha256: 46761290b32a3c1158b8a334bb7fc441da8a1ed2d5ba5ae97f8b29bad6e4c3ef -->
 
 # ux.classic-context-menu – Bring back the classic right-click menu
 
@@ -27,6 +27,8 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `HKU\<SID>\Soft
 - Beyond the notes in the program (in the technical details or only here): DSOptimizer doesn't restart File Explorer by itself (restarting is the `tools.restart-explorer` item); the entry in HKCU overrides the registration of the Windows 11 menu for this account, and undo restores the state from before the change.
 
 ## VM test
+VM run of 2026-11-05 (build 26300.9457) on Windows 11 26H2 in English and Polish: `DSO-EN-Home` and `DSO-PL-Home` (Core), `DSO-EN-Pro` and `DSO-PL-Pro` (Professional), **Passed** on each: case `ux-classic-context-menu`. Full run on each VM: 861 passed, 0 failed, 25 skipped. Earlier runs on Polish Windows below.
+
 Case `ux-classic-context-menu` (`Flow=Full`) in `tests/vm/cases.psd1`: `KeyAbsentAfterUndo` for `{86ca…}` and `{86ca…}\InprocServer32` (in `HKU\{UserSid}\…`), `NotWrittenTo` for the Administrator's HKCU. VM run on 2026-10-21 (`Invoke-VmTests.ps1`): **DSO-26H2-Home and DSO-26H2-Pro – passed**, steps detect `NotApplied` → apply `Applied` → detect `Applied` → undo `Undone` → detect `NotApplied`, the state after apply confirmed by an independent reading, final state = state before (`SnapshotDiff` empty). After undo the engine deleted both keys created by apply: `{86ca…}\InprocServer32` and `{86ca…}` (`KeyAbsentAfterUndo`). After apply the independent reading saw an empty default value (`Exists`, `String`, empty data) and detection `Applied`; after undo the key was missing and detection `NotApplied` (an empty default value and a missing key are distinguished). The Administrator's HKCU unchanged.
 
 ## Observed effect
