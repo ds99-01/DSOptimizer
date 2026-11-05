@@ -111,19 +111,21 @@ Describe 'Czysta logika (bez VM)' {
 }
 
 Describe 'Bezpieczniki (VM-only, mock-only)' {
-    It 'Test-E4A3VmComputerName: tylko DSO-26H2-HOME/PRO' {
-        Test-E4A3VmComputerName -ComputerName 'dso-26h2-pro' | Should -BeTrue
-        Test-E4A3VmComputerName -ComputerName 'DSO-26H2-HOME' | Should -BeTrue
+    It 'Test-E4A3VmComputerName: tylko cztery nazwy DSO (EN/PL, Home/Pro), stara nazwa odrzucona' {
+        Test-E4A3VmComputerName -ComputerName 'dso-en-pro' | Should -BeTrue
+        Test-E4A3VmComputerName -ComputerName 'dso-pl-home' | Should -BeTrue
+        Test-E4A3VmComputerName -ComputerName 'DSO-26H2-PRO' | Should -BeFalse
+        Test-E4A3VmComputerName -ComputerName 'DSO-PL-HOME' | Should -BeTrue
         Test-E4A3VmComputerName -ComputerName 'BRUTEFORCE_LTSC' | Should -BeFalse
         Test-E4A3VmComputerName -ComputerName '' | Should -BeFalse
     }
     It 'Assert-E4A3InsideVm rzuca w trybie mock-only, nawet z nazwą VM; poza trybem rzuca na hoście' {
-        { Assert-E4A3InsideVm -ComputerName 'DSO-26H2-PRO' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Assert-E4A3InsideVm -ComputerName 'DSO-PL-PRO' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
         $Saved = $env:DSO_VM_TESTS_MOCK_ONLY
         try {
             [Environment]::SetEnvironmentVariable('DSO_VM_TESTS_MOCK_ONLY', $null)
             { Assert-E4A3InsideVm -ComputerName 'HOST-PC' } | Should -Throw '*tylko w VM*'
-            { Assert-E4A3InsideVm -ComputerName 'DSO-26H2-HOME' } | Should -Not -Throw
+            { Assert-E4A3InsideVm -ComputerName 'DSO-PL-HOME' } | Should -Not -Throw
         }
         finally { $env:DSO_VM_TESTS_MOCK_ONLY = $Saved }
     }
@@ -301,9 +303,9 @@ Describe 'Skrypt dziecka K2 i wysyłka funkcji do VM' {
         $Text.Substring(0, 400) | Should -Match 'Instrukcja uruchomienia'
         $Text | Should -Match 'Opis działania'
         $Attr = (Get-Command $script:E4A3ScriptPath).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        $Attr.ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
         $Attr2 = (Get-Command Invoke-E4A3VmRun).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        $Attr2.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        $Attr2.ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
     }
 }
 
@@ -320,8 +322,8 @@ Describe 'Argumenty przebiegu' {
         Assert-E4A3OutDirectory -Path (Join-Path $env:TEMP 'dso-explore') -RepoRoot $Real | Should -Be (Join-Path $env:TEMP 'dso-explore')   # poza repo
     }
     It 'Get-E4A3RunArguments: VM i plan' {
-        $Arguments = Get-E4A3RunArguments -VmName 'DSO-26H2-Pro' -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
-        @($Arguments.VmName) | Should -Be @('DSO-26H2-Pro')
+        $Arguments = Get-E4A3RunArguments -VmName 'DSO-PL-Pro' -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
+        @($Arguments.VmName) | Should -Be @('DSO-PL-Pro')
         @($Arguments.Plan.Queries).Count | Should -Be 8
     }
 }
@@ -345,9 +347,9 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
         $script:SavedResult = $null
     }
     It 'przebieg: revert -> start -> gotowość -> inventory -> settings -> devices -> revert -> stan końcowy -> zapis' {
-        $Path = Invoke-E4A3VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive
-        $Path | Should -Be 'C:\w\DSO-26H2-Pro\e4a3.json'
-        @($script:Calls) | Should -Be @('revert DSO-26H2-Pro', 'start DSO-26H2-Pro', 'ready', 'phase inventory', 'phase settings', 'phase devices', 'revert DSO-26H2-Pro', 'save e4a3.json')
+        $Path = Invoke-E4A3VmRun -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive
+        $Path | Should -Be 'C:\w\DSO-PL-Pro\e4a3.json'
+        @($script:Calls) | Should -Be @('revert DSO-PL-Pro', 'start DSO-PL-Pro', 'ready', 'phase inventory', 'phase settings', 'phase devices', 'revert DSO-PL-Pro', 'save e4a3.json')
         $script:SavedResult.cleanup.Ok | Should -BeTrue
         $script:SavedResult.cleanup.FinalState | Should -Be 'Off'
         $script:SavedResult.error | Should -BeNullOrEmpty
@@ -355,43 +357,43 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
     It 'stan końcowy niezgodny z kontraktem (VM nie Off, karta na przełączniku): zapisany i zgłoszony' {
         Mock Get-VM { [pscustomobject]@{ Name = $Name; State = 'Running' } }
         Mock Get-VMNetworkAdapter { [pscustomobject]@{ VMName = $VMName; Name = 'Network Adapter'; SwitchName = 'Default Switch' } }
-        { Invoke-E4A3VmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive 3>$null } | Should -Throw '*stan końcowy*'
+        { Invoke-E4A3VmRun -VmName 'DSO-PL-Home' -OutDirectory $TestDrive 3>$null } | Should -Throw '*stan końcowy*'
         ($script:SavedResult.cleanup.Violations -join ' ') | Should -Match 'Running'
         ($script:SavedResult.cleanup.Violations -join ' ') | Should -Match 'Default Switch'
     }
     It 'błąd fazy: wynik częściowy zapisany, revert wykonany, wyjątek z nazwą VM' {
         Mock Invoke-E4A3VmPhase { if ($Phase -eq 'settings') { throw 'faza padła' }; [pscustomobject]@{ phase = $Phase } }
-        { Invoke-E4A3VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive } | Should -Throw '*DSO-26H2-Pro*faza padła*'
-        $script:Calls[-2] | Should -Be 'revert DSO-26H2-Pro'
+        { Invoke-E4A3VmRun -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive } | Should -Throw '*DSO-PL-Pro*faza padła*'
+        $script:Calls[-2] | Should -Be 'revert DSO-PL-Pro'
         $script:Calls[-1] | Should -Be 'save e4a3.json'
         $script:SavedResult.error | Should -Match 'faza padła'
         $script:SavedResult.phases.inventory.phase | Should -Be 'inventory'
     }
     It 'błąd uwierzytelnienia: przekazany dalej, revert wykonany; Invoke-E4A3Exploration zatrzymuje całość' {
         Mock Wait-VmReady { $E = [System.InvalidOperationException]::new('błąd uwierzytelnienia PowerShell Direct'); $E.Data['VmAuthFailure'] = $true; throw $E }
-        { Invoke-E4A3VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive } | Should -Throw '*uwierzytelnienia*'
-        $script:Calls | Should -Contain 'revert DSO-26H2-Pro'
-        $Arguments = Get-E4A3RunArguments -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
+        { Invoke-E4A3VmRun -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive } | Should -Throw '*uwierzytelnienia*'
+        $script:Calls | Should -Contain 'revert DSO-PL-Pro'
+        $Arguments = Get-E4A3RunArguments -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
         Mock Invoke-E4A3VmRun { $E = [System.InvalidOperationException]::new('x'); $E.Data['VmAuthFailure'] = $true; throw $E }
         { Invoke-E4A3Exploration -Arguments $Arguments 6>$null } | Should -Throw
         Should -Invoke Invoke-E4A3VmRun -Times 1 -Exactly -Scope It
     }
     It 'Invoke-E4A3Exploration: zwykły błąd jednej VM zapisany, druga idzie dalej' {
-        Mock Invoke-E4A3VmRun { if ($VmName -eq 'DSO-26H2-Home') { throw 'zwykły błąd' }; "C:\w\$VmName\e4a3.json" }
-        $Arguments = Get-E4A3RunArguments -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
+        Mock Invoke-E4A3VmRun { if ($VmName -eq 'DSO-PL-Home') { throw 'zwykły błąd' }; "C:\w\$VmName\e4a3.json" }
+        $Arguments = Get-E4A3RunArguments -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
         $Outcome = Invoke-E4A3Exploration -Arguments $Arguments 6>$null
         @($Outcome.Errors).Count | Should -Be 1
-        @($Outcome.Paths) | Should -Be @('C:\w\DSO-26H2-Pro\e4a3.json')
+        @($Outcome.Paths) | Should -Be @('C:\w\DSO-PL-Pro\e4a3.json')
     }
 }
 
 Describe 'Blok główny SKRYPTU (-ShowPlan; bez VM)' {
     It '-ShowPlan: kod 0, plan; bez -OutDirectory kod 1' {
         $env:DSO_VM_TESTS_MOCK_ONLY | Should -Be '1'
-        $Output = & $script:E4A3ScriptPath -ShowPlan -VmName DSO-26H2-Pro -OutDirectory (Join-Path $TestDrive 'w') 6>$null
+        $Output = & $script:E4A3ScriptPath -ShowPlan -VmName DSO-PL-Pro -OutDirectory (Join-Path $TestDrive 'w') 6>$null
         $LASTEXITCODE | Should -Be 0
         $Plan = ($Output | Out-String) | ConvertFrom-Json
-        @($Plan.VmName) | Should -Be @('DSO-26H2-Pro')
+        @($Plan.VmName) | Should -Be @('DSO-PL-Pro')
         @($Plan.Plan.SettingsUris | ForEach-Object { $_.Uri }) | Should -Contain 'ms-settings:windowsupdate'
         Test-Path -LiteralPath (Join-Path $TestDrive 'w') | Should -BeFalse
         & $script:E4A3ScriptPath -ShowPlan 6>$null | Out-Null

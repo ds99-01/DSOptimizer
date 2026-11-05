@@ -1,18 +1,20 @@
 ﻿<#
 Instrukcja uruchomienia:
     Nie uruchamiać ręcznie. Invoke-NetExploration.ps1 wysyła ten skrypt do VM i startuje go przez Invoke-DsoUserSessionScript
-    (zadanie Harmonogramu w sesji użytkownika dso, Interactive + Highest) z parametrem -ResultFile <plik json>.
+    (zadanie Harmonogramu w sesji użytkownika dso, Interactive + Highest) z parametrami -ResultFile <plik json> i -TextsFile <plik json>.
 Opis działania:
-    Sonda nawigacji okna programu (UI Automation): czeka na okno DSOptimizer, potem zaznacza kolejno każdą pozycję list "Menu"
-    i "Ustawienia" przez SelectionItemPattern, bez klikania przycisków i odnośników. Dłuższe oczekiwanie na stronach, które
-    czytają system (Specyfikacja, Przygotowanie, Aplikacje, Instalacja). Wynik JSON: Ok, Error, Steps, Pages.
+    Sonda nawigacji okna programu (UI Automation): czeka na okno DSOptimizer, potem zaznacza kolejno każdą pozycję list z pliku
+    tekstów (lists: nazwy dwóch list w języku okna) przez SelectionItemPattern, bez klikania przycisków i odnośników. Plik
+    tekstów (JSON UTF-8: lists, slowPages) składa host z tabel tłumaczeń. Dłuższe oczekiwanie na stronach, których nazwa zaczyna
+    się od któregoś z slowPages (strony czytające system). Wynik JSON: Ok, Error, Steps, Pages.
     Plik wysyłany do PowerShella 5.1 w VM; kod bez znaków spoza ASCII.
 #>
-param([Parameter(Mandatory)][string]$ResultFile)
+param([Parameter(Mandatory)][string]$ResultFile, [Parameter(Mandatory)][string]$TextsFile)
 $ErrorActionPreference = 'Stop'
 $Out = [ordered]@{ Ok = $false; Error = $null; Steps = @(); Pages = @() }
 function Add-Step([string]$Text) { $script:Out.Steps += ('{0:HH:mm:ss.fff} {1}' -f (Get-Date), $Text) }
 try {
+    $Texts = [System.IO.File]::ReadAllText($TextsFile, [System.Text.Encoding]::UTF8).TrimStart([char]0xFEFF) | ConvertFrom-Json
     Add-Type -AssemblyName UIAutomationClient
     Add-Type -AssemblyName UIAutomationTypes
     $AE = [System.Windows.Automation.AutomationElement]
@@ -29,7 +31,7 @@ try {
     $Root = $AE::FromHandle($Proc.MainWindowHandle)
     $ListType = [System.Windows.Automation.ControlType]::List
     $ItemType = [System.Windows.Automation.ControlType]::ListItem
-    foreach ($ListName in @('Menu', 'Ustawienia')) {
+    foreach ($ListName in @($Texts.lists)) {
         $Cond = New-Object System.Windows.Automation.AndCondition(
             (New-Object System.Windows.Automation.PropertyCondition($AE::NameProperty, $ListName)),
             (New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $ListType)))
@@ -42,7 +44,9 @@ try {
             $Name = [string]$Item.Current.Name
             $Item.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
             $Wait = 8
-            if ($Name -match '^(Aplikacje|Instalacja|Przygotowanie|Specyfikacja)') { $Wait = 45 }
+            foreach ($Slow in @($Texts.slowPages)) {
+                if ($Name.StartsWith([string]$Slow, [System.StringComparison]::Ordinal)) { $Wait = 45; break }
+            }
             Start-Sleep -Seconds $Wait
             $Out.Pages += [ordered]@{ List = $ListName; Name = $Name; WaitSeconds = $Wait; At = (Get-Date).ToUniversalTime().ToString('o') }
             Add-Step "strona $Name ($Wait s)"

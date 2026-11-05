@@ -101,7 +101,7 @@ Describe 'Sondy C5 (mocki; procesy, Explorer, Appx, zadania i okna hosta nietkni
         Mock Get-C5CurrentSessionId { 1 }
         Mock Assert-C5InsideVm { $script:Calls.Add('assert-vm') }
         Mock Get-C5ProcessSnapshot { if ($script:SnapQueue.Count -gt 1) { $script:SnapQueue.Dequeue() } elseif ($script:SnapQueue.Count -eq 1) { $script:SnapQueue.Peek() } else { @() } }
-        Mock Get-C5ProcessOwner { [pscustomobject]@{ User = 'dso'; Domain = 'DSO-26H2-PRO'; Owner = 'DSO-26H2-PRO\dso'; OwnerSid = 'S-1-5-21-1-1001'; Error = $null } }
+        Mock Get-C5ProcessOwner { [pscustomobject]@{ User = 'dso'; Domain = 'DSO-PL-PRO'; Owner = 'DSO-PL-PRO\dso'; OwnerSid = 'S-1-5-21-1-1001'; Error = $null } }
         $script:RegBlock = {
             [pscustomobject]@{ Key = "$Path\$Name"; KeyExists = $true; Exists = $false; Kind = $null; Value = $null; Hex = $null }
         }
@@ -273,7 +273,7 @@ Describe 'Sondy C5 (mocki; procesy, Explorer, Appx, zadania i okna hosta nietkni
             $Record = Invoke-C5LaunchProbe -FilePath 'C:\Windows\System32\control.exe' -Arguments '/name Microsoft.Sound' -AllowNames (Get-C5PanelAllowNames) -WithWindows
             $Record.Launch.ProcessId | Should -Be 100
             @($Record.At3s.NewProcesses | ForEach-Object { $_.ProcessId }) | Should -Be @(100, 101, 103, 108)
-            $Record.At3s.NewProcesses[0].Owner | Should -Be 'DSO-26H2-PRO\dso'
+            $Record.At3s.NewProcesses[0].Owner | Should -Be 'DSO-PL-PRO\dso'
             @($Record.At10s.NewWindows | ForEach-Object { $_.Handle }) | Should -Be @(2, 3, 4)
             # Wszystkie widoczne okna Eksploratora i Ustawień (także stare: ponowne użycie okna nie daje nowego uchwytu).
             @($Record.At3s.ShellWindows | ForEach-Object { $_.Handle }) | Should -Be @(1, 2, 4)
@@ -522,7 +522,7 @@ Describe 'Sondy C5 (mocki; procesy, Explorer, Appx, zadania i okna hosta nietkni
             Mock Set-Content { $script:Written = @{ Path = $LiteralPath; Value = $Value; Encoding = [string]$Encoding }; $script:Calls.Add("write $LiteralPath") }
             Mock Remove-Item { $script:Calls.Add("remove $LiteralPath") }
             Mock Test-Path { if ($LiteralPath -like '*.json') { $script:ResultPolls++; return ($script:ResultPolls -gt $script:ResultAfter) }; $false }
-            Mock Get-Content { '{"Ok":true,"Error":null,"ProcessId":4242,"SessionId":1,"Token":{"UserName":"DSO-26H2-PRO\\dso","ElevationTypeName":"Full"},"Data":[{"Id":"panels.sound"}]}' }
+            Mock Get-Content { '{"Ok":true,"Error":null,"ProcessId":4242,"SessionId":1,"Token":{"UserName":"DSO-PL-PRO\\dso","ElevationTypeName":"Full"},"Data":[{"Id":"panels.sound"}]}' }
             Mock New-ScheduledTaskAction { $script:Seen.Execute = $Execute; $script:Seen.Argument = $Argument; New-FakeTaskCim 'MSFT_TaskAction' }
             Mock New-ScheduledTaskPrincipal { $script:Seen.UserId = $UserId; $script:Seen.LogonType = [string]$LogonType; $script:Seen.RunLevel = [string]$RunLevel; New-FakeTaskCim 'MSFT_TaskPrincipal' }
             Mock New-ScheduledTaskSettingsSet { $script:Seen.Limit = $ExecutionTimeLimit; New-FakeTaskCim 'MSFT_TaskSettings' }
@@ -980,10 +980,12 @@ Describe 'Sondy C5 (mocki; procesy, Explorer, Appx, zadania i okna hosta nietkni
             Mock Invoke-C5ElevationQuery { throw 'Add-Type: błąd kompilacji' }
             (Get-C5ProcessTokenInfo -ProcessId 1).Error | Should -Match 'błąd kompilacji'
         }
-        It 'Test-C5VmComputerName: tylko DSO-26H2-HOME i DSO-26H2-PRO (nazwy z New-TestVm), host autora nie przechodzi' {
-            Test-C5VmComputerName -ComputerName 'DSO-26H2-PRO' | Should -BeTrue
-            Test-C5VmComputerName -ComputerName 'dso-26h2-home' | Should -BeTrue
-            foreach ($Bad in 'DAWID-PC', 'BRUTEFORCE_LTSC', 'DSO-26H2-TEST', '', $env:COMPUTERNAME) { Test-C5VmComputerName -ComputerName $Bad | Should -BeFalse }
+        It 'Test-C5VmComputerName: tylko cztery nazwy DSO (EN/PL, Home/Pro), stara nazwa i host autora nie przechodzą' {
+            Test-C5VmComputerName -ComputerName 'DSO-PL-PRO' | Should -BeTrue
+            Test-C5VmComputerName -ComputerName 'dso-en-home' | Should -BeTrue
+            Test-C5VmComputerName -ComputerName 'dso-en-pro' | Should -BeTrue
+            Test-C5VmComputerName -ComputerName 'DSO-PL-Home' | Should -BeTrue
+            foreach ($Bad in 'DAWID-PC', 'BRUTEFORCE_LTSC', 'DSO-26H2-TEST', 'DSO-26H2-PRO', '', $env:COMPUTERNAME) { Test-C5VmComputerName -ComputerName $Bad | Should -BeFalse }
         }
         It 'każda sonda i każda funkcja ze skutkiem w systemie zaczyna się od Assert-C5InsideVm (AST)' {
             foreach ($Name in 'Invoke-C5PanelsProbe', 'Invoke-C5WinUtilProbe', 'Invoke-C5StoreProbe', 'Invoke-C5ExplorerProbe', 'Invoke-C5PanelRun', 'Invoke-C5WinUtilRun',
@@ -1050,7 +1052,7 @@ Describe 'Wyłącznik "tylko VM" bez mocka (prawdziwy Assert-C5InsideVm): na ho�
         Mock Invoke-C5ExplorerProbe { throw 'sonda nie może ruszyć' }
     }
     It 'Assert-C5InsideVm rzuca w testach (DSO_VM_TESTS_MOCK_ONLY), nawet z nazwą komputera VM; bez nazwy VM też rzuca' {
-        { Assert-C5InsideVm -ComputerName 'DSO-26H2-PRO' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Assert-C5InsideVm -ComputerName 'DSO-PL-PRO' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
         { Assert-C5InsideVm } | Should -Throw
     }
     It 'Invoke-C5Collection: wyjątek przed pierwszą sondą (żadna sonda nie jest wołana)' {
@@ -1151,11 +1153,11 @@ Describe 'Wysyłka funkcji do VM (C5) i struktura skryptu' {
         $Text.Substring(0, 400) | Should -Match 'Instrukcja uruchomienia'
         $Text | Should -Match 'Opis działania'
     }
-    It 'parametr VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro (nigdy obcej VM), w skrypcie i w Invoke-C5Exploration' {
+    It 'parametr VmName przyjmuje tylko DSO-PL-Home i DSO-PL-Pro (nigdy obcej VM), w skrypcie i w Invoke-C5Exploration' {
         $Attr = (Get-Command $script:C5ScriptPath).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        $Attr.ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
         $Attr2 = (Get-Command Invoke-C5Exploration).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        $Attr2.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        $Attr2.ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
         { Invoke-C5Exploration -VmName 'ObcaVM' -OutDirectory $TestDrive } | Should -Throw
         (Get-Command $script:C5ScriptPath).Parameters.Keys | Should -Not -Contain 'PrepareManualTest'
     }
@@ -1226,7 +1228,7 @@ Describe 'Przebieg hosta C5 (orkiestracja na mockach; Hyper-V nietknięty)' {
         Mock -ModuleName ExploreCommon Invoke-Command { throw 'HOST: Invoke-Command niedozwolone w tym teście' }
     }
     It 'bez zmockowanego wyłącznika prawdziwa orkiestracja zatrzymuje się na DSO_VM_TESTS_MOCK_ONLY: błąd zapisany, zero Start-VM i revertu' {
-        $Outcome = Invoke-C5Exploration -VmName @('DSO-26H2-Pro') -OutDirectory $TestDrive
+        $Outcome = Invoke-C5Exploration -VmName @('DSO-PL-Pro') -OutDirectory $TestDrive
         @($Outcome.Paths).Count | Should -Be 0
         $Outcome.Errors[0] | Should -Match 'DSO_VM_TESTS_MOCK_ONLY'
         Should -Invoke -ModuleName ExploreCommon Start-VM -Times 0 -Exactly
@@ -1241,15 +1243,15 @@ Describe 'Przebieg hosta C5 (orkiestracja na mockach; Hyper-V nietknięty)' {
             }
         }
         It 'revert -> start -> ready -> SID dso -> zbieranie (Invoke-C5Collection z -UserSid) -> usunięcie sesji -> revert; JSON c5-exploration.json' {
-            $Outcome = Invoke-C5Exploration -VmName @('DSO-26H2-Pro') -OutDirectory $TestDrive
-            ($Order -join ',') | Should -Be 'restore:DSO-26H2-Pro:czysta-26H2,start:DSO-26H2-Pro,ready:DSO-26H2-Pro,sid,collect:Invoke-C5Collection:S-1-5-21-9-1001,removesession,restore:DSO-26H2-Pro:czysta-26H2'
-            $Outcome.Paths | Should -Be @((Join-Path $TestDrive 'DSO-26H2-Pro\c5-exploration.json'))
+            $Outcome = Invoke-C5Exploration -VmName @('DSO-PL-Pro') -OutDirectory $TestDrive
+            ($Order -join ',') | Should -Be 'restore:DSO-PL-Pro:czysta-26H2,start:DSO-PL-Pro,ready:DSO-PL-Pro,sid,collect:Invoke-C5Collection:S-1-5-21-9-1001,removesession,restore:DSO-PL-Pro:czysta-26H2'
+            $Outcome.Paths | Should -Be @((Join-Path $TestDrive 'DSO-PL-Pro\c5-exploration.json'))
             $Doc = Get-Content -LiteralPath $Outcome.Paths[0] -Raw -Encoding UTF8 | ConvertFrom-Json
-            $Doc.vmName | Should -Be 'DSO-26H2-Pro'
+            $Doc.vmName | Should -Be 'DSO-PL-Pro'
             $Doc.checkpoint | Should -Be 'czysta-26H2'
         }
         It '-Probe: punkt wejścia Invoke-C5EntryPoint z wybranymi sondami i -UserSid; skrypt zdalny poprawny składniowo' {
-            $null = Invoke-C5Exploration -VmName @('DSO-26H2-Home') -OutDirectory $TestDrive -Probe 'explorer', 'panels'
+            $null = Invoke-C5Exploration -VmName @('DSO-PL-Home') -OutDirectory $TestDrive -Probe 'explorer', 'panels'
             $script:Order | Should -Contain 'collect:Invoke-C5EntryPoint:S-1-5-21-9-1001'
             $script:Defs | Should -Match ([regex]::Escape("Invoke-C5Collection -Probe @('panels','explorer') -UserSid `$UserSid"))
             $Errors = $null
@@ -1257,23 +1259,23 @@ Describe 'Przebieg hosta C5 (orkiestracja na mockach; Hyper-V nietknięty)' {
             @($Errors).Count | Should -Be 0
         }
         It 'dwie VM po kolei (Home, potem Pro), każda z własnym revertem przed i po; checkpoint z parametru' {
-            $null = Invoke-C5Exploration -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory $TestDrive -CheckpointName 'inny'
-            @($Order | Where-Object { $_ -like 'restore:*' }) | Should -Be @('restore:DSO-26H2-Home:inny', 'restore:DSO-26H2-Home:inny', 'restore:DSO-26H2-Pro:inny', 'restore:DSO-26H2-Pro:inny')
+            $null = Invoke-C5Exploration -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -OutDirectory $TestDrive -CheckpointName 'inny'
+            @($Order | Where-Object { $_ -like 'restore:*' }) | Should -Be @('restore:DSO-PL-Home:inny', 'restore:DSO-PL-Home:inny', 'restore:DSO-PL-Pro:inny', 'restore:DSO-PL-Pro:inny')
         }
         It 'błąd zbierania: revert w finally, błąd zapisany, druga VM zebrana' {
             $script:Fail = $true
             Mock -ModuleName ExploreCommon Invoke-Command { if (-not $ArgumentList) { return 'S-1' }; if ($script:Fail) { $script:Fail = $false; throw 'zerwana sesja' }; '{"meta":{},"probes":{}}' }
-            $Outcome = Invoke-C5Exploration -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory $TestDrive
+            $Outcome = Invoke-C5Exploration -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -OutDirectory $TestDrive
             @($Outcome.Errors).Count | Should -Be 1
             $Outcome.Errors[0] | Should -Match 'zerwana sesja'
             @($Outcome.Paths).Count | Should -Be 1
-            $Order | Should -Contain 'restore:DSO-26H2-Home:czysta-26H2'
+            $Order | Should -Contain 'restore:DSO-PL-Home:czysta-26H2'
         }
         It 'błąd uwierzytelnienia zatrzymuje całość: druga VM nietknięta, revert pierwszej jest' {
             Mock -ModuleName ExploreCommon Wait-VmReady { $F = [System.InvalidOperationException]::new('odmowa logowania'); $F.Data['VmAuthFailure'] = $true; throw $F }
-            { Invoke-C5Exploration -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory $TestDrive } | Should -Throw '*odmowa logowania*'
+            { Invoke-C5Exploration -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -OutDirectory $TestDrive } | Should -Throw '*odmowa logowania*'
             ($Order | Where-Object { $_ -like '*Pro*' }) | Should -BeNullOrEmpty
-            $Order[-1] | Should -Be 'restore:DSO-26H2-Home:czysta-26H2'
+            $Order[-1] | Should -Be 'restore:DSO-PL-Home:czysta-26H2'
         }
         It 'skrypt nie dubluje logiki Hyper-V (tylko Invoke-ExploreAll z -PassUserSid)' {
             $Text = [System.IO.File]::ReadAllText($script:C5ScriptPath, [System.Text.Encoding]::UTF8)
@@ -1297,7 +1299,7 @@ Describe 'Blok główny SKRYPTU (wywołanie pliku z -ShowPlan; bez VM, bez Hyper
         $Result = Invoke-C5ScriptPlan -Arguments @{ OutDirectory = (Join-Path $TestDrive 'wyniki'); ShowPlan = $true }
         $Result.ExitCode | Should -Be 0
         @($Result.Plan.Probe) | Should -Be @('panels', 'winutil', 'store', 'explorer')
-        @($Result.Plan.VmName) | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        @($Result.Plan.VmName) | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
         $Result.Plan.CheckpointName | Should -Be 'czysta-26H2'
         $Result.Plan.ReadyTimeoutSeconds | Should -Be 1200
         $Result.Plan.OutDirectory | Should -Be (Join-Path $TestDrive 'wyniki')
@@ -1305,16 +1307,16 @@ Describe 'Blok główny SKRYPTU (wywołanie pliku z -ShowPlan; bez VM, bez Hyper
         Test-Path -LiteralPath (Join-Path $TestDrive 'wyniki') | Should -BeFalse
     }
     It 'z -Probe explorer,panels i jawnymi parametrami: wybrane sondy w kolejności przebiegu, jedna VM, checkpoint i limit z parametrów' {
-        $Result = Invoke-C5ScriptPlan -Arguments @{ OutDirectory = (Join-Path $TestDrive 'w2'); Probe = @('explorer', 'panels'); VmName = @('DSO-26H2-Pro'); CheckpointName = 'inny'; ReadyTimeoutSeconds = 600; ShowPlan = $true }
+        $Result = Invoke-C5ScriptPlan -Arguments @{ OutDirectory = (Join-Path $TestDrive 'w2'); Probe = @('explorer', 'panels'); VmName = @('DSO-PL-Pro'); CheckpointName = 'inny'; ReadyTimeoutSeconds = 600; ShowPlan = $true }
         $Result.ExitCode | Should -Be 0
         @($Result.Plan.Probe) | Should -Be @('panels', 'explorer')
-        @($Result.Plan.VmName) | Should -Be @('DSO-26H2-Pro')
+        @($Result.Plan.VmName) | Should -Be @('DSO-PL-Pro')
         $Result.Plan.CheckpointName | Should -Be 'inny'
         $Result.Plan.ReadyTimeoutSeconds | Should -Be 600
     }
     It '-Probe panels -Variant (trzy warianty uzupełniające): plan pokazuje warianty; -Variant bez sondy panels => kod 1' {
         $Names = @('security-maintenance-control', 'system-properties-control', 'devices-printers-explorer')
-        $Result = Invoke-C5ScriptPlan -Arguments @{ OutDirectory = (Join-Path $TestDrive 'w3'); Probe = @('panels'); Variant = $Names; VmName = @('DSO-26H2-Pro'); ShowPlan = $true }
+        $Result = Invoke-C5ScriptPlan -Arguments @{ OutDirectory = (Join-Path $TestDrive 'w3'); Probe = @('panels'); Variant = $Names; VmName = @('DSO-PL-Pro'); ShowPlan = $true }
         $Result.ExitCode | Should -Be 0
         @($Result.Plan.Probe) | Should -Be @('panels')
         @($Result.Plan.Variant) | Should -Be $Names
@@ -1326,13 +1328,13 @@ Describe 'Blok główny SKRYPTU (wywołanie pliku z -ShowPlan; bez VM, bez Hyper
         $Runspace = [powershell]::Create()
         try {
             $Out = Join-Path $TestDrive 'swiezy'
-            $null = $Runspace.AddScript("`$env:DSO_VM_TESTS_MOCK_ONLY = '1'; `$Plan = & '$($script:C5ScriptPath)' -VmName DSO-26H2-Pro -Probe panels -Variant security-maintenance-control,system-properties-control,devices-printers-explorer -OutDirectory '$Out' -ShowPlan 6>`$null; [pscustomobject]@{ Exit = `$LASTEXITCODE; Plan = (`$Plan | Out-String) }")
+            $null = $Runspace.AddScript("`$env:DSO_VM_TESTS_MOCK_ONLY = '1'; `$Plan = & '$($script:C5ScriptPath)' -VmName DSO-PL-Pro -Probe panels -Variant security-maintenance-control,system-properties-control,devices-printers-explorer -OutDirectory '$Out' -ShowPlan 6>`$null; [pscustomobject]@{ Exit = `$LASTEXITCODE; Plan = (`$Plan | Out-String) }")
             $Result = @($Runspace.Invoke())[0]
             @($Runspace.Streams.Error | ForEach-Object { $_.ToString() }) | Should -BeNullOrEmpty
             $Result.Exit | Should -Be 0
             $Plan = $Result.Plan | ConvertFrom-Json
             @($Plan.Variant) | Should -Be @('security-maintenance-control', 'system-properties-control', 'devices-printers-explorer')
-            @($Plan.VmName) | Should -Be @('DSO-26H2-Pro')
+            @($Plan.VmName) | Should -Be @('DSO-PL-Pro')
         }
         finally { $Runspace.Dispose() }
     }
@@ -1344,25 +1346,25 @@ Describe 'Blok główny SKRYPTU (wywołanie pliku z -ShowPlan; bez VM, bez Hyper
     }
     It 'Get-C5RunArguments: $null, pusta lista i lista z pustym elementem => pełna lista; wybór => kolejność przebiegu' {
         foreach ($Empty in @($null, @(), @(''))) {
-            @((Get-C5RunArguments -VmName 'DSO-26H2-Home' -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -Probe $Empty).Probe) | Should -Be @('panels', 'winutil', 'store', 'explorer')
+            @((Get-C5RunArguments -VmName 'DSO-PL-Home' -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -Probe $Empty).Probe) | Should -Be @('panels', 'winutil', 'store', 'explorer')
         }
-        @((Get-C5RunArguments -VmName 'DSO-26H2-Home' -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60).Probe) | Should -Be @('panels', 'winutil', 'store', 'explorer')
-        @((Get-C5RunArguments -VmName 'DSO-26H2-Home' -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -Probe 'store', 'winutil').Probe) | Should -Be @('winutil', 'store')
+        @((Get-C5RunArguments -VmName 'DSO-PL-Home' -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60).Probe) | Should -Be @('panels', 'winutil', 'store', 'explorer')
+        @((Get-C5RunArguments -VmName 'DSO-PL-Home' -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -Probe 'store', 'winutil').Probe) | Should -Be @('winutil', 'store')
     }
     It 'Invoke-C5Exploration -Variant: punkt wejścia z -Probe i -Variant; -Variant bez panels w -Probe => wyjątek; New-C5EntryPoint przepuszcza tylko ten kształt' {
         Mock Invoke-ExploreAll { $script:SeenScript = $RemoteScript; [pscustomobject]@{ Paths = @(); Errors = @() } }
-        $Arguments = Get-C5RunArguments -VmName @('DSO-26H2-Pro') -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 1200 -Probe 'panels' -Variant 'system-properties-control', 'devices-printers-explorer'
+        $Arguments = Get-C5RunArguments -VmName @('DSO-PL-Pro') -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 1200 -Probe 'panels' -Variant 'system-properties-control', 'devices-printers-explorer'
         $null = Invoke-C5Exploration @Arguments
         $script:SeenScript | Should -Match ([regex]::Escape("Invoke-C5Collection -Probe @('panels') -Variant @('system-properties-control','devices-printers-explorer') -UserSid `$UserSid"))
-        { Get-C5RunArguments -VmName 'DSO-26H2-Pro' -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -Probe 'store' -Variant 'devices-printers-explorer' } | Should -Throw '*tylko sondy panels*'
-        { Invoke-C5Exploration -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Probe 'store' -Variant 'devices-printers-explorer' } | Should -Throw '*tylko sondy panels*'
-        { Invoke-C5Exploration -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Probe 'panels' -Variant 'nieznany' } | Should -Throw
+        { Get-C5RunArguments -VmName 'DSO-PL-Pro' -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -Probe 'store' -Variant 'devices-printers-explorer' } | Should -Throw '*tylko sondy panels*'
+        { Invoke-C5Exploration -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive -Probe 'store' -Variant 'devices-printers-explorer' } | Should -Throw '*tylko sondy panels*'
+        { Invoke-C5Exploration -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive -Probe 'panels' -Variant 'nieznany' } | Should -Throw
         { New-C5EntryPoint -Body "Invoke-C5Collection -Probe @('panels') -Variant @('a-b','c')" } | Should -Not -Throw
         foreach ($Bad in "Invoke-C5Collection -Variant @('A;B')", "Invoke-C5Collection -Variant @('a') -Probe @('panels')", "Invoke-C5Collection -Variant @('a b')") { { New-C5EntryPoint -Body $Bad } | Should -Throw }
     }
     It 'pełna lista z Get-C5RunArguments przechodzi walidację Invoke-C5Exploration (splat jak w bloku głównym)' {
         Mock Invoke-ExploreAll { $script:SeenScript = $RemoteScript; $script:SeenEntry = $EntryCommand; [pscustomobject]@{ Paths = @(); Errors = @() } }
-        $Arguments = Get-C5RunArguments -VmName @('DSO-26H2-Home') -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 1200 -Probe $null
+        $Arguments = Get-C5RunArguments -VmName @('DSO-PL-Home') -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 1200 -Probe $null
         { $null = Invoke-C5Exploration @Arguments } | Should -Not -Throw
         $script:SeenEntry | Should -Be 'Invoke-C5EntryPoint'
         $script:SeenScript | Should -Match ([regex]::Escape("Invoke-C5Collection -Probe @('panels','winutil','store','explorer') -UserSid `$UserSid"))

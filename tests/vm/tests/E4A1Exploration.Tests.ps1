@@ -112,19 +112,21 @@ Describe 'Plan pozycji (dane z planu Tasku 4, dosłownie)' {
 }
 
 Describe 'Bezpieczniki (VM-only, mock-only)' {
-    It 'Test-E4A1VmComputerName: tylko DSO-26H2-HOME/PRO' {
-        Test-E4A1VmComputerName -ComputerName 'dso-26h2-pro' | Should -BeTrue
-        Test-E4A1VmComputerName -ComputerName 'DSO-26H2-HOME' | Should -BeTrue
+    It 'Test-E4A1VmComputerName: tylko cztery nazwy DSO (EN/PL, Home/Pro), stara nazwa odrzucona' {
+        Test-E4A1VmComputerName -ComputerName 'dso-en-pro' | Should -BeTrue
+        Test-E4A1VmComputerName -ComputerName 'dso-pl-home' | Should -BeTrue
+        Test-E4A1VmComputerName -ComputerName 'DSO-26H2-PRO' | Should -BeFalse
+        Test-E4A1VmComputerName -ComputerName 'DSO-PL-HOME' | Should -BeTrue
         Test-E4A1VmComputerName -ComputerName 'BRUTEFORCE_LTSC' | Should -BeFalse
         Test-E4A1VmComputerName -ComputerName '' | Should -BeFalse
     }
     It 'Assert-E4A1InsideVm rzuca w trybie mock-only, nawet z nazwą VM; poza trybem rzuca na hoście' {
-        { Assert-E4A1InsideVm -ComputerName 'DSO-26H2-PRO' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Assert-E4A1InsideVm -ComputerName 'DSO-PL-PRO' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
         $Saved = $env:DSO_VM_TESTS_MOCK_ONLY
         try {
             [Environment]::SetEnvironmentVariable('DSO_VM_TESTS_MOCK_ONLY', $null)
             { Assert-E4A1InsideVm -ComputerName 'HOST-PC' } | Should -Throw '*tylko w VM*'
-            { Assert-E4A1InsideVm -ComputerName 'DSO-26H2-HOME' } | Should -Not -Throw
+            { Assert-E4A1InsideVm -ComputerName 'DSO-PL-HOME' } | Should -Not -Throw
         }
         finally { $env:DSO_VM_TESTS_MOCK_ONLY = $Saved }
     }
@@ -381,9 +383,9 @@ Describe 'Skrypt dziecka K2 i wysyłka funkcji do VM' {
         $Text.Substring(0, 400) | Should -Match 'Instrukcja uruchomienia'
         $Text | Should -Match 'Opis działania'
         $Attr = (Get-Command $script:E4A1ScriptPath).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        $Attr.ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
         $Attr2 = (Get-Command Invoke-E4A1VmGroup).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        $Attr2.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        $Attr2.ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
     }
 }
 
@@ -396,11 +398,11 @@ Describe 'Wybór pozycji i argumenty przebiegu' {
         { Select-E4A1Specs -Group ai -Candidate 'nie-ma' } | Should -Throw '*Nieznana pozycja*'
     }
     It 'Get-E4A1RunArguments: bez -Group wszystkie grupy bez reboot; -Candidate spoza wybranych grup rzuca' {
-        $Arguments = Get-E4A1RunArguments -VmName 'DSO-26H2-Pro' -OutDirectory 'C:\w' -Group $null -Candidate $null -RebootCandidate $null -CheckpointName 'c' -ReadyTimeoutSeconds 60
+        $Arguments = Get-E4A1RunArguments -VmName 'DSO-PL-Pro' -OutDirectory 'C:\w' -Group $null -Candidate $null -RebootCandidate $null -CheckpointName 'c' -ReadyTimeoutSeconds 60
         @($Arguments.Groups) | Should -Be @('ai', 'search', 'ads', 'telemetry', 'ux')
         $Arguments.Network | Should -BeTrue
-        { Get-E4A1RunArguments -VmName 'DSO-26H2-Pro' -OutDirectory 'C:\w' -Group @('ai') -Candidate @('softlanding') -RebootCandidate $null -CheckpointName 'c' -ReadyTimeoutSeconds 60 } | Should -Throw '*nie należy*'
-        (Get-E4A1RunArguments -VmName 'DSO-26H2-Pro' -OutDirectory 'C:\w' -Group @('reboot', 'ai') -Candidate $null -RebootCandidate @('diagtrack') -CheckpointName 'c' -ReadyTimeoutSeconds 60 -Network $false).Groups | Should -Be @('ai', 'reboot')
+        { Get-E4A1RunArguments -VmName 'DSO-PL-Pro' -OutDirectory 'C:\w' -Group @('ai') -Candidate @('softlanding') -RebootCandidate $null -CheckpointName 'c' -ReadyTimeoutSeconds 60 } | Should -Throw '*nie należy*'
+        (Get-E4A1RunArguments -VmName 'DSO-PL-Pro' -OutDirectory 'C:\w' -Group @('reboot', 'ai') -Candidate $null -RebootCandidate @('diagtrack') -CheckpointName 'c' -ReadyTimeoutSeconds 60 -Network $false).Groups | Should -Be @('ai', 'reboot')
     }
     It 'Assert-E4A1OutDirectory: wymagany, bezwzględny, poza repo; w repo tylko ignorowane przez git' {
         $Repo = 'C:\Repo\DSOptimizer'
@@ -440,9 +442,9 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
         $script:SavedResult = $null
     }
     It 'grupa zwykła: revert -> sieć -> start -> faza main -> revert -> odłączenie -> sprawdzenie stanu końcowego -> zapis' {
-        $Path = Invoke-E4A1VmGroup -VmName 'DSO-26H2-Pro' -Group 'ai' -Specs @(@{ Id = 'widgets-policy' }) -OutDirectory $TestDrive
-        $Path | Should -Be 'C:\w\DSO-26H2-Pro\e4a1-ai.json'
-        @($script:Calls) | Should -Be @('revert DSO-26H2-Pro', 'connect DSO-26H2-Pro Default Switch', 'start DSO-26H2-Pro', 'ready', 'phase main', 'revert DSO-26H2-Pro', 'disconnect DSO-26H2-Pro', 'save e4a1-ai.json')
+        $Path = Invoke-E4A1VmGroup -VmName 'DSO-PL-Pro' -Group 'ai' -Specs @(@{ Id = 'widgets-policy' }) -OutDirectory $TestDrive
+        $Path | Should -Be 'C:\w\DSO-PL-Pro\e4a1-ai.json'
+        @($script:Calls) | Should -Be @('revert DSO-PL-Pro', 'connect DSO-PL-Pro Default Switch', 'start DSO-PL-Pro', 'ready', 'phase main', 'revert DSO-PL-Pro', 'disconnect DSO-PL-Pro', 'save e4a1-ai.json')
         $script:SavedResult.cleanup.Ok | Should -BeTrue
         $script:SavedResult.cleanup.FinalState | Should -Be 'Off'
         [string]$script:SavedResult.cleanup.FinalSwitch | Should -BeNullOrEmpty
@@ -451,7 +453,7 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
     It 'nieudane odłączenie sieci: zapisane w wyniku (cleanup.DisconnectError, error) i zgłoszone wyjątkiem, nie ukryte' {
         Mock Disconnect-VMNetworkAdapter { $script:Calls.Add("disconnect $VMName"); throw 'karta zajęta' }
         Mock Get-VMNetworkAdapter { [pscustomobject]@{ VMName = $VMName; Name = 'Network Adapter'; SwitchName = 'Default Switch' } }
-        { Invoke-E4A1VmGroup -VmName 'DSO-26H2-Pro' -Group 'ai' -Specs @(@{ Id = 'widgets-policy' }) -OutDirectory $TestDrive 3>$null } | Should -Throw '*odłączenie sieci*karta zajęta*'
+        { Invoke-E4A1VmGroup -VmName 'DSO-PL-Pro' -Group 'ai' -Specs @(@{ Id = 'widgets-policy' }) -OutDirectory $TestDrive 3>$null } | Should -Throw '*odłączenie sieci*karta zajęta*'
         $script:SavedResult.cleanup.Ok | Should -BeFalse
         $script:SavedResult.cleanup.DisconnectError | Should -Match 'karta zajęta'
         $script:SavedResult.cleanup.FinalSwitch | Should -Be 'Default Switch'
@@ -461,7 +463,7 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
     It 'stan końcowy niezgodny z kontraktem (VM nie Off, karta dalej na przełączniku): zapisany i zgłoszony' {
         Mock Get-VM { [pscustomobject]@{ Name = $Name; State = 'Running' } }
         Mock Get-VMNetworkAdapter { [pscustomobject]@{ VMName = $VMName; Name = 'Network Adapter'; SwitchName = 'Default Switch' } }
-        { Invoke-E4A1VmGroup -VmName 'DSO-26H2-Home' -Group 'ux' -Specs @(@{ Id = 'game-dvr' }) -OutDirectory $TestDrive 3>$null } | Should -Throw '*stan końcowy*'
+        { Invoke-E4A1VmGroup -VmName 'DSO-PL-Home' -Group 'ux' -Specs @(@{ Id = 'game-dvr' }) -OutDirectory $TestDrive 3>$null } | Should -Throw '*stan końcowy*'
         $script:SavedResult.cleanup.Ok | Should -BeFalse
         ($script:SavedResult.cleanup.Violations -join ' ') | Should -Match 'Running'
         ($script:SavedResult.cleanup.Violations -join ' ') | Should -Match 'Default Switch'
@@ -469,43 +471,43 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
     It 'nieudany revert: zapisany w wyniku i zgłoszony; odłączenie sieci i tak próbowane' {
         $script:RevertCount = 0
         Mock Restore-VmCleanState { $script:Calls.Add("revert $VmName"); $script:RevertCount++; if ($script:RevertCount -gt 1) { throw 'checkpoint zablokowany' } }
-        { Invoke-E4A1VmGroup -VmName 'DSO-26H2-Pro' -Group 'ai' -Specs @(@{ Id = 'widgets-policy' }) -OutDirectory $TestDrive 3>$null } | Should -Throw '*revert*checkpoint zablokowany*'
-        $script:Calls | Should -Contain 'disconnect DSO-26H2-Pro'
+        { Invoke-E4A1VmGroup -VmName 'DSO-PL-Pro' -Group 'ai' -Specs @(@{ Id = 'widgets-policy' }) -OutDirectory $TestDrive 3>$null } | Should -Throw '*revert*checkpoint zablokowany*'
+        $script:Calls | Should -Contain 'disconnect DSO-PL-Pro'
         $script:SavedResult.cleanup.RevertError | Should -Match 'checkpoint zablokowany'
     }
     It 'grupa reboot: apply -> restart -> after -> restart -> undone' {
-        $null = Invoke-E4A1VmGroup -VmName 'DSO-26H2-Home' -Group 'reboot' -Specs @(@{ Id = 'diagtrack' }) -OutDirectory $TestDrive
+        $null = Invoke-E4A1VmGroup -VmName 'DSO-PL-Home' -Group 'reboot' -Specs @(@{ Id = 'diagtrack' }) -OutDirectory $TestDrive
         @($script:Calls | Where-Object { $_ -like 'phase *' -or $_ -eq 'reboot' }) | Should -Be @('phase apply', 'reboot', 'phase after', 'reboot', 'phase undone')
-        $script:Calls[-2] | Should -Be 'disconnect DSO-26H2-Home'
+        $script:Calls[-2] | Should -Be 'disconnect DSO-PL-Home'
         $script:Calls[-1] | Should -Be 'save e4a1-reboot.json'
     }
     It '-Network $false: bez podłączania i odłączania karty; przełącznik karty nie jest częścią kontraktu' {
         Mock Get-VMNetworkAdapter { [pscustomobject]@{ VMName = $VMName; Name = 'Network Adapter'; SwitchName = 'Inny' } }
-        $null = Invoke-E4A1VmGroup -VmName 'DSO-26H2-Pro' -Group 'ux' -Specs @(@{ Id = 'game-dvr' }) -OutDirectory $TestDrive -Network $false
+        $null = Invoke-E4A1VmGroup -VmName 'DSO-PL-Pro' -Group 'ux' -Specs @(@{ Id = 'game-dvr' }) -OutDirectory $TestDrive -Network $false
         @($script:Calls | Where-Object { $_ -like 'connect*' -or $_ -like 'disconnect*' }).Count | Should -Be 0
         $script:SavedResult.cleanup.Ok | Should -BeTrue
     }
     It 'błąd fazy: wynik częściowy zapisany, revert i odłączenie wykonane, wyjątek z nazwą grupy' {
         Mock Invoke-E4A1VmPhase { throw 'faza padła' }
-        { Invoke-E4A1VmGroup -VmName 'DSO-26H2-Pro' -Group 'ads' -Specs @(@{ Id = 'softlanding' }) -OutDirectory $TestDrive } | Should -Throw "*grupa 'ads'*faza padła*"
-        $script:Calls[-3] | Should -Be 'revert DSO-26H2-Pro'
-        $script:Calls[-2] | Should -Be 'disconnect DSO-26H2-Pro'
+        { Invoke-E4A1VmGroup -VmName 'DSO-PL-Pro' -Group 'ads' -Specs @(@{ Id = 'softlanding' }) -OutDirectory $TestDrive } | Should -Throw "*grupa 'ads'*faza padła*"
+        $script:Calls[-3] | Should -Be 'revert DSO-PL-Pro'
+        $script:Calls[-2] | Should -Be 'disconnect DSO-PL-Pro'
         $script:Calls[-1] | Should -Be 'save e4a1-ads.json'
         $script:SavedResult.error | Should -Match 'faza padła'
     }
     It 'błąd uwierzytelnienia: przekazany dalej (stop całości), revert i odłączenie wykonane' {
         Mock Wait-VmReady { $E = [System.InvalidOperationException]::new('błąd uwierzytelnienia PowerShell Direct'); $E.Data['VmAuthFailure'] = $true; throw $E }
-        { Invoke-E4A1VmGroup -VmName 'DSO-26H2-Pro' -Group 'ai' -Specs @(@{ Id = 'copilot-policy' }) -OutDirectory $TestDrive } | Should -Throw '*uwierzytelnienia*'
-        $script:Calls | Should -Contain 'revert DSO-26H2-Pro'
-        $script:Calls | Should -Contain 'disconnect DSO-26H2-Pro'
+        { Invoke-E4A1VmGroup -VmName 'DSO-PL-Pro' -Group 'ai' -Specs @(@{ Id = 'copilot-policy' }) -OutDirectory $TestDrive } | Should -Throw '*uwierzytelnienia*'
+        $script:Calls | Should -Contain 'revert DSO-PL-Pro'
+        $script:Calls | Should -Contain 'disconnect DSO-PL-Pro'
         $script:Calls[-1] | Should -Be 'save e4a1-ai.json'
     }
     It 'Invoke-E4A1Exploration: błąd uwierzytelnienia zatrzymuje całość; inny błąd zapisany i kolejne grupy idą dalej' {
         Mock Invoke-E4A1VmGroup { if ($Group -eq 'ai') { throw 'zwykły błąd' }; "C:\w\$VmName\e4a1-$Group.json" }
-        $Arguments = Get-E4A1RunArguments -VmName 'DSO-26H2-Pro' -OutDirectory 'C:\w' -Group @('ai', 'ux') -Candidate $null -RebootCandidate $null -CheckpointName 'c' -ReadyTimeoutSeconds 60
+        $Arguments = Get-E4A1RunArguments -VmName 'DSO-PL-Pro' -OutDirectory 'C:\w' -Group @('ai', 'ux') -Candidate $null -RebootCandidate $null -CheckpointName 'c' -ReadyTimeoutSeconds 60
         $Outcome = Invoke-E4A1Exploration -Arguments $Arguments -Candidate $null -RebootCandidate $null 6>$null
         @($Outcome.Errors).Count | Should -Be 1
-        @($Outcome.Paths) | Should -Be @('C:\w\DSO-26H2-Pro\e4a1-ux.json')
+        @($Outcome.Paths) | Should -Be @('C:\w\DSO-PL-Pro\e4a1-ux.json')
         Mock Invoke-E4A1VmGroup { $E = [System.InvalidOperationException]::new('x'); $E.Data['VmAuthFailure'] = $true; throw $E }
         { Invoke-E4A1Exploration -Arguments $Arguments -Candidate $null -RebootCandidate $null 6>$null } | Should -Throw
         Should -Invoke Invoke-E4A1VmGroup -Times 2 -Exactly -ParameterFilter { $Group -eq 'ai' } -Scope It
@@ -516,7 +518,7 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
 Describe 'Blok główny SKRYPTU (-ShowPlan; bez VM)' {
     It '-ShowPlan: kod 0, plan grup i pozycji; bez -OutDirectory kod 1' {
         $env:DSO_VM_TESTS_MOCK_ONLY | Should -Be '1'
-        $Output = & $script:E4A1ScriptPath -ShowPlan -VmName DSO-26H2-Pro -Group ux, reboot -RebootCandidate diagtrack -OutDirectory (Join-Path $TestDrive 'w') 6>$null
+        $Output = & $script:E4A1ScriptPath -ShowPlan -VmName DSO-PL-Pro -Group ux, reboot -RebootCandidate diagtrack -OutDirectory (Join-Path $TestDrive 'w') 6>$null
         $LASTEXITCODE | Should -Be 0
         $Plan = ($Output | Out-String) | ConvertFrom-Json
         @($Plan.Groups) | Should -Be @('ux', 'reboot')

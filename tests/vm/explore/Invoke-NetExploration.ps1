@@ -4,14 +4,14 @@ Instrukcja uruchomienia:
     VM utworzone wcześniej przez New-TestVm.ps1 (checkpoint 'czysta-26H2', poświadczenia w %LOCALAPPDATA%\DSOptimizer-vm, autologon 'dso').
     Jedna VM na proces. Wydanie: zip z tools\release\Build-Release.ps1 -Variant Folder (DSOptimizer-<wersja>.zip, obok SHA256SUMS.txt), np.:
         .\tools\release\Build-Release.ps1 -Variant Folder -OutRoot $env:TEMP\dso-explore\4.0.3\wydania
-        .\tests\vm\explore\Invoke-NetExploration.ps1 -VmName DSO-26H2-Pro -Scenario start-on,start-off,cli `
+        .\tests\vm\explore\Invoke-NetExploration.ps1 -VmName DSO-EN-Pro -Scenario start-on,start-off,cli `
             -ArtifactPath <katalog wydania>\DSOptimizer-4.0.3.zip -OutDirectory $env:TEMP\dso-explore\4.0.3\siec\pro
     Wersja zainstalowana: zamiast -ArtifactPath podaj -InstallerPath <katalog wydania>\DSOptimizer-<wersja>-setup.exe (obok SHA256SUMS.txt
     z jego sumą). Parametry wykluczają się: dokładnie jeden z dwóch jest wymagany (błąd przed dotknięciem VM). W VM zamiast rozpakowania
     działa cicha instalacja (/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-, wymagany kod 0) do C:\Program Files\DSOptimizer, a pomiar
     dotyczy C:\Program Files\DSOptimizer\DSOptimizer.exe (appVersion = FileVersion zainstalowanego pliku). net.json ma pole variant
     (Folder albo Installer). Instalator uruchamia się wyłącznie w VM, nigdy na hoście.
-        .\tests\vm\explore\Invoke-NetExploration.ps1 -VmName DSO-26H2-Pro -InstallerPath <katalog wydania>\DSOptimizer-4.0.4-setup.exe `
+        .\tests\vm\explore\Invoke-NetExploration.ps1 -VmName DSO-EN-Pro -InstallerPath <katalog wydania>\DSOptimizer-4.0.4-setup.exe `
             -OutDirectory $env:TEMP\dso-explore\instalator\siec\pro
     -Scenario: start-on, start-off, cli (domyślnie wszystkie trzy, w tej kolejności).
     -ShowPlan: wypisuje rozstrzygnięte argumenty i plan (JSON) i kończy, nic nie uruchamia.
@@ -24,7 +24,7 @@ Opis działania:
     potomkowie dowolnej głębokości) i do zapytań DNS z tego drzewa. Sieć: Default Switch, podłączona dopiero po starcie VM i na czas
     scenariusza. W VM próba zatrzymania wuauserv, UsoSvc, DoSvc i BITS (wynik każdej w polu services; DoSvc odmawia zmiany: Odmowa dostępu) (usługi Windows pobierające w tle zalewały ślad i nie należą do programu).
     Scenariusze (każdy: revert do checkpointu, start VM bez sieci, wydanie z -ArtifactPath rozpakowane do C:\dso\app albo z -InstallerPath zainstalowane po cichu, konto 'dso'):
-      start-on  - settings.json z {"schemaVersion":1,"language":"pl"} (pole checkUpdatesAtStart nieobecne = test wartości domyślnej),
+      start-on  - settings.json z {"schemaVersion":1,"language":"<język VM: pl albo en>"} (pole checkUpdatesAtStart nieobecne = test wartości domyślnej),
                   start okna i net\NavProbe.ps1 po wszystkich stronach bez klikania przycisków;
       start-off - jak start-on, ale settings.json dodatkowo z "checkUpdatesAtStart":false;
       cli       - settings.json jak w start-on (sprawdzanie włączone), potem --list-install i --list-apps.
@@ -51,7 +51,7 @@ Opis działania:
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName = 'DSO-26H2-Pro',
+    [ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName = 'DSO-EN-Pro',
     [ValidateSet('start-on', 'start-off', 'cli')][string[]]$Scenario = @('start-on', 'start-off', 'cli'),
     [string]$OutDirectory,
     [string]$CheckpointName = 'czysta-26H2',
@@ -65,15 +65,38 @@ param(
 
 Import-Module (Join-Path $PSScriptRoot 'ExploreCommon.psm1') -Force
 Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'modules\VmSmoke.psm1')
+Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'modules\VmText.psm1')
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Plan i werdykt (czyste funkcje, bez dotykania VM).
 # ---------------------------------------------------------------------------------------------------------------------
 
+function Get-NetNavTexts {
+    # Nazwy z okna dla sondy nawigacji (net\NavProbe.ps1) w języku VM: JSON { lists, slowPages }. Teksty wyłącznie z tabel tłumaczeń
+    # repo (Get-DsoUiText; brak tłumaczenia = wyjątek); polskie klucze to nazwy list i stron okna.
+    [CmdletBinding()]
+    [OutputType([string])]
+    param([Parameter(Mandatory)][ValidateSet('pl', 'en')][string]$Language, [string]$Root)
+    $Text = {
+        param([string]$Polish)
+        $Splat = @{ Polish = $Polish }
+        if ($Root) { $Splat['Root'] = $Root }
+        # Klucz spoza tabel = błąd także w pl (Get-DsoUiText dla pl zwraca klucz bez sprawdzenia).
+        if (-not (Test-DsoTextKey @Splat)) { throw "brak tłumaczenia: '$Polish' (tabele tłumaczeń repo)." }
+        Get-DsoUiText @Splat -Language $Language
+    }
+    $Texts = [ordered]@{
+        lists     = @(@('Menu', 'Ustawienia') | ForEach-Object { & $Text $_ })
+        slowPages = @(@('Aplikacje', 'Instalacja', 'Przygotowanie', 'Specyfikacja') | ForEach-Object { & $Text $_ })
+    }
+    return (ConvertTo-Json -InputObject $Texts -Depth 4 -Compress)
+}
+
 function Get-NetPlan {
     [CmdletBinding()]
-    param()
+    param([Parameter(Mandatory)][ValidateSet('pl', 'en')][string]$Language)
     return [ordered]@{
+        Language            = $Language
         AllowedHost         = 'api.github.com'
         AllowedPort         = 443
         # Ruch kontrolny osobnego procesu przed zatrzymaniem śladu (dowód, że ślad łapie sieć); host inny niż dozwolony, żeby go nie mylić.
@@ -93,8 +116,8 @@ function Get-NetPlan {
         ResultDirectory     = 'C:\dso\net\out'
         CliDirectory        = 'C:\dso\net\out'
         SettingsDirectory   = 'C:\ProgramData\DSOptimizer'
-        SettingsOn          = '{"schemaVersion":1,"language":"pl"}'
-        SettingsOff         = '{"schemaVersion":1,"language":"pl","checkUpdatesAtStart":false}'
+        SettingsOn          = '{"schemaVersion":1,"language":"' + $Language + '"}'
+        SettingsOff         = '{"schemaVersion":1,"language":"' + $Language + '","checkUpdatesAtStart":false}'
         SettleAfterLogonSeconds = 45
         SettleBeforeStopSeconds = 15
         GuiTaskName         = 'DSO-Net-Gui'
@@ -139,7 +162,7 @@ function Test-NetCanary {
     # być w śladzie (pola dns i connections z dsoTree = false). Brak = pomiar się nie liczy. Czysta funkcja.
     [CmdletBinding()]
     param([Parameter(Mandatory)][AllowNull()]$Trace)
-    $Plan = Get-NetPlan
+    $Plan = Get-NetPlan -Language pl   # pola używane tu nie zależą od języka
     $CanaryHost = Format-NetHost $Plan.CanaryHost
     $All = Get-NetTraceField -Trace $Trace -Name 'dns'
     $Connections = Get-NetTraceField -Trace $Trace -Name 'connections'
@@ -169,7 +192,7 @@ function Get-NetVerdict {
         [Parameter(Mandatory)][ValidateSet('start-on', 'start-off', 'cli')][string]$Scenario,
         [Parameter(Mandatory)][AllowNull()]$Trace
     )
-    $Plan = Get-NetPlan
+    $Plan = Get-NetPlan -Language pl   # pola używane tu nie zależą od języka
     $Allowed = [string]$Plan.AllowedHost
     $Fail = { param([string]$Text) [pscustomobject]@{ Passed = $false; Detail = $Text } }
     $Dns = Get-NetTraceField -Trace $Trace -Name 'dsoTreeDns'
@@ -393,9 +416,11 @@ function Get-NetRunArguments {
     $Order = @('start-on', 'start-off', 'cli')
     $Ordered = @($Order | Where-Object { $Scenario -contains $_ })
     if ($Ordered.Count -eq 0) { throw 'Podaj co najmniej jeden scenariusz: start-on, start-off, cli.' }
+    # Teksty sondy w języku VM sprawdzone przed czymkolwiek innym (brak tłumaczenia = wyjątek także dla pl).
+    $null = Get-NetNavTexts -Language (Get-DsoVmDefinition -VmName $VmName).Language
     $Artifact = if ($HasInstaller) { Resolve-NetInstaller -InstallerPath $InstallerPath } else { Resolve-NetArtifact -ArtifactPath $ArtifactPath }
     return [ordered]@{ VmName = $VmName; Scenarios = $Ordered; OutDirectory = $OutDirectory; CheckpointName = $CheckpointName; ReadyTimeoutSeconds = $ReadyTimeoutSeconds
-        Artifact = $Artifact; Layout = (Get-NetLayout -Artifact $Artifact); Plan = (Get-NetPlan) }
+        Artifact = $Artifact; Layout = (Get-NetLayout -Artifact $Artifact); Plan = (Get-NetPlan -Language (Get-DsoVmDefinition -VmName $VmName).Language) }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -679,7 +704,7 @@ function Invoke-NetScenario {
                 $Runs = @()
                 foreach ($Command in $Plan.CliCommands) {
                     $OutPath = Join-Path $Plan.CliDirectory (($Command -replace '^-+', '') + '.json')
-                    $Cli = Invoke-DsoCli -Session $Session -ExePath $Layout.Exe -Arguments @($Command, '--out', $OutPath) -OutPath $OutPath -TimeoutSeconds ([int]$Plan.CliTimeoutSeconds) -RunAsUser $Plan.UserName
+                    $Cli = Invoke-DsoCli -Session $Session -ExePath $Layout.Exe -Arguments @($Command, '--out', $OutPath) -OutPath $OutPath -TimeoutSeconds ([int]$Plan.CliTimeoutSeconds) -RunAsUser $Plan.UserName -Language $Plan.Language
                     $Runs += [ordered]@{ command = $Command; exitCode = $Cli.ExitCode; timedOut = $Cli.TimedOut; reportBytes = ([string]$Cli.Json).Length }
                     $CliProblem = Get-NetCliProblem -Command $Command -Result $Cli
                     if ($CliProblem) { $Record.problems += $CliProblem }
@@ -689,7 +714,10 @@ function Invoke-NetScenario {
             else {
                 $Record.guiStart = Start-DsoGuiInUserSession -Session $Session -Layout $Layout -UserName $Plan.UserName -TaskName $Plan.GuiTaskName
                 $ProbeText = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot 'net\NavProbe.ps1'), [System.Text.Encoding]::UTF8)
-                $Json = Invoke-DsoUserSessionScript -Session $Session -Layout $Layout -Name 'Net-Nav' -ScriptText $ProbeText -UserName $Plan.UserName -TimeoutSeconds ([int]$Plan.NavTimeoutSeconds)
+                $TextsName = 'net-nav-texts.json'
+                $NavTexts = [string]$Context.NavTexts
+                $Json = Invoke-DsoUserSessionScript -Session $Session -Layout $Layout -Name 'Net-Nav' -ScriptText $ProbeText -UserName $Plan.UserName -TimeoutSeconds ([int]$Plan.NavTimeoutSeconds) `
+                    -ArgumentText "-TextsFile $($Layout.Out)\$TextsName" -DataFiles @{ $TextsName = $NavTexts }
                 $Record.nav = if ($Json) { $Json | ConvertFrom-Json } else { $null }
                 if ($null -eq $Record.nav -or $Record.nav.Ok -ne $true) { $Record.problems += "sonda nawigacji nie przeszła wszystkich stron: $(if ($Record.nav) { $Record.nav.Error } else { 'brak wyniku' })" }
             }
@@ -745,16 +773,20 @@ function Invoke-NetVmRun {
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [Parameter(Mandatory)][string[]]$Scenarios,
         [Parameter(Mandatory)][System.Collections.IDictionary]$Artifact,
         [string]$CheckpointName = 'czysta-26H2',
-        [int]$ReadyTimeoutSeconds = 1200
+        [int]$ReadyTimeoutSeconds = 1200,
+        [string]$TranslationsRoot
     )
     Assert-DsoVmLiveAllowed
+    $Language = (Get-DsoVmDefinition -VmName $VmName).Language
+    # Teksty sondy przed jakimkolwiek dotknięciem VM: brak tłumaczenia = wyjątek, zanim ruszy revert albo start.
+    $NavTexts = Get-NetNavTexts -Language $Language -Root $TranslationsRoot
     $Credential = Get-DsoVmCredential -VmName $VmName
-    $Plan = Get-NetPlan
+    $Plan = Get-NetPlan -Language $Language
     $StartedAt = Get-Date
     $Results = [ordered]@{}
     $Errors = @()
@@ -777,7 +809,7 @@ function Invoke-NetVmRun {
             Write-Host "$(Get-Date -Format 'HH:mm:ss') $VmName $Scenario"
             # Chwila na dokończenie logowania dso (powłoka, pakiety) przed pierwszym zadaniem w jego sesji.
             Start-Sleep -Seconds ([int]$Plan.SettleAfterLogonSeconds)
-            $Context = [ordered]@{ Session = $Session; Plan = $Plan; Layout = $Layout; VmName = $VmName; VmDirectory = $VmDirectory; Artifact = $Artifact; Timeline = $Timeline }
+            $Context = [ordered]@{ Session = $Session; Plan = $Plan; Layout = $Layout; VmName = $VmName; VmDirectory = $VmDirectory; Artifact = $Artifact; Timeline = $Timeline; NavTexts = $NavTexts }
             try { Invoke-NetScenario -Scenario $Scenario -Context $Context -Record $Record }
             finally { $Timeline = $Context.Timeline }
         }
@@ -804,7 +836,7 @@ function Invoke-NetVmRun {
         if ($null -ne $AuthFailure) { break }
     }
     $Failed = @($Results.Values | Where-Object { -not $_.passed } | ForEach-Object { $_.scenario })
-    $Result = [ordered]@{ schema = 1; vmName = $VmName; checkpoint = $CheckpointName; variant = $(if ($Artifact.Contains('Variant')) { [string]$Artifact['Variant'] } else { 'Folder' }); startedAt = $StartedAt.ToString('o'); finishedAt = (Get-Date).ToString('o')
+    $Result = [ordered]@{ schema = 1; vmName = $VmName; language = $Language; checkpoint = $CheckpointName; variant = $(if ($Artifact.Contains('Variant')) { [string]$Artifact['Variant'] } else { 'Folder' }); startedAt = $StartedAt.ToString('o'); finishedAt = (Get-Date).ToString('o')
         scope = [string]$Plan.Scope; artifact = $Artifact; allPassed = ($Failed.Count -eq 0 -and $Errors.Count -eq 0 -and $Results.Count -eq $Scenarios.Count); errors = $Errors; timeline = $Timeline; scenarios = $Results }
     $Saved = Save-ExploreResult -Result $Result -OutDirectory $OutDirectory -VmName $VmName -FileName 'net.json'
     if ($null -ne $AuthFailure) { throw $AuthFailure }

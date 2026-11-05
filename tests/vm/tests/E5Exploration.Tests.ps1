@@ -144,13 +144,13 @@ Describe 'Wydanie WinUtil (czysta logika)' {
 
 Describe 'Bezpieczniki (VM-only, mock-only, Defender tylko do odczytu)' {
     It 'Assert-E5InsideVm rzuca w trybie mock-only, nawet z nazwą VM; poza trybem rzuca na hoście' {
-        { Assert-E5InsideVm -ComputerName 'DSO-26H2-PRO' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Assert-E5InsideVm -ComputerName 'DSO-EN-PRO' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
         $Saved = $env:DSO_VM_TESTS_MOCK_ONLY
         try {
             [Environment]::SetEnvironmentVariable('DSO_VM_TESTS_MOCK_ONLY', $null)
             { Assert-E5InsideVm -ComputerName 'HOST-PC' } | Should -Throw '*tylko w VM*'
             { Assert-E5InsideVm -ComputerName 'BRUTEFORCE_LTSC' } | Should -Throw '*tylko w VM*'
-            { Assert-E5InsideVm -ComputerName 'DSO-26H2-HOME' } | Should -Not -Throw
+            { Assert-E5InsideVm -ComputerName 'DSO-EN-HOME' } | Should -Not -Throw
         }
         finally { $env:DSO_VM_TESTS_MOCK_ONLY = $Saved }
     }
@@ -242,7 +242,7 @@ Describe 'Bezpieczniki (VM-only, mock-only, Defender tylko do odczytu)' {
         Get-Command -Name 'Complete-E5VmCleanup', 'Assert-E5OutDirectory' -CommandType Function -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
         foreach ($Command in (Get-Command $script:E5ScriptPath), (Get-Command Invoke-E5VmRun), (Get-Command Restart-E5VmAndWait)) {
             $Attr = $Command.Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-            $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+            $Attr.ValidValues | Should -Be @('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')
         }
     }
     It 'sonda okien: poza VM (i w trybie mock-only) odmawia przed UI Automation i zapisuje wynik z błędem' {
@@ -718,10 +718,10 @@ Describe 'Wysyłka funkcji do VM i treść skryptu' {
 
 Describe 'Argumenty przebiegu i podsumowania (czysta logika)' {
     It 'Get-E5RunArguments: VM w kolejności, fazy per VM (defender pierwsza), katalog builda, plan' {
-        $Arguments = Get-E5RunArguments -VmName @('DSO-26H2-Pro', 'DSO-26H2-Home') -Phase @('winutil') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60 -BuildDirectory 'C:\b'
-        @($Arguments.VmName) | Should -Be @('DSO-26H2-Pro', 'DSO-26H2-Home')
-        @($Arguments.Phases['DSO-26H2-Pro']) | Should -Be @('defender', 'winutil')
-        @($Arguments.Phases['DSO-26H2-Home']) | Should -Be @('defender', 'winutil')
+        $Arguments = Get-E5RunArguments -VmName @('DSO-EN-Pro', 'DSO-EN-Home') -Phase @('winutil') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60 -BuildDirectory 'C:\b'
+        @($Arguments.VmName) | Should -Be @('DSO-EN-Pro', 'DSO-EN-Home')
+        @($Arguments.Phases['DSO-EN-Pro']) | Should -Be @('defender', 'winutil')
+        @($Arguments.Phases['DSO-EN-Home']) | Should -Be @('defender', 'winutil')
         $Arguments.BuildDirectory | Should -Be 'C:\b'
         $Arguments.Plan.WinUtilAssetName | Should -Be 'winutil.ps1'
     }
@@ -735,7 +735,7 @@ Describe 'Argumenty przebiegu i podsumowania (czysta logika)' {
     It 'Get-E5VariantSummary: start, okno, detekcje, zrzut i błędy jednego wariantu' {
         $Entry = [ordered]@{
             start = [pscustomobject]@{ error = $null; data = [pscustomobject]@{ Started = $true; AliveAfterWait = $true; WinUtilVisible = $true; WinUtilWindowTitle = 'Winutil'; ProbeSid = 'S-1'; ProbeAsDso = $true; ProbeError = $null; Error = $null } }
-            screenshot = 'C:\w\DSO-26H2-Pro\winutil-A.png'; screenshotError = $null
+            screenshot = 'C:\w\DSO-EN-Pro\winutil-A.png'; screenshotError = $null
             stop = [pscustomobject]@{ error = $null; data = [pscustomobject]@{ Detections = [pscustomobject]@{ ThreatCount = 1; EventCount = 2; Any = $true; Errors = @() }; Error = $null } }
         }
         $S = Get-E5VariantSummary -Variant 'A' -Entry $Entry
@@ -748,7 +748,7 @@ Describe 'Argumenty przebiegu i podsumowania (czysta logika)' {
         $S.ThreatCount | Should -Be 1
         $S.EventCount | Should -Be 2
         $S.Detected | Should -BeTrue
-        $S.Screenshot | Should -Be 'C:\w\DSO-26H2-Pro\winutil-A.png'
+        $S.Screenshot | Should -Be 'C:\w\DSO-EN-Pro\winutil-A.png'
         @($S.Errors).Count | Should -Be 0
         $Broken = [ordered]@{ start = [pscustomobject]@{ error = 'zbieranie padło'; data = $null }; screenshot = $null; screenshotError = 'brak WMI'; stop = $null }
         $S2 = Get-E5VariantSummary -Variant 'B' -Entry $Broken
@@ -884,13 +884,13 @@ Describe 'Task 6: fazy, plan av i artefakt wydania (czysta logika, bez VM)' {
         { Resolve-E5Artifact -Variant 'SingleExe' -ArtifactPath $Renamed } | Should -Throw '*nie jest wydaniem SingleExe*'
     }
     It 'Get-E5RunArguments: faza z nośnikiem bez -Variant/-ArtifactPath = wyjątek; z artefaktem – opis artefaktu w argumentach przebiegu' {
-        { Get-E5RunArguments -VmName @('DSO-26H2-Pro') -Phase @('av') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60 } | Should -Throw '*-Variant*-ArtifactPath*'
-        { Get-E5RunArguments -VmName @('DSO-26H2-Pro') -Phase @('dpi') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60 -Variant 'SingleExe' } | Should -Throw '*-ArtifactPath*'
-        $Arguments = Get-E5RunArguments -VmName @('DSO-26H2-Pro') -Phase @('defender', 'av', 'motw', 'startup', 'dpi') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60 `
+        { Get-E5RunArguments -VmName @('DSO-EN-Pro') -Phase @('av') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60 } | Should -Throw '*-Variant*-ArtifactPath*'
+        { Get-E5RunArguments -VmName @('DSO-EN-Pro') -Phase @('dpi') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60 -Variant 'SingleExe' } | Should -Throw '*-ArtifactPath*'
+        $Arguments = Get-E5RunArguments -VmName @('DSO-EN-Pro') -Phase @('defender', 'av', 'motw', 'startup', 'dpi') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60 `
             -Variant 'Folder' -ArtifactPath (New-FakeRelease -Variant Folder)
         $Arguments.Artifact.ExeRelativePath | Should -Be 'DSOptimizer\DSOptimizer.exe'
-        @($Arguments.Phases['DSO-26H2-Pro']) | Should -Be @('defender', 'startup', 'av', 'motw', 'dpi')
-        (Get-E5RunArguments -VmName @('DSO-26H2-Pro') -Phase @('winutil') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60).Artifact | Should -BeNullOrEmpty
+        @($Arguments.Phases['DSO-EN-Pro']) | Should -Be @('defender', 'startup', 'av', 'motw', 'dpi')
+        (Get-E5RunArguments -VmName @('DSO-EN-Pro') -Phase @('winutil') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60).Artifact | Should -BeNullOrEmpty
     }
 }
 
@@ -1530,7 +1530,7 @@ Describe 'Task 6: nośnik VHDX na hoście (mocki dysku; nic nie jest formatowane
         Mock Assert-DsoVmLiveAllowed { }
         $script:Order = [System.Collections.Generic.List[string]]::new()
         $script:MountedNumber = 7
-        $script:Vhd = Join-Path $TestDrive ('DSO-26H2-Pro\usb-SingleExe-' + [guid]::NewGuid().ToString('N').Substring(0, 6) + '.vhdx')
+        $script:Vhd = Join-Path $TestDrive ('DSO-EN-Pro\usb-SingleExe-' + [guid]::NewGuid().ToString('N').Substring(0, 6) + '.vhdx')
         $script:DiskLocation = $script:Vhd
         Mock New-VHD { $script:Order.Add('new-vhd'); [pscustomobject]@{ Path = $Path } }
         Mock Mount-VHD { $script:Order.Add('mount'); [pscustomobject]@{ Path = $Path; DiskNumber = $script:MountedNumber } }
@@ -1687,16 +1687,16 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
         $script:SavedResult = $null
     }
     It 'przebieg Pro: revert -> start -> gotowość -> defender z siecią -> winutil A/B/C (start, zrzut, stop) z siecią -> revert -> odłączenie -> stan końcowy -> zapis e5.json' {
-        $Path = Invoke-E5VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null
-        $Path | Should -Be 'C:\w\DSO-26H2-Pro\e5.json'
-        @($script:Calls) | Should -Be @('revert DSO-26H2-Pro czysta-26H2', 'disconnect DSO-26H2-Pro', 'start DSO-26H2-Pro', 'ready',
-            'connect DSO-26H2-Pro Default Switch', 'phase defender', 'disconnect DSO-26H2-Pro',
-            'connect DSO-26H2-Pro Default Switch',
+        $Path = Invoke-E5VmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null
+        $Path | Should -Be 'C:\w\DSO-EN-Pro\e5.json'
+        @($script:Calls) | Should -Be @('revert DSO-EN-Pro czysta-26H2', 'disconnect DSO-EN-Pro', 'start DSO-EN-Pro', 'ready',
+            'connect DSO-EN-Pro Default Switch', 'phase defender', 'disconnect DSO-EN-Pro',
+            'connect DSO-EN-Pro Default Switch',
             'phase winutil-start A', 'shot winutil-A.png', 'phase winutil-stop A',
             'phase winutil-start B', 'shot winutil-B.png', 'phase winutil-stop B',
             'phase winutil-start C', 'shot winutil-C.png', 'phase winutil-stop C',
-            'disconnect DSO-26H2-Pro',
-            'revert DSO-26H2-Pro czysta-26H2', 'disconnect DSO-26H2-Pro', 'state DSO-26H2-Pro', 'save e5.json')
+            'disconnect DSO-EN-Pro',
+            'revert DSO-EN-Pro czysta-26H2', 'disconnect DSO-EN-Pro', 'state DSO-EN-Pro', 'save e5.json')
         $script:SavedResult.signaturesUpdated | Should -BeTrue
         $script:SavedResult.cleanup.Ok | Should -BeTrue
         $script:SavedResult.error | Should -BeNullOrEmpty
@@ -1711,30 +1711,30 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
     }
     It 'nieudana aktualizacja sygnatur: winutil nie startuje (i nie dostaje sieci), rekord signaturesUpdated = false, przebieg zgłasza błąd K1, revert i odłączenie w finally' {
         $script:SignaturesOk = $false
-        { Invoke-E5VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null } | Should -Throw '*sygnatur*'
+        { Invoke-E5VmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null } | Should -Throw '*sygnatur*'
         @($script:Calls | Where-Object { $_ -like 'phase winutil*' }).Count | Should -Be 0
         @($script:Calls | Where-Object { $_ -like 'connect *' }).Count | Should -Be 1
         $script:SavedResult.signaturesUpdated | Should -BeFalse
         $script:SavedResult.phases.winutil.skipped | Should -Match 'sygnatur'
         $script:SavedResult.error | Should -Match 'K1'
         $script:SavedResult.error | Should -Match 'brak połączenia'
-        @($script:Calls)[-4..-1] | Should -Be @('revert DSO-26H2-Pro czysta-26H2', 'disconnect DSO-26H2-Pro', 'state DSO-26H2-Pro', 'save e5.json')
+        @($script:Calls)[-4..-1] | Should -Be @('revert DSO-EN-Pro czysta-26H2', 'disconnect DSO-EN-Pro', 'state DSO-EN-Pro', 'save e5.json')
     }
     It 'faza defender rzuca (zerwana sesja): winutil nie startuje, signaturesUpdated = false, sprzątanie w finally' {
         $script:FailOn = 'defender'
-        { Invoke-E5VmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null } | Should -Throw '*sesja padła*'
+        { Invoke-E5VmRun -VmName 'DSO-EN-Home' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null } | Should -Throw '*sesja padła*'
         @($script:Calls | Where-Object { $_ -like 'phase winutil*' }).Count | Should -Be 0
-        $script:Calls[$script:Calls.IndexOf('phase defender') + 1] | Should -Be 'disconnect DSO-26H2-Home'
+        $script:Calls[$script:Calls.IndexOf('phase defender') + 1] | Should -Be 'disconnect DSO-EN-Home'
         $script:SavedResult.signaturesUpdated | Should -BeFalse
-        @($script:Calls)[-4..-1] | Should -Be @('revert DSO-26H2-Home czysta-26H2', 'disconnect DSO-26H2-Home', 'state DSO-26H2-Home', 'save e5.json')
+        @($script:Calls)[-4..-1] | Should -Be @('revert DSO-EN-Home czysta-26H2', 'disconnect DSO-EN-Home', 'state DSO-EN-Home', 'save e5.json')
     }
     It 'błąd w środku fazy winutil (wariant B): karta odłączona od razu, revert do czysta-26H2, odłączenie, sprawdzenie stanu końcowego, wynik częściowy zapisany' {
         $script:FailOn = 'winutil-start B'
-        { Invoke-E5VmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null } | Should -Throw '*DSO-26H2-Home*sesja padła*'
+        { Invoke-E5VmRun -VmName 'DSO-EN-Home' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null } | Should -Throw '*DSO-EN-Home*sesja padła*'
         $script:Calls.IndexOf('phase winutil-start B') | Should -BeGreaterThan 0
-        $script:Calls[$script:Calls.IndexOf('phase winutil-start B') + 1] | Should -Be 'disconnect DSO-26H2-Home'
+        $script:Calls[$script:Calls.IndexOf('phase winutil-start B') + 1] | Should -Be 'disconnect DSO-EN-Home'
         $script:Calls | Should -Not -Contain 'phase winutil-start C'
-        @($script:Calls)[-4..-1] | Should -Be @('revert DSO-26H2-Home czysta-26H2', 'disconnect DSO-26H2-Home', 'state DSO-26H2-Home', 'save e5.json')
+        @($script:Calls)[-4..-1] | Should -Be @('revert DSO-EN-Home czysta-26H2', 'disconnect DSO-EN-Home', 'state DSO-EN-Home', 'save e5.json')
         # Revert na starcie (skrypt) i w sprzątaniu (Complete-ExploreVmCleanup w ExploreCommon).
         Should -Invoke Restore-VmCleanState -Times 1 -Exactly -ParameterFilter { $CheckpointName -eq 'czysta-26H2' }
         Should -Invoke -ModuleName ExploreCommon Restore-VmCleanState -Times 1 -Exactly -ParameterFilter { $CheckpointName -eq 'czysta-26H2' }
@@ -1746,23 +1746,23 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
     }
     It 'błąd zrzutu ekranu nie przerywa wariantu (stop i tak wołany), ale wariant jest nieważny, więc przebieg kończy się błędem' {
         Mock Save-DsoVmThumbnail { throw 'WMI niedostępne' }
-        { Invoke-E5VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null } | Should -Throw '*wariant A nieważny*WMI*'
+        { Invoke-E5VmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null } | Should -Throw '*wariant A nieważny*WMI*'
         $script:SavedResult.phases.winutil.summary[0].Valid | Should -BeFalse
         $script:SavedResult.phases.winutil.variants['A'].screenshotError | Should -Match 'WMI'
         @($script:Calls | Where-Object { $_ -like 'phase winutil-stop *' }).Count | Should -Be 3
     }
     It 'błędy odczytu detekcji w wariancie A: pozostałe warianty zmierzone, wynik zapisany, ale przebieg kończy się błędem z nazwą wariantu (kod 1)' {
         $script:DetectionErrors = @{ 'A' = 'Get-WinEvent: dziennik niedostępny' }
-        { Invoke-E5VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null } | Should -Throw '*wariant A nieważny*odczyt detekcji*'
+        { Invoke-E5VmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null } | Should -Throw '*wariant A nieważny*odczyt detekcji*'
         @($script:Calls | Where-Object { $_ -like 'phase winutil-stop *' }).Count | Should -Be 3
         $Summary = @($script:SavedResult.phases.winutil.summary)
         @($Summary | ForEach-Object { $_.Valid }) | Should -Be @($false, $true, $true)
         @($script:SavedResult.phases.winutil.invalidVariants) | Should -Be @('A')
         ($script:SavedResult.phaseErrors -join ' ') | Should -Match 'winutil: wariant A nieważny'
         $script:SavedResult.signaturesUpdated | Should -BeTrue
-        @($script:Calls)[-4..-1] | Should -Be @('revert DSO-26H2-Pro czysta-26H2', 'disconnect DSO-26H2-Pro', 'state DSO-26H2-Pro', 'save e5.json')
+        @($script:Calls)[-4..-1] | Should -Be @('revert DSO-EN-Pro czysta-26H2', 'disconnect DSO-EN-Pro', 'state DSO-EN-Pro', 'save e5.json')
         # Ten sam wyjątek w Invoke-E5Exploration = błąd VM, czyli kod wyjścia 1 skryptu.
-        $Arguments = Get-E5RunArguments -VmName @('DSO-26H2-Pro') -Phase @('winutil') -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60
+        $Arguments = Get-E5RunArguments -VmName @('DSO-EN-Pro') -Phase @('winutil') -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60
         $Outcome = Invoke-E5Exploration -Arguments $Arguments 6>$null
         @($Outcome.Paths).Count | Should -Be 0
         ($Outcome.Errors -join ' ') | Should -Match 'wariant A nieważny'
@@ -1772,14 +1772,14 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
             $script:Calls.Add('phase defender')
             [pscustomobject]@{ phase = $Phase; error = $null; data = [pscustomobject]@{ SignaturesUpdated = $true; Error = $null; Detections = [pscustomobject]@{ Count = 0; Errors = @('Get-MpThreat: 0x80070005') } } }
         }
-        { Invoke-E5VmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null } | Should -Throw '*defender: odczyt detekcji*'
+        { Invoke-E5VmRun -VmName 'DSO-EN-Home' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null } | Should -Throw '*defender: odczyt detekcji*'
         $script:SavedResult.signaturesUpdated | Should -BeTrue
         $script:Calls | Should -Contain 'phase winutil-start A'
     }
     It 'wariant B zablokowany przez Defendera przy pobraniu (symulacja): wariant ważny, blokada zapisana, przebieg bez błędu' {
         $script:StartBlocked = @{ 'B' = 'Defender zablokował plik winutil.ps1 (etap download): 0x800700E1' }
-        $Path = Invoke-E5VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null
-        $Path | Should -Be 'C:\w\DSO-26H2-Pro\e5.json'
+        $Path = Invoke-E5VmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('defender', 'winutil') 6>$null
+        $Path | Should -Be 'C:\w\DSO-EN-Pro\e5.json'
         $B = @($script:SavedResult.phases.winutil.summary)[1]
         $B.Valid | Should -BeTrue
         $B.Blocked | Should -Match 'Defender zablokował'
@@ -1787,32 +1787,32 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
         @($script:SavedResult.phaseErrors).Count | Should -Be 0
     }
     It 'stan końcowy niezgodny z kontraktem (VM nie Off, karta na przełączniku): zapisany i zgłoszony' {
-        $script:FinalVm = [pscustomobject]@{ Name = 'DSO-26H2-Home'; State = 'Running' }
+        $script:FinalVm = [pscustomobject]@{ Name = 'DSO-EN-Home'; State = 'Running' }
         $script:FinalAdapter = [pscustomobject]@{ Name = 'Network Adapter'; SwitchName = 'Default Switch' }
-        { Invoke-E5VmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('defender') 3>$null 6>$null } | Should -Throw '*stan końcowy*'
+        { Invoke-E5VmRun -VmName 'DSO-EN-Home' -OutDirectory $TestDrive -Phases @('defender') 3>$null 6>$null } | Should -Throw '*stan końcowy*'
         ($script:SavedResult.cleanup.Violations -join ' ') | Should -Match 'Running'
         ($script:SavedResult.cleanup.Violations -join ' ') | Should -Match 'Default Switch'
     }
     It 'błąd uwierzytelnienia: przekazany dalej, revert wykonany; Invoke-E5Exploration zatrzymuje całość po pierwszej VM' {
         Mock Wait-VmReady { $E = [System.InvalidOperationException]::new('błąd uwierzytelnienia PowerShell Direct'); $E.Data['VmAuthFailure'] = $true; throw $E }
-        { Invoke-E5VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('defender') } | Should -Throw '*uwierzytelnienia*'
-        $script:Calls | Should -Contain 'revert DSO-26H2-Pro czysta-26H2'
-        $Arguments = Get-E5RunArguments -VmName @('DSO-26H2-Pro', 'DSO-26H2-Home') -Phase @('defender') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60
+        { Invoke-E5VmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('defender') } | Should -Throw '*uwierzytelnienia*'
+        $script:Calls | Should -Contain 'revert DSO-EN-Pro czysta-26H2'
+        $Arguments = Get-E5RunArguments -VmName @('DSO-EN-Pro', 'DSO-EN-Home') -Phase @('defender') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60
         Mock Invoke-E5VmRun { $E = [System.InvalidOperationException]::new('x'); $E.Data['VmAuthFailure'] = $true; throw $E }
         { Invoke-E5Exploration -Arguments $Arguments 6>$null } | Should -Throw
         Should -Invoke Invoke-E5VmRun -Times 1 -Exactly -Scope It
     }
     It 'Task 6 – pełny przebieg Pro SingleExe: VHDX -> revert -> karta odłączona -> VHDX podłączony -> start -> fixtures -> fazy z siecią (startup, av, motw) i dpi z restartem -> surowe pliki -> revert, odłączenie VHDX i karty, stan końcowy -> zapis' {
-        $Path = Invoke-E5VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('defender', 'startup', 'av', 'motw', 'dpi') -Artifact $script:Artifact 6>$null
-        $Path | Should -Be 'C:\w\DSO-26H2-Pro\e5.json'
-        @($script:Calls) | Should -Be @('usb SingleExe', 'revert DSO-26H2-Pro czysta-26H2', 'disconnect DSO-26H2-Pro', 'attach DSO-26H2-Pro', 'start DSO-26H2-Pro', 'ready', 'fixtures',
-            'connect DSO-26H2-Pro Default Switch', 'phase defender', 'disconnect DSO-26H2-Pro',
-            'connect DSO-26H2-Pro Default Switch', 'phase startup', 'disconnect DSO-26H2-Pro',
-            'connect DSO-26H2-Pro Default Switch', 'phase av', 'disconnect DSO-26H2-Pro',
-            'connect DSO-26H2-Pro Default Switch', 'phase motw-start', 'shot motw.png', 'phase motw-stop', 'disconnect DSO-26H2-Pro',
+        $Path = Invoke-E5VmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('defender', 'startup', 'av', 'motw', 'dpi') -Artifact $script:Artifact 6>$null
+        $Path | Should -Be 'C:\w\DSO-EN-Pro\e5.json'
+        @($script:Calls) | Should -Be @('usb SingleExe', 'revert DSO-EN-Pro czysta-26H2', 'disconnect DSO-EN-Pro', 'attach DSO-EN-Pro', 'start DSO-EN-Pro', 'ready', 'fixtures',
+            'connect DSO-EN-Pro Default Switch', 'phase defender', 'disconnect DSO-EN-Pro',
+            'connect DSO-EN-Pro Default Switch', 'phase startup', 'disconnect DSO-EN-Pro',
+            'connect DSO-EN-Pro Default Switch', 'phase av', 'disconnect DSO-EN-Pro',
+            'connect DSO-EN-Pro Default Switch', 'phase motw-start', 'shot motw.png', 'phase motw-stop', 'disconnect DSO-EN-Pro',
             'phase dpi-set', 'restart', 'phase dpi-start', 'shot dpi-150.png', 'phase dpi-stop',
-            'raw', 'revert DSO-26H2-Pro czysta-26H2', "detach $(Split-Path -Leaf $script:VhdPath)", 'disconnect DSO-26H2-Pro', 'state DSO-26H2-Pro', 'save e5.json')
-        $script:VhdPath | Should -Match ([regex]::Escape((Join-Path $TestDrive 'DSO-26H2-Pro')) + '\\usb-SingleExe-\d{8}-\d{6}\.vhdx$')
+            'raw', 'revert DSO-EN-Pro czysta-26H2', "detach $(Split-Path -Leaf $script:VhdPath)", 'disconnect DSO-EN-Pro', 'state DSO-EN-Pro', 'save e5.json')
+        $script:VhdPath | Should -Match ([regex]::Escape((Join-Path $TestDrive 'DSO-EN-Pro')) + '\\usb-SingleExe-\d{8}-\d{6}\.vhdx$')
         Should -Invoke Add-VMHardDiskDrive -Times 1 -Exactly -ParameterFilter { $Path -eq $script:VhdPath }
         $script:SavedResult.error | Should -BeNullOrEmpty
         $script:SavedResult.cleanup.Ok | Should -BeTrue
@@ -1834,10 +1834,10 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
     }
     It 'Task 6 – błąd w fazie av (zerwana sesja): karta odłączona od razu, kolejne fazy próbowane jak dotąd; finally: surowe pliki, revert, VHDX odłączony od VM, karta, stan końcowy, wynik zapisany' {
         $script:FailOn = 'av'
-        { Invoke-E5VmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('defender', 'startup', 'av', 'motw', 'dpi') -Artifact $script:Artifact 3>$null 6>$null } | Should -Throw '*DSO-26H2-Home*faza av*sesja padła*'
-        $script:Calls[$script:Calls.IndexOf('phase av') + 1] | Should -Be 'disconnect DSO-26H2-Home'
+        { Invoke-E5VmRun -VmName 'DSO-EN-Home' -OutDirectory $TestDrive -Phases @('defender', 'startup', 'av', 'motw', 'dpi') -Artifact $script:Artifact 3>$null 6>$null } | Should -Throw '*DSO-EN-Home*faza av*sesja padła*'
+        $script:Calls[$script:Calls.IndexOf('phase av') + 1] | Should -Be 'disconnect DSO-EN-Home'
         $script:Calls | Should -Contain 'phase motw-start'
-        @($script:Calls)[-6..-1] | Should -Be @('raw', 'revert DSO-26H2-Home czysta-26H2', "detach $(Split-Path -Leaf $script:VhdPath)", 'disconnect DSO-26H2-Home', 'state DSO-26H2-Home', 'save e5.json')
+        @($script:Calls)[-6..-1] | Should -Be @('raw', 'revert DSO-EN-Home czysta-26H2', "detach $(Split-Path -Leaf $script:VhdPath)", 'disconnect DSO-EN-Home', 'state DSO-EN-Home', 'save e5.json')
         Should -Invoke -ModuleName ExploreCommon Remove-VMHardDiskDrive -Times 1 -Exactly
         $script:SavedResult.cleanup.Ok | Should -BeTrue
         @($script:SavedResult.cleanup.AttachedDisks).Count | Should -Be 0
@@ -1846,13 +1846,13 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
     }
     It 'Task 6 – VHDX, którego nie da się odłączyć od VM: naruszenie kontraktu stanu końcowego zapisane i zgłoszone (kod 1)' {
         Mock -ModuleName ExploreCommon Remove-VMHardDiskDrive -RemoveParameterType 'VMHardDiskDrive' { throw 'dysk w użyciu' }
-        { Invoke-E5VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('defender', 'startup') -Artifact $script:Artifact 3>$null 6>$null } | Should -Throw '*nadal podłączony*'
+        { Invoke-E5VmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('defender', 'startup') -Artifact $script:Artifact 3>$null 6>$null } | Should -Throw '*nadal podłączony*'
         $script:SavedResult.cleanup.Ok | Should -BeFalse
         @($script:SavedResult.cleanup.AttachedDisks) | Should -Be @($script:VhdPath)
         $script:SavedResult.cleanup.DetachError | Should -Match 'w użyciu'
     }
     It 'Task 6 – fazy z nośnikiem bez artefaktu: wyjątek, zanim cokolwiek dotknie VM albo hosta (bez VHDX, revertu i poświadczeń)' {
-        { Invoke-E5VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('defender', 'av') 6>$null } | Should -Throw '*artefaktu*nie została ruszona*'
+        { Invoke-E5VmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('defender', 'av') 6>$null } | Should -Throw '*artefaktu*nie została ruszona*'
         @($script:Calls).Count | Should -Be 0
         Should -Invoke Get-DsoVmCredential -Times 0 -Exactly
         Should -Invoke New-E5UsbDisk -Times 0 -Exactly
@@ -1860,18 +1860,18 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
     }
     It 'Task 6 – nieudana aktualizacja sygnatur: startup, av, motw i dpi pominięte (K1), VHDX i tak odłączony w sprzątaniu' {
         $script:SignaturesOk = $false
-        { Invoke-E5VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('defender', 'startup', 'av', 'motw', 'dpi') -Artifact $script:Artifact 6>$null } | Should -Throw '*K1*'
+        { Invoke-E5VmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('defender', 'startup', 'av', 'motw', 'dpi') -Artifact $script:Artifact 6>$null } | Should -Throw '*K1*'
         @($script:Calls | Where-Object { $_ -like 'phase *' }) | Should -Be @('phase defender')
         foreach ($Phase in 'startup', 'av', 'motw', 'dpi') { $script:SavedResult.phases[$Phase].skipped | Should -Match 'K1' }
         $script:Calls | Should -Contain "detach $(Split-Path -Leaf $script:VhdPath)"
     }
     It 'Invoke-E5Exploration: inny błąd jednej VM zapisany, następna VM idzie' {
         $script:Runs = [System.Collections.Generic.List[string]]::new()
-        Mock Invoke-E5VmRun { $script:Runs.Add("$VmName|$(@($Phases) -join ',')"); if ($VmName -eq 'DSO-26H2-Pro') { throw 'Pro padła' }; "C:\w\$VmName\e5.json" }
-        $Arguments = Get-E5RunArguments -VmName @('DSO-26H2-Pro', 'DSO-26H2-Home') -Phase @('winutil') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60
+        Mock Invoke-E5VmRun { $script:Runs.Add("$VmName|$(@($Phases) -join ',')"); if ($VmName -eq 'DSO-EN-Pro') { throw 'Pro padła' }; "C:\w\$VmName\e5.json" }
+        $Arguments = Get-E5RunArguments -VmName @('DSO-EN-Pro', 'DSO-EN-Home') -Phase @('winutil') -OutDirectory 'C:\w' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60
         $Outcome = Invoke-E5Exploration -Arguments $Arguments 6>$null
-        @($script:Runs) | Should -Be @('DSO-26H2-Pro|defender,winutil', 'DSO-26H2-Home|defender,winutil')
-        @($Outcome.Paths) | Should -Be @('C:\w\DSO-26H2-Home\e5.json')
+        @($script:Runs) | Should -Be @('DSO-EN-Pro|defender,winutil', 'DSO-EN-Home|defender,winutil')
+        @($Outcome.Paths) | Should -Be @('C:\w\DSO-EN-Home\e5.json')
         ($Outcome.Errors -join ' ') | Should -Match 'Pro padła'
     }
 }
@@ -1882,11 +1882,11 @@ Describe 'Blok główny SKRYPTU (-ShowPlan; bez VM)' {
         Mock Restore-VmCleanState { throw 'nie wolno' }
         Mock Get-DsoVmCredential { throw 'nie wolno' }
         Mock Wait-VmReady { throw 'nie wolno' }
-        $Output = & $script:E5ScriptPath -ShowPlan -VmName DSO-26H2-Pro -Phase winutil -OutDirectory (Join-Path $TestDrive 'w') 6>$null
+        $Output = & $script:E5ScriptPath -ShowPlan -VmName DSO-EN-Pro -Phase winutil -OutDirectory (Join-Path $TestDrive 'w') 6>$null
         $LASTEXITCODE | Should -Be 0
         $Plan = ($Output | Out-String) | ConvertFrom-Json
-        @($Plan.VmName) | Should -Be @('DSO-26H2-Pro')
-        @($Plan.Phases.'DSO-26H2-Pro') | Should -Be @('defender', 'winutil')
+        @($Plan.VmName) | Should -Be @('DSO-EN-Pro')
+        @($Plan.Phases.'DSO-EN-Pro') | Should -Be @('defender', 'winutil')
         $Plan.Plan.WinUtilCommand | Should -BeExactly '-NoExit -Command "irm https://christitus.com/win | iex"'
         Test-Path -LiteralPath (Join-Path $TestDrive 'w') | Should -BeFalse
         Should -Invoke Restore-VmCleanState -Times 0 -Exactly
@@ -1898,11 +1898,11 @@ Describe 'Blok główny SKRYPTU (-ShowPlan; bez VM)' {
     It '-ShowPlan: faza z nośnikiem bez -Variant/-ArtifactPath albo -Variant bez -ArtifactPath = kod 1, nic nie dotknięte' {
         Mock Restore-VmCleanState { throw 'nie wolno' }
         Mock Get-DsoVmCredential { throw 'nie wolno' }
-        & $script:E5ScriptPath -ShowPlan -VmName DSO-26H2-Pro -Phase av -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-Null
+        & $script:E5ScriptPath -ShowPlan -VmName DSO-EN-Pro -Phase av -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-Null
         $LASTEXITCODE | Should -Be 1
-        & $script:E5ScriptPath -ShowPlan -VmName DSO-26H2-Pro -Phase defender -Variant SingleExe -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-Null
+        & $script:E5ScriptPath -ShowPlan -VmName DSO-EN-Pro -Phase defender -Variant SingleExe -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-Null
         $LASTEXITCODE | Should -Be 1
-        & $script:E5ScriptPath -ShowPlan -VmName DSO-26H2-Pro -Phase dpi -Variant Folder -ArtifactPath (Join-Path $TestDrive 'brak\DSOptimizer-4.0.0.zip') -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-Null
+        & $script:E5ScriptPath -ShowPlan -VmName DSO-EN-Pro -Phase dpi -Variant Folder -ArtifactPath (Join-Path $TestDrive 'brak\DSOptimizer-4.0.0.zip') -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-Null
         $LASTEXITCODE | Should -Be 1
         Test-Path -LiteralPath (Join-Path $TestDrive 'w') | Should -BeFalse
         Should -Invoke Restore-VmCleanState -Times 0 -Exactly
@@ -1910,20 +1910,20 @@ Describe 'Blok główny SKRYPTU (-ShowPlan; bez VM)' {
     }
     It '-ShowPlan z artefaktem: kod 0, kolejność faz defender, startup, av, motw, dpi; artefakt (wariant, ścieżka exe na nośniku, SHA256) w planie' {
         $Release = New-FakeRelease -Variant Folder
-        $Plan = (& $script:E5ScriptPath -ShowPlan -VmName DSO-26H2-Home -Phase defender, av, motw, startup, dpi -Variant Folder -ArtifactPath $Release -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-String) | ConvertFrom-Json
+        $Plan = (& $script:E5ScriptPath -ShowPlan -VmName DSO-EN-Home -Phase defender, av, motw, startup, dpi -Variant Folder -ArtifactPath $Release -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-String) | ConvertFrom-Json
         $LASTEXITCODE | Should -Be 0
-        @($Plan.Phases.'DSO-26H2-Home') | Should -Be @('defender', 'startup', 'av', 'motw', 'dpi')
+        @($Plan.Phases.'DSO-EN-Home') | Should -Be @('defender', 'startup', 'av', 'motw', 'dpi')
         $Plan.Artifact.Variant | Should -Be 'Folder'
         $Plan.Artifact.ExeRelativePath | Should -Be 'DSOptimizer\DSOptimizer.exe'
         $Plan.Artifact.Sha256 | Should -BeExactly (Get-FileHash -LiteralPath $Release -Algorithm SHA256).Hash.ToLowerInvariant()
         $Plan.Plan.UsbFolderName | Should -BeExactly 'Narzędzia DSO'
     }
     It '-ShowPlan bez -Phase: defender i winutil; domyślny katalog builda w planie; -BuildDirectory przekazany' {
-        $All = (& $script:E5ScriptPath -ShowPlan -VmName DSO-26H2-Home -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-String) | ConvertFrom-Json
+        $All = (& $script:E5ScriptPath -ShowPlan -VmName DSO-EN-Home -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-String) | ConvertFrom-Json
         $LASTEXITCODE | Should -Be 0
-        @($All.Phases.'DSO-26H2-Home') | Should -Be @('defender', 'winutil')
+        @($All.Phases.'DSO-EN-Home') | Should -Be @('defender', 'winutil')
         $All.BuildDirectory | Should -Match 'src\\DSOptimizer\.App\\bin\\Release\\net481$'
-        $Own = (& $script:E5ScriptPath -ShowPlan -VmName DSO-26H2-Home -BuildDirectory 'C:\build' -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-String) | ConvertFrom-Json
+        $Own = (& $script:E5ScriptPath -ShowPlan -VmName DSO-EN-Home -BuildDirectory 'C:\build' -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-String) | ConvertFrom-Json
         $Own.BuildDirectory | Should -Be 'C:\build'
     }
 }

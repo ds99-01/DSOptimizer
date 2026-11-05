@@ -5,7 +5,7 @@ Instrukcja uruchomienia:
     Obie VM, po kolei (Home, potem Pro):
         .\tests\vm\explore\Invoke-C4Exploration.ps1 -OutDirectory C:\ścieżka\do\wyników
     Jedna VM:
-        .\tests\vm\explore\Invoke-C4Exploration.ps1 -VmName DSO-26H2-Pro -OutDirectory C:\ścieżka\do\wyników
+        .\tests\vm\explore\Invoke-C4Exploration.ps1 -VmName DSO-PL-Pro -OutDirectory C:\ścieżka\do\wyników
     Bez -OutDirectory wynik trafia do tests\vm\out\c4-<data> (katalog out\ jest w .gitignore).
     Czas: kilka do kilkunastu minut na VM. Brak szyfrowania i odszyfrowania C: (decyzja autora): BitLocker tylko odczyt.
 Opis działania:
@@ -44,16 +44,16 @@ Opis działania:
     Wynik: <OutDirectory>\<VmName>\c4-exploration.json (UTF-8).
     Wybór sond: -Probe menu,cmdline (nazwy: bitlockerPolicy, bitlockerState, shellClasses, guestPolicy, takeown, menu, cmdline); bez -Probe wszystkie.
     Ręczny test UAC (PS Direct ma pełny token Administratora bez UAC, więc G1 rozstrzyga człowiek w sesji użytkownika dso), jedna VM:
-        .\tests\vm\explore\Invoke-C4Exploration.ps1 -PrepareManualUacTest -VmName DSO-26H2-Pro -Variant Subkey [-WithExtended] -OutDirectory <katalog>
+        .\tests\vm\explore\Invoke-C4Exploration.ps1 -PrepareManualUacTest -VmName DSO-PL-Pro -Variant Subkey [-WithExtended] -OutDirectory <katalog>
           => revert, start, zapis wariantu menu, pliki testowe C:\DsoTest\manual-uac (właściciel: dso), VM ZOSTAJE URUCHOMIONA, skrypt drukuje instrukcję.
-        .\tests\vm\explore\Invoke-C4Exploration.ps1 -FinishManualUacTest -VmName DSO-26H2-Pro -OutDirectory <katalog>
+        .\tests\vm\explore\Invoke-C4Exploration.ps1 -FinishManualUacTest -VmName DSO-PL-Pro -OutDirectory <katalog>
           => odczyt właściciela i ACL elementów testowych (c4-manual-uac-finish.json), zatrzymanie i revert do czysta-26H2 (zawsze, także po błędzie).
-    Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy obcej VM.
+    Skrypt dotyka wyłącznie VM DSO-PL-Home i DSO-PL-Pro (ValidateSet), nigdy obcej VM.
     Kod wyjścia: 0 gdy wszystkie wybrane VM zebrane bez błędu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName = @('DSO-26H2-Home', 'DSO-26H2-Pro'),
+    [ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName = @('DSO-PL-Home', 'DSO-PL-Pro'),
     [string]$OutDirectory,
     [string]$CheckpointName = 'czysta-26H2',
     [ValidateRange(60, 7200)][int]$ReadyTimeoutSeconds = 1200,
@@ -984,7 +984,7 @@ function Assert-C4ModeArguments {
     )
     if (-not $Prepare -and -not $Finish) { return }
     if ($Prepare -and $Finish) { throw '-PrepareManualUacTest i -FinishManualUacTest wykluczają się.' }
-    if (-not $VmNameExplicit -or @($VmName).Count -ne 1) { throw 'Tryby ręcznego testu UAC wymagają jawnie podanej JEDNEJ VM (-VmName DSO-26H2-Home albo DSO-26H2-Pro).' }
+    if (-not $VmNameExplicit -or @($VmName).Count -ne 1) { throw 'Tryby ręcznego testu UAC wymagają jawnie podanej JEDNEJ VM (-VmName DSO-PL-Home albo DSO-PL-Pro).' }
     if ($Probe) { throw '-Probe nie łączy się z trybami ręcznego testu UAC.' }
 }
 
@@ -992,7 +992,7 @@ function Invoke-C4Exploration {
     # Wszystkie wybrane VM po kolei. Błąd uwierzytelnienia = stop całości; inny błąd = zapis i dalej (logika we wspólnym module).
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [string]$CheckpointName = 'czysta-26H2',
         [int]$ReadyTimeoutSeconds = 1200,
@@ -1049,7 +1049,7 @@ function Invoke-C4ManualUacTest {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][ValidateSet('Prepare', 'Finish')][string]$Mode,
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [ValidateSet('Plain', 'Subkey', 'ValuePath')][string]$Variant = 'Subkey',
         [switch]$WithExtended,

@@ -13,20 +13,31 @@ Opis działania:
     (Interactive, najwyższe uprawnienia), domyślnie wbudowany Administrator sesji PS Direct.
     Flow AppInstall (Etap 4c): pliki z tests\vm\fixtures do VM -> Setup -> jedno polecenie CLI (--install-apps <AppIds> albo
     --list-install, opcjonalnie --apps-catalog) -> Check -> Cleanup; VM bez sieci, więc instalacja kończy się uczciwym "Nie wykonano".
-    Klucz przypadku Language ('pl' albo 'en', poza AppInstall) = język CLI wszystkich kroków przypadku (--lang <Language>);
-    bez niego Invoke-DsoCli dokleja --lang pl.
+    Język CLI: obowiązkowy -Language Invoke-DsoCli; przypadek dostaje go z Resolve-VmCaseLanguage (klucz Language przypadku
+    wygrywa z językiem VM; system = bez --lang, wykrywanie z Windows). Klucz Language ('pl', 'en' albo 'system') jest poza AppInstall.
+    Teksty programu w przypadkach: Expect.MessageContains, WarningContains i WarningAbsent to pełne polskie teksty z tabel tłumaczeń
+    (src\DSOptimizer.Core\Localization\Translations, {n} = dowolny tekst), @{ AnyOf = @(...) } albo @{ TestCatalog = '...' } (tekst
+    katalogu testowego, dosłownie w obu językach); lista = wszystkie muszą wystąpić. Token {T:<polski tekst>} w dowolnym tekście
+    przypadku zamienia się na tekst w języku przypadku. Import-VmCases odrzuca tekst spoza tabel (każdy język VM), a Resolve-VmCaseTexts
+    (po Resolve-VmCaseLanguage) podstawia tokeny i buduje wzorce -like (MessagePatterns, WarningPatterns, WarningAbsentPatterns).
     Flow Autostart: pliki z tests\vm\fixtures do VM -> Setup (sondy Install-DsoAutostartProbe.ps1) -> --list-autostart (odczyt
     istnienia kluczy Expect.ListDoesNotWrite przed i po) -> bez Set: Check -> Cleanup. Z Set: --set-autostart <id> <Set> dla
     każdej pozycji Items -> restart -> Wait-VmAutostartStart (sondy Controls w probe.log po rozruchu, 20 s zapasu, ocena startu
     pozycji) -> Wait-VmStartupInfo -> Confirm-VmAutostartStart (ponowna ocena, późny start = Late) -> przywrócenie (--undo-autostart <id>
     albo --set-autostart <id> enabled|disabled) -> CheckAfterUndo (przed restartem) -> restart -> Wait-VmAutostartStart -> Wait-VmStartupInfo
     -> Confirm-VmAutostartStart -> --list-autostart -> Check -> Cleanup. Sonda = linia w probe.log zgodna z procesem konta (rozbieżność = błąd). Przypadek z Set ma osobny przebieg od czystego checkpointu.
-    Hasło VM nigdy nie trafia do wyjścia.
+    Hasło VM (`admin`) nie jest wypisywane w raportach.
 #>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+Import-Module (Join-Path $PSScriptRoot 'VmText.psm1')
 
-$script:CaseKeys = @('Name', 'TweakId', 'AppId', 'RunAs', 'Flow', 'RestorePoint', 'Setup', 'Snapshot', 'Expect', 'Hypothesis', 'Catalog', 'Skip', 'Check', 'Cleanup', 'CheckAfterApply', 'CheckAfterUndo', 'CliTimeoutSeconds', 'Command', 'AppIds', 'AppsCatalog', 'Language', 'Items', 'Controls', 'Initial', 'Set', 'Restore')
+# Teksty programu w przypadkach: klucz Expect -> klucz z wzorcami po Resolve-VmCaseTexts; klucze skryptowe (token {T:} w literale
+# w apostrofach, więc apostrofy tekstu są podwajane); token {T:<pełny polski tekst z tabel>} ({n} wewnątrz dozwolone).
+$script:TextExpectKeys = [ordered]@{ MessageContains = 'MessagePatterns'; WarningContains = 'WarningPatterns'; WarningAbsent = 'WarningAbsentPatterns' }
+$script:ScriptCaseKeys = @('Setup', 'Check', 'Cleanup', 'CheckAfterApply', 'CheckAfterUndo')
+$script:TextTokenPattern = '\{T:((?:[^{}]|\{\d+\})+)\}'
+$script:CaseKeys =@('Name', 'TweakId', 'AppId', 'RunAs', 'Flow', 'RestorePoint', 'Setup', 'Snapshot', 'Expect', 'Hypothesis', 'Catalog', 'Skip', 'Check', 'Cleanup', 'CheckAfterApply', 'CheckAfterUndo', 'CliTimeoutSeconds', 'Command', 'AppIds', 'AppsCatalog', 'Language', 'Items', 'Controls', 'Initial', 'Set', 'Restore')
 # Flow Autostart: klucze przypadku, Expect i wiersza Expect.Listed. Items = @{ Id; Probe } albo @{ Id; Process } (id bez spacji),
 # Controls = sondy, które muszą wystartować w każdym rozruchu; bez Set przypadek tylko czyta listę (przebieg main, bez restartu).
 $script:AutostartOnlyKeys = @('Items', 'Controls', 'Initial', 'Set', 'Restore')
@@ -44,8 +55,8 @@ $script:AutostartSettleSeconds = 20
 $script:AutostartPollSeconds = 5
 $script:AutostartUserName = 'dso'
 # CliTimeoutSeconds (Etap 4b partia 2): limit czekania na CLI kroku 'execute' dla długich akcji (DISM/SFC, cleanmgr); tylko Flow 'Execute'.
-# Language: język CLI przypadku ('pl' albo 'en'), każde wywołanie CLI dostaje --lang <Language>; bez klucza Invoke-DsoCli dokleja --lang pl.
-$script:CaseLanguages = @('pl', 'en')
+# Language: język CLI przypadku ('pl', 'en' albo 'system' = bez --lang); wygrywa z językiem VM (Resolve-VmCaseLanguage).
+$script:CaseLanguages = @('pl', 'en', 'system')
 $script:CliTimeoutRange = @(60, 7200)
 $script:FlowsSupported = @('Full', 'ApplyOnly', 'DetectOnly', 'Execute', 'Reboot', 'AppRemove', 'AppInstall', 'Autostart')
 # Flow AppInstall (Etap 4c): klucze przypadku i Expect; Installed tylko przy list-install, Outcomes i WingetCodes tylko przy
@@ -318,6 +329,76 @@ function Assert-VmAutostartCase {
     }
 }
 
+function Get-VmTextExpectGroups {
+    # Expect.MessageContains / WarningContains / WarningAbsent: jeden element albo lista (lista = wszystkie muszą wystąpić). Element:
+    # pełny polski tekst z tabel tłumaczeń ({n} = dowolny tekst), @{ AnyOf = @(<teksty>) } (wystarczy jeden) albo
+    # @{ TestCatalog = '<tekst>' } (tekst katalogu testowego: bez tłumaczenia, dosłownie w obu językach). Zwraca grupy
+    # @{ Texts; TestCatalog } bez sprawdzania tabel; inny kształt = wyjątek.
+    param([string]$Label, [string]$KeyName, $Value)
+    $Shape = "Przypadek '$Label': 'Expect.$KeyName' – element musi być pełnym polskim tekstem z tabel tłumaczeń, @{ AnyOf = @(<teksty>) } albo @{ TestCatalog = '<tekst katalogu testowego>' }"
+    # @() rozwija tylko listę; tekst i hashtable zostają jednym elementem, $null = pusta lista.
+    $Items = @($Value)
+    if ($Items.Count -eq 0) { throw "$Shape (jest pusta lista albo brak wartości)." }
+    foreach ($Item in $Items) {
+        if ($Item -is [string]) {
+            if ([string]::IsNullOrWhiteSpace($Item)) { throw "$Shape (jest pusty tekst)." }
+            @{ Texts = [string[]]@($Item); TestCatalog = $false }
+            continue
+        }
+        if ($Item -isnot [hashtable] -or $Item.Count -ne 1 -or -not ($Item.ContainsKey('AnyOf') -or $Item.ContainsKey('TestCatalog'))) {
+            $Shown = if ($Item -is [hashtable]) { '@{ ' + (@($Item.Keys) -join '; ') + ' }' } else { "$Item" }
+            throw "$Shape (jest: $Shown)."
+        }
+        if ($Item.ContainsKey('AnyOf')) {
+            $Texts = @($Item.AnyOf)
+            if ($Texts.Count -eq 0 -or @($Texts | Where-Object { $_ -isnot [string] -or [string]::IsNullOrWhiteSpace($_) }).Count -gt 0) {
+                throw "Przypadek '$Label': 'Expect.$KeyName' – AnyOf musi być niepustą listą pełnych polskich tekstów z tabel tłumaczeń."
+            }
+            @{ Texts = [string[]]$Texts; TestCatalog = $false }
+            continue
+        }
+        if ($Item.TestCatalog -isnot [string] -or [string]::IsNullOrWhiteSpace($Item.TestCatalog)) {
+            throw "Przypadek '$Label': 'Expect.$KeyName' – TestCatalog musi być niepustym tekstem katalogu testowego."
+        }
+        @{ Texts = [string[]]@($Item.TestCatalog); TestCatalog = $true }
+    }
+}
+
+function Get-VmCaseStrings {
+    # Wszystkie teksty przypadku (także zagnieżdżone w hashtable i listach), np. do szukania tokenów {T:…}.
+    param($Value)
+    if ($Value -is [string]) { return $Value }
+    if ($Value -is [hashtable]) { foreach ($Entry in $Value.GetEnumerator()) { Get-VmCaseStrings -Value $Entry.Value } }
+    elseif ($Value -is [System.Array]) { foreach ($Item in $Value) { Get-VmCaseStrings -Value $Item } }
+}
+
+function Assert-VmTextKey {
+    param([string]$Label, [string]$Text)
+    if (-not (Test-DsoTextKey -Polish $Text)) { throw "Przypadek '$Label': tekst '$Text' nie istnieje w tabelach tłumaczeń (Localization/Translations)." }
+}
+
+function Assert-VmCaseTexts {
+    # Teksty programu w przypadku pochodzą z tabel tłumaczeń (niezależnie od języka VM): oczekiwania Expect.MessageContains,
+    # WarningContains, WarningAbsent (poza TestCatalog) i każdy token {T:<pełny polski tekst>} w dowolnym tekście przypadku.
+    param([string]$Label, [hashtable]$Case)
+    if ($Case.ContainsKey('Expect') -and $Case.Expect -is [hashtable]) {
+        foreach ($Key in @($script:TextExpectKeys.Keys)) {
+            if (-not $Case.Expect.ContainsKey($Key)) { continue }
+            foreach ($Group in @(Get-VmTextExpectGroups -Label $Label -KeyName $Key -Value $Case.Expect[$Key])) {
+                if ($Group['TestCatalog']) { continue }
+                foreach ($Text in $Group['Texts']) { Assert-VmTextKey -Label $Label -Text $Text }
+            }
+        }
+    }
+    foreach ($Text in @(Get-VmCaseStrings -Value $Case)) {
+        $Tokens = [regex]::Matches($Text, $script:TextTokenPattern)
+        if ([regex]::Matches($Text, '\{T:').Count -ne $Tokens.Count) {
+            throw "Przypadek '$Label': niedomknięty albo pusty token {T:…} w tekście '$Text' (postać: {T:<pełny polski tekst z tabel>})."
+        }
+        foreach ($Token in $Tokens) { Assert-VmTextKey -Label $Label -Text $Token.Groups[1].Value }
+    }
+}
+
 function Import-VmCases {
     [CmdletBinding()]
     [OutputType([hashtable[]])]
@@ -340,12 +421,14 @@ function Import-VmCases {
         if ($Case.ContainsKey('Flow') -and $Case.Flow -eq 'AppInstall') {
             Assert-VmAppInstallCase -Label $Label -Case $Case
             if (-not $Names.Add($Label)) { throw "Przypadek '$Label': zduplikowana wartość klucza 'Name'." }
+            Assert-VmCaseTexts -Label $Label -Case $Case
             $Result.Add($Case)
             continue
         }
         if ($Case.ContainsKey('Flow') -and $Case.Flow -eq 'Autostart') {
             Assert-VmAutostartCase -Label $Label -Case $Case
             if (-not $Names.Add($Label)) { throw "Przypadek '$Label': zduplikowana wartość klucza 'Name'." }
+            Assert-VmCaseTexts -Label $Label -Case $Case
             $Result.Add($Case)
             continue
         }
@@ -389,7 +472,7 @@ function Import-VmCases {
             throw "Przypadek '$Label': 'RunAs' musi być nazwą konta lokalnego (litery, cyfry, _ i -), np. 'dso'."
         }
         if ($Case.ContainsKey('Language') -and ($Case.Language -isnot [string] -or $Case.Language -cnotin $script:CaseLanguages)) {
-            throw "Przypadek '$Label': klucz 'Language' = '$($Case.Language)' (dozwolone: pl, en)."
+            throw "Przypadek '$Label': klucz 'Language' = '$($Case.Language)' (dozwolone: pl, en, system)."
         }
         $CatalogKind = 'Test'
         if ($Case.ContainsKey('Catalog')) {
@@ -508,6 +591,8 @@ function Import-VmCases {
             # Scenariusz asertuje NotWrittenTo tylko razem z Expect.UserSid; bez niego asercja byłaby cicho pominięta.
             if (-not $Case.Expect.ContainsKey('UserSid')) { throw "Przypadek '$Label': 'Expect.NotWrittenTo' wymaga klucza 'Expect.UserSid' (bez niego asercja nie jest sprawdzana)." }
         }
+        # Teksty na końcu: najpierw błędy struktury przypadku, potem zgodność tekstów z tabelami tłumaczeń.
+        Assert-VmCaseTexts -Label $Label -Case $Case
         $Result.Add($Case)
     }
     return , $Result.ToArray()
@@ -552,8 +637,9 @@ function Expand-VmValue {
     param($Value, [string]$UserSid)
     if ($Value -is [string]) { return $Value.Replace('{UserSid}', $UserSid) }
     if ($Value -is [hashtable]) {
+        # GetEnumerator, nie .Keys: hashtable z wpisem 'Keys' (grupy wzorców tekstów) zwróciłby wartość wpisu zamiast listy kluczy.
         $Copy = @{}
-        foreach ($Key in $Value.Keys) { $Copy[$Key] = Expand-VmValue -Value $Value[$Key] -UserSid $UserSid }
+        foreach ($Entry in $Value.GetEnumerator()) { $Copy[$Entry.Key] = Expand-VmValue -Value $Entry.Value -UserSid $UserSid }
         return $Copy
     }
     if ($Value -is [System.Array]) {
@@ -668,10 +754,12 @@ function Invoke-DsoCli {
         [int]$TimeoutSeconds = 600,
         # Konto zalogowane w VM (np. 'dso'): CLI startuje przez zadanie Harmonogramu Interactive z najwyższymi uprawnieniami
         # (jak właściciel laptopa, który podnosi DSOptimizer przez UAC; wzorzec K2 eksploracji E4A2). Puste = Administrator PS Direct.
-        [ValidatePattern('^([A-Za-z0-9_-]+)?\z')][string]$RunAsUser
+        [ValidatePattern('^([A-Za-z0-9_-]+)?\z')][string]$RunAsUser,
+        # Język CLI z jednego źródła (Resolve-VmCaseLanguage / język VM): pl i en dokładają --lang, system nic (wykrywanie z Windows).
+        [Parameter(Mandatory)][ValidateSet('pl', 'en', 'system')][string]$Language
     )
-    # Język CLI przypięty do polskiego: teksty w raportach (np. MessageContains) mają być stałe niezależnie od kultury VM.
-    if (@($Arguments) -notcontains '--lang') { $Arguments = @($Arguments) + @('--lang', 'pl') }
+    if (@($Arguments) -contains '--lang') { throw 'Argumenty CLI nie mogą zawierać --lang – język podaje parametr -Language.' }
+    if ($Language -ne 'system') { $Arguments = @($Arguments) + @('--lang', $Language) }
     if ($RunAsUser) {
         $RemoteAsUser = {
             param([string]$ExePath, [string[]]$Arguments, [string]$OutPath, [int]$TimeoutMs, [string]$UserName)
@@ -1410,6 +1498,116 @@ function Wait-VmStartupInfo {
     }
 }
 
+function Resolve-VmCaseLanguage {
+    # Język CLI i język tekstów przypadków dla jednej VM. Zwraca NOWE kopie (wejście bez zmian) z kluczami:
+    # CliLanguage = Language przypadku (pl|en|system), a bez niego język VM; TextLanguage = Language przypadku, gdy pl|en, inaczej język VM
+    # (system = CLI wykrywa język z Windows VM, więc teksty są w języku VM).
+    [CmdletBinding()]
+    [OutputType([hashtable[]])]
+    param(
+        [Parameter(Mandatory)][AllowEmptyCollection()][hashtable[]]$Cases,
+        [Parameter(Mandatory)][ValidateSet('pl', 'en')][string]$VmLanguage
+    )
+    $Resolved = foreach ($Case in $Cases) {
+        $Copy = @{} + $Case
+        $CaseLanguage = if ($Case.ContainsKey('Language')) { [string]$Case.Language } else { $null }
+        $Copy.CliLanguage = if ($CaseLanguage) { $CaseLanguage } else { $VmLanguage }
+        $Copy.TextLanguage = if ($CaseLanguage -in @('pl', 'en')) { $CaseLanguage } else { $VmLanguage }
+        $Copy
+    }
+    return [hashtable[]]@($Resolved)
+}
+
+function Assert-VmCaseCliLanguage {
+    param([Parameter(Mandatory)][hashtable]$Case)
+    if (-not $Case.ContainsKey('CliLanguage') -or $Case.CliLanguage -cnotin $script:CaseLanguages) {
+        throw "Przypadek '$($Case.Name)': brak CliLanguage – przed przebiegiem wywołaj Resolve-VmCaseLanguage."
+    }
+}
+
+function Resolve-VmTextTokens {
+    # Kopia wartości z tokenami {T:<polski tekst>} zamienionymi na tekst w języku przypadku (tabele tłumaczeń). -Script: wartość jest
+    # skryptem, a token stoi w literale w apostrofach, więc apostrofy tekstu (także typograficzne, które PowerShell też czyta jako
+    # apostrof) są podwajane. Hashtable i listy kopiowane rekurencyjnie, wejście bez zmian.
+    param([string]$Label, $Value, [string]$Language, [switch]$Script)
+    if ($Value -is [string]) {
+        $Tokens = [regex]::Matches($Value, $script:TextTokenPattern)
+        if ($Tokens.Count -eq 0) { return $Value }
+        $Builder = New-Object System.Text.StringBuilder
+        $Last = 0
+        foreach ($Match in $Tokens) {
+            $Polish = $Match.Groups[1].Value
+            Assert-VmTextKey -Label $Label -Text $Polish
+            $Text = Get-DsoUiText -Polish $Polish -Language $Language
+            if ($Script) { $Text = [regex]::Replace($Text, "['‘’‚‛]", '$0$0') }
+            $null = $Builder.Append($Value.Substring($Last, $Match.Index - $Last)).Append($Text)
+            $Last = $Match.Index + $Match.Length
+        }
+        return $Builder.Append($Value.Substring($Last)).ToString()
+    }
+    if ($Value -is [hashtable]) {
+        $Copy = @{}
+        foreach ($Entry in $Value.GetEnumerator()) { $Copy[$Entry.Key] = Resolve-VmTextTokens -Label $Label -Value $Entry.Value -Language $Language -Script:$Script }
+        return $Copy
+    }
+    if ($Value -is [System.Array]) {
+        $Items = [System.Collections.Generic.List[object]]::new()
+        foreach ($Item in $Value) { $Items.Add((Resolve-VmTextTokens -Label $Label -Value $Item -Language $Language -Script:$Script)) }
+        return , $Items.ToArray()
+    }
+    return $Value
+}
+
+function Resolve-VmCaseTexts {
+    # Teksty programu w języku przypadku (TextLanguage z Resolve-VmCaseLanguage). Zwraca NOWE kopie (wejście bez zmian):
+    #   - token {T:<pełny polski tekst>} w każdym tekście przypadku = tekst w TextLanguage (w Setup, Check, Cleanup, CheckAfterApply
+    #     i CheckAfterUndo z podwojonymi apostrofami, w danych bez zmian);
+    #   - Expect.MessagePatterns / WarningPatterns / WarningAbsentPatterns z MessageContains / WarningContains / WarningAbsent:
+    #     @(@{ Keys = [string[]]; Any = [string[]] }, …) – grupa na element (każda musi trafić), Any = wzorce -like z tabel
+    #     (ConvertTo-DsoTextPattern), dla TestCatalog '*' + tekst dosłownie + '*' w obu językach.
+    # Przypadek bez TextLanguage = wyjątek.
+    [CmdletBinding()]
+    [OutputType([hashtable[]])]
+    param(
+        [Parameter(Mandatory)][AllowEmptyCollection()][hashtable[]]$Cases
+    )
+    $Resolved = foreach ($Case in $Cases) {
+        $Label = [string]$Case.Name
+        if (-not $Case.ContainsKey('TextLanguage') -or $Case.TextLanguage -cnotin @('pl', 'en')) {
+            throw "Przypadek '$Label': brak TextLanguage – przed Resolve-VmCaseTexts wywołaj Resolve-VmCaseLanguage."
+        }
+        $Language = [string]$Case.TextLanguage
+        $HasExpect = $Case.ContainsKey('Expect') -and $Case.Expect -is [hashtable]
+        $Copy = @{}
+        foreach ($Key in $Case.Keys) {
+            if ($Key -eq 'Expect' -and $HasExpect) { continue }
+            $Copy[$Key] = Resolve-VmTextTokens -Label $Label -Value $Case[$Key] -Language $Language -Script:($Key -in $script:ScriptCaseKeys)
+        }
+        if ($HasExpect) {
+            $Expect = @{}
+            foreach ($Key in $Case.Expect.Keys) {
+                if ($script:TextExpectKeys.Contains($Key)) { $Expect[$Key] = $Case.Expect[$Key]; continue }
+                $Expect[$Key] = Resolve-VmTextTokens -Label $Label -Value $Case.Expect[$Key] -Language $Language
+            }
+            foreach ($Key in @($script:TextExpectKeys.Keys)) {
+                if (-not $Case.Expect.ContainsKey($Key)) { continue }
+                $Groups = foreach ($Group in @(Get-VmTextExpectGroups -Label $Label -KeyName $Key -Value $Case.Expect[$Key])) {
+                    $Any = foreach ($Text in $Group['Texts']) {
+                        if ($Group['TestCatalog']) { '*' + [System.Management.Automation.WildcardPattern]::Escape($Text) + '*'; continue }
+                        Assert-VmTextKey -Label $Label -Text $Text
+                        ConvertTo-DsoTextPattern -Polish $Text -Language $Language
+                    }
+                    @{ Keys = [string[]]@($Group['Texts']); Any = [string[]]@($Any) }
+                }
+                $Expect[$script:TextExpectKeys[$Key]] = @($Groups)
+            }
+            $Copy.Expect = $Expect
+        }
+        $Copy
+    }
+    return [hashtable[]]@($Resolved)
+}
+
 function Invoke-VmAutostartCase {
     # Przebieg Flow Autostart (opis w nagłówku modułu). Sesja po restarcie (ostatnia) zostaje otwarta: należy do wywołującego.
     [CmdletBinding()]
@@ -1437,7 +1635,7 @@ function Invoke-VmAutostartCase {
         if ($ItemId) { $CliArgs.TweakId = $ItemId }
         if ($State) { $CliArgs.AutostartState = $State }
         $Arguments = ConvertTo-DsoCliArguments @CliArgs
-        $Result = Invoke-DsoCli -Session $Session -ExePath $Layout.Exe -Arguments $Arguments -OutPath $OutPath -RunAsUser $RunAsUser
+        $Result = Invoke-DsoCli -Session $Session -ExePath $Layout.Exe -Arguments $Arguments -OutPath $OutPath -RunAsUser $RunAsUser -Language $Case.CliLanguage
         $Steps.Add([pscustomobject]@{ Step = $Step; ItemId = $(if ($ItemId) { $ItemId } else { $null }); ExitCode = $Result.ExitCode; TimedOut = $Result.TimedOut; Report = $Result.Report; Json = $Result.Json; ReportError = $Result.ReportError })
     }
     $SetupOutput = @()
@@ -1530,6 +1728,7 @@ function Invoke-VmCase {
         [Parameter(Mandatory)][hashtable]$Layout,
         [scriptblock]$Reconnect
     )
+    Assert-VmCaseCliLanguage -Case $Case
     if ($Case.Flow -eq 'Reboot' -and $null -eq $Reconnect) {
         throw "Przypadek '$($Case.Name)': Flow 'Reboot' wymaga parametru -Reconnect (scriptblock zwracający nową sesję po restarcie)."
     }
@@ -1562,8 +1761,7 @@ function Invoke-VmCase {
             if ($Command -eq 'apply') { $CliArgs.RestorePoint = $Case.RestorePoint }
         }
         $Arguments = ConvertTo-DsoCliArguments @CliArgs
-        if ($Case.ContainsKey('Language')) { $Arguments = @($Arguments) + @('--lang', [string]$Case.Language) }
-        $CliParams = @{ Session = $Session; ExePath = $Layout.Exe; Arguments = $Arguments; OutPath = $OutPath; RunAsUser = $RunAsUser }
+        $CliParams = @{ Session = $Session; ExePath = $Layout.Exe; Arguments = $Arguments; OutPath = $OutPath; RunAsUser = $RunAsUser; Language = $Case.CliLanguage }
         if ($Command -eq 'execute' -and $Case.ContainsKey('CliTimeoutSeconds')) { $CliParams.TimeoutSeconds = [int]$Case.CliTimeoutSeconds }
         $Result = Invoke-DsoCli @CliParams
         $Steps.Add([pscustomobject]@{ Step = $Step; ExitCode = $Result.ExitCode; TimedOut = $Result.TimedOut; Report = $Result.Report; Json = $Result.Json; ReportError = $Result.ReportError })
@@ -1790,4 +1988,4 @@ function Invoke-VmCase {
     }
 }
 
-Export-ModuleMember -Function Import-VmCases, Split-VmCaseRuns, Expand-VmCasePlaceholders, ConvertTo-DsoCliArguments, Invoke-DsoCli, Get-DsoStateSnapshot, Get-VmStateSnapshot, Compare-VmSnapshot, Test-VmSnapshotMatches, Invoke-VmSetup, Get-VmRestorePointCount, Invoke-VmCase, Restart-VmAndReconnect, New-VmRestartMarker, Test-VmRestartMarker, Get-VmAutostartExpectedStart, Wait-VmAutostartStart, Confirm-VmAutostartStart, Wait-VmStartupInfo
+Export-ModuleMember -Function Import-VmCases, Split-VmCaseRuns, Expand-VmCasePlaceholders, ConvertTo-DsoCliArguments, Resolve-VmCaseLanguage, Resolve-VmCaseTexts, Invoke-DsoCli, Get-DsoStateSnapshot, Get-VmStateSnapshot, Compare-VmSnapshot, Test-VmSnapshotMatches, Invoke-VmSetup, Get-VmRestorePointCount, Invoke-VmCase, Restart-VmAndReconnect, New-VmRestartMarker, Test-VmRestartMarker, Get-VmAutostartExpectedStart, Wait-VmAutostartStart, Confirm-VmAutostartStart, Wait-VmStartupInfo

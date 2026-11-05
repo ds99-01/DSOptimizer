@@ -3,17 +3,8 @@
     . (Join-Path $PSScriptRoot 'Support\NoLiveVm.ps1')
     Import-Module (Join-Path $PSScriptRoot '..\modules\VmCommon.psm1') -Force }
 
-Describe 'New-DsoVmPassword' {
-    It 'ma żądaną długość i wszystkie klasy znaków' {
-        $Password = New-DsoVmPassword -Length 24
-        $Password.Length | Should -Be 24
-        $Password | Should -MatchExactly '[A-Z]'
-        $Password | Should -MatchExactly '[a-z]'
-        $Password | Should -Match '[0-9]'
-        $Password | Should -Match '[-_.!#+=]'
-    }
-    It 'nie zawiera znaków psujących XML i skrypty' { New-DsoVmPassword | Should -Not -Match "['""<>&% ]" }
-    It 'daje różne hasła' { New-DsoVmPassword | Should -Not -Be (New-DsoVmPassword) }
+Describe 'Generator haseł' {
+    It 'generatora haseł już nie ma' { Get-Command New-DsoVmPassword -ErrorAction SilentlyContinue | Should -BeNullOrEmpty }
 }
 
 Describe 'Poświadczenia VM' {
@@ -21,7 +12,7 @@ Describe 'Poświadczenia VM' {
     AfterEach { $env:LOCALAPPDATA = $script:OldLocal }
 
     It 'ścieżka leży w LOCALAPPDATA\DSOptimizer-vm i poza repo' {
-        $Path = Get-DsoVmCredentialPath -VmName 'DSO-26H2-Pro'
+        $Path = Get-DsoVmCredentialPath -VmName 'DSO-EN-Pro'
         $Path | Should -BeLike (Join-Path $TestDrive 'DSOptimizer-vm\*')
         $Path | Should -Not -BeLike ((Get-DsoRepoRoot) + '*')
     }
@@ -43,3 +34,32 @@ Describe 'Get-DsoVmLayout' {
 }
 
 AfterAll { Clear-NoLiveVm }
+
+Describe 'Jedno źródło listy VM' {
+    It 'cztery VM w stałej kolejności' { (Get-DsoVmDefinitions).Name | Should -Be @('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home') }
+    It '<Name>: edycja, język, region i role' -ForEach @(
+        @{ Name = 'DSO-EN-Home'; Edition = 'Home'; EditionId = 'Core'; Language = 'en'; Culture = 'en-US'; InputLocale = '0409:00000409'; FullRun = $true; Smoke = @('en'); Explore = $true }
+        @{ Name = 'DSO-EN-Pro'; Edition = 'Pro'; EditionId = 'Professional'; Language = 'en'; Culture = 'en-US'; InputLocale = '0409:00000409'; FullRun = $true; Smoke = @('en', 'pl'); Explore = $true }
+        @{ Name = 'DSO-PL-Pro'; Edition = 'Pro'; EditionId = 'Professional'; Language = 'pl'; Culture = 'pl-PL'; InputLocale = '0415:00000415'; FullRun = $true; Smoke = @('pl', 'en'); Explore = $true }
+        @{ Name = 'DSO-PL-Home'; Edition = 'Home'; EditionId = 'Core'; Language = 'pl'; Culture = 'pl-PL'; InputLocale = '0415:00000415'; FullRun = $false; Smoke = @('pl'); Explore = $false }
+    ) {
+        $D = Get-DsoVmDefinition -VmName $Name
+        $D.Name | Should -BeExactly $Name
+        $D.ComputerName | Should -BeExactly $Name.ToUpperInvariant()
+        $D.Edition | Should -BeExactly $Edition
+        $D.EditionId | Should -BeExactly $EditionId
+        $D.Language | Should -BeExactly $Language
+        $D.Culture | Should -BeExactly $Culture
+        $D.InputLocale | Should -BeExactly $InputLocale
+        $D.FullRun | Should -BeExactly $FullRun
+        @($D.SmokeLanguages) | Should -Be $Smoke
+        $D.ReleaseExplorations | Should -BeExactly $Explore
+    }
+    It 'nazwa ma najwyżej 15 znaków i pasuje do wzorca' { foreach ($D in Get-DsoVmDefinitions) { $D.Name.Length | Should -BeLessOrEqual 15; $D.Name | Should -MatchExactly (Get-DsoVmNamePattern) } }
+    It 'wzorzec nazw' { Get-DsoVmNamePattern | Should -BeExactly '^DSO-(EN|PL)-(Home|Pro)\z' }
+    It 'nazwa w innej wielkości liter daje nazwę kanoniczną' { (Get-DsoVmDefinition -VmName 'dso-en-pro').Name | Should -BeExactly 'DSO-EN-Pro' }
+    It 'stara nazwa daje wyjątek z listą znanych VM' { { Get-DsoVmDefinition -VmName 'DSO-26H2-Pro' } | Should -Throw -ExpectedMessage "*'DSO-26H2-Pro'*DSO-EN-Home, DSO-EN-Pro, DSO-PL-Pro, DSO-PL-Home*" }
+    It 'Get-DsoVmNames -FullRun' { Get-DsoVmNames -FullRun | Should -Be @('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro') }
+    It 'Get-DsoVmNames -Language pl' { Get-DsoVmNames -Language pl | Should -Be @('DSO-PL-Pro', 'DSO-PL-Home') }
+    It 'każde wywołanie daje nowe obiekty' { $A = Get-DsoVmDefinitions; $A[0].Language = 'xx'; (Get-DsoVmDefinitions)[0].Language | Should -Be 'en' }
+}

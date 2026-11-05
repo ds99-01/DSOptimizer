@@ -56,18 +56,18 @@ Describe 'Wyłącznik blokuje funkcje dotykające Hyper-V zanim cokolwiek wywoł
         Set-NoLiveVmDefaultMock -ModuleName ExploreCommon
     }
     It 'Restore-VmCleanState rzuca przed Get-VM / Stop-VM / Restore-VMCheckpoint' {
-        { Restore-VmCleanState -VmName 'DSO-26H2-Test' -CheckpointName 'czysta-26H2' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Restore-VmCleanState -VmName 'DSO-PL-Home' -CheckpointName 'czysta-26H2' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
         Should -Invoke -ModuleName VmHost Get-VM -Times 0 -Exactly
         Should -Invoke -ModuleName VmHost Stop-VM -Times 0 -Exactly
         Should -Invoke -ModuleName VmHost Restore-VMCheckpoint -Times 0 -Exactly
     }
     It 'Wait-VmReady rzuca przed Get-VM / New-PSSession' {
-        { Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 1 } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 1 } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
         Should -Invoke -ModuleName VmHost Get-VM -Times 0 -Exactly
         Should -Invoke -ModuleName VmHost New-PSSession -Times 0 -Exactly
     }
     It 'Wait-VmHeartbeatDrop rzuca przed Get-VM' {
-        { Wait-VmHeartbeatDrop -VmName 'DSO-26H2-Test' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Wait-VmHeartbeatDrop -VmName 'DSO-PL-Home' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
         Should -Invoke -ModuleName VmHost Get-VM -Times 0 -Exactly
     }
     It 'Copy-DsoBuildToVm rzuca przed Invoke-Command' {
@@ -76,7 +76,7 @@ Describe 'Wyłącznik blokuje funkcje dotykające Hyper-V zanim cokolwiek wywoł
         Should -Invoke -ModuleName VmHost Copy-Item -Times 0 -Exactly
     }
     It 'Invoke-ExploreVmRun rzuca przed Get-DsoVmCredential i przed jakąkolwiek operacją VM' {
-        { Invoke-ExploreVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Invoke-ExploreVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
         Should -Invoke -ModuleName ExploreCommon Get-DsoVmCredential -Times 0 -Exactly
         Should -Invoke -ModuleName ExploreCommon Start-VM -Times 0 -Exactly
         Should -Invoke -ModuleName VmHost Get-VM -Times 0 -Exactly
@@ -92,7 +92,7 @@ Describe 'Domyślne rzucające mocki (Set-NoLiveVmDefaultMock)' -Skip:(-not $scr
         @{ Polecenie = 'Stop-VM'; Kod = 'Stop-VM -Name ''NoSuchVm-NoLive''' }
         @{ Polecenie = 'Restore-VMCheckpoint'; Kod = 'Restore-VMCheckpoint -VMName ''NoSuchVm-NoLive'' -Name ''x'' -Confirm:$false' }
         @{ Polecenie = 'New-PSSession'; Kod = 'New-PSSession -VMName ''NoSuchVm-NoLive'' -Credential ([pscredential]::new(''a'', (ConvertTo-SecureString ''x'' -AsPlainText -Force)))' }
-        @{ Polecenie = 'Get-DsoVmCredential'; Kod = 'Get-DsoVmCredential -VmName ''DSO-26H2-Test''' }
+        @{ Polecenie = 'Get-DsoVmCredential'; Kod = 'Get-DsoVmCredential -VmName ''DSO-PL-Home''' }
         @{ Polecenie = 'Invoke-Command -VMName'; Kod = 'Invoke-Command -VMName ''NoSuchVm-NoLive'' -Credential ([pscredential]::new(''a'', (ConvertTo-SecureString ''x'' -AsPlainText -Force))) -ScriptBlock { 1 }' }
     ) {
         # Kod wykonywany w zasięgu modułu VmHost, czyli tam, gdzie mocki -ModuleName VmHost działają.

@@ -80,7 +80,7 @@ Describe 'C1 Task 1: Invoke-VmCase - NotWrittenTo z AllowCurrentUser, Snapshot b
     }
     AfterAll { Remove-Variable -Name Dso9Snap -Scope Global -ErrorAction SilentlyContinue }
     It 'tylko odczyt NotWrittenTo dostaje -AllowCurrentUser' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }
             Expect = @{ NotWrittenTo = @(@{ Path = 'HKCU\S'; Name = 'V' }) } }
         Invoke-VmCase -Session $null -Case $Case -Layout (Get-DsoVmLayout) | Out-Null
         @($global:Dso9Snap | Where-Object { $_.AllowCurrentUser }).Count | Should -Be 2
@@ -101,7 +101,7 @@ Describe 'C1 Task 3: NotWrittenTo = stan bez zmian (przed/po apply/po undo)' {
             $global:Dso3Reads.Add($Index)
             [pscustomobject]@{ Registry = @([pscustomobject]@{ Key = 'HKCU\Control Panel\Desktop\MenuShowDelay'; Exists = $true; Kind = 'String'; Data = $global:Dso3Values[$Index] }); Services = @() }
         }
-        $script:Case3 = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }
+        $script:Case3 = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }
             Expect = @{ NotWrittenTo = @(@{ Path = 'HKCU\Control Panel\Desktop'; Name = 'MenuShowDelay' }) } }
     }
     AfterAll { Remove-Variable -Name Dso3Reads, Dso3Values -Scope Global -ErrorAction SilentlyContinue }
@@ -263,7 +263,7 @@ Describe 'C1 Task 1: Invoke-VmCase - CheckAfterApply i CheckAfterUndo' {
     }
     AfterAll { Remove-Variable -Name Dso9Events, Dso9Boot, Dso9Reconnects, Dso9Sessions, Dso9CheckResult -Scope Global -ErrorAction SilentlyContinue }
     It 'Full: CheckAfterApply po detect-after-apply (przed undo), CheckAfterUndo po detect-after-undo; wyniki w rekordzie' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{}
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{}
             CheckAfterApply = '# po-apply'; CheckAfterUndo = '# po-undo' }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         @($global:Dso9Events) | Should -Be @('cli:--detect', 'cli:--apply', 'cli:--detect', 'check:# po-apply', 'cli:--undo', 'cli:--detect', 'check:# po-undo')
@@ -271,7 +271,7 @@ Describe 'C1 Task 1: Invoke-VmCase - CheckAfterApply i CheckAfterUndo' {
         $Record.CheckAfterUndoResult | Should -Be 'Passed'
     }
     It 'Full bez kluczy: wyniki puste, Invoke-VmCheck nie jest wołany' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         $Record.CheckAfterApplyResult | Should -BeNullOrEmpty
         $Record.CheckAfterUndoResult | Should -BeNullOrEmpty
@@ -279,7 +279,7 @@ Describe 'C1 Task 1: Invoke-VmCase - CheckAfterApply i CheckAfterUndo' {
     }
     It 'Reboot: CheckAfterApply po restarcie (po detect-after-reboot), CheckAfterUndo po drugim restarcie i detect-after-undo' {
         foreach ($Time in @($script:T0, $script:T1, $script:T1, $script:T2)) { $global:Dso9Boot.Enqueue($Time) }
-        $Case = @{ Name = 'rb'; TweakId = 'a.b'; Flow = 'Reboot'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{}
+        $Case = @{ CliLanguage = 'pl'; Name = 'rb'; TweakId = 'a.b'; Flow = 'Reboot'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{}
             CheckAfterApply = '# po-apply'; CheckAfterUndo = '# po-undo' }
         $Record = Invoke-VmCase -Session $global:Dso9Sessions[0] -Case $Case -Layout $script:Layout -Reconnect $script:Reconnect
         @($global:Dso9Events | Where-Object { $_ -ne 'reconnect' }) | Should -Be @(
@@ -289,21 +289,21 @@ Describe 'C1 Task 1: Invoke-VmCase - CheckAfterApply i CheckAfterUndo' {
     }
     It 'porażka Check trafia do rekordu i nie przerywa przebiegu (undo nadal wykonane)' {
         $global:Dso9CheckResult = 'Check zwrócił: False'
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{}; CheckAfterApply = '# a'; CheckAfterUndo = '# u' }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{}; CheckAfterApply = '# a'; CheckAfterUndo = '# u' }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         $Record.CheckAfterApplyResult | Should -BeLike '*False*'
         $Record.Steps.Step | Should -Contain 'undo'
         $Record.CheckAfterUndoResult | Should -BeLike '*False*'
     }
     It 'KeyPresentAfterUndo: rekord zawiera odczyt, KeyAbsentAfterUndo zostaje osobno' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }
             Expect = @{ KeyAbsentAfterUndo = @('HKLM\SOFTWARE\X\Y'); KeyPresentAfterUndo = @('HKLM\SOFTWARE\X') } }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         @($Record.KeysAfterUndo).Key | Should -Be @('HKLM\SOFTWARE\X\Y')
         @($Record.KeysPresentAfterUndo).Key | Should -Be @('HKLM\SOFTWARE\X')
     }
     It 'bez KeyPresentAfterUndo rekord ma KeysPresentAfterUndo = null' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
         (Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout).KeysPresentAfterUndo | Should -BeNullOrEmpty
     }
 }
@@ -318,7 +318,7 @@ Describe 'C1 Task 1: Execute - Setup w try/finally' {
     }
     AfterAll { Remove-Variable -Name Dso9ExecCalls -Scope Global -ErrorAction SilentlyContinue }
     It 'wyjątek Setup nie omija Cleanup, a wyjątek nie jest połykany; CLI nie startuje' {
-        $Case = @{ Name = 'a'; TweakId = 'x.y'; Flow = 'Execute'; RestorePoint = 'skip'; Setup = @('x'); Check = '# CHK'; Cleanup = '# MARKER-CLEANUP'
+        $Case = @{ CliLanguage = 'pl'; Name = 'a'; TweakId = 'x.y'; Flow = 'Execute'; RestorePoint = 'skip'; Setup = @('x'); Check = '# CHK'; Cleanup = '# MARKER-CLEANUP'
             Expect = @{ ExecuteExit = 0; ExecuteOutcome = 'Executed' } }
         { Invoke-VmCase -Session $null -Case $Case -Layout (Get-DsoVmLayout) } | Should -Throw -ExpectedMessage '*setup nie powiodło się*'
         @($global:Dso9ExecCalls | Where-Object { $_ -match 'MARKER-CLEANUP' }).Count | Should -Be 1
@@ -405,9 +405,9 @@ Describe 'C1 Task 1: New-VmRestartMarker i Test-VmRestartMarker' {
 Describe 'C1 Task 1: Split-VmCaseRuns - pominięte przypadki bez aktywnego main' {
     It 'pominięte Reboot i Full bez aktywnych zwykłych: osobny przebieg tylko-pominięcia, bez main; aktywny Reboot osobno' {
         $Cases = @(
-            @{ Name = 's1'; Flow = 'Full'; Skip = 'powód' }
-            @{ Name = 'r2'; Flow = 'Reboot'; Skip = 'powód' }
-            @{ Name = 'r3'; Flow = 'Reboot' }
+            @{ CliLanguage = 'pl'; Name = 's1'; Flow = 'Full'; Skip = 'powód' }
+            @{ CliLanguage = 'pl'; Name = 'r2'; Flow = 'Reboot'; Skip = 'powód' }
+            @{ CliLanguage = 'pl'; Name = 'r3'; Flow = 'Reboot' }
         )
         $Plan = @(Split-VmCaseRuns -Cases $Cases)
         $Plan.Count | Should -Be 2
@@ -418,13 +418,13 @@ Describe 'C1 Task 1: Split-VmCaseRuns - pominięte przypadki bez aktywnego main'
         $Plan[1].SkipOnly | Should -BeFalse
     }
     It 'wszystko pominięte: tylko przebieg tylko-pominięcia (nie main)' {
-        $Plan = @(Split-VmCaseRuns -Cases @(@{ Name = 'a'; Flow = 'Full'; Skip = 'p' }, @{ Name = 'b'; Flow = 'Reboot'; Skip = 'p' }))
+        $Plan = @(Split-VmCaseRuns -Cases @(@{ CliLanguage = 'pl'; Name = 'a'; Flow = 'Full'; Skip = 'p' }, @{ CliLanguage = 'pl'; Name = 'b'; Flow = 'Reboot'; Skip = 'p' }))
         $Plan.Count | Should -Be 1
         $Plan[0].Label | Should -Be 'skipped'
         $Plan[0].SkipOnly | Should -BeTrue
     }
     It 'main z aktywnym przypadkiem zachowuje pominięte w main (kolejność wejściowa), bez przebiegu tylko-pominięcia' {
-        $Plan = @(Split-VmCaseRuns -Cases @(@{ Name = 'a'; Flow = 'Full' }, @{ Name = 'r'; Flow = 'Reboot'; Skip = 'p' }, @{ Name = 'b'; Flow = 'Full'; Skip = 'p' }))
+        $Plan = @(Split-VmCaseRuns -Cases @(@{ CliLanguage = 'pl'; Name = 'a'; Flow = 'Full' }, @{ CliLanguage = 'pl'; Name = 'r'; Flow = 'Reboot'; Skip = 'p' }, @{ CliLanguage = 'pl'; Name = 'b'; Flow = 'Full'; Skip = 'p' }))
         $Plan.Count | Should -Be 1
         $Plan[0].Label | Should -Be 'main'
         $Plan[0].SkipOnly | Should -BeFalse

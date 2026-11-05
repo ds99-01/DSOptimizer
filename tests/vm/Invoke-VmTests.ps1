@@ -4,10 +4,10 @@ Instrukcja uruchomienia:
     VM utworzone wcześniej przez New-TestVm.ps1 (checkpoint 'czysta-26H2', poświadczenia w %LOCALAPPDATA%\DSOptimizer-vm).
     Przed przebiegiem zbuduj aplikację:
         dotnet build DSOptimizer.sln -c Release
-    Obie VM (DSO-26H2-Home i DSO-26H2-Pro):
+    Pełny przebieg (VM z `Get-DsoVmNames -FullRun`):
         .\tests\vm\Invoke-VmTests.ps1
     Jedna VM:
-        .\tests\vm\Invoke-VmTests.ps1 -VmName DSO-26H2-Pro
+        .\tests\vm\Invoke-VmTests.ps1 -VmName DSO-EN-Pro
 Opis działania:
     Dla każdej VM: przywraca checkpoint, startuje VM, czeka na PowerShell Direct i zalogowanego użytkownika 'dso',
     kopiuje build i katalog testowy, uruchamia scenariusze Pester (tests\vm\scenarios) przeciw VM i zapisuje raport
@@ -18,11 +18,11 @@ Opis działania:
     Podsumowanie sumuje przebiegi (także ukończone przed błędem). Przypadki ze Skip, gdy nie ma aktywnych zwykłych przypadków, dostają przebieg
     'skipped' bez VM (rekordy pominięcia). Błąd jednej VM jest zapisywany i nie przerywa przebiegu drugiej. Kod wyjścia: 0 gdy wszystko zaliczone
     i zaliczono co najmniej jeden test, 1 w przeciwnym razie (same pominięcia nigdy nie dają 0).
-    Hasło VM nigdy nie jest wypisywane.
+    Hasło VM (`admin`) nie jest wypisywane w raportach.
 #>
 [CmdletBinding()]
 param(
-    [ValidatePattern('^DSO-26H2-[A-Za-z]+\z')][string[]]$VmName = @('DSO-26H2-Home', 'DSO-26H2-Pro'),
+    [ValidatePattern('^DSO-(EN|PL)-(Home|Pro)\z')][string[]]$VmName = @('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro'),
     [string]$BuildDirectory,
     [string]$CatalogPath,
     [string]$CasesPath,
@@ -70,11 +70,16 @@ try {
     $Runs = [System.Collections.Generic.List[object]]::new()
     $Errors = [System.Collections.Generic.List[string]]::new()
     foreach ($Name in $VmName) {
+        # Wiązanie parametru jest bez rozróżniania wielkości liter (np. dso-en-pro): dalej idzie nazwa kanoniczna z definicji VM.
+        $Name = (Get-DsoVmDefinition -VmName $Name).Name
         Write-Host "=== VM $Name ==="
         try {
             $Credential = Get-DsoVmCredential -VmName $Name
+            # Język CLI przypadków = język VM (klucz Language przypadku wygrywa), a teksty programu z tabel tłumaczeń w języku przypadku;
+            # kopie, $Cases zostaje bez zmian.
+            $VmCases = Resolve-VmCaseTexts -Cases (Resolve-VmCaseLanguage -Cases $Cases -VmLanguage (Get-DsoVmDefinition -VmName $Name).Language)
             $VmRuns = Invoke-DsoVmRunSet -VmName $Name -Credential $Credential -BuildDirectory $BuildDirectory -CatalogPath $CatalogPath `
-                -Cases $Cases -OutDirectory $OutDirectory -CheckpointName $CheckpointName -ReadyTimeoutSeconds $ReadyTimeoutSeconds
+                -Cases $VmCases -OutDirectory $OutDirectory -CheckpointName $CheckpointName -ReadyTimeoutSeconds $ReadyTimeoutSeconds
             foreach ($Run in $VmRuns) { $Runs.Add($Run) }
         }
         catch {

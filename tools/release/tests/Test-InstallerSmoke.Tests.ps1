@@ -41,8 +41,9 @@ Describe 'Test-InstallerSmoke' {
 
     It 'Test-SmokeMachineAllowed' {
         Test-SmokeMachineAllowed -GitHubActions 'true' -ComputerName 'X' | Should -BeTrue
-        Test-SmokeMachineAllowed -GitHubActions '' -ComputerName 'DSO-26H2-PRO' | Should -BeTrue
-        Test-SmokeMachineAllowed -GitHubActions '' -ComputerName 'dso-26h2-home' | Should -BeTrue
+        Test-SmokeMachineAllowed -GitHubActions '' -ComputerName 'DSO-EN-PRO' | Should -BeTrue
+        Test-SmokeMachineAllowed -GitHubActions '' -ComputerName 'dso-pl-home' | Should -BeTrue
+        Test-SmokeMachineAllowed -GitHubActions '' -ComputerName 'DSO-26H2-HOME' | Should -BeFalse
         Test-SmokeMachineAllowed -GitHubActions '' -ComputerName 'DAWID-PC' | Should -BeFalse
         Test-SmokeMachineAllowed -GitHubActions 'TRUE' -ComputerName 'X' | Should -BeFalse
     }

@@ -7,10 +7,13 @@ Opis działania:
     który woła prawdziwy Invoke-Pester na prawdziwym pliku scenariuszy. Podmienione są tylko granice z VM i Hyper-V
     (Get-VM, Start-VM, Wait-VmReady, Copy-DsoBuildToVm, Invoke-Command, Invoke-VmCase). Sztuczne rekordy są generowane
     z oczekiwań przypadku (dla list bierze OSTATNIĄ wartość), a wariant mutuje je tak, by scenariusz miał zrobić się czerwony.
+    Przypadki przechodzą przez Resolve-VmCaseLanguage i Resolve-VmCaseTexts (VM pl; MessageLanguage: en), a komunikaty i ostrzeżenia
+    rekordu powstają z wzorców tekstów (MessageLanguage: z polskiego klucza, więc nie trafiają w angielski wzorzec; MessageUnresolved:
+    przypadek bez Resolve-VmCaseTexts).
     Wypisuje linię 'DSORESULT:{json}' z passed, failed, messages, cases.
 #>
 param(
-    [Parameter(Mandatory)][ValidateSet('Good', 'NoReport', 'HiveMissing', 'WrittenToHkcu', 'EmptyNotWrittenTo', 'StateDiff', 'RunThrows', 'WrongState', 'ArrayOk', 'ArrayBad', 'EmptyAllowed', 'EmptyActual', 'RealCases', 'Skipped', 'Execute', 'ExecuteCheckFails', 'ExecuteCleanupFails', 'ExecuteFailedMessage', 'ExecuteFailedMessageWrong', 'ExecuteRequiresReboot', 'ExecuteNoRequiresReboot', 'ExecuteNoRequiresRebootField', 'SkippedLiveIt', 'Reboot', 'RebootKeyPresent', 'RebootNoRestart', 'RebootNoKeyCheck', 'RebootWrongAfterReboot', 'ReconnectReal', 'FullChecks', 'FullCheckAfterApplyFails', 'FullCheckAfterUndoEmpty', 'RebootKeyPresentMissing', 'RebootMarkerNotGone', 'RebootNoRequiresReboot', 'NoSnapshot', 'AppRemove', 'AppRemoveStillListed', 'AppRemoveWrongOutcome', 'AppRemoveNoWarning', 'AppRemoveWrongRemovability', 'AppRemoveCheckFails', 'AppRemoveNoApps', 'AppRemoveNoRequiresReboot', 'AppInstall', 'AppInstallWrongOutcome', 'AppInstallMissingItem', 'AppInstallWrongInstalled', 'AppInstallNoInstallRows', 'AppInstallWrongWingetState', 'AppInstallNoMessage', 'AppInstallWrongExit', 'AppInstallCheckFails', 'AppInstallWrongWingetCode', 'AppInstallUnexpectedWingetCode', 'Autostart', 'AutostartWrongListed', 'AutostartListWrote', 'AutostartWrongSetOutcome', 'AutostartStartedWhenDisabled', 'AutostartNotStartedAfterUndo', 'AutostartControlMissing', 'AutostartWrongRestoreOutcome', 'AutostartOneReboot', 'AutostartNotMeasured', 'AutostartWrongStateAfter', 'AutostartLateStart', 'AutostartCheckAfterUndoFails')][string]$Variant
+    [Parameter(Mandatory)][ValidateSet('Good', 'NoReport', 'HiveMissing', 'WrittenToHkcu', 'EmptyNotWrittenTo', 'StateDiff', 'RunThrows', 'WrongState', 'ArrayOk', 'ArrayBad', 'EmptyAllowed', 'EmptyActual', 'RealCases', 'Skipped', 'Execute', 'ExecuteCheckFails', 'ExecuteCleanupFails', 'ExecuteFailedMessage', 'ExecuteFailedMessageWrong', 'ExecuteRequiresReboot', 'ExecuteNoRequiresReboot', 'ExecuteNoRequiresRebootField', 'SkippedLiveIt', 'Reboot', 'RebootKeyPresent', 'RebootNoRestart', 'RebootNoKeyCheck', 'RebootWrongAfterReboot', 'ReconnectReal', 'FullChecks', 'FullCheckAfterApplyFails', 'FullCheckAfterUndoEmpty', 'RebootKeyPresentMissing', 'RebootMarkerNotGone', 'RebootNoRequiresReboot', 'NoSnapshot', 'AppRemove', 'AppRemoveStillListed', 'AppRemoveWrongOutcome', 'AppRemoveNoWarning', 'AppRemoveWrongRemovability', 'AppRemoveCheckFails', 'AppRemoveNoApps', 'AppRemoveNoRequiresReboot', 'AppInstall', 'AppInstallWrongOutcome', 'AppInstallMissingItem', 'AppInstallWrongInstalled', 'AppInstallNoInstallRows', 'AppInstallWrongWingetState', 'AppInstallNoMessage', 'AppInstallWrongExit', 'AppInstallCheckFails', 'AppInstallWrongWingetCode', 'AppInstallUnexpectedWingetCode', 'Autostart', 'AutostartWrongListed', 'AutostartListWrote', 'AutostartWrongSetOutcome', 'AutostartStartedWhenDisabled', 'AutostartNotStartedAfterUndo', 'AutostartControlMissing', 'AutostartWrongRestoreOutcome', 'AutostartOneReboot', 'AutostartNotMeasured', 'AutostartWrongStateAfter', 'AutostartLateStart', 'AutostartCheckAfterUndoFails', 'MessageLanguage', 'MessageUnresolved')][string]$Variant
 )
 $ErrorActionPreference = 'Stop'
 $VmRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -28,6 +31,32 @@ function global:New-DsoFakeStep {
     [pscustomobject]@{ Step = $Step; ExitCode = $ExitCode; TimedOut = $false; Report = $Report; Json = $null; ReportError = $null }
 }
 function global:Get-DsoLast { param($Value) $Items = @($Value); return $Items[$Items.Count - 1] }
+function global:ConvertFrom-DsoFakePattern {
+    # Konkretny tekst trafiający we wzorzec -like: znak po ` dosłownie, * i ? = 'x'.
+    param([string]$Pattern)
+    $Builder = New-Object System.Text.StringBuilder
+    for ($I = 0; $I -lt $Pattern.Length; $I++) {
+        $Char = $Pattern[$I]
+        if ($Char -eq [char]0x60 -and $I + 1 -lt $Pattern.Length) { $I++; $null = $Builder.Append($Pattern[$I]) }
+        elseif ($Char -eq '*' -or $Char -eq '?') { $null = $Builder.Append('x') }
+        else { $null = $Builder.Append($Char) }
+    }
+    return $Builder.ToString()
+}
+function global:Get-DsoFakeTexts {
+    # Po jednym tekście na grupę wzorców (z pierwszego wzorca grupy). MessageLanguage: polski klucz ({n} = 'x') zamiast tekstu w TextLanguage.
+    param($Groups)
+    foreach ($Group in @($Groups)) {
+        if ($global:DsoVariant -eq 'MessageLanguage') { [regex]::Replace([string]@($Group['Keys'])[0], '\{\d+\}', 'x') }
+        else { ConvertFrom-DsoFakePattern -Pattern ([string]@($Group['Any'])[0]) }
+    }
+}
+function global:Get-DsoFakeMessage {
+    # Komunikat raportu z Expect.MessagePatterns (przypadek po Resolve-VmCaseTexts); bez wzorców = pusty.
+    param($Expect, $Empty = '')
+    if (-not $Expect.ContainsKey('MessagePatterns')) { return $Empty }
+    return 'komunikat: ' + (@(Get-DsoFakeTexts -Groups $Expect.MessagePatterns) -join ' ') + '.'
+}
 function global:New-DsoFakeEntries {
     param($Items, [string]$Kind)
     $Result = foreach ($Item in @($Items)) {
@@ -100,7 +129,7 @@ function global:New-DsoFakeRecord {
     if ($Case.Flow -eq 'AppInstall') {
         $Report = [pscustomobject]@{
             exitCode = (Get-DsoLast $E.Exit)
-            message  = $(if ($E.ContainsKey('MessageContains')) { "komunikat: $($E.MessageContains)." } else { $null })
+            message  = (Get-DsoFakeMessage -Expect $E -Empty $null)
             winget   = [pscustomobject]@{ state = $(if ($E.ContainsKey('WingetState')) { Get-DsoLast $E.WingetState } else { 'Ready' }); message = 'winget' }
         }
         if ($Case.Command -eq 'install-apps') {
@@ -132,8 +161,8 @@ function global:New-DsoFakeRecord {
             outcome        = (Get-DsoLast $E.RemoveOutcome)
             requiresReboot = [bool]($E.ContainsKey('RequiresReboot') -and $E.RequiresReboot)
             aborted        = [bool]($E.ContainsKey('Aborted') -and $E.Aborted)
-            message        = if ($E.ContainsKey('MessageContains')) { "komunikat: $($E.MessageContains)." } else { '' }
-            warnings       = @(if ($E.ContainsKey('WarningContains')) { "ostrzeżenie: $($E.WarningContains)" })
+            message        = (Get-DsoFakeMessage -Expect $E)
+            warnings       = @(if ($E.ContainsKey('WarningPatterns')) { foreach ($Text in @(Get-DsoFakeTexts -Groups $E.WarningPatterns)) { "ostrzeżenie: $Text" } })
             restorePoint   = if ($E.ContainsKey('RestorePointStatus')) { [pscustomobject]@{ status = (Get-DsoLast $E.RestorePointStatus) } } else { $null }
         }
         $Steps.Add((New-DsoFakeStep 'remove-app' (Get-DsoLast $E.RemoveExit) $Remove))
@@ -144,7 +173,7 @@ function global:New-DsoFakeRecord {
         }
     }
     if ($Case.Flow -eq 'Execute') {
-        $Steps.Add((New-DsoFakeStep 'execute' (Get-DsoLast $E.ExecuteExit) ([pscustomobject]@{ outcome = (Get-DsoLast $E.ExecuteOutcome); requiresReboot = [bool]($E.ContainsKey('RequiresReboot') -and $E.RequiresReboot); message = $(if ($E.ContainsKey('MessageContains')) { "komunikat: $($E.MessageContains)." } else { '' }) })))
+        $Steps.Add((New-DsoFakeStep 'execute' (Get-DsoLast $E.ExecuteExit) ([pscustomobject]@{ outcome = (Get-DsoLast $E.ExecuteOutcome); requiresReboot = [bool]($E.ContainsKey('RequiresReboot') -and $E.RequiresReboot); message = (Get-DsoFakeMessage -Expect $E) })))
         return [pscustomobject]@{
             Name = $Case.Name; TweakId = $Case.TweakId; Steps = $Steps.ToArray(); SnapshotDiff = @()
             CheckResult = $(if ($Case.ContainsKey('Check')) { 'Passed' } else { $null }); CleanupError = $null
@@ -158,7 +187,7 @@ function global:New-DsoFakeRecord {
     $Apply = [pscustomobject]@{
         outcome      = (Get-DsoLast $E.ApplyOutcome)
         aborted      = [bool]($E.ContainsKey('Aborted') -and $E.Aborted)
-        message      = if ($E.ContainsKey('MessageContains')) { "komunikat: $($E.MessageContains)." } else { '' }
+        message      = (Get-DsoFakeMessage -Expect $E)
         restorePoint = if ($E.ContainsKey('RestorePointStatus')) { [pscustomobject]@{ status = (Get-DsoLast $E.RestorePointStatus) } } else { $null }
         requiresReboot = ($Case.Flow -eq 'Reboot')
         user         = if ($E.ContainsKey('UserSid')) { [pscustomobject]@{ sid = $E.UserSid; isCertain = $(if ($E.ContainsKey('UserIsCertain')) { $E.UserIsCertain } else { $true }) } } else { $null }
@@ -335,11 +364,11 @@ if ($Variant -in @('Execute', 'ExecuteCheckFails', 'ExecuteCleanupFails')) {
             Expect = @{ ExecuteExit = 0; ExecuteOutcome = 'Executed' }
         })
 }
-if ($Variant -in @('ExecuteFailedMessage', 'ExecuteFailedMessageWrong')) {
+if ($Variant -in @('ExecuteFailedMessage', 'ExecuteFailedMessageWrong', 'MessageLanguage', 'MessageUnresolved')) {
     $Cases = @(@{
             Name = 'execfail'; TweakId = 'vmtest.action-marker'; Flow = 'Execute'; RestorePoint = 'skip'
             Check = '$true'
-            Expect = @{ ExecuteExit = 1; ExecuteOutcome = 'Failed'; MessageContains = 'brak aktywnego połączenia' }
+            Expect = @{ ExecuteExit = 1; ExecuteOutcome = 'Failed'; MessageContains = 'brak aktywnego połączenia w profilu publicznym – nic nie zmieniono' }
         })
 }
 if ($Variant -in @('FullChecks', 'FullCheckAfterApplyFails', 'FullCheckAfterUndoEmpty')) {
@@ -371,7 +400,8 @@ if ($Variant -like 'AppRemove*') {
             Check = '$true'; Cleanup = 'Write-Output 1'
             Expect = @{
                 ListedBefore = $true; Group = 'Suggested'; Removability = 'Removable'; RemoveExit = 0; RemoveOutcome = 'Removed'
-                RequiresReboot = $true; ListedAfter = $false; WarningContains = 'Usunięta dla wszystkich kont'; WarningAbsent = 'nic takiego'
+                RequiresReboot = $true; ListedAfter = $false; WarningContains = 'Usunięta dla wszystkich kont na tym komputerze.'
+                WarningAbsent = 'Seria przerwana przed pierwszym usunięciem – bez punktu przywracania.'
             }
         }
         @{
@@ -379,7 +409,7 @@ if ($Variant -like 'AppRemove*') {
             Check = '$true'
             Expect = @{
                 ListedBefore = $true; Group = 'Other'; Removability = 'OtherAccount'; RemoveExit = 1; RemoveOutcome = 'Refused'
-                ListedAfter = $true; MessageContains = 'nie wolno usunąć'; Aborted = $false; RestorePointStatus = 'ProtectionDisabled'
+                ListedAfter = $true; MessageContains = 'Tej aplikacji nie wolno usunąć ({0}): {1}'; Aborted = $false; RestorePointStatus = 'ProtectionDisabled'
             }
         }
     )
@@ -390,14 +420,16 @@ if ($Variant -like 'AppInstall*') {
             Name = 'inst-offline'; Flow = 'AppInstall'; Command = 'install-apps'; AppIds = @('install.7zip', 'install.vlc'); RunAs = 'dso'
             Check = '$true'; Cleanup = 'Write-Output 1'
             Expect = @{
-                Exit = 1; Outcomes = @{ 'install.7zip' = 'Failed'; 'install.vlc' = @('Failed', 'Skipped') }; WingetState = 'Ready'; MessageContains = 'brak połączenia'
+                Exit = 1; Outcomes = @{ 'install.7zip' = 'Failed'; 'install.vlc' = @('Failed', 'Skipped') }; WingetState = 'Ready'; MessageContains = 'Nie wykonano – brak połączenia z internetem albo ze źródłem winget'
                 WingetCodes = @{ 'install.7zip' = @('0x8A150107', '0x8A15000F'); 'install.vlc' = $null }
             }
         }
         @{
             Name = 'list-msi'; Flow = 'AppInstall'; Command = 'list-install'; AppsCatalog = 'C:\dso\fixtures\vm-test-apps.json'
             Check = '$true'
-            Expect = @{ Exit = 0; WingetState = 'OtherAccount'; Installed = @{ 'install.dso-test-msi' = $true }; MessageContains = 'uruchom DSOptimizer na koncie' }
+            Expect = @{ Exit = 0; WingetState = 'OtherAccount'; Installed = @{ 'install.dso-test-msi' = $true }
+                MessageContains = @(@{ AnyOf = @('Instalacja działa tylko na koncie zalogowanego użytkownika: uruchom DSOptimizer na koncie {0} (Administrator Protection: program podniesiony działa na ukrytym koncie {1}).', 'Instalacja działa tylko na koncie zalogowanego użytkownika: uruchom DSOptimizer na koncie {0}.') }, 'winget działa (wersja {0}).')
+            }
         }
     )
 }
@@ -423,6 +455,11 @@ if ($Variant -like 'Autostart*') {
 }
 if ($Variant -eq 'RealCases') {
     $Cases = Import-VmCases -CasesPath (Join-Path $VmRoot 'cases.psd1') -CatalogPath (Join-Path $VmRoot 'catalog\vm-test-catalog.json')
+}
+# Jak Invoke-VmTests.ps1: język przypadków i teksty z tabel tłumaczeń (VM pl; MessageLanguage: przypadek rozwiązany dla en).
+if ($Variant -ne 'MessageUnresolved') {
+    $TextVmLanguage = if ($Variant -eq 'MessageLanguage') { 'en' } else { 'pl' }
+    $Cases = Resolve-VmCaseTexts -Cases (Resolve-VmCaseLanguage -Cases $Cases -VmLanguage $TextVmLanguage)
 }
 
 if ($Variant -eq 'SkippedLiveIt') {
@@ -451,7 +488,7 @@ $null = New-Item -ItemType Directory -Path $OutDirectory -Force
 $Summary = @{ threw = $null; passed = 0; failed = 0; skipped = 0; skippedRecords = 0; skipInvoked = $false; reconnected = $false; messages = @(); cases = 0 }
 try {
     $Credential = [pscredential]::new('Administrator', (ConvertTo-SecureString 'Test-Haslo-1!' -AsPlainText -Force))
-    $Run = Invoke-DsoVmRun -VmName 'DSO-26H2-Test' -Credential $Credential -BuildDirectory $OutDirectory -CatalogPath (Join-Path $OutDirectory 'k.json') `
+    $Run = Invoke-DsoVmRun -VmName 'DSO-PL-Home' -Credential $Credential -BuildDirectory $OutDirectory -CatalogPath (Join-Path $OutDirectory 'k.json') `
         -Cases $Cases -OutDirectory $OutDirectory -ReadyTimeoutSeconds 60
     $Report = Get-Content -LiteralPath $Run.ReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
     $Summary.passed = $Run.Passed

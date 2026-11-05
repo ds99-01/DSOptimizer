@@ -196,7 +196,7 @@ Describe 'Ruch kontrolny (dowód, że ślad łapie sieć)' {
         (Get-NetVerdict -Scenario 'cli' -Trace $Trace).Passed | Should -BeFalse
     }
     It 'plan: host kontrolny różni się od dozwolonego, a sieć jest podłączana przed programem i przed śladem w KAŻDYM scenariuszu' {
-        $Plan = Get-NetPlan
+        $Plan = Get-NetPlan -Language pl
         $Plan.CanaryHost | Should -Not -Be $Plan.AllowedHost
         $Body = (Get-Command Invoke-NetScenario).ScriptBlock.ToString()
         $Connect = $Body.IndexOf('Connect-VMNetworkAdapter')
@@ -332,7 +332,7 @@ Describe 'Polecenia CLI' {
 
 Describe 'Plan i argumenty' {
     It 'plan: zatrzymane usługi Windows, dozwolony host, ustawienia start-on bez pola i start-off z wyłączonym sprawdzaniem, zakres' {
-        $Plan = Get-NetPlan
+        $Plan = Get-NetPlan -Language pl
         @($Plan.StoppedServices) | Should -Be @('wuauserv', 'UsoSvc', 'DoSvc', 'BITS')
         $Plan.AllowedHost | Should -BeExactly 'api.github.com'
         $Plan.NetworkSwitch | Should -BeExactly 'Default Switch'
@@ -356,7 +356,7 @@ Describe 'Plan i argumenty' {
     It 'parametry skryptu: tylko VM Home/Pro i trzy scenariusze' {
         $Parameters = (Get-Command $script:NetScriptPath).ScriptBlock.Ast.ParamBlock.Parameters
         $Set = { param($Name) $P = $Parameters | Where-Object { $_.Name.VariablePath.UserPath -eq $Name }; @($P.Attributes | Where-Object { $_.TypeName.Name -eq 'ValidateSet' } | ForEach-Object { $_.PositionalArguments.Value }) }
-        & $Set 'VmName' | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        & $Set 'VmName' | Should -Be @('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')
         & $Set 'Scenario' | Should -Be @('start-on', 'start-off', 'cli')
     }
     It 'Resolve-NetArtifact: zip z SHA256SUMS.txt i DSOptimizer\DSOptimizer.exe przechodzi, zła suma, brak exe i zła nazwa to wyjątek' {
@@ -379,6 +379,39 @@ Describe 'Plan i argumenty' {
         Copy-Item -LiteralPath $Zip -Destination $Other
         { Resolve-NetArtifact -ArtifactPath $Other } | Should -Throw '*nie jest wydaniem*'
     }
+    It 'Get-NetPlan -Language en: ustawienia po angielsku, pole Language' {
+        $Plan = Get-NetPlan -Language en
+        $Plan.Language | Should -BeExactly 'en'
+        $Plan.SettingsOn | Should -Match '"language":"en"'
+        $Plan.SettingsOn | Should -Not -Match 'checkUpdatesAtStart'
+        $Plan.SettingsOff | Should -Match '"language":"en"'
+        $Plan.SettingsOff | Should -Match '"checkUpdatesAtStart":false'
+        { Get-NetPlan -Language de } | Should -Throw
+    }
+    It 'Get-NetNavTexts: en = Menu/Settings i cztery strony z tabel tłumaczeń, pl = polskie nazwy' {
+        $En = Get-NetNavTexts -Language en | ConvertFrom-Json
+        @($En.lists) | Should -Be @('Menu', 'Settings')
+        $Expected = @('Aplikacje', 'Instalacja', 'Przygotowanie', 'Specyfikacja') | ForEach-Object { Get-DsoUiText -Polish $_ -Language en }
+        @($En.slowPages) | Should -Be @($Expected)
+        $Pl = Get-NetNavTexts -Language pl | ConvertFrom-Json
+        @($Pl.lists) | Should -Be @('Menu', 'Ustawienia')
+        @($Pl.slowPages) | Should -Be @('Aplikacje', 'Instalacja', 'Przygotowanie', 'Specyfikacja')
+    }
+    It 'Get-NetRunArguments: język planu pochodzi z VM (EN = en, PL = pl)' {
+        $Dir = Join-Path $TestDrive 'wydanie-jezyk'
+        $Source = Join-Path $Dir 'src\DSOptimizer'
+        $null = New-Item -ItemType Directory -Path $Source -Force
+        [System.IO.File]::WriteAllBytes((Join-Path $Source 'DSOptimizer.exe'), [byte[]](77, 90, 2))
+        $Zip = Join-Path $Dir 'DSOptimizer-4.0.3.zip'
+        Compress-Archive -Path $Source -DestinationPath $Zip
+        $Sha = (Get-FileHash -LiteralPath $Zip -Algorithm SHA256).Hash.ToLowerInvariant()
+        [System.IO.File]::WriteAllText((Join-Path $Dir 'SHA256SUMS.txt'), "$Sha  DSOptimizer-4.0.3.zip`n")
+        foreach ($Case in @(@('DSO-EN-Pro', 'en'), @('DSO-EN-Home', 'en'), @('DSO-PL-Pro', 'pl'), @('DSO-PL-Home', 'pl'))) {
+            $Arguments = Get-NetRunArguments -VmName $Case[0] -Scenario @('cli') -OutDirectory 'C:\x' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 600 -ArtifactPath $Zip
+            $Arguments.Plan.Language | Should -BeExactly $Case[1] -Because $Case[0]
+            $Arguments.Plan.SettingsOn | Should -Match ('"language":"' + $Case[1] + '"') -Because $Case[0]
+        }
+    }
     It 'Get-NetRunArguments: scenariusze w stałej kolejności bez duplikatów; pusta lista to wyjątek' {
         $Dir = Join-Path $TestDrive 'wydanie2'
         $Source = Join-Path $Dir 'src\DSOptimizer'
@@ -388,12 +421,12 @@ Describe 'Plan i argumenty' {
         Compress-Archive -Path $Source -DestinationPath $Zip
         $Sha = (Get-FileHash -LiteralPath $Zip -Algorithm SHA256).Hash.ToLowerInvariant()
         [System.IO.File]::WriteAllText((Join-Path $Dir 'SHA256SUMS.txt'), "$Sha  DSOptimizer-4.0.3.zip`n")
-        $Arguments = Get-NetRunArguments -VmName 'DSO-26H2-Pro' -Scenario @('cli', 'start-on', 'cli') -OutDirectory 'C:\x' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 600 -ArtifactPath $Zip
+        $Arguments = Get-NetRunArguments -VmName 'DSO-EN-Pro' -Scenario @('cli', 'start-on', 'cli') -OutDirectory 'C:\x' -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 600 -ArtifactPath $Zip
         @($Arguments.Scenarios) | Should -Be @('start-on', 'cli')
-        { Get-NetRunArguments -VmName 'DSO-26H2-Pro' -Scenario @() -OutDirectory 'C:\x' -CheckpointName 'c' -ReadyTimeoutSeconds 600 -ArtifactPath $Zip } | Should -Throw
+        { Get-NetRunArguments -VmName 'DSO-EN-Pro' -Scenario @() -OutDirectory 'C:\x' -CheckpointName 'c' -ReadyTimeoutSeconds 600 -ArtifactPath $Zip } | Should -Throw
     }
     It 'Invoke-NetVmRun odmawia pracy w trybie testów na mockach, zanim dotknie VM' {
-        { Invoke-NetVmRun -VmName 'DSO-26H2-Pro' -OutDirectory (Join-Path $TestDrive 'out') -Scenarios @('cli') -Artifact ([ordered]@{}) } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Invoke-NetVmRun -VmName 'DSO-EN-Pro' -OutDirectory (Join-Path $TestDrive 'out') -Scenarios @('cli') -Artifact ([ordered]@{}) } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
     }
 }
 
@@ -448,13 +481,13 @@ Describe 'Wersja zainstalowana (-InstallerPath)' {
     It 'Get-NetRunArguments: oba parametry albo żaden to wyjątek, zanim cokolwiek dotknie VM' {
         $File = New-FakeInstaller -Dir (Join-Path $TestDrive 'i6')
         $Zip = New-FakeZip -Dir (Join-Path $TestDrive 'i6z')
-        $Common = @{ VmName = 'DSO-26H2-Pro'; Scenario = @('cli'); OutDirectory = 'C:\x'; CheckpointName = 'czysta-26H2'; ReadyTimeoutSeconds = 600 }
+        $Common = @{ VmName = 'DSO-EN-Pro'; Scenario = @('cli'); OutDirectory = 'C:\x'; CheckpointName = 'czysta-26H2'; ReadyTimeoutSeconds = 600 }
         { Get-NetRunArguments @Common -ArtifactPath $Zip -InstallerPath $File } | Should -Throw '*wykluczają się*'
         { Get-NetRunArguments @Common } | Should -Throw '*-ArtifactPath*-InstallerPath*'
     }
     It 'plan z instalatorem ma Exe w Program Files, plan z zipem zostaje w C:\dso\app' {
         $File = New-FakeInstaller -Dir (Join-Path $TestDrive 'i7')
-        $Common = @{ VmName = 'DSO-26H2-Pro'; Scenario = @('cli'); OutDirectory = 'C:\x'; CheckpointName = 'czysta-26H2'; ReadyTimeoutSeconds = 600 }
+        $Common = @{ VmName = 'DSO-EN-Pro'; Scenario = @('cli'); OutDirectory = 'C:\x'; CheckpointName = 'czysta-26H2'; ReadyTimeoutSeconds = 600 }
         $Arguments = Get-NetRunArguments @Common -InstallerPath $File
         $Arguments.Artifact.Variant | Should -BeExactly 'Installer'
         $Arguments.Layout.App | Should -BeExactly 'C:\Program Files\DSOptimizer'
@@ -480,8 +513,8 @@ Describe 'Wersja zainstalowana (-InstallerPath)' {
         $Layout = Get-NetLayout -Artifact ([ordered]@{ Variant = 'Installer' })
         $Layout.Exe | Should -Match ' '
         # Katalogi, których ścieżki idą do nieotoczonych cudzysłowem argumentów (--out, plik instalatora), nie mają spacji.
-        (Get-NetPlan).CliDirectory | Should -Not -Match ' '
-        (Get-NetPlan).WorkDirectory | Should -Not -Match ' '
+        (Get-NetPlan -Language pl).CliDirectory | Should -Not -Match ' '
+        (Get-NetPlan -Language pl).WorkDirectory | Should -Not -Match ' '
     }
 }
 Describe 'Invoke-NetVmRun: sprzątanie i zaliczenia' {
@@ -510,7 +543,7 @@ Describe 'Invoke-NetVmRun: sprzątanie i zaliczenia' {
         $script:Artifact = [ordered]@{ Name = 'DSOptimizer-4.0.3.zip' }
     }
     It 'wyjątek w scenariuszu: Complete-ExploreVmCleanup nadal wywołany, wynik zapisany z błędem, przebieg zgłasza błąd' {
-        { Invoke-NetVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Scenarios @('cli') -Artifact $script:Artifact 6>$null } | Should -Throw '*boom w scenariuszu*'
+        { Invoke-NetVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Scenarios @('cli') -Artifact $script:Artifact 6>$null } | Should -Throw '*boom w scenariuszu*'
         Should -Invoke Complete-ExploreVmCleanup -Times 1 -Exactly
         $script:Calls | Should -Contain 'cleanup'
         $script:Calls.IndexOf('cleanup') | Should -BeGreaterThan $script:Calls.IndexOf('scenario')
@@ -518,15 +551,29 @@ Describe 'Invoke-NetVmRun: sprzątanie i zaliczenia' {
         $script:Saved.scenarios['cli'].passed | Should -BeFalse
         $script:Saved.allPassed | Should -BeFalse
     }
+    It 'brak tekstu sondy w tabelach (VM <Vm>) = wyjątek przed revertem i startem VM' -ForEach @(
+        @{ Vm = 'DSO-PL-Pro' }, @{ Vm = 'DSO-EN-Pro' }
+    ) {
+        $Root = Join-Path $TestDrive "tabele-$Vm"
+        $Directory = Join-Path $Root 'src\DSOptimizer.Core\Localization\Translations'
+        $null = New-Item -ItemType Directory -Path $Directory -Force
+        # Tabela bez 'Specyfikacja'.
+        $Entries = @('Menu', 'Ustawienia', 'Aplikacje', 'Instalacja', 'Przygotowanie') | ForEach-Object { [ordered]@{ pl = $_; en = "$_ EN" } }
+        [System.IO.File]::WriteAllText((Join-Path $Directory 'x.json'), (ConvertTo-Json -InputObject @{ entries = @($Entries) } -Depth 4), (New-Object System.Text.UTF8Encoding($false)))
+        { Invoke-NetVmRun -VmName $Vm -OutDirectory $TestDrive -Scenarios @('start-on') -Artifact $script:Artifact -TranslationsRoot $Root 6>$null } | Should -Throw '*brak tłumaczenia*Specyfikacja*'
+        Should -Invoke Restore-VmCleanState -Times 0 -Exactly
+        Should -Invoke Start-VM -Times 0 -Exactly
+        Should -Invoke Invoke-NetScenario -Times 0 -Exactly
+    }
     It 'wyjątek przed gotowością VM (revert rzuca): sprzątanie nadal wywołane' {
         Mock Restore-VmCleanState { throw 'revert padł' }
-        { Invoke-NetVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Scenarios @('start-on') -Artifact $script:Artifact 6>$null } | Should -Throw '*revert padł*'
+        { Invoke-NetVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Scenarios @('start-on') -Artifact $script:Artifact 6>$null } | Should -Throw '*revert padł*'
         Should -Invoke Complete-ExploreVmCleanup -Times 1 -Exactly
         Should -Invoke Invoke-NetScenario -Times 0 -Exactly
     }
     It 'sprzątanie raz na scenariusz (3 scenariusze = 3 sprzątania)' {
         $script:ScenarioBehavior = 'ok'
-        $Path = Invoke-NetVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Scenarios @('start-on', 'start-off', 'cli') -Artifact $script:Artifact 6>$null
+        $Path = Invoke-NetVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Scenarios @('start-on', 'start-off', 'cli') -Artifact $script:Artifact 6>$null
         $Path | Should -Be 'C:\w\net.json'
         Should -Invoke Complete-ExploreVmCleanup -Times 3 -Exactly
         $script:Saved.allPassed | Should -BeTrue
@@ -534,14 +581,14 @@ Describe 'Invoke-NetVmRun: sprzątanie i zaliczenia' {
     }
     It 'scenariusz z werdyktem Passed, ale z problemem (np. brak odczytu utrat) nie jest zaliczony' {
         $script:ScenarioBehavior = 'problem'
-        { Invoke-NetVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Scenarios @('cli') -Artifact $script:Artifact 6>$null } | Should -Throw '*utraconych buforów*'
+        { Invoke-NetVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Scenarios @('cli') -Artifact $script:Artifact 6>$null } | Should -Throw '*utraconych buforów*'
         $script:Saved.scenarios['cli'].passed | Should -BeFalse
         $script:Saved.allPassed | Should -BeFalse
     }
     It 'niepoprawne sprzątanie VM odbiera zaliczenie' {
         $script:ScenarioBehavior = 'ok'
         Mock Complete-ExploreVmCleanup { [pscustomobject]@{ Ok = $false; Problems = @('karta nadal podłączona') } }
-        { Invoke-NetVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Scenarios @('cli') -Artifact $script:Artifact 6>$null 3>$null } | Should -Throw '*karta nadal podłączona*'
+        { Invoke-NetVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Scenarios @('cli') -Artifact $script:Artifact 6>$null 3>$null } | Should -Throw '*karta nadal podłączona*'
         $script:Saved.scenarios['cli'].passed | Should -BeFalse
     }
 }
@@ -576,6 +623,19 @@ Describe 'Pliki narzędzia' {
         $Code = $Text.Substring($Text.IndexOf('#>') + 2)
         $Code | Should -Not -Match '[^\x00-\x7F]'
         $Code | Should -Not -Match 'InvokePattern'
+        $Code | Should -Match 'TextsFile'
+        $Code | Should -Not -Match 'Ustawienia'
+        $Code | Should -Not -Match 'Aplikacje'
+    }
+    It 'host wysyła teksty sondy jako net-nav-texts.json (DataFiles) z argumentem -TextsFile' {
+        $Body = (Get-Command Invoke-NetScenario).ScriptBlock.ToString()
+        $Body | Should -Match 'net-nav-texts\.json'
+        $Body | Should -Match '-DataFiles'
+        $Body | Should -Match '-TextsFile'
+        $Body | Should -Match 'Context\.NavTexts'
+        $Run = (Get-Command Invoke-NetVmRun).ScriptBlock.ToString()
+        $Run.IndexOf('Get-NetNavTexts') | Should -BeGreaterThan 0
+        $Run.IndexOf('Get-NetNavTexts') | Should -BeLessThan $Run.IndexOf('Restore-VmCleanState')
     }
 }
 

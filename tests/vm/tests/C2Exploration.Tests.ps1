@@ -314,16 +314,16 @@ Describe 'Przebieg hosta C2' {
         Mock Invoke-ExploreAll { $script:Seen = @{ FileName = $FileName; EntryCommand = $EntryCommand; RemoteScript = $RemoteScript; PassUserSid = $PassUserSid.IsPresent }; [pscustomobject]@{ Paths = @('x'); Errors = @() } }
     }
     It 'Invoke-C2Exploration deleguje do wspólnego modułu z plikiem c2-exploration.json i punktem wejścia Invoke-C2Collection, bez SID' {
-        $null = Invoke-C2Exploration -VmName @('DSO-26H2-Home') -OutDirectory $TestDrive
+        $null = Invoke-C2Exploration -VmName @('DSO-PL-Home') -OutDirectory $TestDrive
         $Seen.FileName | Should -Be 'c2-exploration.json'
         $Seen.EntryCommand | Should -Be 'Invoke-C2Collection'
         $Seen.PassUserSid | Should -BeFalse
         $Seen.RemoteScript | Should -Match 'function Invoke-C2Collection \{'
     }
-    It 'parametr VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro' {
+    It 'parametr VmName przyjmuje tylko DSO-PL-Home i DSO-PL-Pro' {
         $Attr = (Get-Command (Join-Path $PSScriptRoot '..\explore\Invoke-C2Exploration.ps1')).Parameters['VmName'].Attributes |
             Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        $Attr.ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
     }
     It 'plik ma BOM UTF-8 oraz sekcje Instrukcja uruchomienia i Opis działania' {
         $Path = Join-Path $PSScriptRoot '..\explore\Invoke-C2Exploration.ps1'

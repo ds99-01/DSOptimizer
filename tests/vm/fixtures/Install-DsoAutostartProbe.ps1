@@ -1,6 +1,6 @@
 ﻿<#
 Instrukcja uruchomienia:
-    Tylko w VM DSO-26H2-Home/Pro, jako Administrator (Setup przypadków Flow='Autostart' w tests\vm\cases.psd1), np.:
+    Tylko w VM DSO z listy `Get-DsoVmDefinitions` (VmCommon), jako Administrator (Setup przypadków Flow='Autostart' w tests\vm\cases.psd1), np.:
         Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
         & C:\dso\fixtures\Install-DsoAutostartProbe.ps1 -Name DsoRunUser -Source RunUser -UserSid S-1-5-21-...
         & C:\dso\fixtures\Install-DsoAutostartProbe.ps1 -Name DsoLnkCommon -Source FolderCommon
@@ -32,8 +32,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-if (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) {
-    throw "Install-DsoAutostartProbe działa tylko w VM DSO-26H2-Home/Pro (komputer: '$env:COMPUTERNAME'); nic nie zostało zmienione."
+if (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) {
+    throw "Install-DsoAutostartProbe działa tylko w VM DSO (DSO-EN-Home, DSO-EN-Pro, DSO-PL-Pro, DSO-PL-Home) (komputer: '$env:COMPUTERNAME'); nic nie zostało zmienione."
 }
 
 $ProbeDirectory = 'C:\dsotest'

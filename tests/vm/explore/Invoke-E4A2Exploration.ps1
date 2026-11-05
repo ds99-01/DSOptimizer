@@ -5,13 +5,13 @@ Instrukcja uruchomienia:
     Obie VM (Home, potem Pro), bez sieci:
         .\tests\vm\explore\Invoke-E4A2Exploration.ps1 -OutDirectory C:\ścieżka\poza\repo\exploration
     Jedna VM, z siecią (Default Switch na czas przebiegu):
-        .\tests\vm\explore\Invoke-E4A2Exploration.ps1 -VmName DSO-26H2-Pro -Network -OutDirectory C:\...\exploration
+        .\tests\vm\explore\Invoke-E4A2Exploration.ps1 -VmName DSO-PL-Pro -Network -OutDirectory C:\...\exploration
     -ShowPlan: wypisuje rozstrzygnięte argumenty i plan (JSON) i kończy, nic nie uruchamia.
     -OutDirectory jest wymagany: ścieżka bezwzględna poza repo; w repo tylko katalog ignorowany przez git.
     Czas: ok. 8-12 minut na VM.
 Opis działania:
     Pomiar partii 2 Etapu 4a (strona „Aplikacje”): co jest zainstalowane na świeżym 26H2 i jak to usuwać z procesu administratora
-    dla zalogowanego konta. Wszystko dzieje się WYŁĄCZNIE w VM DSO-26H2-Home/Pro; na hoście skrypt tylko (opcjonalnie) podłącza i odłącza
+    dla zalogowanego konta. Wszystko dzieje się WYŁĄCZNIE w VM DSO-PL-Home/Pro; na hoście skrypt tylko (opcjonalnie) podłącza i odłącza
     kartę sieciową VM (Default Switch), robi zrzut ekranu VM (GetVirtualSystemThumbnailImage) i zapisuje wyniki.
     Przebieg jednej VM: revert do 'czysta-26H2' -> start -> gotowość (zalogowany dso) -> fazy -> kopia zrzutów -> ZAWSZE (finally) revert,
     odłączenie sieci i sprawdzenie stanu końcowego (VM Off, karta bez przełącznika) przed zapisem JSON. Błąd sprzątania trafia do wyniku.
@@ -30,15 +30,15 @@ Opis działania:
     To Do: -User <SID>; Weather/News/Solitaire potem Remove-AppxProvisionedPackage -Online; stan dso / obraz / wszyscy po każdym kroku) ->
     search 'po' (+ zrzut hosta) -> protection (odczyt, Enable-ComputerRestore C:, odczyt, Disable-ComputerRestore C:, odczyt: sprawdzenie,
     czy odczyt rozróżnia oba stany) -> logoff (wylogowanie dso, czy „pending removal” To Do po -User <SID> dokańcza się); wszystko cofa revert.
-    Ostatni bezpiecznik po stronie VM: Assert-E4A2InsideVm (nazwa komputera DSO-26H2-HOME/PRO i brak DSO_VM_TESTS_MOCK_ONLY) na początku
+    Ostatni bezpiecznik po stronie VM: Assert-E4A2InsideVm (nazwa komputera z listy (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) i brak DSO_VM_TESTS_MOCK_ONLY) na początku
     każdej funkcji ze skutkiem. Pierwszy błąd uwierzytelnienia przerywa cały skrypt (blokada konta). Skrypt dotyka wyłącznie VM
-    DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy obcej VM; na hoście niczego nie usuwa.
+    DSO-PL-Home i DSO-PL-Pro (ValidateSet), nigdy obcej VM; na hoście niczego nie usuwa.
     Wynik: <OutDirectory>\<VmName>\e4a2.json (UTF-8), zrzuty K2 <OutDirectory>\<VmName>\shots\*.png i zrzuty hosta host-start-*.png.
     Kod wyjścia: 0 gdy wszystkie wybrane VM zebrane bez błędu przebiegu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName = @('DSO-26H2-Home', 'DSO-26H2-Pro'),
+    [ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName = @('DSO-PL-Home', 'DSO-PL-Pro'),
     [string]$OutDirectory,
     [string]$CheckpointName = 'czysta-26H2',
     [ValidateRange(60, 7200)][int]$ReadyTimeoutSeconds = 1200,
@@ -89,19 +89,19 @@ function Test-E4A2VmComputerName {
     [CmdletBinding()]
     [OutputType([bool])]
     param([AllowEmptyString()][string]$ComputerName)
-    return (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -contains ([string]$ComputerName).ToUpperInvariant())
+    return (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -contains ([string]$ComputerName).ToUpperInvariant())
 }
 
 function Assert-E4A2InsideVm {
     # Ostatni bezpiecznik: sondy E4A2 usuwają pakiety AppX, zmieniają ochronę systemu, kompilują programy i rejestrują zadania, więc działają
-    # WYŁĄCZNIE w VM DSO-26H2-Home/Pro i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY z tests\vm\tests\Support\NoLiveVm.ps1).
+    # WYŁĄCZNIE w VM DSO-PL-Home/Pro i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY z tests\vm\tests\Support\NoLiveVm.ps1).
     [CmdletBinding()]
     param([string]$ComputerName = $env:COMPUTERNAME)
     if ($env:DSO_VM_TESTS_MOCK_ONLY) {
         throw 'Tryb DSO_VM_TESTS_MOCK_ONLY: sondy E4A2 nie mogą działać w testach na mockach (nic nie zostało uruchomione).'
     }
     if (-not (Test-E4A2VmComputerName -ComputerName $ComputerName)) {
-        throw "Sondy E4A2 działają tylko w VM DSO-26H2-HOME/DSO-26H2-PRO (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
+        throw "Sondy E4A2 działają tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
     }
 }
 
@@ -1084,7 +1084,7 @@ function Complete-E4A2VmCleanup {
     # VM w stanie Off i karta bez przełącznika (zawsze, także bez -Network). Błędy i naruszenia wracają w Problems (Ok=false).
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][string]$CheckpointName,
         [Parameter(Mandatory)][bool]$Network
     )
@@ -1113,7 +1113,7 @@ function Invoke-E4A2VmRun {
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [string]$CheckpointName = 'czysta-26H2',
         [int]$ReadyTimeoutSeconds = 1200,

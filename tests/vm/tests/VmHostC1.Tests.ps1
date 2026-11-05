@@ -17,7 +17,7 @@ Describe 'C1 Task 1: Invoke-DsoVmRunSet - częściowe wyniki i przebieg tylko-po
             if ($global:Dso9Fail -and $RunLabel -eq $global:Dso9Fail) { throw 'sesja zerwana' }
             [pscustomobject]@{ VmName = $VmName; RunLabel = $RunLabel; Passed = 1; Failed = 0; Skipped = 0; ReportPath = "$OutDirectory\$VmName\$RunLabel\report.json" }
         }
-        $script:SetArgs = @{ VmName = 'DSO-26H2-Test'; Credential = $script:Credential; BuildDirectory = 'B'; CatalogPath = 'C'; OutDirectory = $TestDrive; CheckpointName = 'cp'; ReadyTimeoutSeconds = 60 }
+        $script:SetArgs = @{ VmName = 'DSO-PL-Home'; Credential = $script:Credential; BuildDirectory = 'B'; CatalogPath = 'C'; OutDirectory = $TestDrive; CheckpointName = 'cp'; ReadyTimeoutSeconds = 60 }
     }
     AfterAll { Remove-Variable -Name Dso9Labels, Dso9Fail -Scope Global -ErrorAction SilentlyContinue }
     It 'wyjątek drugiego przebiegu niesie ukończony pierwszy przebieg (Data.CompletedRuns) i zachowuje komunikat z etykietą' {

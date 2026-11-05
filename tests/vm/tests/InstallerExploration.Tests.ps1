@@ -49,11 +49,14 @@
     }
 
     function script:New-RunningData {
+        param([ValidateSet('pl', 'en')][string]$Language = 'pl')
+        $Texts = Get-InstallerProgramTexts -Language $Language
         return [ordered]@{
+            programLanguage = $Language
             install          = [ordered]@{ exitCode = 0 }
             windowA          = [ordered]@{ processFound = $true; mutex = $true; pid = 1200; seconds = 4 }
-            portable         = [ordered]@{ message = 'DSOptimizer już działa (okno albo polecenie w trybie wiersza poleceń). Przełącz się na otwarte okno.'; clickedOk = $true; closed = $true; taskResult = 1; aAlive = $true }
-            cliApply         = [ordered]@{ exitCode = 1; firstError = 'Działa już inna kopia DSOptimizera (okno albo polecenie, które zmienia system). Nic nie zostało zmienione.' }
+            portable         = [ordered]@{ message = $Texts.Refusal; clickedOk = $true; closed = $true; taskResult = 1; aAlive = $true }
+            cliApply         = [ordered]@{ exitCode = 1; firstError = $Texts.CliRefusal }
             listApps         = [ordered]@{ exitCode = 0; group = 'Protected' }
             reinstall        = [ordered]@{ exitCode = 7; versionBefore = '4.0.4'; versionAfter = '4.0.4'; filesDiff = @() }
             uninstallRunning = [ordered]@{ exitCode = 1; filesDiff = @(); keyPresent = $true }
@@ -195,6 +198,33 @@ Describe 'Get-InstallerVerdict: komplet danych' {
         @($Checks.Name | Sort-Object -Unique) | Should -HaveCount $Count
         foreach ($Check in $Checks) { $Check.Detail | Should -Not -BeNullOrEmpty -Because $Check.Name }
     }
+    It 'running po angielsku: angielskie komunikaty z tabel przechodzą' {
+        @(Get-Failed -Phase 'running' -Data (New-RunningData -Language 'en')) | Should -BeNullOrEmpty
+    }
+    It 'running po angielsku: polski komunikat = PortableMessage i CliRefused niezaliczone' {
+        $Polish = Get-InstallerProgramTexts -Language 'pl'
+        $Data = New-RunningData -Language 'en'
+        $Data.portable.message = $Polish.Refusal
+        $Data.cliApply.firstError = $Polish.CliRefusal
+        @(Get-Failed -Phase 'running' -Data $Data | ForEach-Object { $_.Name } | Sort-Object) | Should -Be @('CliRefused', 'PortableMessage')
+    }
+    It 'running: brak programLanguage = PortableMessage i CliRefused niezaliczone (brak języka programu)' {
+        $Data = New-RunningData
+        $Data.Remove('programLanguage')
+        $Failed = @(Get-Failed -Phase 'running' -Data $Data)
+        @($Failed | ForEach-Object { $_.Name } | Sort-Object) | Should -Be @('CliRefused', 'PortableMessage')
+        foreach ($Check in $Failed) { $Check.Detail | Should -Match 'brak języka programu' }
+    }
+    It 'running: tekst okna z podwójnymi spacjami i dopiskiem po pełnym tekście też przechodzi' {
+        $Data = New-RunningData -Language 'en'
+        $Data.portable.message = ((Get-InstallerProgramTexts -Language 'en').Refusal -replace ' ', '  ') + ' Dodatek.'
+        @(Get-Failed -Phase 'running' -Data $Data) | Should -BeNullOrEmpty
+    }
+    It 'running: sam początek tekstu odmowy (obcięty) nie wystarcza' {
+        $Data = New-RunningData
+        $Data.portable.message = 'DSOptimizer już działa'
+        @(Get-Failed -Phase 'running' -Data $Data | ForEach-Object { $_.Name }) | Should -Be @('PortableMessage')
+    }
     It 'kreator po angielsku: komplet danych przechodzi' {
         @(Get-Failed -Phase 'wizard' -Data (New-WizardData -Language 'en')) | Should -BeNullOrEmpty
     }
@@ -333,6 +363,21 @@ Describe 'Get-InstallerVerdict: jedno odstępstwo = jedno niezaliczone sprawdzen
         @($Checks | Where-Object { -not $_.Passed }) | Should -BeNullOrEmpty
         ($Checks | Where-Object { $_.Name -eq 'SmartScreenWindow' }).Detail | Should -Match 'bez sieci'
     }
+    It 'motw: angielskie okno SmartScreen bez sieci (tekst z UI Automation) przechodzi z opisem wariantu offline' {
+        # VM 26H2 EN (2026-11-05): tytuły okien to tylko 'Program Manager' i ogólne 'Window Dialog'; nagłówek jest w drzewie UIA.
+        $Data = New-MotwData
+        $Data.titles = @('Program Manager', 'Window Dialog')
+        $Data.texts = @("SmartScreen can't be reached right now", "Check your Internet connection. Microsoft Defender SmartScreen is unreachable and can't help you decide if this app is ok to run.")
+        $Checks = @(Get-InstallerVerdict -Phase 'motw' -Data $Data)
+        @($Checks | Where-Object { -not $_.Passed }) | Should -BeNullOrEmpty
+        ($Checks | Where-Object { $_.Name -eq 'SmartScreenWindow' }).Detail | Should -Match 'bez sieci'
+    }
+    It 'motw: samo ogólne "Window Dialog" bez nagłówka SmartScreen nie przechodzi' {
+        $Data = New-MotwData
+        $Data.titles = @('Program Manager', 'Window Dialog')
+        $Data.texts = @('Install')
+        (@(Get-InstallerVerdict -Phase 'motw' -Data $Data) | Where-Object { $_.Name -eq 'SmartScreenWindow' }).Passed | Should -BeFalse
+    }
     It 'motw: brak okna SmartScreen z błędem UI Automation – błąd w opisie' {
         $Data = New-MotwData
         $Data.titles = @('Program Manager')
@@ -353,7 +398,7 @@ Describe 'Faza running na mockach (kolejność relaunchu, błędy sond)' {
     BeforeEach {
         $script:Calls = [System.Collections.Generic.List[string]]::new()
         $script:ProbeBehavior = 'ok'
-        $script:CliErrors = @('Działa już inna kopia DSOptimizera (okno albo polecenie, które zmienia system).')
+        $script:CliErrors = @((Get-InstallerProgramTexts -Language 'en').CliRefusal)
         Mock Initialize-InstallerVm { @{ 'DSOptimizer-4.0.4.zip' = 'C:\dso\instalator\DSOptimizer-4.0.4.zip'; 'DSOptimizer-4.0.4-setup.exe' = 'C:\dso\instalator\DSOptimizer-4.0.4-setup.exe' } }
         Mock Invoke-InstallerSetup { $script:Calls.Add("setup:$Step"); if ($Step -like '*running') { if ($Uninstall) { 1 } else { 7 } } else { 0 } }
         Mock Start-InstallerWindowA { $script:Calls.Add('windowA'); [ordered]@{ processFound = $true; mutex = $true; pid = 7; seconds = 2 } }
@@ -362,7 +407,7 @@ Describe 'Faza running na mockach (kolejność relaunchu, błędy sond)' {
         Mock Invoke-InstallerRefusalProbe {
             $script:Calls.Add("probe:$Name")
             if ($script:ProbeBehavior -eq 'throw') { throw "Sonda $Name nie zwróciła wyniku." }
-            if ($Name -eq 'Inst-Refusal-B') { return [pscustomobject]@{ Found = $true; Text = 'DSOptimizer już działa (okno).'; Clicked = $true; Closed = $true; ProcessId = 9 } }
+            if ($Name -eq 'Inst-Refusal-B') { return [pscustomobject]@{ Found = $true; Text = (Get-InstallerProgramTexts -Language 'en').Refusal; Clicked = $true; Closed = $true; ProcessId = 9 } }
             [pscustomobject]@{ Found = $false; Text = $null; Clicked = $false; ProcessId = $null }
         }
         Mock Invoke-InstallerRemote {
@@ -377,7 +422,7 @@ Describe 'Faza running na mockach (kolejność relaunchu, błędy sond)' {
         Mock Get-InstallerState { [pscustomobject]@{ AppExists = $true; Files = @{ 'DSOptimizer.exe' = 'AA' }; KeyPresent = $true; DisplayVersion = '4.0.4'; StartMenuLink = $true; DesktopLink = $true; Unins001 = $false } }
         Mock Start-Sleep { $script:Calls.Add("sleep:$Seconds") }
         $script:Context = [ordered]@{ Session = $null; Plan = (Get-InstallerPlan); Artifact = [ordered]@{ Version = '4.0.4'; Zip = @{ Name = 'DSOptimizer-4.0.4.zip' }; Setup = @{ Name = 'DSOptimizer-4.0.4-setup.exe' } }
-            VmName = 'DSO-26H2-Pro'; VmDirectory = $TestDrive; Run = [ordered]@{ Key = 'running'; Phase = 'running'; Language = $null }; Timeline = [System.Collections.Generic.List[string]]::new() }
+            VmName = 'DSO-EN-Pro'; VmDirectory = $TestDrive; Run = [ordered]@{ Key = 'running'; Phase = 'running'; Language = $null }; Timeline = [System.Collections.Generic.List[string]]::new() }
         $script:Record = [ordered]@{ data = $null; problems = @() }
     }
     It 'relaunch: wykrycie C, sonda przy żywym A, czekanie do 8 s od wykrycia C, dopiero potem zamknięcie A' {
@@ -405,7 +450,24 @@ Describe 'Faza running na mockach (kolejność relaunchu, błędy sond)' {
         $script:Record.data.relaunch.aAliveBeforeC | Should -BeTrue
         $script:Record.data.relaunch.aAliveBeforeStop | Should -BeTrue
         $script:Record.data.relaunch.refusalSeen | Should -BeFalse
-        $script:Record.data.cliApply.firstError | Should -Match '^Działa już inna kopia'
+        $script:Record.data.cliApply.firstError | Should -Match '^Another copy of DSOptimizer'
+    }
+    It 'język programu = język VM: DSO-EN-Pro wybiera en w oknie A, CLI dostaje en, werdykt running przechodzi z tekstami en' {
+        Invoke-InstallerRunningPhase -Context $script:Context -Record $script:Record
+        $script:Record.data.programLanguage | Should -BeExactly 'en'
+        Should -Invoke Confirm-DsoLanguageChoice -Times 1 -Exactly -ParameterFilter { $Language -eq 'en' }
+        Should -Invoke Confirm-DsoLanguageChoice -Times 0 -Exactly -ParameterFilter { $Language -ne 'en' }
+        Should -Invoke Invoke-DsoCli -Times 2 -Exactly -ParameterFilter { $Language -eq 'en' }
+        $Checks = @(Get-InstallerVerdict -Phase 'running' -Data $script:Record.data)
+        ($Checks | Where-Object Name -eq 'PortableMessage').Passed | Should -BeTrue
+        ($Checks | Where-Object Name -eq 'CliRefused').Passed | Should -BeTrue
+    }
+    It 'język programu = język VM: DSO-PL-Home wybiera pl w oknie A i pl w CLI' {
+        $script:Context.VmName = 'DSO-PL-Home'
+        Invoke-InstallerRunningPhase -Context $script:Context -Record $script:Record
+        $script:Record.data.programLanguage | Should -BeExactly 'pl'
+        Should -Invoke Confirm-DsoLanguageChoice -Times 1 -Exactly -ParameterFilter { $Language -eq 'pl' }
+        Should -Invoke Invoke-DsoCli -Times 2 -Exactly -ParameterFilter { $Language -eq 'pl' }
     }
     It 'A martwe już przed relaunchem (wolny mutex): zamknięcie „już nieżywego” A nie liczy się, RelaunchAlive niezaliczone' {
         Mock Invoke-InstallerRemote {
@@ -455,7 +517,7 @@ Describe 'Odczyt wyników sond bez pól (StrictMode)' {
         Mock Start-Sleep { }
         $script:RemoteArgs = [System.Collections.Generic.List[string]]::new()
         $script:Context = [ordered]@{ Session = $null; Plan = (Get-InstallerPlan); Artifact = [ordered]@{ Version = '4.0.4'; Setup = @{ Name = 'DSOptimizer-4.0.4-setup.exe' } }
-            VmName = 'DSO-26H2-Pro'; VmDirectory = $TestDrive; Run = [ordered]@{ Key = 'wizard-pl'; Phase = 'wizard'; Language = 'pl' }; Timeline = [System.Collections.Generic.List[string]]::new() }
+            VmName = 'DSO-EN-Pro'; VmDirectory = $TestDrive; Run = [ordered]@{ Key = 'wizard-pl'; Phase = 'wizard'; Language = 'pl' }; Timeline = [System.Collections.Generic.List[string]]::new() }
         $script:Record = [ordered]@{ data = $null; problems = @(); screenshots = @() }
     }
     It 'kreator: wynik z samym Ok/Error daje problem z prawdziwym błędem sondy; start z /LOG w C:\dso\out\logs' {
@@ -497,10 +559,12 @@ Describe 'Strony kreatora' {
         Get-InstallerWizardPageKind -Labels @('Instalacja') -Language 'pl' | Should -BeExactly 'nieznana'
         Get-InstallerWizardPageKind -Labels @('Zadania dodatkowe', 'Gotowy do rozpoczęcia instalacji') -Language 'pl' | Should -BeExactly 'niejednoznaczna'
     }
-    It 'teksty sond: oba języki, ścieżka zainstalowanego programu i przedrostki komunikatów' {
-        $Texts = Get-InstallerProbeTexts | ConvertFrom-Json
+    It 'teksty sond: oba języki kreatora, ścieżka zainstalowanego programu i pełny tekst odmowy w języku programu' {
+        $Texts = Get-InstallerProbeTexts -Language 'pl' | ConvertFrom-Json
         $Texts.installedExe | Should -BeExactly 'C:\Program Files\DSOptimizer\DSOptimizer.exe'
-        $Texts.refusalPrefix | Should -BeExactly 'DSOptimizer już działa'
+        $Texts.refusalText | Should -BeExactly 'DSOptimizer już działa (okno albo polecenie w trybie wiersza poleceń). Przełącz się na otwarte okno albo poczekaj, aż polecenie się skończy.'
+        $Texts.PSObject.Properties.Name | Should -Not -Contain 'refusalPrefix'
+        (Get-InstallerProbeTexts -Language 'en' | ConvertFrom-Json).refusalText | Should -BeExactly 'DSOptimizer is already running (a window or a command-line command). Switch to the open window, or wait until the command finishes.'
         $Texts.windowTitle | Should -BeExactly 'DSOptimizer'
         # Inno 6.7 na VM (2026-11-04): przyciski „&Dalej”/„&Next” bez „>”; stara postać z „>” zostaje dopuszczona.
         @($Texts.wizard.pl.next) | Should -Contain 'Dalej'
@@ -513,6 +577,17 @@ Describe 'Strony kreatora' {
 }
 
 Describe 'Plan i argumenty' {
+    It 'plan: bez pól *Prefix, pełne teksty odmowy; teksty programu z tabel (en)' {
+        $Plan = Get-InstallerPlan
+        @($Plan.Keys | Where-Object { $_ -like '*Prefix' }) | Should -BeNullOrEmpty
+        $Plan.RefusalText | Should -BeExactly 'DSOptimizer już działa (okno albo polecenie w trybie wiersza poleceń). Przełącz się na otwarte okno albo poczekaj, aż polecenie się skończy.'
+        $Plan.CliRefusalText | Should -BeExactly 'Działa już inna kopia DSOptimizera (okno albo polecenie, które zmienia system). Nic nie zostało zmienione; spróbuj ponownie po jej zamknięciu.'
+        $En = Get-InstallerProgramTexts -Language 'en'
+        $En.Refusal | Should -BeExactly 'DSOptimizer is already running (a window or a command-line command). Switch to the open window, or wait until the command finishes.'
+        $En.CliRefusal | Should -Not -BeNullOrEmpty
+        $En.CliRefusal | Should -Not -BeExactly $Plan.CliRefusalText
+        (Get-InstallerProgramTexts -Language 'pl').CliRefusal | Should -BeExactly $Plan.CliRefusalText
+    }
     It 'plan: ścieżki w VM bez spacji poza zainstalowanym programem, stałe instalatora' {
         $Plan = Get-InstallerPlan
         foreach ($Name in 'WorkDirectory', 'PortableDirectory', 'PortableExe', 'OutDirectory', 'LogDirectory', 'SmokeLogDirectory', 'UserDesktop') {
@@ -525,7 +600,7 @@ Describe 'Plan i argumenty' {
         $Plan.RefusedExitCode | Should -Be 7
         @($Plan.CliApplyArguments) | Should -Be @('--apply', 'privacy.widgets', '--restore-point', 'skip')
         @($Plan.SmartScreenTitles) | Should -Be @('System Windows ochronił ten komputer', 'Windows protected your PC')
-        @($Plan.SmartScreenOfflineTitles) | Should -Be @('Obecnie nie można uzyskać dostępu do filtru SmartScreen')
+        @($Plan.SmartScreenOfflineTitles) | Should -Be @('Obecnie nie można uzyskać dostępu do filtru SmartScreen', "SmartScreen can't be reached right now")
         @($Plan.WizardPageOrder) | Should -Be @('powitanie', 'zadania', 'gotowe', 'koniec')
         $Plan.MotwZoneId | Should -Be 3
     }
@@ -540,7 +615,7 @@ Describe 'Plan i argumenty' {
     It 'parametry skryptu: tylko VM Home/Pro, pięć faz i dwa języki' {
         $Parameters = (Get-Command $script:InstallerScriptPath).ScriptBlock.Ast.ParamBlock.Parameters
         $Set = { param($Name) $P = $Parameters | Where-Object { $_.Name.VariablePath.UserPath -eq $Name }; @($P.Attributes | Where-Object { $_.TypeName.Name -eq 'ValidateSet' } | ForEach-Object { $_.PositionalArguments.Value }) }
-        & $Set 'VmName' | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        & $Set 'VmName' | Should -Be @('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')
         & $Set 'Phase' | Should -Be @('smoke', 'running', 'upgrade', 'wizard', 'motw')
         & $Set 'Language' | Should -Be @('pl', 'en')
     }
@@ -564,7 +639,7 @@ Describe '-ShowPlan' {
         Mock Get-DsoVmCredential { throw 'nie wolno' }
         Mock Invoke-InstallerVmRun { throw 'nie wolno' }
         $Release = New-FakeRelease -Dir (Join-Path $TestDrive 'plan')
-        $Output = Invoke-InstallerExplorationMain -VmName 'DSO-26H2-Pro' -ArtifactDirectory $Release.Dir -OutDirectory (Join-Path $TestDrive 'out') `
+        $Output = Invoke-InstallerExplorationMain -VmName 'DSO-EN-Pro' -ArtifactDirectory $Release.Dir -OutDirectory (Join-Path $TestDrive 'out') `
             -Phase @('smoke', 'wizard') -Language @('pl') -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 600 -ShowPlan 6>$null
         $Code = @($Output)[-1]
         $Code | Should -Be 0
@@ -580,7 +655,7 @@ Describe '-ShowPlan' {
     It 'błąd argumentów (upgrade bez -UpgradeInstallerPath) = kod 1 przed VM' {
         Mock Restore-VmCleanState { throw 'nie wolno' }
         $Release = New-FakeRelease -Dir (Join-Path $TestDrive 'plan-zly')
-        $Output = Invoke-InstallerExplorationMain -VmName 'DSO-26H2-Pro' -ArtifactDirectory $Release.Dir -OutDirectory (Join-Path $TestDrive 'out') `
+        $Output = Invoke-InstallerExplorationMain -VmName 'DSO-EN-Pro' -ArtifactDirectory $Release.Dir -OutDirectory (Join-Path $TestDrive 'out') `
             -Phase @('upgrade') -Language @('pl') -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 600 -ShowPlan 6>$null
         @($Output)[-1] | Should -Be 1
         Should -Invoke Restore-VmCleanState -Times 0 -Exactly
@@ -611,7 +686,7 @@ Describe 'Invoke-InstallerVmRun: sprzątanie i zaliczenia' {
         $script:Artifact = [ordered]@{ Version = '4.0.4' }
     }
     It 'faza zaliczona: revert przed, sprzątanie po, installer.json zapisany' {
-        $Path = Invoke-InstallerVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('motw') -Language @('pl')) -Artifact $script:Artifact 6>$null
+        $Path = Invoke-InstallerVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('motw') -Language @('pl')) -Artifact $script:Artifact 6>$null
         $Path | Should -BeExactly 'C:\w\installer.json'
         $script:Calls.IndexOf('revert') | Should -BeLessThan $script:Calls.IndexOf('phase:motw')
         $script:Calls.IndexOf('cleanup') | Should -BeGreaterThan $script:Calls.IndexOf('phase:motw')
@@ -622,7 +697,7 @@ Describe 'Invoke-InstallerVmRun: sprzątanie i zaliczenia' {
     }
     It 'wyjątek w fazie: sprzątanie nadal wywołane, wynik zapisany z błędem, przebieg zgłasza błąd' {
         $script:PhaseBehavior = 'throw'
-        { Invoke-InstallerVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('smoke') -Language @('pl')) -Artifact $script:Artifact 6>$null } | Should -Throw '*boom w fazie*'
+        { Invoke-InstallerVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('smoke') -Language @('pl')) -Artifact $script:Artifact 6>$null } | Should -Throw '*boom w fazie*'
         Should -Invoke Complete-ExploreVmCleanup -Times 1 -Exactly
         $script:Saved.phases['smoke'].error | Should -Match 'boom'
         $script:Saved.phases['smoke'].passed | Should -BeFalse
@@ -630,20 +705,62 @@ Describe 'Invoke-InstallerVmRun: sprzątanie i zaliczenia' {
     }
     It 'problem fazy odbiera zaliczenie mimo zaliczonych sprawdzeń' {
         $script:PhaseBehavior = 'problem'
-        { Invoke-InstallerVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('motw') -Language @('pl')) -Artifact $script:Artifact 6>$null } | Should -Throw '*brak wyniku*'
+        { Invoke-InstallerVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('motw') -Language @('pl')) -Artifact $script:Artifact 6>$null } | Should -Throw '*brak wyniku*'
         $script:Saved.phases['motw'].passed | Should -BeFalse
     }
     It 'każda faza na świeżym reverrcie: dwa języki kreatora = dwa przebiegi i dwa sprzątania' {
         # Werdykt kreatora na danych motw nie przechodzi, więc przebieg zgłasza błąd; tu liczy się tylko liczba revertów i sprzątań.
-        try { $null = Invoke-InstallerVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('motw', 'wizard') -Language @('pl', 'en')) -Artifact $script:Artifact 6>$null 3>$null }
+        try { $null = Invoke-InstallerVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('motw', 'wizard') -Language @('pl', 'en')) -Artifact $script:Artifact 6>$null 3>$null }
         catch { $null = $_ }
         Should -Invoke Restore-VmCleanState -Times 3 -Exactly
         Should -Invoke Complete-ExploreVmCleanup -Times 3 -Exactly
         Should -Invoke Disconnect-VMNetworkAdapter -Times 3 -Exactly
     }
+    Context 'brak tekstów programu w tabelach tłumaczeń = błąd przed dotknięciem VM' {
+        BeforeAll {
+            function script:New-TextRoot {
+                # Fałszywy korzeń repo z tabelą tłumaczeń: <Entries> = lista { pl; en }.
+                param([Parameter(Mandatory)][string]$Name, [Parameter(Mandatory)][object[]]$Entries)
+                $Dir = Join-Path $TestDrive "$Name\src\DSOptimizer.Core\Localization\Translations"
+                $null = New-Item -ItemType Directory -Path $Dir -Force
+                $Json = @{ entries = @($Entries) } | ConvertTo-Json -Depth 4
+                [System.IO.File]::WriteAllText((Join-Path $Dir 'x.json'), $Json, (New-Object System.Text.UTF8Encoding($false)))
+                return (Join-Path $TestDrive $Name)
+            }
+        }
+        It 'VM <Vm>: tabele bez kluczy odmowy -> wyjątek brak tłumaczenia, zero revertów, startów i poświadczeń' -ForEach @(
+            @{ Vm = 'DSO-PL-Pro' }
+            @{ Vm = 'DSO-EN-Pro' }
+        ) {
+            $Root = New-TextRoot -Name "brak-$Vm" -Entries @(@{ pl = 'Inny tekst'; en = 'Other text' })
+            { Invoke-InstallerVmRun -VmName $Vm -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('running') -Language @('pl')) -Artifact $script:Artifact -TextRoot $Root 6>$null } |
+                Should -Throw '*brak tłumaczenia*'
+            Should -Invoke Get-DsoVmCredential -Times 0 -Exactly
+            Should -Invoke Restore-VmCleanState -Times 0 -Exactly
+            Should -Invoke Disconnect-VMNetworkAdapter -Times 0 -Exactly
+            Should -Invoke Start-VM -Times 0 -Exactly
+            Should -Invoke Wait-VmReady -Times 0 -Exactly
+            Should -Invoke Invoke-InstallerPhase -Times 0 -Exactly
+        }
+        It 'VM PL: klucze są, ale brak angielskiego tłumaczenia -> też wyjątek przed VM (sprawdzane oba języki)' {
+            $Plan = Get-InstallerPlan
+            $Root = New-TextRoot -Name 'pusty-en' -Entries @(@{ pl = $Plan.RefusalText; en = 'OK' }, @{ pl = $Plan.CliRefusalText; en = '' })
+            { Invoke-InstallerVmRun -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('running') -Language @('pl')) -Artifact $script:Artifact -TextRoot $Root 6>$null } |
+                Should -Throw '*brak tłumaczenia*'
+            Should -Invoke Restore-VmCleanState -Times 0 -Exactly
+            Should -Invoke Start-VM -Times 0 -Exactly
+        }
+        It 'komplet kluczy w tabelach: przebieg rusza, a faza dostaje policzone teksty w kontekście' {
+            $Plan = Get-InstallerPlan
+            $Root = New-TextRoot -Name 'komplet' -Entries @(@{ pl = $Plan.RefusalText; en = 'Refusal EN' }, @{ pl = $Plan.CliRefusalText; en = 'Cli refusal EN' })
+            $null = Invoke-InstallerVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('motw') -Language @('pl')) -Artifact $script:Artifact -TextRoot $Root 6>$null 3>$null
+            Should -Invoke Restore-VmCleanState -Times 1 -Exactly
+            Should -Invoke Invoke-InstallerPhase -Times 1 -Exactly -ParameterFilter { $Context.ProgramTexts.Refusal -ceq 'Refusal EN' -and $Context.ProgramTexts.CliRefusal -ceq 'Cli refusal EN' -and $Context.ProgramTexts.Language -ceq 'en' }
+        }
+    }
     It 'odmawia pracy w trybie testów na mockach, zanim dotknie VM' {
         Mock Assert-DsoVmLiveAllowed { throw 'Tryb DSO_VM_TESTS_MOCK_ONLY' }
-        { Invoke-InstallerVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('smoke') -Language @('pl')) -Artifact $script:Artifact } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Invoke-InstallerVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Runs @(Get-InstallerPhaseRuns -Phase @('smoke') -Language @('pl')) -Artifact $script:Artifact } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
         Should -Invoke Restore-VmCleanState -Times 0 -Exactly
     }
 }
@@ -671,7 +788,7 @@ Describe 'Plik skryptu i sondy' {
         $Errors = $null
         $null = [System.Management.Automation.Language.Parser]::ParseInput($Text, [ref]$null, [ref]$Errors)
         @($Errors) | Should -HaveCount 0
-        $Text | Should -Match 'DSO-26H2-HOME'
+        $Text | Should -Match 'DSO-EN-HOME'
     }
     It 'sonda okna odmowy klika tylko przycisk OK, sonda okien niczego nie klika' {
         (Get-InstallerRefusalProbeScript) | Should -Match 'okButton'
@@ -745,7 +862,7 @@ namespace DsoInst
         $Text = "param([string]`$ResultFile, [string]`$TextsFile, [int]`$WaitSeconds = 1, [switch]`$Click)`n`$ErrorActionPreference = 'Stop'`n$HelperFunctions`n$Body"
         [System.IO.File]::WriteAllText($script:RefusalProbeFile, $Text, (New-Object System.Text.UTF8Encoding($true)))
         $script:RefusalTextsFile = Join-Path $TestDrive 'inst-texts.json'
-        [System.IO.File]::WriteAllText($script:RefusalTextsFile, (Get-InstallerProbeTexts), (New-Object System.Text.UTF8Encoding($false)))
+        [System.IO.File]::WriteAllText($script:RefusalTextsFile, (Get-InstallerProbeTexts -Language 'pl'), (New-Object System.Text.UTF8Encoding($false)))
         function script:Invoke-FakeRefusalProbe {
             param([switch]$Click)
             $Result = Join-Path $TestDrive ("refusal-{0}.json" -f [guid]::NewGuid().ToString('N'))
@@ -796,7 +913,7 @@ namespace DsoInst
         @($Result.Seen) | Should -Contain 'Inny komunikat DSOptimizera'
     }
     It 'okno odmowy z tekstem i -Click: klika tylko OK, okno zamknięte (Closed)' {
-        Add-FakeWindow -Handle 500 -Statics @{ 501 = ''; 502 = 'DSOptimizer już działa (okno albo polecenie).' }
+        Add-FakeWindow -Handle 500 -Statics @{ 501 = ''; 502 = (Get-InstallerProgramTexts -Language 'pl').Refusal }
         $Result = Invoke-FakeRefusalProbe -Click
         $Result.Ok | Should -BeTrue
         $Result.Found | Should -BeTrue
@@ -804,8 +921,16 @@ namespace DsoInst
         $Result.Closed | Should -BeTrue
         @([DsoInst.Native]::Clicked) | Should -Be @(599)
     }
+    It 'sam początek tekstu odmowy w oknie nie wystarcza (pełny tekst wymagany)' {
+        Add-FakeWindow -Handle 550 -Statics @{ 551 = 'DSOptimizer już działa' }
+        (Invoke-FakeRefusalProbe).Found | Should -BeFalse
+    }
+    It 'okno odmowy ze złamaną linią (białe znaki zwinięte) jest znalezione' {
+        Add-FakeWindow -Handle 560 -Statics @{ 561 = ((Get-InstallerProgramTexts -Language 'pl').Refusal -replace ' Przełącz', "`r`nPrzełącz") }
+        (Invoke-FakeRefusalProbe).Found | Should -BeTrue
+    }
     It 'okno odmowy, które po kliknięciu nie znika -> Closed=false' {
-        Add-FakeWindow -Handle 600 -Statics @{ 601 = 'DSOptimizer już działa.' }
+        Add-FakeWindow -Handle 600 -Statics @{ 601 = (Get-InstallerProgramTexts -Language 'pl').Refusal }
         [DsoInst.Native]::CloseOnClick = $false
         $Result = Invoke-FakeRefusalProbe -Click
         $Result.Clicked | Should -BeTrue

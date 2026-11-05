@@ -20,7 +20,7 @@
     function New-DsoAutostartCase {
         param([hashtable]$Extra = @{})
         $Case = @{
-            Name = 'wyl'; Flow = 'Autostart'; RunAs = 'dso'; Check = '$true'
+            CliLanguage = 'pl'; Name = 'wyl'; Flow = 'Autostart'; RunAs = 'dso'; Check = '$true'
             Items = @(@{ Id = 'run:user:DsoRunUser'; Probe = 'DsoRunUser' }, @{ Id = 'appx:Microsoft.WindowsTerminal_8wekyb3d8bbwe!StartTerminalOnLoginTask'; Process = 'WindowsTerminal' })
             Controls = @('DsoRunUserCtl'); Set = 'disabled'; Restore = 'undo'
             Expect = @{ SetExit = 0; SetOutcome = 'Applied'; RestoreExit = 0; RestoreOutcome = 'Undone' }
@@ -152,7 +152,7 @@ Describe 'Wait-VmAutostartStart i Confirm-VmAutostartStart (mock odczytu VM)' {
             foreach ($Line in $Lines) {
                 $Parts = $Line.Split('|')
                 $At = [datetime]::Parse($Parts[1], [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind)
-                if ($At -gt $BootAt -and $NoProcessFor -notcontains $Parts[0]) { $Processes.Add([pscustomobject]@{ Name = $Parts[0]; UserName = 'DSO-26H2-PRO\dso'; StartUtc = $Parts[1]; Id = 100 + $Processes.Count }) }
+                if ($At -gt $BootAt -and $NoProcessFor -notcontains $Parts[0]) { $Processes.Add([pscustomobject]@{ Name = $Parts[0]; UserName = 'DSO-EN-PRO\dso'; StartUtc = $Parts[1]; Id = 100 + $Processes.Count }) }
             }
             foreach ($P in $Extra) { $Processes.Add($P) }
             return [pscustomobject]@{ BootUtc = $Boot; LogError = $LogError; Lines = $Lines; Processes = $Processes.ToArray() }
@@ -184,11 +184,11 @@ Describe 'Wait-VmAutostartStart i Confirm-VmAutostartStart (mock odczytu VM)' {
     }
     It 'proces konta dso ze StartTime po rozruchu = start; proces innego konta = brak' {
         $Lines = @('DsoRunUserCtl|2026-11-02T10:00:12.0000000Z|dso|1')
-        $global:DsoObs.Enqueue((New-DsoObs -Lines $Lines -Extra @([pscustomobject]@{ Name = 'WindowsTerminal'; UserName = 'DSO-26H2-PRO\Administrator'; StartUtc = '2026-11-02T10:00:20.0000000Z'; Id = 1 })))
+        $global:DsoObs.Enqueue((New-DsoObs -Lines $Lines -Extra @([pscustomobject]@{ Name = 'WindowsTerminal'; UserName = 'DSO-EN-PRO\Administrator'; StartUtc = '2026-11-02T10:00:20.0000000Z'; Id = 1 })))
         $Item = @{ Id = 'appx:Microsoft.WindowsTerminal_8wekyb3d8bbwe!StartTerminalOnLoginTask'; Process = 'WindowsTerminal' }
         (Wait-VmAutostartStart -Session $null -Controls @('DsoRunUserCtl') -Items @($Item)).Items[0].Started | Should -BeFalse
         $global:DsoObs.Clear()
-        $global:DsoObs.Enqueue((New-DsoObs -Lines $Lines -Extra @([pscustomobject]@{ Name = 'WindowsTerminal'; UserName = 'DSO-26H2-PRO\dso'; StartUtc = '2026-11-02T10:00:20.0000000Z'; Id = 2 })))
+        $global:DsoObs.Enqueue((New-DsoObs -Lines $Lines -Extra @([pscustomobject]@{ Name = 'WindowsTerminal'; UserName = 'DSO-EN-PRO\dso'; StartUtc = '2026-11-02T10:00:20.0000000Z'; Id = 2 })))
         (Wait-VmAutostartStart -Session $null -Controls @('DsoRunUserCtl') -Items @($Item)).Items[0].Started | Should -BeTrue
     }
     It 'kontrola, która nie wystartowała po rozruchu, kończy się błędem po limicie (z nazwą sondy)' {
@@ -198,7 +198,7 @@ Describe 'Wait-VmAutostartStart i Confirm-VmAutostartStart (mock odczytu VM)' {
     }
     It 'proces sondy bez linii w probe.log (sonda nie dopisała linii) = błąd, nie „nie wystartowała”' {
         $Lines = @('DsoRunUserCtl|2026-11-02T10:00:12.0000000Z|dso|1')
-        $global:DsoObs.Enqueue((New-DsoObs -Lines $Lines -Extra @([pscustomobject]@{ Name = 'DsoRunUser'; UserName = 'DSO-26H2-PRO\dso'; StartUtc = '2026-11-02T10:00:13.0000000Z'; Id = 7 })))
+        $global:DsoObs.Enqueue((New-DsoObs -Lines $Lines -Extra @([pscustomobject]@{ Name = 'DsoRunUser'; UserName = 'DSO-EN-PRO\dso'; StartUtc = '2026-11-02T10:00:13.0000000Z'; Id = 7 })))
         { Wait-VmAutostartStart -Session $null -Controls @('DsoRunUserCtl') -Items @(@{ Id = 'run:user:DsoRunUser'; Probe = 'DsoRunUser' }) } | Should -Throw -ExpectedMessage "*rozbieżność*DsoRunUser*"
     }
     It 'linia sondy po rozruchu bez jej procesu = błąd (po jednym ponowieniu odczytu)' {
@@ -210,7 +210,7 @@ Describe 'Wait-VmAutostartStart i Confirm-VmAutostartStart (mock odczytu VM)' {
     It 'rozbieżność, która znika przy ponowionym odczycie, nie jest błędem' {
         $Ctl = 'DsoRunUserCtl|2026-11-02T10:00:12.0000000Z|dso|1'
         $global:DsoObs.Enqueue((New-DsoObs -Lines @($Ctl)))
-        $global:DsoObs.Enqueue((New-DsoObs -Lines @($Ctl) -Extra @([pscustomobject]@{ Name = 'DsoRunUser'; UserName = 'DSO-26H2-PRO\dso'; StartUtc = '2026-11-02T10:00:31.0000000Z'; Id = 9 })))
+        $global:DsoObs.Enqueue((New-DsoObs -Lines @($Ctl) -Extra @([pscustomobject]@{ Name = 'DsoRunUser'; UserName = 'DSO-EN-PRO\dso'; StartUtc = '2026-11-02T10:00:31.0000000Z'; Id = 9 })))
         $global:DsoObs.Enqueue((New-DsoObs -Lines @($Ctl, 'DsoRunUser|2026-11-02T10:00:31.0000000Z|dso|1')))
         (Wait-VmAutostartStart -Session $null -Controls @('DsoRunUserCtl') -Items @(@{ Id = 'run:user:DsoRunUser'; Probe = 'DsoRunUser' })).Items[0].Started | Should -BeTrue
     }
@@ -226,7 +226,7 @@ Describe 'Wait-VmAutostartStart i Confirm-VmAutostartStart (mock odczytu VM)' {
         $First = Wait-VmAutostartStart -Session $null -Controls @('DsoRunUserCtl') -Items $Items
         @($First.Items | Where-Object Started).Count | Should -Be 0
         $global:DsoObs.Clear()
-        $global:DsoObs.Enqueue((New-DsoObs -Lines @($Ctl, 'DsoRunUser|2026-11-02T10:01:20.0000000Z|dso|1') -Extra @([pscustomobject]@{ Name = 'WindowsTerminal'; UserName = 'DSO-26H2-PRO\dso'; StartUtc = '2026-11-02T10:01:25.0000000Z'; Id = 3 })))
+        $global:DsoObs.Enqueue((New-DsoObs -Lines @($Ctl, 'DsoRunUser|2026-11-02T10:01:20.0000000Z|dso|1') -Extra @([pscustomobject]@{ Name = 'WindowsTerminal'; UserName = 'DSO-EN-PRO\dso'; StartUtc = '2026-11-02T10:01:25.0000000Z'; Id = 3 })))
         $Again = Confirm-VmAutostartStart -Session $null -Observation $First -Controls @('DsoRunUserCtl') -Items $Items
         $Again.RecheckedAtUtc | Should -Not -BeNullOrEmpty
         foreach ($Row in @($Again.Items)) {
@@ -327,7 +327,7 @@ Describe 'Invoke-VmCase: Flow Autostart (mocki VM)' {
         $global:DsoCliArgs[1].Arguments[2] | Should -Be 'disabled'
     }
     It 'SetupOutput: płaska lista tekstów (bez tablicy w tablicy, w JSON bez „System.Object[]”)' {
-        $Record = Invoke-VmCase -Session $null -Case @{ Name = 'lista'; Flow = 'Autostart'; RunAs = 'dso'; Check = '$true'; Expect = @{} } -Layout (Get-DsoVmLayout)
+        $Record = Invoke-VmCase -Session $null -Case @{ CliLanguage = 'pl'; Name = 'lista'; Flow = 'Autostart'; RunAs = 'dso'; Check = '$true'; Expect = @{} } -Layout (Get-DsoVmLayout)
         @($Record.SetupOutput).Count | Should -Be 2
         foreach ($Line in @($Record.SetupOutput)) { $Line | Should -BeOfType [string] }
         $Json = $Record | ConvertTo-Json -Depth 20
@@ -350,7 +350,7 @@ Describe 'Invoke-VmCase: Flow Autostart (mocki VM)' {
         $Restore.RunAsUser | Should -BeNullOrEmpty -Because 'przypadek bez RunAs = CLI jako Administrator sesji PS Direct'
     }
     It 'bez Set: tylko lista i Check, bez restartu' {
-        $Case = @{ Name = 'lista'; Flow = 'Autostart'; RunAs = 'dso'; Check = '$true'; Expect = @{} }
+        $Case = @{ CliLanguage = 'pl'; Name = 'lista'; Flow = 'Autostart'; RunAs = 'dso'; Check = '$true'; Expect = @{} }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout (Get-DsoVmLayout)
         @($global:DsoOrder) | Should -Be @('fixtures', 'setup', 'list-autostart', 'check')
         @($Record.Steps.Step) | Should -Be @('list-before')

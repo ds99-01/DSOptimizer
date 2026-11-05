@@ -5,9 +5,9 @@ Instrukcja uruchomienia:
     Wszystkie grupy, obie VM (Home, potem Pro), z siecią (Default Switch):
         .\tests\vm\explore\Invoke-E4A1Exploration.ps1 -OutDirectory C:\ścieżka\poza\repo\exploration
     Jedna VM, wybrane grupy:
-        .\tests\vm\explore\Invoke-E4A1Exploration.ps1 -VmName DSO-26H2-Pro -Group ai,search -OutDirectory C:\...\exploration
+        .\tests\vm\explore\Invoke-E4A1Exploration.ps1 -VmName DSO-PL-Pro -Group ai,search -OutDirectory C:\...\exploration
     Wybrane pozycje (filtr po Id z Get-E4A1Plan), np. ponowienie jednej sondy:
-        .\tests\vm\explore\Invoke-E4A1Exploration.ps1 -VmName DSO-26H2-Home -Group ads -Candidate softlanding -OutDirectory C:\...\exploration
+        .\tests\vm\explore\Invoke-E4A1Exploration.ps1 -VmName DSO-PL-Home -Group ads -Candidate softlanding -OutDirectory C:\...\exploration
     Grupa reboot (zmiana -> restart VM -> obserwacja -> cofnięcie -> restart -> obserwacja), pozycje z dowolnej grupy:
         .\tests\vm\explore\Invoke-E4A1Exploration.ps1 -Group reboot -RebootCandidate diagtrack,recall-policy -OutDirectory C:\...\exploration
     -NoNetwork: bez podłączania karty do 'Default Switch' (domyślnie sieć jest podłączana na czas grupy i odłączana po niej).
@@ -17,7 +17,7 @@ Instrukcja uruchomienia:
 Opis działania:
     Eksploracja partii 1 Etapu 4a (prywatność, AI, reklamy, menu PPM, Zakończ zadanie) według zasady dowodu z spec 2: liczy się
     zaobserwowany skutek (Ustawienia, element UI, proces, wynik w Start), nie sam zapis wartości. Wszystko dzieje się WYŁĄCZNIE w VM
-    DSO-26H2-Home/Pro; na hoście skrypt tylko podłącza/odłącza kartę sieciową VM (Default Switch, zgoda autora 2026-10-21) i zapisuje wyniki.
+    DSO-PL-Home/Pro; na hoście skrypt tylko podłącza/odłącza kartę sieciową VM (Default Switch, zgoda autora 2026-10-21) i zapisuje wyniki.
     Każda grupa to osobny przebieg od checkpointu 'czysta-26H2': revert -> sieć -> start -> gotowość -> sondy -> kopia zrzutów ->
     ZAWSZE (finally) revert, odłączenie sieci i sprawdzenie stanu końcowego (VM Off, karta bez przełącznika) przed zapisem JSON;
     błąd albo naruszenie trafia do pola cleanup i error wyniku oraz kończy grupę błędem (nic nie jest wyciszane).
@@ -39,15 +39,15 @@ Opis działania:
          wg pozycji (none / restart / both = obserwacja przed i po restarcie);
       4. obserwacja skutku (K1 + K2, zrzuty);
       5. cofnięcie (stan sprzed: wartości usunięte, klucze utworzone przez sondę usunięte, typ startu usługi) i obserwacja.
-    Ostatni bezpiecznik po stronie VM: Assert-E4A1InsideVm (nazwa komputera DSO-26H2-HOME/PRO i brak DSO_VM_TESTS_MOCK_ONLY) na początku
+    Ostatni bezpiecznik po stronie VM: Assert-E4A1InsideVm (nazwa komputera z listy (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) i brak DSO_VM_TESTS_MOCK_ONLY) na początku
     każdej funkcji ze skutkiem. Błąd jednej pozycji trafia do wyniku i nie przerywa pozostałych. Pierwszy błąd uwierzytelnienia przerywa
-    cały skrypt (blokada konta). Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy obcej VM.
+    cały skrypt (blokada konta). Skrypt dotyka wyłącznie VM DSO-PL-Home i DSO-PL-Pro (ValidateSet), nigdy obcej VM.
     Wynik: <OutDirectory>\<VmName>\e4a1-<grupa>.json (UTF-8) i zrzuty <OutDirectory>\<VmName>\shots-<grupa>\*.png.
     Kod wyjścia: 0 gdy wszystkie wybrane grupy na wszystkich VM zebrane bez błędu przebiegu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName = @('DSO-26H2-Home', 'DSO-26H2-Pro'),
+    [ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName = @('DSO-PL-Home', 'DSO-PL-Pro'),
     [string]$OutDirectory,
     [ValidateSet('ai', 'search', 'ads', 'telemetry', 'ux', 'reboot')][string[]]$Group,
     [ValidatePattern('^[a-z0-9-]+\z')][string[]]$Candidate,
@@ -230,19 +230,19 @@ function Test-E4A1VmComputerName {
     [CmdletBinding()]
     [OutputType([bool])]
     param([AllowEmptyString()][string]$ComputerName)
-    return (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -contains ([string]$ComputerName).ToUpperInvariant())
+    return (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -contains ([string]$ComputerName).ToUpperInvariant())
 }
 
 function Assert-E4A1InsideVm {
     # Ostatni bezpiecznik: sondy E4A1 zapisują rejestr HKLM/HKU, zmieniają usługi, restartują Eksploratora i klikają w UI, więc działają
-    # WYŁĄCZNIE w VM DSO-26H2-Home/Pro i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY z tests\vm\tests\Support\NoLiveVm.ps1).
+    # WYŁĄCZNIE w VM DSO-PL-Home/Pro i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY z tests\vm\tests\Support\NoLiveVm.ps1).
     [CmdletBinding()]
     param([string]$ComputerName = $env:COMPUTERNAME)
     if ($env:DSO_VM_TESTS_MOCK_ONLY) {
         throw 'Tryb DSO_VM_TESTS_MOCK_ONLY: sondy E4A1 nie mogą działać w testach na mockach (nic nie zostało uruchomione).'
     }
     if (-not (Test-E4A1VmComputerName -ComputerName $ComputerName)) {
-        throw "Sondy E4A1 działają tylko w VM DSO-26H2-HOME/DSO-26H2-PRO (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
+        throw "Sondy E4A1 działają tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
     }
 }
 
@@ -1597,7 +1597,7 @@ function Restart-E4A1Vm {
     # Restart gościa (Restart-Computer w VM), czekanie na spadek heartbeat i nową sesję z zalogowanym dso. Zwraca nową sesję.
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
         [Parameter(Mandatory)][pscredential]$Credential,
         [int]$ReadyTimeoutSeconds = 1200
@@ -1615,7 +1615,7 @@ function Complete-E4A1VmCleanup {
     # wyciszane - błędy i naruszenia wracają w Problems (Ok=false), a wołający zapisuje je w wyniku i zgłasza.
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][string]$CheckpointName,
         [Parameter(Mandatory)][bool]$Network
     )
@@ -1644,7 +1644,7 @@ function Invoke-E4A1VmGroup {
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][ValidateSet('ai', 'search', 'ads', 'telemetry', 'ux', 'reboot')][string]$Group,
         [Parameter(Mandatory)][hashtable[]]$Specs,
         [Parameter(Mandatory)][string]$OutDirectory,

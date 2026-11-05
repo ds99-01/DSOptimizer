@@ -331,7 +331,7 @@ Describe 'Przebieg hosta C3' {
         Mock Invoke-ExploreAll { $script:Seen = @{ FileName = $FileName; EntryCommand = $EntryCommand; RemoteScript = $RemoteScript; PassUserSid = $PassUserSid.IsPresent; VmName = $VmName; CheckpointName = $CheckpointName }; [pscustomobject]@{ Paths = @('x'); Errors = @() } }
     }
     It 'Invoke-C3Exploration deleguje do wspólnego modułu z plikiem c3-exploration.json i punktem wejścia Invoke-C3Collection, bez SID, checkpoint czysta-26H2' {
-        $null = Invoke-C3Exploration -VmName @('DSO-26H2-Home') -OutDirectory $TestDrive
+        $null = Invoke-C3Exploration -VmName @('DSO-PL-Home') -OutDirectory $TestDrive
         $Seen.FileName | Should -Be 'c3-exploration.json'
         $Seen.EntryCommand | Should -Be 'Invoke-C3Collection'
         $Seen.PassUserSid | Should -BeFalse
@@ -339,10 +339,10 @@ Describe 'Przebieg hosta C3' {
         $Seen.RemoteScript | Should -Match 'function Invoke-C3Collection \{'
         Should -Invoke Set-SmbClientConfiguration -Times 0 -Exactly
     }
-    It 'parametr VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro (nigdy obcej VM)' {
+    It 'parametr VmName przyjmuje tylko DSO-PL-Home i DSO-PL-Pro (nigdy obcej VM)' {
         $Attr = (Get-Command (Join-Path $PSScriptRoot '..\explore\Invoke-C3Exploration.ps1')).Parameters['VmName'].Attributes |
             Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        $Attr.ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
     }
     It 'plik ma BOM UTF-8 oraz sekcje Instrukcja uruchomienia i Opis działania' {
         $Path = Join-Path $PSScriptRoot '..\explore\Invoke-C3Exploration.ps1'

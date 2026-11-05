@@ -2,6 +2,7 @@
     # Wyłącznik: żaden test na mockach nie może dotknąć prawdziwego Hyper-V (patrz Support\NoLiveVm.ps1).
     . (Join-Path $PSScriptRoot 'Support\NoLiveVm.ps1')
 
+    Import-Module (Join-Path $PSScriptRoot '..\modules\VmText.psm1') -Force
     Import-Module (Join-Path $PSScriptRoot '..\modules\VmSmokeUi.psm1') -Force
     $script:ModulePath = (Resolve-Path (Join-Path $PSScriptRoot '..\modules\VmSmokeUi.psm1')).Path
     # Polskie teksty programu czytane ze źródeł C#. Są owinięte w L.T("…") (dawniej `const string X = "…"`), a kluczem tłumaczenia
@@ -960,6 +961,45 @@ Describe 'Get-GuiUiCheck: AutostartPage' {
         function script:Get-AutostartCheck($Probe, $Expected = $script:AutostartOk, $Texts = $script:PlTexts) {
             Get-Check (Get-GuiUiCheck -Texts $Texts -Probe $Probe -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk -AutostartExpected $Expected) 'AutostartPage'
         }
+        # Dwa odczyty CLI wokół sondy: przed (-AutostartExpected) i po (-AutostartExpectedAfter).
+        function script:Get-AutostartWindowCheck($Probe, $Before, $After) {
+            Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe $Probe -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk -AutostartExpected $Before -AutostartExpectedAfter $After) 'AutostartPage'
+        }
+        # Pierwsze logowanie świeżego konta: OneDriveSetup /thfirstsetup usuwa swoją wartość Run po instalacji OneDrive (zmierzone na DSO-EN-Pro).
+        $script:AutostartFirstLogon = [pscustomobject]@{ Enabled = 4; Disabled = 1; MissingFile = 0; Detail = 'cli przed' }
+    }
+    It 'odczyty CLI przed i po sondzie równe: porównanie jak przy jednym odczycie, bez dopisku o zmianie' {
+        $Check = Get-AutostartWindowCheck (New-UiProbe @{}) $script:AutostartOk ([pscustomobject]@{ Enabled = 3; Disabled = 1; MissingFile = 0; Detail = 'cli po' })
+        $Check.Passed | Should -BeTrue
+        $Check.Detail | Should -BeLike '*Włączone: 3 (CLI 3)*Wyłączone: 1 (CLI 1)*Bez pliku: 0 (CLI 0)*'
+        $Check.Detail | Should -Not -BeLike '*zmieniła się*'
+        $Check = Get-AutostartWindowCheck (New-UiProbe @{ AutostartGroupNames = @('Włączone, 4', 'Wyłączone, 1', 'Bez pliku, 0') }) $script:AutostartOk $script:AutostartOk
+        $Check.Passed | Should -BeFalse
+        $Check.Detail | Should -BeLike '*NIE: Włączone: 4 (CLI 3)*'
+    }
+    It 'lista zmieniła się między odczytami CLI: okno zgodne z odczytem <Ktory> przechodzi, opis podaje oba' -ForEach @(
+        @{ Ktory = 'po sondzie'; Names = @('Włączone, 3', 'Wyłączone, 1', 'Bez pliku, 0') }
+        @{ Ktory = 'przed sondą'; Names = @('Włączone, 4', 'Wyłączone, 1', 'Bez pliku, 0') }
+    ) {
+        $Check = Get-AutostartWindowCheck (New-UiProbe @{ AutostartGroupNames = $Names }) $script:AutostartFirstLogon $script:AutostartOk
+        $Check.Passed | Should -BeTrue
+        $Check.Detail | Should -BeLike '*Włączone: * (CLI 4 przed, 3 po)*Wyłączone: 1 (CLI 1)*'
+        $Check.Detail | Should -BeLike '*lista CLI zmieniła się w trakcie sondy (przed: cli przed; po: cli)'
+    }
+    It 'lista zmieniła się: nie przechodzi, gdy okno nie jest zgodne z żadnym odczytem (<Powod>)' -ForEach @(
+        @{ Powod = 'liczba spoza obu odczytów'; Names = @('Włączone, 5', 'Wyłączone, 1', 'Bez pliku, 0'); Like = '*NIE: Włączone: 5 (CLI 4 przed, 3 po)*' }
+        @{ Powod = 'grupy z różnych odczytów'; Names = @('Włączone, 3', 'Wyłączone, 2', 'Bez pliku, 0'); Like = '*Wyłączone: 2 (CLI 2 przed, 1 po)*NIE: liczby grup nie pochodzą z jednego odczytu CLI*' }
+    ) {
+        $Before = [pscustomobject]@{ Enabled = 4; Disabled = 2; MissingFile = 0; Detail = 'cli przed' }
+        if ($Powod -eq 'liczba spoza obu odczytów') { $Before = $script:AutostartFirstLogon }
+        $Check = Get-AutostartWindowCheck (New-UiProbe @{ AutostartGroupNames = $Names }) $Before $script:AutostartOk
+        $Check.Passed | Should -BeFalse
+        $Check.Detail | Should -BeLike $Like
+    }
+    It 'nie przechodzi bez liczb z odczytu CLI po sondzie, a opis niesie powód' {
+        $Check = Get-AutostartWindowCheck (New-UiProbe @{}) $script:AutostartOk ([pscustomobject]@{ Enabled = $null; Disabled = $null; MissingFile = $null; Detail = '--list-autostart: limit czasu' })
+        $Check.Passed | Should -BeFalse
+        $Check.Detail | Should -BeLike '*brak oczekiwanych liczb*--list-autostart: limit czasu*'
     }
     It 'przechodzi: pozycja menu, odczyt skończony, liczby grup = CLI, „Wyłącz (0)” i „Włącz (0)” nieaktywne' {
         $Check = Get-AutostartCheck (New-UiProbe @{})
@@ -1203,48 +1243,6 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
     }
     It 'błąd sondy jest w opisie HistoryMenu' {
         (Get-Check (Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{ Ok = $false; Error = 'brak okna'; HistoryMenuFound = $false })) 'HistoryMenu').Detail | Should -BeLike '*sonda: brak okna*'
-    }
-}
-
-Describe 'Get-DsoUiText (tekst okna w języku sondy)' {
-    BeforeAll {
-        # Udawane repo: tylko folder tabel tłumaczeń.
-        function script:New-FakeRepo([string]$Name, [object[]]$Tables) {
-            $Root = Join-Path $TestDrive $Name
-            $Dir = Join-Path $Root 'src\DSOptimizer.Core\Localization\Translations'
-            $null = New-Item -ItemType Directory -Path $Dir -Force
-            $I = 0
-            foreach ($Entries in $Tables) {
-                $I++
-                $Json = ConvertTo-Json -InputObject ([ordered]@{ language = 'en'; entries = @($Entries) }) -Depth 5
-                [System.IO.File]::WriteAllText((Join-Path $Dir "t$I.json"), $Json, (New-Object System.Text.UTF8Encoding($true)))
-            }
-            return $Root
-        }
-    }
-    It 'pl zwraca polski tekst bez zmian (także bez wpisu w tabeli)' {
-        Get-DsoUiText -Polish 'Coś, czego nie ma w żadnej tabeli' -Language pl | Should -Be 'Coś, czego nie ma w żadnej tabeli'
-    }
-    It 'en bierze wpis z tabel tłumaczeń repo' {
-        Get-DsoUiText -Polish 'Historia zmian' -Language en | Should -Be 'Change history'
-        Get-DsoUiText -Polish 'Zastosuj ({0})' -Language en | Should -Be 'Apply ({0})'
-    }
-    It 'en bez wpisu to wyjątek „brak tłumaczenia”, nigdy polski tekst' {
-        { Get-DsoUiText -Polish 'Coś, czego nie ma w żadnej tabeli' -Language en } | Should -Throw '*brak tłumaczenia*Coś, czego nie ma*'
-    }
-    It 'czyta wszystkie pliki tabel podanego repo, z rozróżnieniem wielkości liter' {
-        $Root = New-FakeRepo 'repo-a' @(@([ordered]@{ pl = 'Tak'; en = 'Yes' }), @([ordered]@{ pl = 'tak'; en = 'yes' }))
-        Get-DsoUiText -Polish 'Tak' -Language en -Root $Root | Should -Be 'Yes'
-        Get-DsoUiText -Polish 'tak' -Language en -Root $Root | Should -Be 'yes'
-        { Get-DsoUiText -Polish 'TAK' -Language en -Root $Root } | Should -Throw '*brak tłumaczenia*'
-    }
-    It 'dwa różne tłumaczenia tego samego polskiego tekstu to błąd' {
-        $Root = New-FakeRepo 'repo-b' @(@([ordered]@{ pl = 'Tak'; en = 'Yes' }), @([ordered]@{ pl = 'Tak'; en = 'Sure' }))
-        { Get-DsoUiText -Polish 'Tak' -Language en -Root $Root } | Should -Throw '*Tak*'
-    }
-    It 'pusty angielski wpis to brak tłumaczenia' {
-        $Root = New-FakeRepo 'repo-c' @(, @([ordered]@{ pl = 'Tak'; en = '' }))
-        { Get-DsoUiText -Polish 'Tak' -Language en -Root $Root } | Should -Throw '*brak tłumaczenia*'
     }
 }
 

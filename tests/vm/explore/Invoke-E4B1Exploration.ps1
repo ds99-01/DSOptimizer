@@ -5,9 +5,9 @@ Instrukcja uruchomienia:
     Przed przebiegiem: dotnet build DSOptimizer.sln -c Release (faza protection tworzy punkt przywracania przez DSOptimizer.exe --apply).
     Zalecane dwa przebiegi na VM (każdy od czystego checkpointu; wyniki w osobnych katalogach):
       A) bez sieci - mechanizmy offline:
-        .\tests\vm\explore\Invoke-E4B1Exploration.ps1 -VmName DSO-26H2-Pro -NoNetwork -OutDirectory C:\...\exploration\offline
+        .\tests\vm\explore\Invoke-E4B1Exploration.ps1 -VmName DSO-PL-Pro -NoNetwork -OutDirectory C:\...\exploration\offline
       B) z siecią - historia WU przed resetem, reset, skan po resecie, winget ze źródłem, DNS z prawdziwymi nazwami:
-        .\tests\vm\explore\Invoke-E4B1Exploration.ps1 -VmName DSO-26H2-Pro -Phase wuhistory, wureset, network -OutDirectory C:\...\exploration\network
+        .\tests\vm\explore\Invoke-E4B1Exploration.ps1 -VmName DSO-PL-Pro -Phase wuhistory, wureset, network -OutDirectory C:\...\exploration\network
     Bez -Phase: wszystkie fazy w jednym przebiegu (baseline zawsze pierwsza; netreset-after dołącza się sama po netreset).
     -NoNetwork: pomija fazy z siecią (wuhistory, network); karta VM nie jest podłączana do 'Default Switch'.
     -ShowPlan: wypisuje rozstrzygnięte argumenty i plan (JSON) i kończy, nic nie uruchamia.
@@ -15,7 +15,7 @@ Instrukcja uruchomienia:
     Czas: przebieg A ok. 15 minut na VM (restart po resecie sieci), przebieg B do ok. 45 minut (czekanie na pierwszy wpis historii WU).
 Opis działania:
     Pomiar partii 1 Etapu 4b (kategoria „Naprawy”, krótkie naprawy): DNS, reset sieci, reset Windows Update (usługi, foldery, polityki),
-    Sklep (R33), winget, ochrona systemu. Wszystkie zmiany WYŁĄCZNIE w VM DSO-26H2-Home/Pro; na hoście skrypt tylko podłącza/odłącza kartę
+    Sklep (R33), winget, ochrona systemu. Wszystkie zmiany WYŁĄCZNIE w VM DSO-PL-Home/Pro; na hoście skrypt tylko podłącza/odłącza kartę
     sieciową VM (Default Switch, wyłącznie od pierwszej do ostatniej fazy z siecią: wuhistory, network) i zapisuje wyniki.
     Przebieg jednej VM: revert do 'czysta-26H2' -> start (bez sieci) -> gotowość (zalogowany dso) -> kopia buildu DSOptimizera do C:\dso ->
     fazy -> kopia zrzutów -> ZAWSZE (finally) revert, odłączenie karty i sprawdzenie stanu końcowego (VM Off, karta bez przełącznika) przed zapisem JSON.
@@ -26,15 +26,15 @@ Opis działania:
     Fazy: baseline (stan świeżej VM) -> dns -> policies -> store -> winget -> protection -> [sieć] wuhistory (skan WU i czekanie na wpis historii)
     -> wureset -> network (DNS z siecią, winget source list/search, skan WU po resecie, historia) [koniec sieci] -> netreset -> restart VM
     -> netreset-after (odczyt i przywrócenie DHCP).
-    Ostatni bezpiecznik po stronie VM: Assert-E4B1InsideVm (nazwa komputera DSO-26H2-HOME/PRO i brak DSO_VM_TESTS_MOCK_ONLY) na początku każdej
-    funkcji ze skutkiem. Pierwszy błąd uwierzytelnienia przerywa cały skrypt (blokada konta). Skrypt dotyka wyłącznie VM DSO-26H2-Home
-    i DSO-26H2-Pro (ValidateSet), nigdy innej VM; na hoście niczego nie zmienia.
+    Ostatni bezpiecznik po stronie VM: Assert-E4B1InsideVm (nazwa komputera z listy (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) i brak DSO_VM_TESTS_MOCK_ONLY) na początku każdej
+    funkcji ze skutkiem. Pierwszy błąd uwierzytelnienia przerywa cały skrypt (blokada konta). Skrypt dotyka wyłącznie VM DSO-PL-Home
+    i DSO-PL-Pro (ValidateSet), nigdy innej VM; na hoście niczego nie zmienia.
     Wynik: <OutDirectory>\<VmName>\e4b1.json (UTF-8), zrzuty K2 <OutDirectory>\<VmName>\shots\*.png.
     Kod wyjścia: 0 gdy wszystkie wybrane VM zebrane bez błędu przebiegu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName = @('DSO-26H2-Home', 'DSO-26H2-Pro'),
+    [ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName = @('DSO-PL-Home', 'DSO-PL-Pro'),
     [ValidateSet('baseline', 'dns', 'policies', 'store', 'winget', 'protection', 'wuhistory', 'wureset', 'network', 'netreset')][string[]]$Phase = @('baseline', 'dns', 'policies', 'store', 'winget', 'protection', 'wuhistory', 'wureset', 'network', 'netreset'),
     [string]$OutDirectory,
     [string]$BuildDirectory,
@@ -95,19 +95,19 @@ function Test-E4B1VmComputerName {
     [CmdletBinding()]
     [OutputType([bool])]
     param([AllowEmptyString()][string]$ComputerName)
-    return (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -contains ([string]$ComputerName).ToUpperInvariant())
+    return (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -contains ([string]$ComputerName).ToUpperInvariant())
 }
 
 function Assert-E4B1InsideVm {
     # Ostatni bezpiecznik: sondy E4B1 resetują sieć i Windows Update, zmieniają usługi, polityki, pakiety AppX i ochronę systemu,
-    # więc działają WYŁĄCZNIE w VM DSO-26H2-Home/Pro i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY).
+    # więc działają WYŁĄCZNIE w VM DSO-PL-Home/Pro i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY).
     [CmdletBinding()]
     param([string]$ComputerName = $env:COMPUTERNAME)
     if ($env:DSO_VM_TESTS_MOCK_ONLY) {
         throw 'Tryb DSO_VM_TESTS_MOCK_ONLY: sondy E4B1 nie mogą działać w testach na mockach (nic nie zostało uruchomione).'
     }
     if (-not (Test-E4B1VmComputerName -ComputerName $ComputerName)) {
-        throw "Sondy E4B1 działają tylko w VM DSO-26H2-HOME/DSO-26H2-PRO (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
+        throw "Sondy E4B1 działają tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
     }
 }
 
@@ -1930,7 +1930,7 @@ function Restart-E4B1Vm {
     # Restart gościa po resecie sieci: Restart-Computer w VM, zamknięcie sesji, czekanie na zgaśnięcie heartbeatu, nowa sesja (zalogowany dso).
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
         [Parameter(Mandatory)][pscredential]$Credential,
         [int]$ReadyTimeoutSeconds = 1200
@@ -1947,7 +1947,7 @@ function Complete-E4B1VmCleanup {
     # Koniec przebiegu: revert do checkpointu, odłączenie karty i sprawdzenie kontraktu stanu końcowego: VM Off i karta bez przełącznika.
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][string]$CheckpointName
     )
     $Out = [ordered]@{ Ok = $false; RevertError = $null; DisconnectError = $null; CheckError = $null; FinalState = $null; FinalSwitch = $null; Violations = @(); Problems = @() }
@@ -1973,7 +1973,7 @@ function Invoke-E4B1VmRun {
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [Parameter(Mandatory)][string[]]$Phases,
         [Parameter(Mandatory)][string]$BuildDirectory,

@@ -11,6 +11,8 @@ Opis działania:
     przywrócenie, restart, plik StartupInfo, --list-autostart + Check i Cleanup) przeciw VM
     (Invoke-VmCase), zapisuje rekord do <RecordDirectory>\<Name>.json i sprawdza wyniki. Każdy brak raportu CLI,
     niezaładowany hive użytkownika albo wyjątek przebiegu to czerwony test z czytelnym komunikatem - nigdy zielony "na pusto".
+    Oczekiwane teksty (MessageContains, WarningContains, WarningAbsent) sprawdza wzorcami MessagePatterns, WarningPatterns
+    i WarningAbsentPatterns z Resolve-VmCaseTexts (tabele tłumaczeń w TextLanguage przypadku); oczekiwanie bez wzorców = czerwony test.
 #>
 param($Session, $Cases, $Layout, $RecordDirectory, $Reconnect)
 
@@ -141,6 +143,31 @@ BeforeAll {
         }
     }
 
+    function Get-DsoTextGroups {
+        # Grupy wzorców -like z Resolve-VmCaseTexts (tekst z tabel tłumaczeń w języku przypadku). Oczekiwanie bez wzorców = przypadek
+        # nie przeszedł przez Resolve-VmCaseTexts: czerwony test, nigdy porównanie z polskim kluczem na ślepo.
+        param([hashtable]$Expect, [string]$Key, [string]$PatternKey)
+        if (-not $Expect.ContainsKey($PatternKey)) { throw "Expect.$Key bez Expect.$PatternKey – przypadek bez Resolve-VmCaseTexts (teksty nie zostały wzięte z tabel tłumaczeń), nic nie zostało sprawdzone." }
+        $Groups = @($Expect[$PatternKey] | Where-Object { $null -ne $_ })
+        if ($Groups.Count -eq 0) { throw "Expect.$PatternKey jest puste – nic nie zostało sprawdzone." }
+        return , $Groups
+    }
+
+    function Test-DsoTextGroup {
+        # Czy któryś tekst trafia (-like) w którykolwiek wzorzec grupy (AnyOf = kilka wzorców, wystarczy jeden).
+        param([AllowEmptyCollection()][string[]]$Texts, [hashtable]$Group)
+        foreach ($Text in @($Texts)) {
+            foreach ($Pattern in @($Group['Any'])) { if ([string]$Text -like $Pattern) { return $true } }
+        }
+        return $false
+    }
+
+    function Format-DsoTextKeys {
+        # Klucze grupy (polskie teksty z tabel) i język przypadku do komunikatu -Because.
+        param([hashtable]$Group, $TextLanguage)
+        return "klucze: '" + (@($Group['Keys']) -join "' | '") + "', TextLanguage $TextLanguage"
+    }
+
     function Get-DsoListedApp {
         # Wiersze listy aplikacji (raport --list-apps) o danym id (bez rozróżniania wielkości liter, jak CLI).
         param($Step, [string]$AppId)
@@ -243,16 +270,24 @@ Describe '<Name> (<Id>)' -ForEach $script:CaseData {
         }
         if ($Expect.ContainsKey('WarningContains')) {
             It 'remove-app: ostrzeżenie w raporcie' -Skip:$IsSkipped {
+                # Każda grupa WarningPatterns musi trafić w któreś ostrzeżenie raportu.
+                $Groups = Get-DsoTextGroups -Expect $Expect -Key 'WarningContains' -PatternKey 'WarningPatterns'
                 $Step = Get-DsoStepResult -StepName 'remove-app'
-                $Warnings = @(Get-DsoReportProperty -Step $Step -Name 'warnings')
-                @($Warnings | Where-Object { [string]$_ -like "*$($Expect.WarningContains)*" }).Count | Should -BeGreaterThan 0 -Because "krok 'remove-app': brak ostrzeżenia '$($Expect.WarningContains)' (są: $($Warnings -join ' | '))"
+                [string[]]$Warnings = @(Get-DsoReportProperty -Step $Step -Name 'warnings' | ForEach-Object { [string]$_ })
+                foreach ($Group in $Groups) {
+                    (Test-DsoTextGroup -Texts $Warnings -Group $Group) | Should -BeTrue -Because "krok 'remove-app': brak ostrzeżenia z tabel tłumaczeń ($(Format-DsoTextKeys -Group $Group -TextLanguage $Case.TextLanguage)); są: $($Warnings -join ' | ')"
+                }
             }
         }
         if ($Expect.ContainsKey('WarningAbsent')) {
             It 'remove-app: brak ostrzeżenia' -Skip:$IsSkipped {
+                # Żadne ostrzeżenie raportu nie trafia w żaden wzorzec WarningAbsentPatterns.
+                $Groups = Get-DsoTextGroups -Expect $Expect -Key 'WarningAbsent' -PatternKey 'WarningAbsentPatterns'
                 $Step = Get-DsoStepResult -StepName 'remove-app'
-                $Warnings = @(Get-DsoReportProperty -Step $Step -Name 'warnings')
-                @($Warnings | Where-Object { [string]$_ -like "*$($Expect.WarningAbsent)*" }).Count | Should -Be 0 -Because "krok 'remove-app': niepożądane ostrzeżenie '$($Expect.WarningAbsent)' (są: $($Warnings -join ' | '))"
+                [string[]]$Warnings = @(Get-DsoReportProperty -Step $Step -Name 'warnings' | ForEach-Object { [string]$_ })
+                foreach ($Group in $Groups) {
+                    (Test-DsoTextGroup -Texts $Warnings -Group $Group) | Should -BeFalse -Because "krok 'remove-app': niepożądane ostrzeżenie ($(Format-DsoTextKeys -Group $Group -TextLanguage $Case.TextLanguage)); są: $($Warnings -join ' | ')"
+                }
             }
         }
         It 'list-apps po: obecność na liście' -Skip:$IsSkipped {
@@ -331,6 +366,8 @@ Describe '<Name> (<Id>)' -ForEach $script:CaseData {
         if ($Expect.ContainsKey('MessageContains')) {
             It 'instalacja: komunikat' -Skip:$IsSkipped {
                 # Komunikat raportu, stanu winget albo którejś pozycji (np. „brak połączenia” jest w wyniku pozycji, odmowa konta także w raporcie).
+                # Każda grupa MessagePatterns musi trafić w któryś z tych tekstów.
+                $Groups = Get-DsoTextGroups -Expect $Expect -Key 'MessageContains' -PatternKey 'MessagePatterns'
                 $Step = Get-DsoStepResult -StepName $Case.Command
                 $Texts = [System.Collections.Generic.List[string]]::new()
                 $Texts.Add([string](Get-DsoReportProperty -Step $Step -Name 'message'))
@@ -338,7 +375,9 @@ Describe '<Name> (<Id>)' -ForEach $script:CaseData {
                 if ($null -ne $Winget -and $null -ne $Winget.Value) { $Texts.Add([string]$Winget.Value.message) }
                 $Items = $Step.Report.PSObject.Properties['installItems']
                 if ($null -ne $Items) { foreach ($Item in @($Items.Value | Where-Object { $null -ne $_ })) { $Texts.Add([string]$Item.message) } }
-                @($Texts | Where-Object { $_ -like "*$($Expect.MessageContains)*" }).Count | Should -BeGreaterThan 0 -Because "krok '$($Case.Command)': brak komunikatu '$($Expect.MessageContains)' (są: $(@($Texts | Where-Object { $_ }) -join ' | '))"
+                foreach ($Group in $Groups) {
+                    (Test-DsoTextGroup -Texts $Texts.ToArray() -Group $Group) | Should -BeTrue -Because "krok '$($Case.Command)': brak komunikatu z tabel tłumaczeń ($(Format-DsoTextKeys -Group $Group -TextLanguage $Case.TextLanguage)); są: $(@($Texts | Where-Object { $_ }) -join ' | ')"
+                }
             }
         }
     }
@@ -582,8 +621,14 @@ Describe '<Name> (<Id>)' -ForEach $script:CaseData {
     if ($Expect.ContainsKey('MessageContains') -and $Case.Flow -ne 'AppInstall') {
         It 'komunikat' -Skip:$IsSkipped {
             # Flow Execute: komunikat raportu kroku 'execute' (stderr akcji zakończonej Failed); AppRemove: krok 'remove-app'; pozostałe: 'apply'.
-            $Step = Get-DsoStepResult -StepName (Get-DsoMainStepName -Flow $Case.Flow)
-            $Step.Report.message | Should -BeLike "*$($Expect.MessageContains)*"
+            # Każda grupa MessagePatterns (tekst z tabel tłumaczeń w języku przypadku) musi trafić w komunikat.
+            $Groups = Get-DsoTextGroups -Expect $Expect -Key 'MessageContains' -PatternKey 'MessagePatterns'
+            $StepName = Get-DsoMainStepName -Flow $Case.Flow
+            $Step = Get-DsoStepResult -StepName $StepName
+            $Message = [string]$Step.Report.message
+            foreach ($Group in $Groups) {
+                (Test-DsoTextGroup -Texts @($Message) -Group $Group) | Should -BeTrue -Because "krok '$StepName': komunikat '$Message' bez tekstu z tabel tłumaczeń ($(Format-DsoTextKeys -Group $Group -TextLanguage $Case.TextLanguage))"
+            }
         }
     }
 

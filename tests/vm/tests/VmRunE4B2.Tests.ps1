@@ -60,7 +60,7 @@ Describe 'Etap 4b partia 2 T6: Invoke-VmCase przekazuje CliTimeoutSeconds do Inv
     AfterEach { Remove-Variable -Name DsoCliTimeouts -Scope Global -ErrorAction SilentlyContinue }
 
     It 'Execute z kluczem: krok execute dostaje -TimeoutSeconds z przypadku (także z RunAs)' {
-        $Case = @{ Name = 'dlugi'; TweakId = 'repair.system-files'; Flow = 'Execute'; Catalog = 'BuiltIn'; RestorePoint = 'skip'; RunAs = 'dso'; CliTimeoutSeconds = 2700; Check = '$true'
+        $Case = @{ CliLanguage = 'pl'; Name = 'dlugi'; TweakId = 'repair.system-files'; Flow = 'Execute'; Catalog = 'BuiltIn'; RestorePoint = 'skip'; RunAs = 'dso'; CliTimeoutSeconds = 2700; Check = '$true'
             Expect = @{ ExecuteExit = 0; ExecuteOutcome = 'Executed' } }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         $Record.CheckResult | Should -Be 'Passed'
@@ -68,7 +68,7 @@ Describe 'Etap 4b partia 2 T6: Invoke-VmCase przekazuje CliTimeoutSeconds do Inv
     }
 
     It 'Execute bez klucza: Invoke-DsoCli z domyślnym limitem (600 s)' {
-        $Case = @{ Name = 'krotki'; TweakId = 'repair.dns-flush'; Flow = 'Execute'; Catalog = 'BuiltIn'; RestorePoint = 'skip'; Check = '$true'
+        $Case = @{ CliLanguage = 'pl'; Name = 'krotki'; TweakId = 'repair.dns-flush'; Flow = 'Execute'; Catalog = 'BuiltIn'; RestorePoint = 'skip'; Check = '$true'
             Expect = @{ ExecuteExit = 0; ExecuteOutcome = 'Executed' } }
         $null = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         @($global:DsoCliTimeouts) | Should -Be @('--execute|domyślny|as:')
@@ -80,3 +80,5 @@ Describe 'Etap 4b partia 2 T6: Invoke-VmCase przekazuje CliTimeoutSeconds do Inv
         $Default.DefaultValue.Extent.Text | Should -Be '600'
     }
 }
+
+AfterAll { Clear-NoLiveVm }

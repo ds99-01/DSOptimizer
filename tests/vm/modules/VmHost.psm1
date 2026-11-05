@@ -6,7 +6,7 @@ Opis działania:
     Strona hosta przebiegu testów VM: przywracanie VM do czystego checkpointu, start i czekanie na gotowość
     (PowerShell Direct + zalogowany użytkownik 'dso'), kopiowanie builda, uruchomienie scenariuszy Pester
     przeciw VM, raport JSON i sprzątanie (VM zostaje wyłączona na czystym checkpoincie).
-    Hasło VM nigdy nie trafia do wyjścia, raportów ani logów.
+    Hasło VM (`admin`) nie jest wypisywane w raportach.
 #>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -52,7 +52,7 @@ function Assert-DsoVmLiveAllowed {
 function Restore-VmCleanState {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidatePattern('^DSO-26H2-[A-Za-z]+\z')][string]$VmName,
+        [Parameter(Mandatory)][ValidatePattern('^DSO-(EN|PL)-(Home|Pro)\z')][string]$VmName,
         [Parameter(Mandatory)][string]$CheckpointName
     )
     Assert-DsoVmLiveAllowed
@@ -69,7 +69,7 @@ function Wait-VmHeartbeatDrop {
     [CmdletBinding()]
     [OutputType([bool])]
     param(
-        [Parameter(Mandatory)][ValidatePattern('^DSO-26H2-[A-Za-z]+\z')][string]$VmName,
+        [Parameter(Mandatory)][ValidatePattern('^DSO-(EN|PL)-(Home|Pro)\z')][string]$VmName,
         [ValidateRange(1, 60)][int]$IntervalSeconds = 2,
         [ValidateRange(1, 600)][int]$TimeoutSeconds = 120
     )
@@ -88,7 +88,7 @@ function Wait-VmReady {
     [CmdletBinding()]
     [OutputType([System.Management.Automation.Runspaces.PSSession])]
     param(
-        [Parameter(Mandatory)][ValidatePattern('^DSO-26H2-[A-Za-z]+\z')][string]$VmName,
+        [Parameter(Mandatory)][ValidatePattern('^DSO-(EN|PL)-(Home|Pro)\z')][string]$VmName,
         [Parameter(Mandatory)][pscredential]$Credential,
         [int]$TimeoutSeconds = 1200,
         # Twardy limit prób New-PSSession (ochrona przed blokadą konta Administrator w VM); nie do podniesienia ponad 8.
@@ -244,7 +244,7 @@ function Test-VmSessionOpen {
 function Invoke-DsoVmRun {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidatePattern('^DSO-26H2-[A-Za-z]+\z')][string]$VmName,
+        [Parameter(Mandatory)][ValidatePattern('^DSO-(EN|PL)-(Home|Pro)\z')][string]$VmName,
         [Parameter(Mandatory)][pscredential]$Credential,
         [Parameter(Mandatory)][string]$BuildDirectory,
         [Parameter(Mandatory)][string]$CatalogPath,
@@ -397,7 +397,7 @@ function Invoke-DsoVmRunSet {
     [CmdletBinding()]
     [OutputType([object[]])]
     param(
-        [Parameter(Mandatory)][ValidatePattern('^DSO-26H2-[A-Za-z]+\z')][string]$VmName,
+        [Parameter(Mandatory)][ValidatePattern('^DSO-(EN|PL)-(Home|Pro)\z')][string]$VmName,
         [Parameter(Mandatory)][pscredential]$Credential,
         [Parameter(Mandatory)][string]$BuildDirectory,
         [Parameter(Mandatory)][string]$CatalogPath,

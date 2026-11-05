@@ -23,63 +23,102 @@ Describe 'Klucz przypadku Language (język CLI przypadku)' {
     }
     AfterEach { Remove-Item -LiteralPath $script:Dir -Recurse -Force -ErrorAction SilentlyContinue }
 
-    It 'Language <Value> jest przyjmowany' -ForEach @(@{ Value = 'pl' }, @{ Value = 'en' }) {
+    It 'Language <Value> jest przyjmowany' -ForEach @(@{ Value = 'pl' }, @{ Value = 'en' }, @{ Value = 'system' }) {
         Write-CasesFile -Path $script:CasesPath -CaseBody "$script:FullBody; Language = '$Value'"
         $Cases = Import-VmCases -CasesPath $script:CasesPath -CatalogPath $script:CatalogPath
         $Cases[0].Language | Should -Be $Value
     }
 
-    It 'Language spoza pl|en odrzuca import (<Value>)' -ForEach @(
-        @{ Value = "'de'" }, @{ Value = "'EN'" }, @{ Value = "''" }, @{ Value = '1' }, @{ Value = "@('en')" }
+    It 'Language spoza pl|en|system odrzuca import (<Value>)' -ForEach @(
+        @{ Value = "'de'" }, @{ Value = "'EN'" }, @{ Value = "'System'" }, @{ Value = "''" }, @{ Value = '1' }, @{ Value = "@('en')" }
     ) {
         Write-CasesFile -Path $script:CasesPath -CaseBody "$script:FullBody; Language = $Value"
-        { Import-VmCases -CasesPath $script:CasesPath -CatalogPath $script:CatalogPath } | Should -Throw -ExpectedMessage "*'Language'*pl*en*"
+        { Import-VmCases -CasesPath $script:CasesPath -CatalogPath $script:CatalogPath } | Should -Throw -ExpectedMessage "*'Language'*pl*en*system*"
     }
 }
 
-Describe 'Invoke-VmCase przekazuje Language do CLI' {
+Describe 'Resolve-VmCaseLanguage' {
+    BeforeAll {
+        $script:Plain = @{ Name = 'a'; TweakId = 'x.y'; Flow = 'Full' }
+    }
+    It 'bez Language: język VM w CliLanguage i TextLanguage (<Vm>)' -ForEach @(@{ Vm = 'en' }, @{ Vm = 'pl' }) {
+        $R = @(Resolve-VmCaseLanguage -Cases @($script:Plain) -VmLanguage $Vm)
+        $R[0].CliLanguage | Should -Be $Vm
+        $R[0].TextLanguage | Should -Be $Vm
+    }
+    It 'Language en na VM pl: en i en' {
+        $C = @{ Name = 'a'; Language = 'en' }
+        $R = @(Resolve-VmCaseLanguage -Cases @($C) -VmLanguage pl)
+        $R[0].CliLanguage | Should -Be 'en'
+        $R[0].TextLanguage | Should -Be 'en'
+    }
+    It 'Language pl na VM en: pl i pl' {
+        $C = @{ Name = 'a'; Language = 'pl' }
+        $R = @(Resolve-VmCaseLanguage -Cases @($C) -VmLanguage en)
+        $R[0].CliLanguage | Should -Be 'pl'
+        $R[0].TextLanguage | Should -Be 'pl'
+    }
+    It 'Language system na VM en: CliLanguage system, TextLanguage en' {
+        $C = @{ Name = 'a'; Language = 'system' }
+        $R = @(Resolve-VmCaseLanguage -Cases @($C) -VmLanguage en)
+        $R[0].CliLanguage | Should -Be 'system'
+        $R[0].TextLanguage | Should -Be 'en'
+    }
+    It 'nie zmienia przypadków wejściowych i zwraca nowe kopie' {
+        $C = @{ Name = 'a'; Language = 'en' }
+        $R = @(Resolve-VmCaseLanguage -Cases @($C) -VmLanguage pl)
+        $C.ContainsKey('CliLanguage') | Should -BeFalse
+        $C.ContainsKey('TextLanguage') | Should -BeFalse
+        [object]::ReferenceEquals($R[0], $C) | Should -BeFalse
+        $R[0].Name | Should -Be 'a'
+    }
+    It 'zachowuje kolejność i liczbę przypadków' {
+        $R = @(Resolve-VmCaseLanguage -Cases @(@{ Name = '1' }, @{ Name = '2'; Language = 'system' }, @{ Name = '3' }) -VmLanguage en)
+        @($R.Name) | Should -Be @('1', '2', '3')
+    }
+    It 'VmLanguage spoza pl|en jest odrzucany' {
+        { Resolve-VmCaseLanguage -Cases @($script:Plain) -VmLanguage system } | Should -Throw
+    }
+}
+
+Describe 'Invoke-VmCase przekazuje CliLanguage do CLI' {
     BeforeEach {
         $global:DsoLanguageArgs = [System.Collections.Generic.List[string]]::new()
+        $global:DsoLanguageValues = [System.Collections.Generic.List[string]]::new()
         Mock -ModuleName VmRun Invoke-VmSetup {}
         Mock -ModuleName VmRun Get-VmStateSnapshot { [pscustomobject]@{ Registry = @(); Services = @() } }
         Mock -ModuleName VmRun Invoke-VmCheck { 'Passed' }
         Mock -ModuleName VmRun Invoke-DsoCli {
             $global:DsoLanguageArgs.Add((@($Arguments) -join ' '))
+            $global:DsoLanguageValues.Add($Language)
             [pscustomobject]@{ ExitCode = 0; TimedOut = $false; Report = [pscustomobject]@{ exitCode = 0 }; Json = '{}'; ReportError = $null }
         }
         $script:Layout = Get-DsoVmLayout
     }
-    AfterEach { Remove-Variable -Name DsoLanguageArgs -Scope Global -ErrorAction SilentlyContinue }
+    AfterEach { Remove-Variable -Name DsoLanguageArgs, DsoLanguageValues -Scope Global -ErrorAction SilentlyContinue }
 
-    It 'Language en dokleja --lang en do każdego wywołania CLI przebiegu Full' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'; Language = 'en'; Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
+    It 'CliLanguage en trafia do każdego z 5 wywołań CLI przebiegu Full, argumenty bez --lang' {
+        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'; CliLanguage = 'en'; Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
         $null = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
-        @($global:DsoLanguageArgs).Count | Should -Be 5
-        foreach ($Line in $global:DsoLanguageArgs) {
-            $Line | Should -Match ' --lang en$'
-            ([regex]::Matches($Line, '--lang')).Count | Should -Be 1
-        }
+        @($global:DsoLanguageValues) | Should -Be @('en', 'en', 'en', 'en', 'en')
+        foreach ($Line in $global:DsoLanguageArgs) { $Line | Should -Not -Match '--lang' }
     }
 
-    It 'Language pl dokleja --lang pl (także w Execute)' {
-        $Case = @{ Name = 'c'; TweakId = 'repair.dns-flush'; Flow = 'Execute'; Catalog = 'BuiltIn'; RestorePoint = 'skip'; Language = 'pl'; Check = '$true'; Expect = @{ ExecuteExit = 0; ExecuteOutcome = 'Executed' } }
+    It 'krok CLI przypadku dostaje -Language system z CliLanguage (Execute)' {
+        $Case = @{ Name = 'c'; TweakId = 'repair.dns-flush'; Flow = 'Execute'; Catalog = 'BuiltIn'; RestorePoint = 'skip'; CliLanguage = 'system'; Check = '$true'; Expect = @{ ExecuteExit = 0; ExecuteOutcome = 'Executed' } }
         $null = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
-        @($global:DsoLanguageArgs) | Should -Be @('--execute repair.dns-flush --out C:\dso\out\c-execute.json --lang pl')
+        Should -Invoke -ModuleName VmRun Invoke-DsoCli -ParameterFilter { $Language -eq 'system' }
+        @($global:DsoLanguageArgs) | Should -Be @('--execute repair.dns-flush --out C:\dso\out\c-execute.json')
     }
 
-    It 'bez Language przypadek nie podaje --lang (Invoke-DsoCli dokleja wtedy --lang pl)' {
+    It 'Invoke-VmCase bez CliLanguage = wyjątek' {
         $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'; Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
-        $null = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
-        @($global:DsoLanguageArgs).Count | Should -Be 5
-        $global:DsoLanguageArgs | ForEach-Object { $_ | Should -Not -Match '--lang' }
+        { Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout } | Should -Throw "*Przypadek 'c': brak CliLanguage*Resolve-VmCaseLanguage*"
+        Should -Invoke -ModuleName VmRun Invoke-DsoCli -Times 0
     }
-}
 
-Describe 'Invoke-DsoCli z --lang en od przypadku' {
-    It 'nie dokleja --lang pl, gdy argumenty mają już --lang en' {
-        Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $global:DsoLangArgs = $ArgumentList[1]; @{ ExitCode = 0; TimedOut = $false; Json = $null } }
-        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @('--apply', 'a.b', '--out', 'C:\o.json', '--lang', 'en') -OutPath 'C:\o.json'
-        @($global:DsoLangArgs) | Should -Be @('--apply', 'a.b', '--out', 'C:\o.json', '--lang', 'en')
-        Remove-Variable -Name DsoLangArgs -Scope Global -ErrorAction SilentlyContinue
+    It 'Invoke-VmCase Flow Autostart bez CliLanguage = wyjątek' {
+        $Case = @{ Name = 'au'; Flow = 'Autostart'; Expect = @{} }
+        { Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout } | Should -Throw '*brak CliLanguage*'
     }
 }

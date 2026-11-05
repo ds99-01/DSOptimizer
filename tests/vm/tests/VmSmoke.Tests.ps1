@@ -94,18 +94,31 @@ Describe 'Invoke-GuiSmoke.ps1 (parametry skryptu)' {
     It 'odrzuca obcą VM jeszcze przy wiązaniu parametrów (nic się nie uruchamia)' {
         { & $script:ScriptPath -VmName 'ObcaVM' -OutDirectory $TestDrive } | Should -Throw '*ObcaVM*'
     }
-    It 'dopuszcza tylko DSO-26H2-Home i DSO-26H2-Pro' {
+    It 'dopuszcza tylko DSO-EN-Home i DSO-EN-Pro' {
         $Set = $script:Command.Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        @($Set.ValidValues) | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        @($Set.ValidValues) | Should -Be @('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')
     }
     It 'ma -KeepRunning jako przełącznik i obowiązkowy -OutDirectory' {
         $script:Command.Parameters['KeepRunning'].SwitchParameter | Should -BeTrue
         $script:Command.Parameters['OutDirectory'].Attributes.Where({ $_ -is [System.Management.Automation.ParameterAttribute] }).Mandatory | Should -BeTrue
     }
-    It 'domyślna VM to DSO-26H2-Pro' {
+    It 'domyślna VM to DSO-EN-Pro' {
         $Ast = [System.Management.Automation.Language.Parser]::ParseFile($script:ScriptPath, [ref]$null, [ref]$null)
         $Param = $Ast.ParamBlock.Parameters | Where-Object { $_.Name.VariablePath.UserPath -eq 'VmName' }
-        $Param.DefaultValue.Value | Should -Be 'DSO-26H2-Pro'
+        $Param.DefaultValue.Value | Should -Be 'DSO-EN-Pro'
+    }
+    It '-Language bez wartości domyślnej, tylko pl|en' {
+        $Ast = [System.Management.Automation.Language.Parser]::ParseFile($script:ScriptPath, [ref]$null, [ref]$null)
+        $Param = $Ast.ParamBlock.Parameters | Where-Object { $_.Name.VariablePath.UserPath -eq 'Language' }
+        $Param | Should -Not -BeNullOrEmpty
+        $Param.DefaultValue | Should -BeNullOrEmpty
+        $Set = $script:Command.Parameters['Language'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
+        @($Set.ValidValues) | Should -Be @('pl', 'en')
+    }
+    It 'brak -Language bierze język z definicji VM' {
+        $Source = Get-Content -LiteralPath $script:ScriptPath -Raw
+        $Source | Should -Match "PSBoundParameters\.ContainsKey\('Language'\)"
+        $Source | Should -Match 'Get-DsoVmDefinition -VmName \$VmName\)\.Language'
     }
     It 'plik jest w UTF-8 z BOM' {
         $Bytes = [System.IO.File]::ReadAllBytes($script:ScriptPath)
@@ -205,21 +218,21 @@ Describe 'ConvertTo-DsoRgb565Png' {
 Describe 'Save-DsoVmThumbnail' {
     BeforeEach {
         Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {}
-        Mock -ModuleName VmSmoke Get-CimInstance { New-CimInstance -ClientOnly -Namespace 'root/virtualization/v2' -ClassName 'Msvm_Fake' -Property @{ ElementName = 'DSO-26H2-Pro' } }
+        Mock -ModuleName VmSmoke Get-CimInstance { New-CimInstance -ClientOnly -Namespace 'root/virtualization/v2' -ClassName 'Msvm_Fake' -Property @{ ElementName = 'DSO-EN-Pro' } }
         Mock -ModuleName VmSmoke Get-CimAssociatedInstance { New-CimInstance -ClientOnly -Namespace 'root/virtualization/v2' -ClassName 'Msvm_FakeSetting' -Property @{ InstanceID = 'settings' } }
         Mock -ModuleName VmSmoke Invoke-CimMethod { [pscustomobject]@{ ReturnValue = 0; ImageData = [byte[]](0x00, 0xF8, 0xE0, 0x07) } }
     }
     It 'woła GetVirtualSystemThumbnailImage w root\virtualization\v2 i zapisuje PNG' {
         Mock -ModuleName VmSmoke Invoke-CimMethod { [pscustomobject]@{ ReturnValue = 0; ImageData = (New-Object byte[] (64 * 64 * 2)) } }
         $Path = Join-Path $TestDrive 'thumb.png'
-        Save-DsoVmThumbnail -VmName 'DSO-26H2-Pro' -Path $Path -Width 64 -Height 64 | Should -Be $Path
+        Save-DsoVmThumbnail -VmName 'DSO-EN-Pro' -Path $Path -Width 64 -Height 64 | Should -Be $Path
         $Path | Should -Exist
         Should -Invoke -ModuleName VmSmoke Invoke-CimMethod -Times 1 -Exactly -ParameterFilter { $MethodName -eq 'GetVirtualSystemThumbnailImage' -and $Arguments.WidthPixels -eq 64 -and $Arguments.HeightPixels -eq 64 }
         Should -Invoke -ModuleName VmSmoke Get-CimInstance -ParameterFilter { $Namespace -eq 'root\virtualization\v2' }
     }
     It 'rzuca przy niezerowym kodzie zwrotnym' {
         Mock -ModuleName VmSmoke Invoke-CimMethod { [pscustomobject]@{ ReturnValue = 32768; ImageData = $null } }
-        { Save-DsoVmThumbnail -VmName 'DSO-26H2-Pro' -Path (Join-Path $TestDrive 'e.png') } | Should -Throw '*32768*'
+        { Save-DsoVmThumbnail -VmName 'DSO-EN-Pro' -Path (Join-Path $TestDrive 'e.png') } | Should -Throw '*32768*'
     }
     It 'odrzuca obcą VM' {
         { Save-DsoVmThumbnail -VmName 'ObcaVM' -Path (Join-Path $TestDrive 'e.png') } | Should -Throw
@@ -240,11 +253,11 @@ Describe 'Sonda: odczyt zdarzeń' {
 Describe 'Get-DsoVmResolution' {
     BeforeEach {
         Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {}
-        Mock -ModuleName VmSmoke Get-CimInstance { New-CimInstance -ClientOnly -Namespace 'root/virtualization/v2' -ClassName 'Msvm_Fake' -Property @{ ElementName = 'DSO-26H2-Pro' } }
+        Mock -ModuleName VmSmoke Get-CimInstance { New-CimInstance -ClientOnly -Namespace 'root/virtualization/v2' -ClassName 'Msvm_Fake' -Property @{ ElementName = 'DSO-EN-Pro' } }
     }
     It 'czyta natywną rozdzielczość z Msvm_VideoHead' {
         Mock -ModuleName VmSmoke Get-CimAssociatedInstance { [pscustomobject]@{ CurrentHorizontalResolution = 1920; CurrentVerticalResolution = 1080 } }
-        $R = Get-DsoVmResolution -VmName 'DSO-26H2-Pro'
+        $R = Get-DsoVmResolution -VmName 'DSO-EN-Pro'
         $R.Width | Should -Be 1920
         $R.Height | Should -Be 1080
         $R.Source | Should -Be 'guest'
@@ -252,7 +265,7 @@ Describe 'Get-DsoVmResolution' {
     }
     It 'przy błędzie odczytu wraca do 1024x768 i zapisuje powód' {
         Mock -ModuleName VmSmoke Get-CimAssociatedInstance { throw 'brak Msvm_VideoHead' }
-        $R = Get-DsoVmResolution -VmName 'DSO-26H2-Pro'
+        $R = Get-DsoVmResolution -VmName 'DSO-EN-Pro'
         $R.Width | Should -Be 1024
         $R.Height | Should -Be 768
         $R.Source | Should -Be 'fallback'
@@ -260,7 +273,7 @@ Describe 'Get-DsoVmResolution' {
     }
     It 'zerowa rozdzielczość (gość wyłączony) daje fallback' {
         Mock -ModuleName VmSmoke Get-CimAssociatedInstance { [pscustomobject]@{ CurrentHorizontalResolution = 0; CurrentVerticalResolution = 0 } }
-        (Get-DsoVmResolution -VmName 'DSO-26H2-Pro').Source | Should -Be 'fallback'
+        (Get-DsoVmResolution -VmName 'DSO-EN-Pro').Source | Should -Be 'fallback'
     }
 }
 
@@ -381,13 +394,13 @@ Describe 'Get-DsoPrivacyDetection (CLI --detect w VM)' {
 
 Describe 'Okno wyboru języka w smoke GUI' {
     It 'Get-GuiLanguageCheck: pokazane i wybrane = zielone z tekstem po polsku (pl)' {
-        $C = Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $true }) -Language pl
+        $C = Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $true }) -Language pl -SavedLanguage pl
         $C.Name | Should -Be 'LanguageChoice'
         $C.Passed | Should -BeTrue
         $C.Detail | Should -Be 'Okno wyboru języka pokazane i wybrano polski'
     }
     It 'Get-GuiLanguageCheck: tekst dla en' {
-        (Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $true }) -Language en).Detail | Should -Be 'Okno wyboru języka pokazane i wybrano angielski'
+        (Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $true }) -Language en -SavedLanguage en).Detail | Should -Be 'Okno wyboru języka pokazane i wybrano angielski'
     }
     It 'Get-GuiLanguageCheck: okno główne bez okna wyboru (Shown=false) = czerwone' {
         $C = Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $false; Chosen = $false }) -Language pl
@@ -399,6 +412,48 @@ Describe 'Okno wyboru języka w smoke GUI' {
     }
     It 'Get-GuiLanguageCheck: brak odczytu = czerwone' {
         (Get-GuiLanguageCheck -Choice $null -Language pl).Passed | Should -BeFalse
+    }
+    It 'Get-GuiLanguageCheck: wybór kafla, zapisany język inny niż wybrany = czerwone' {
+        $C = Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $true }) -Language en -SavedLanguage pl
+        $C.Passed | Should -BeFalse
+        $C.Detail | Should -BeLike '*settings.json: pl*'
+    }
+    It 'Get-GuiLanguageCheck: wybór kafla bez zapisanego języka = czerwone' {
+        $C = Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $true }) -Language pl
+        $C.Passed | Should -BeFalse
+        $C.Detail | Should -BeLike '*settings.json: brak*'
+    }
+    It 'Get-GuiLanguageCheck: wykrycie, zapisany = oczekiwany = zielone z opisem wykrycia' -ForEach @(@{ L = 'pl'; W = 'polski' }, @{ L = 'en'; W = 'angielski' }) {
+        $C = Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $true; Closed = $true }) -Language $L -Detected -SavedLanguage $L
+        $C.Passed | Should -BeTrue
+        $C.Detail | Should -Be "Okno wyboru języka zamknięte bez wyboru; program wybrał $W (wykryty z Windows, settings.json: $L)"
+    }
+    It 'Get-GuiLanguageCheck: wykrycie, zapisany język inny niż oczekiwany = czerwone' {
+        (Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $true }) -Language en -Detected -SavedLanguage pl).Passed | Should -BeFalse
+    }
+    It 'Get-GuiLanguageCheck: wykrycie bez settings.json (null) = czerwone' {
+        $C = Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $true }) -Language en -Detected -SavedLanguage $null
+        $C.Passed | Should -BeFalse
+        $C.Detail | Should -BeLike '*settings.json: brak*'
+    }
+    It 'Get-GuiLanguageCheck: wykrycie, okno nie zniknęło (Chosen=false) = czerwone' {
+        (Get-GuiLanguageCheck -Choice ([pscustomobject]@{ Shown = $true; Chosen = $false }) -Language en -Detected -SavedLanguage en).Passed | Should -BeFalse
+    }
+    It 'sonda: tryb auto zamyka okno przez WindowPattern i nie szuka kafla' {
+        $S = Get-LanguageChoiceProbeScript
+        $S | Should -Match 'WindowPattern'
+        $S | Should -Match "'auto'"
+        $S | Should -Match 'Closed'
+        [regex]::IsMatch($S, '[^\x00-\x7F]') | Should -BeFalse
+        $Auto = $S.Substring($S.IndexOf("if (`$Language -eq 'auto') {"))
+        $Auto.Substring(0, $Auto.IndexOf('} else {')) | Should -Not -Match 'LanguageChoicePolish|FindFirst|InvokePattern'
+    }
+    It 'Confirm-DsoLanguageChoice przyjmuje auto' {
+        Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {}
+        Mock -ModuleName VmSmoke Invoke-Command -RemoveParameterValidation 'Session' { '{"Ok":true,"Error":null,"Shown":true,"Chosen":true,"Closed":true}' }
+        $R = Confirm-DsoLanguageChoice -Session $script:FakeSession -Layout (Get-DsoVmLayout) -Language auto
+        $R.Closed | Should -BeTrue
+        Should -Invoke -ModuleName VmSmoke Invoke-Command -Times 1 -Exactly -ParameterFilter { $ArgumentList[3] -eq '-Language auto' }
     }
     It 'skrypt sondy: tylko ASCII, AutomationId okna i kafelków, InvokePattern, limit 30 s' {
         $Script = Get-LanguageChoiceProbeScript
@@ -432,6 +487,27 @@ Describe 'Okno wyboru języka w smoke GUI' {
     }
 }
 
+Describe 'Get-DsoSavedLanguage (settings.json w VM)' {
+    BeforeEach { Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {} }
+    It 'czyta pole language: <Json> -> <Expected>' -ForEach @(
+        @{ Json = '{"language":"pl","theme":"dark"}'; Expected = 'pl' }
+        @{ Json = '{"language":"en"}'; Expected = 'en' }
+        @{ Json = '{"theme":"dark"}'; Expected = $null }
+        @{ Json = '{"language":"de"}'; Expected = $null }
+        @{ Json = '{niepoprawny'; Expected = $null }
+        @{ Json = $null; Expected = $null }
+    ) {
+        $script:RawSettings = $Json
+        Mock -ModuleName VmSmoke Invoke-Command -RemoveParameterValidation 'Session' { $script:RawSettings }
+        Get-DsoSavedLanguage -Session $script:FakeSession | Should -Be $Expected
+    }
+    It 'czyta plik settings.json z ProgramData przez PowerShell Direct (UTF-8, BOM dopuszczalny)' {
+        $Source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\modules\VmSmoke.psm1') -Raw
+        $Source | Should -Match 'C:\\ProgramData\\DSOptimizer\\settings\.json'
+        $Source | Should -Match '0xEF'
+    }
+}
+
 Describe 'Okno wyboru języka w Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasHyperV) {
     BeforeEach {
         $script:Build = Join-Path $TestDrive 'build'
@@ -449,6 +525,8 @@ Describe 'Okno wyboru języka w Invoke-DsoGuiSmoke (orkiestracja na mockach)' -S
         Mock -ModuleName VmSmoke Start-Sleep {}
         Mock -ModuleName VmSmoke Start-DsoGuiInUserSession { '2026-10-19T10:00:00.0000000Z' }
         Mock -ModuleName VmSmoke Confirm-DsoLanguageChoice { [pscustomobject]@{ Shown = $true; Chosen = $true } }
+        $script:Saved = 'pl'
+        Mock -ModuleName VmSmoke Get-DsoSavedLanguage { $script:Saved }
         Mock -ModuleName VmSmoke Get-DsoGuiProbe { $script:GoodProbe }
         Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { $script:GoodUiProbe }
         Mock -ModuleName VmSmoke Get-GuiPrivacySuggestedId { @('privacy.a', 'privacy.b', 'privacy.c') }
@@ -465,7 +543,7 @@ Describe 'Okno wyboru języka w Invoke-DsoGuiSmoke (orkiestracja na mockach)' -S
         Mock -ModuleName VmSmoke Start-DsoGuiInUserSession { $script:Order.Add('start'); '2026-10-19T10:00:00.0000000Z' }
         Mock -ModuleName VmSmoke Confirm-DsoLanguageChoice { $script:Order.Add("wybor:$Language"); [pscustomobject]@{ Shown = $true; Chosen = $true } }
         Mock -ModuleName VmSmoke Get-DsoGuiProbe { $script:Order.Add('stan'); $script:GoodProbe }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         @($script:Order)[0..2] | Should -Be @('start', 'wybor:pl', 'stan')
         $Check = $Result.checks | Where-Object Name -eq 'LanguageChoice'
         $Check.Passed | Should -BeTrue
@@ -473,12 +551,13 @@ Describe 'Okno wyboru języka w Invoke-DsoGuiSmoke (orkiestracja na mockach)' -S
         $Result.passed | Should -BeTrue
     }
     It '-Language en przekazuje angielski do wyboru i do tekstu sprawdzenia' {
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language en
+        $script:Saved = 'en'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-PL-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language en
         Should -Invoke -ModuleName VmSmoke Confirm-DsoLanguageChoice -Times 1 -Exactly -ParameterFilter { $Language -eq 'en' }
         ($Result.checks | Where-Object Name -eq 'LanguageChoice').Detail | Should -Be 'Okno wyboru języka pokazane i wybrano angielski'
     }
     It '-Language en: sonda UI dostaje angielskie teksty, tytuły Napraw i kategorie Instalacji po angielsku, słownik w wyniku' {
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language en
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language en
         Should -Invoke -ModuleName VmSmoke Get-DsoGuiUiProbe -Times 1 -Exactly -ParameterFilter { $Texts.HistoryPage -eq 'Change history' -and $Texts.ApplyOne -eq 'Apply (1)' }
         Should -Invoke -ModuleName VmSmoke Get-GuiRepairTitle -Times 1 -Exactly -ParameterFilter { $Language -eq 'en' }
         Should -Invoke -ModuleName VmSmoke Get-GuiInstallTitle -Times 1 -Exactly -ParameterFilter { $Language -eq 'en' }
@@ -486,26 +565,88 @@ Describe 'Okno wyboru języka w Invoke-DsoGuiSmoke (orkiestracja na mockach)' -S
         ($Result.checks | Where-Object Name -eq 'HistoryEntryActive').Passed | Should -BeFalse
     }
     It 'domyślnie (pl) sonda UI dostaje polskie teksty' {
-        Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
+        Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
         Should -Invoke -ModuleName VmSmoke Get-DsoGuiUiProbe -Times 1 -Exactly -ParameterFilter { $Texts.HistoryPage -eq 'Historia zmian' -and $Texts.ApplyOne -eq 'Zastosuj (1)' }
         Should -Invoke -ModuleName VmSmoke Get-GuiRepairTitle -Times 1 -Exactly -ParameterFilter { $Language -eq 'pl' }
     }
     It 'brak tłumaczenia tekstu sondy przerywa przebieg, zanim dotknie VM' {
         Mock -ModuleName VmSmoke Get-GuiProbeTexts { throw 'brak tłumaczenia: X' }
-        { Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language en } | Should -Throw '*brak tłumaczenia*'
+        { Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language en } | Should -Throw '*brak tłumaczenia*'
         Should -Invoke -ModuleName VmSmoke Restore-VmCleanState -Times 0 -Exactly
         Should -Invoke -ModuleName VmSmoke Start-VM -Times 0 -Exactly
     }
+    It 'VM EN + en = wykrycie (auto), bez klikania kafla' {
+        $script:Saved = 'en'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language en
+        Should -Invoke -ModuleName VmSmoke Confirm-DsoLanguageChoice -Times 1 -Exactly -ParameterFilter { $Language -eq 'auto' }
+        $Result.languageMode | Should -Be 'wykrycie'
+        $Result.savedLanguage | Should -Be 'en'
+        ($Result.checks | Where-Object Name -eq 'LanguageChoice').Detail | Should -Be 'Okno wyboru języka zamknięte bez wyboru; program wybrał angielski (wykryty z Windows, settings.json: en)'
+        ($Result.checks | Where-Object Name -eq 'LanguageChoice').Passed | Should -BeTrue
+    }
+    It 'VM EN + pl = kafel pl (tryb wybór)' {
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language pl
+        Should -Invoke -ModuleName VmSmoke Confirm-DsoLanguageChoice -Times 1 -Exactly -ParameterFilter { $Language -eq 'pl' }
+        $Result.languageMode | Should -Be 'wybór'
+        $Result.savedLanguage | Should -Be 'pl'
+    }
+    It 'VM PL + pl = wykrycie (auto)' {
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-PL-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language pl
+        Should -Invoke -ModuleName VmSmoke Confirm-DsoLanguageChoice -Times 1 -Exactly -ParameterFilter { $Language -eq 'auto' }
+        $Result.languageMode | Should -Be 'wykrycie'
+    }
+    It 'VM PL + en = kafel en' {
+        $script:Saved = 'en'
+        Invoke-DsoGuiSmoke -VmName 'DSO-PL-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language en | Out-Null
+        Should -Invoke -ModuleName VmSmoke Confirm-DsoLanguageChoice -Times 1 -Exactly -ParameterFilter { $Language -eq 'en' }
+    }
+    It 'wykrycie: zapisany język inny niż język VM = LanguageChoice czerwone' {
+        $script:Saved = 'pl'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Home' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language en
+        ($Result.checks | Where-Object Name -eq 'LanguageChoice').Passed | Should -BeFalse
+        $Result.passed | Should -BeFalse
+    }
+    It 'wykrycie: brak settings.json = czerwone' {
+        $script:Saved = $null
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Home' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language en
+        ($Result.checks | Where-Object Name -eq 'LanguageChoice').Passed | Should -BeFalse
+        $Result.savedLanguage | Should -BeNullOrEmpty
+    }
+    It 'wybór kafla: zapisany język inny niż wybrany = czerwone' {
+        $script:Saved = 'en'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -Language pl
+        ($Result.checks | Where-Object Name -eq 'LanguageChoice').Passed | Should -BeFalse
+    }
+    It 'zapisany język czytany po StartupSeconds, po wyborze okna' {
+        $script:Order = New-Object System.Collections.Generic.List[string]
+        Mock -ModuleName VmSmoke Confirm-DsoLanguageChoice { $script:Order.Add('wybor'); [pscustomobject]@{ Shown = $true; Chosen = $true } }
+        Mock -ModuleName VmSmoke Start-Sleep { $script:Order.Add('sleep') }
+        Mock -ModuleName VmSmoke Get-DsoSavedLanguage { $script:Order.Add('zapis'); 'pl' }
+        Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
+        $List = @($script:Order)
+        $List.IndexOf('wybor') | Should -BeLessThan $List.IndexOf('sleep')
+        $List.IndexOf('sleep') | Should -BeLessThan $List.IndexOf('zapis')
+    }
+    It 'błąd odczytu settings.json = błąd w wyniku i czerwone sprawdzenie' {
+        Mock -ModuleName VmSmoke Get-DsoSavedLanguage { throw 'brak sesji' }
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        ($Result.errors -join ' ') | Should -BeLike '*odczyt settings.json: brak sesji*'
+        ($Result.checks | Where-Object Name -eq 'LanguageChoice').Passed | Should -BeFalse
+    }
+    It 'nadal 23 sprawdzenia' {
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        @($Result.checks).Count | Should -Be 23
+    }
     It 'brak okna wyboru (Shown=false) = sprawdzenie czerwone i passed=false' {
         Mock -ModuleName VmSmoke Confirm-DsoLanguageChoice { [pscustomobject]@{ Shown = $false; Chosen = $false } }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'LanguageChoice').Passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'PrepPage').Passed | Should -BeTrue
     }
     It 'wyjątek sondy wyboru nie gubi reszty przebiegu, ale daje błąd i czerwone sprawdzenie' {
         Mock -ModuleName VmSmoke Confirm-DsoLanguageChoice { throw 'zadanie nie wystartowało' }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.errors -join ' ') | Should -BeLike '*okno wyboru języka: zadanie nie wystartowało*'
         ($Result.checks | Where-Object Name -eq 'LanguageChoice').Passed | Should -BeFalse
@@ -517,7 +658,7 @@ Describe 'Get-DsoAppsListing (CLI --list-apps w VM)' {
     BeforeEach { Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {} }
     It 'woła CLI --list-apps z --out w katalogu wyników VM, jako konto dso (te same warunki co okno: konto procesu = zalogowane)' {
         Mock -ModuleName VmSmoke Invoke-DsoCli { $script:GoodListing }
-        $L = Get-DsoAppsListing -Session $script:FakeSession -Layout (Get-DsoVmLayout)
+        $L = Get-DsoAppsListing -Session $script:FakeSession -Layout (Get-DsoVmLayout) -Language pl
         $L.Report.apps.Count | Should -Be 2
         Should -Invoke -ModuleName VmSmoke Invoke-DsoCli -Times 1 -Exactly -ParameterFilter {
             $ExePath -eq 'C:\dso\app\DSOptimizer.exe' -and $OutPath -eq 'C:\dso\out\smoke-list-apps.json' -and $RunAsUser -eq 'dso' -and
@@ -526,16 +667,48 @@ Describe 'Get-DsoAppsListing (CLI --list-apps w VM)' {
     }
 }
 
+Describe 'Przekazywanie -Language do Invoke-DsoCli przez listingi' {
+    BeforeEach { Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {} }
+    It 'Get-DsoAppsListing przekazuje -Language <Lang> do Invoke-DsoCli' -ForEach @(@{ Lang = 'pl' }, @{ Lang = 'en' }) {
+        Mock -ModuleName VmSmoke Invoke-DsoCli { $script:GoodListing }
+        $null = Get-DsoAppsListing -Session $script:FakeSession -Layout (Get-DsoVmLayout) -Language $Lang
+        Should -Invoke -ModuleName VmSmoke Invoke-DsoCli -Times 1 -Exactly -ParameterFilter { $Language -eq $Lang }
+    }
+    It 'Get-DsoAutostartListing przekazuje -Language <Lang> do Invoke-DsoCli' -ForEach @(@{ Lang = 'pl' }, @{ Lang = 'en' }) {
+        Mock -ModuleName VmSmoke Invoke-DsoCli { $script:GoodAutostartListing }
+        $null = Get-DsoAutostartListing -Session $script:FakeSession -Layout (Get-DsoVmLayout) -Language $Lang
+        Should -Invoke -ModuleName VmSmoke Invoke-DsoCli -Times 1 -Exactly -ParameterFilter { $Language -eq $Lang }
+    }
+    It '<Fn> wymaga -Language pl|en' -ForEach @(@{ Fn = 'Get-DsoAppsListing' }, @{ Fn = 'Get-DsoAutostartListing' }) {
+        $Param = (Get-Command $Fn).Parameters['Language']
+        $Param.Attributes.Mandatory | Should -Contain $true
+        ($Param.Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }).ValidValues | Should -Be @('pl', 'en')
+    }
+    It 'Invoke-DsoGuiSmoke podaje swoje -Language obu listingom' {
+        $Source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\modules\VmSmoke.psm1') -Raw
+        $Source | Should -Match 'Get-DsoAppsListing -Session \$Session -Layout \$Layout -Language \$Language'
+        $Source | Should -Match 'Get-DsoAutostartListing -Session \$Session -Layout \$Layout -Language \$Language'
+    }
+}
+
 Describe 'Get-DsoAutostartListing (CLI --list-autostart w VM)' {
     BeforeEach { Mock -ModuleName VmSmoke Assert-DsoVmLiveAllowed {} }
     It 'woła CLI --list-autostart z --out w katalogu wyników VM, jako konto dso (to samo konto co okno)' {
         Mock -ModuleName VmSmoke Invoke-DsoCli { $script:GoodAutostartListing }
-        $L = Get-DsoAutostartListing -Session $script:FakeSession -Layout (Get-DsoVmLayout)
+        $L = Get-DsoAutostartListing -Session $script:FakeSession -Layout (Get-DsoVmLayout) -Language pl
         @($L.Report.autostartRows).Count | Should -Be 4
         Should -Invoke -ModuleName VmSmoke Invoke-DsoCli -Times 1 -Exactly -ParameterFilter {
             $ExePath -eq 'C:\dso\app\DSOptimizer.exe' -and $OutPath -eq 'C:\dso\out\smoke-list-autostart.json' -and $RunAsUser -eq 'dso' -and
             (@($Arguments) -join ' ') -eq '--list-autostart --out C:\dso\out\smoke-list-autostart.json'
         }
+    }
+    It '-FileName zmienia plik raportu (drugi odczyt po sondzie nie nadpisuje pierwszego)' {
+        Mock -ModuleName VmSmoke Invoke-DsoCli { $script:GoodAutostartListing }
+        $null = Get-DsoAutostartListing -Session $script:FakeSession -Layout (Get-DsoVmLayout) -Language en -FileName 'smoke-list-autostart-po.json'
+        Should -Invoke -ModuleName VmSmoke Invoke-DsoCli -Times 1 -Exactly -ParameterFilter {
+            $OutPath -eq 'C:\dso\out\smoke-list-autostart-po.json' -and (@($Arguments) -join ' ') -eq '--list-autostart --out C:\dso\out\smoke-list-autostart-po.json'
+        }
+        { Get-DsoAutostartListing -Session $script:FakeSession -Layout (Get-DsoVmLayout) -Language en -FileName '..\x.json' } | Should -Throw
     }
 }
 
@@ -602,6 +775,8 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         Mock -ModuleName VmSmoke Start-Sleep {}
         Mock -ModuleName VmSmoke Start-DsoGuiInUserSession { '2026-10-19T10:00:00.0000000Z' }
         Mock -ModuleName VmSmoke Confirm-DsoLanguageChoice { [pscustomobject]@{ Shown = $true; Chosen = $true } }
+        $script:Saved = 'pl'
+        Mock -ModuleName VmSmoke Get-DsoSavedLanguage { $script:Saved }
         Mock -ModuleName VmSmoke Get-DsoGuiProbe { $script:GoodProbe }
         Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { $script:GoodUiProbe }
         Mock -ModuleName VmSmoke Get-GuiPrivacySuggestedId { @('privacy.a', 'privacy.b', 'privacy.c') }
@@ -614,22 +789,22 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         Mock -ModuleName VmSmoke Get-DsoVmResolution { [pscustomobject]@{ Width = 1280; Height = 800; Source = 'guest'; Error = $null } }
     }
     It 'domyślnie przywraca checkpoint na początku i na końcu (revert i VM Off)' {
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeTrue
-        Should -Invoke -ModuleName VmSmoke Restore-VmCleanState -Times 2 -Exactly -ParameterFilter { $VmName -eq 'DSO-26H2-Pro' -and $CheckpointName -eq 'czysta-26H2' }
+        Should -Invoke -ModuleName VmSmoke Restore-VmCleanState -Times 2 -Exactly -ParameterFilter { $VmName -eq 'DSO-EN-Pro' -and $CheckpointName -eq 'czysta-26H2' }
     }
     It '-KeepRunning pomija revert na końcu (tylko ten na początku)' {
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -KeepRunning
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' -KeepRunning
         $Result.passed | Should -BeTrue
         $Result.keepRunning | Should -BeTrue
         Should -Invoke -ModuleName VmSmoke Restore-VmCleanState -Times 1 -Exactly
     }
     It 'zapisuje JSON z wynikiem i ścieżką zrzutu w OutDirectory' {
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Home' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Home' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.resultPath | Should -Exist
         $Result.screenshotPath | Should -BeLike (Join-Path $script:Out '*.png')
         $Saved = Get-Content -LiteralPath $Result.resultPath -Raw -Encoding UTF8 | ConvertFrom-Json
-        $Saved.vmName | Should -Be 'DSO-26H2-Home'
+        $Saved.vmName | Should -Be 'DSO-EN-Home'
         @($Saved.checks.Name) | Should -Be @('ProcessAlive', 'Responding', 'NoCrashEvents', 'NoLogErrors', 'Screenshot', 'LanguageChoice', 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage', 'AutostartPage')
         @($Saved.repairTitles) | Should -Be @('Wyczyść pamięć DNS', 'Ochrona systemu')
         @($Saved.installExpected.Titles) | Should -Be @('Mozilla Firefox', '7-Zip')
@@ -640,7 +815,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         $Saved.autostartExpected.MissingFile | Should -Be 1
         @($Saved.autostartListing.Report.autostartRows.id) | Should -Contain 'run-user:d'
         @($Saved.appsListing.Report.apps.id) | Should -Contain 'appx:Microsoft.GamingApp_8wekyb3d8bbwe'
-        $Saved.uiScreenshotPath | Should -Be (Join-Path $script:Out 'gui-smoke-DSO-26H2-Home-historia.png')
+        $Saved.uiScreenshotPath | Should -Be (Join-Path $script:Out 'gui-smoke-DSO-EN-Home-historia.png')
         $Saved.uiProbe.EntryNames | Should -Be @('Szybsze otwieranie podmenu, Eksplorator i wygoda, Aktywna, 20.10.2026 21:00')
     }
     It 'sonda UI idzie po pierwszym zrzucie i przed sondą stanu (zdarzenia i log obejmują operację z sondy UI)' {
@@ -650,20 +825,44 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         Mock -ModuleName VmSmoke Get-DsoGuiProbe { $script:Order.Add('stan'); $script:GoodProbe }
         Mock -ModuleName VmSmoke Get-DsoPrivacyDetection { $script:Order.Add('detekcja'); $script:GoodDetection }
         Mock -ModuleName VmSmoke Get-DsoAppsListing { $script:Order.Add('lista'); $script:GoodListing }
-        Mock -ModuleName VmSmoke Get-DsoAutostartListing { $script:Order.Add('autostart'); $script:GoodAutostartListing }
-        Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
-        @($script:Order) | Should -Be @('zrzut:gui-smoke-DSO-26H2-Pro.png', 'detekcja', 'lista', 'autostart', 'ui', 'zrzut:gui-smoke-DSO-26H2-Pro-historia.png', 'stan')
+        Mock -ModuleName VmSmoke Get-DsoAutostartListing { $script:Order.Add($(if ($FileName) { "autostart:$FileName" } else { 'autostart' })); $script:GoodAutostartListing }
+        Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
+        @($script:Order) | Should -Be @('zrzut:gui-smoke-DSO-EN-Pro.png', 'detekcja', 'lista', 'autostart', 'ui', 'autostart:smoke-list-autostart-po.json', 'zrzut:gui-smoke-DSO-EN-Pro-historia.png', 'stan')
+    }
+    It '„Autostart”: lista zmieniona w trakcie sondy (pierwsze logowanie) - okno zgodne z odczytem CLI po sondzie przechodzi' {
+        # Przed sondą jeszcze jest jednorazowa pozycja pierwszego logowania (OneDriveSetup), po sondzie już jej nie ma.
+        $Rows = @($script:GoodAutostartListing.Report.autostartRows) + @([pscustomobject]@{ id = 'run:user:OneDriveSetup'; source = 'RunUser'; name = 'Setup'; state = 'Enabled'; missingFile = $false })
+        $script:BeforeListing = [pscustomobject]@{
+            ExitCode = 0; TimedOut = $false; Json = 'x'; ReportError = $null
+            Report = [pscustomobject]@{ exitCode = 0; user = [pscustomobject]@{ sid = 'S-1-5-21-1'; isCertain = $true }; autostartRows = $Rows }
+        }
+        Mock -ModuleName VmSmoke Get-DsoAutostartListing { if ($FileName) { $script:GoodAutostartListing } else { $script:BeforeListing } }
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Check = $Result.checks | Where-Object Name -eq 'AutostartPage'
+        $Check.Passed | Should -BeTrue
+        $Check.Detail | Should -BeLike '*(CLI 3 przed, 2 po)*zmieniła się*'
+        $Result.passed | Should -BeTrue
+        $Result.autostartExpected.Enabled | Should -Be 3
+        $Result.autostartExpectedAfter.Enabled | Should -Be 2
+        @($Result.autostartListingAfter.Report.autostartRows.id) | Should -Not -Contain 'run:user:OneDriveSetup'
+    }
+    It 'błąd odczytu --list-autostart po sondzie kończy się niepowodzeniem' {
+        Mock -ModuleName VmSmoke Get-DsoAutostartListing { if ($FileName) { throw 'limit zadań' } else { $script:GoodAutostartListing } }
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result.passed | Should -BeFalse
+        ($Result.errors -join ' ') | Should -BeLike '*lista autostartu po sondzie: limit zadań*'
+        ($Result.checks | Where-Object Name -eq 'AutostartPage').Passed | Should -BeFalse
     }
     It 'N z „Usuń (N)” inne niż z --list-apps daje passed=false' {
         Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { $P = $script:GoodUiProbe | ConvertTo-Json -Depth 8 | ConvertFrom-Json; $P.AppsRemoveCount = 3; $P.AppsRemoveText = 'Usuń (3)'; $P }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'AppsSuggestedRemove').Passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'PrivacySuggestedApply').Passed | Should -BeTrue
     }
     It 'błąd --list-apps nie gubi sondy UI, ale kończy się niepowodzeniem' {
         Mock -ModuleName VmSmoke Get-DsoAppsListing { throw 'zadanie nie wystartowało' }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.errors -join ' ') | Should -BeLike '*lista aplikacji: zadanie nie wystartowało*'
         ($Result.checks | Where-Object Name -eq 'AppsSuggestedRemove').Passed | Should -BeFalse
@@ -672,14 +871,14 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
     }
     It 'liczba grupy „Autostart” inna niż z --list-autostart daje passed=false' {
         Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { $P = $script:GoodUiProbe | ConvertTo-Json -Depth 8 | ConvertFrom-Json; $P.AutostartGroupNames = @('Włączone, 3', 'Wyłączone, 1', 'Bez pliku, 0'); $P }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'AutostartPage').Passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'InstallPage').Passed | Should -BeTrue
     }
     It 'błąd --list-autostart nie gubi sondy UI, ale kończy się niepowodzeniem' {
         Mock -ModuleName VmSmoke Get-DsoAutostartListing { throw 'zadanie nie wystartowało' }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.errors -join ' ') | Should -BeLike '*lista autostartu: zadanie nie wystartowało*'
         ($Result.checks | Where-Object Name -eq 'AutostartPage').Passed | Should -BeFalse
@@ -687,53 +886,53 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         Should -Invoke -ModuleName VmSmoke Get-DsoGuiUiProbe -Times 1 -Exactly
     }
     It 'tytuły „Naprawy” z wbudowanego katalogu repo; brak tytułu na liście daje passed=false' {
-        Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
+        Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
         Should -Invoke -ModuleName VmSmoke Get-GuiRepairTitle -Times 1 -Exactly -ParameterFilter { $CatalogDirectory -like '*\src\DSOptimizer.Catalog\catalog' }
         Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { $P = $script:GoodUiProbe | ConvertTo-Json -Depth 8 | ConvertFrom-Json; $P.RepairTexts = @('Wyczyść pamięć DNS'); $P }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'RepairPage').Passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'PrepPage').Passed | Should -BeTrue
     }
     It 'błąd odczytu tytułów „Naprawy” nie gubi sondy UI, ale kończy się niepowodzeniem' {
         Mock -ModuleName VmSmoke Get-GuiRepairTitle { throw 'brak repair.json' }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.errors -join ' ') | Should -BeLike '*tytuły Napraw: brak repair.json*'
         ($Result.checks | Where-Object Name -eq 'RepairPage').Passed | Should -BeFalse
         Should -Invoke -ModuleName VmSmoke Get-DsoGuiUiProbe -Times 1 -Exactly
     }
     It 'tytuły i kategorie „Instalacja” z apps.json repo; aktywne „Zainstaluj (N)” daje passed=false' {
-        Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
+        Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
         Should -Invoke -ModuleName VmSmoke Get-GuiInstallTitle -Times 1 -Exactly -ParameterFilter { $CatalogDirectory -like '*\src\DSOptimizer.Catalog\catalog' }
         Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { $P = $script:GoodUiProbe | ConvertTo-Json -Depth 8 | ConvertFrom-Json; $P.InstallButtonEnabled = $true; $P }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'InstallPage').Passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'RepairPage').Passed | Should -BeTrue
     }
     It 'błąd odczytu apps.json nie gubi sondy UI, ale kończy się niepowodzeniem' {
         Mock -ModuleName VmSmoke Get-GuiInstallTitle { throw 'brak apps.json' }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.errors -join ' ') | Should -BeLike '*lista instalacji: brak apps.json*'
         ($Result.checks | Where-Object Name -eq 'InstallPage').Passed | Should -BeFalse
         Should -Invoke -ModuleName VmSmoke Get-DsoGuiUiProbe -Times 1 -Exactly
     }
     It 'detekcja dostaje sugerowane pozycje privacy z wbudowanego katalogu repo' {
-        Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
+        Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
         Should -Invoke -ModuleName VmSmoke Get-GuiPrivacySuggestedId -Times 1 -Exactly -ParameterFilter { $CatalogDirectory -like '*\src\DSOptimizer.Catalog\catalog' }
         Should -Invoke -ModuleName VmSmoke Get-DsoPrivacyDetection -Times 1 -Exactly -ParameterFilter { (@($TweakId) -join ',') -eq 'privacy.a,privacy.b,privacy.c' }
     }
     It 'N z przycisku inne niż z detekcji daje passed=false' {
         Mock -ModuleName VmSmoke Get-DsoPrivacyDetection { @($script:GoodDetection[0], $script:GoodDetection[1], ([pscustomobject]@{ Id = 'privacy.c'; ExitCode = 0; State = 'Applied'; UserSid = 'S-1-5-21-1'; IsCertain = $true; Error = $null })) }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'PrivacySuggestedApply').Passed | Should -BeFalse
     }
     It 'błąd detekcji nie gubi sondy UI, ale kończy się niepowodzeniem' {
         Mock -ModuleName VmSmoke Get-DsoPrivacyDetection { throw 'CLI nie odpowiada' }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.errors -join ' ') | Should -BeLike '*detekcja sugerowanych: CLI nie odpowiada*'
         ($Result.checks | Where-Object Name -eq 'HistoryMenu').Passed | Should -BeTrue
@@ -742,7 +941,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
     }
     It 'błąd sondy UI nie gubi sondy stanu ani drugiego zrzutu, ale kończy się niepowodzeniem' {
         Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { throw 'UIA niedostępne' }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'ProcessAlive').Passed | Should -BeTrue
         ($Result.checks | Where-Object Name -eq 'HistoryMenu').Passed | Should -BeFalse
@@ -754,12 +953,12 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         $Bad = $script:GoodUiProbe | ConvertTo-Json -Depth 8 | ConvertFrom-Json
         $Bad.HitTest[0].Points[2].Ht = 2
         Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { $Bad }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'CaptionHitTest').Passed | Should -BeFalse
     }
     It 'prosi o zrzut w natywnej rozdzielczości gościa i zapisuje ją w JSON' {
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         Should -Invoke -ModuleName VmSmoke Save-DsoVmThumbnail -Times 2 -Exactly -ParameterFilter { $Width -eq 1280 -and $Height -eq 800 }
         $Saved = Get-Content -LiteralPath $Result.resultPath -Raw -Encoding UTF8 | ConvertFrom-Json
         $Saved.resolution.Width | Should -Be 1280
@@ -767,13 +966,13 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
     }
     It 'zapisuje użycie fallbacku rozdzielczości w JSON' {
         Mock -ModuleName VmSmoke Get-DsoVmResolution { [pscustomobject]@{ Width = 1024; Height = 768; Source = 'fallback'; Error = 'x' } }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.resolution.Source | Should -Be 'fallback'
         Should -Invoke -ModuleName VmSmoke Save-DsoVmThumbnail -Times 2 -Exactly -ParameterFilter { $Width -eq 1024 -and $Height -eq 768 }
     }
     It 'niezaliczone sprawdzenie sondy daje passed=false (kod wyjścia skryptu 1), a revert i tak się odbywa' {
         Mock -ModuleName VmSmoke Get-DsoGuiProbe { New-Probe @{ ErrorLines = @('[t] [ERROR] [c] zle') } }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'NoLogErrors').Passed | Should -BeFalse
         Should -Invoke -ModuleName VmSmoke Restore-VmCleanState -Times 2 -Exactly
@@ -784,7 +983,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
             $E.Data['VmAuthFailure'] = $true
             throw $E
         }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.errors -join ' ') | Should -BeLike '*uwierzytelnienia*'
         Should -Invoke -ModuleName VmSmoke Wait-VmReady -Times 1 -Exactly
@@ -794,7 +993,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
     }
     It 'błąd zrzutu ekranu nie gubi sondy, ale kończy się niepowodzeniem' {
         Mock -ModuleName VmSmoke Save-DsoVmThumbnail { throw 'WMI niedostępne' }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'ProcessAlive').Passed | Should -BeTrue
         ($Result.checks | Where-Object Name -eq 'Screenshot').Passed | Should -BeFalse
@@ -803,7 +1002,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
     It 'nieudany końcowy revert jest błędem w wyniku' {
         Mock -ModuleName VmSmoke Restore-VmCleanState { $script:RestoreCalls++; if ($script:RestoreCalls -ge 2) { throw 'checkpoint zajęty' } }
         InModuleScope VmSmoke { $script:RestoreCalls = 0 }
-        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
+        $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse
         ($Result.errors -join ' ') | Should -BeLike '*checkpoint zajęty*'
     }
@@ -812,7 +1011,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         Should -Invoke -ModuleName VmSmoke Restore-VmCleanState -Times 0 -Exactly
     }
     It 'rzuca przed jakąkolwiek operacją, gdy brakuje DSOptimizer.exe w buildzie' {
-        { Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory $script:Out -BuildDirectory (Join-Path $TestDrive 'pusty') -CatalogPath 'C:\k.json' } | Should -Throw '*DSOptimizer.exe*'
+        { Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory (Join-Path $TestDrive 'pusty') -CatalogPath 'C:\k.json' } | Should -Throw '*DSOptimizer.exe*'
         Should -Invoke -ModuleName VmSmoke Restore-VmCleanState -Times 0 -Exactly
     }
 }
@@ -826,20 +1025,20 @@ Describe 'Wyłącznik DSO_VM_TESTS_MOCK_ONLY w smoke GUI (bez mocka Assert-DsoVm
         $Build = Join-Path $TestDrive 'b'
         $null = New-Item -ItemType Directory -Path $Build -Force
         Set-Content -LiteralPath (Join-Path $Build 'DSOptimizer.exe') -Value 'x'
-        { Invoke-DsoGuiSmoke -VmName 'DSO-26H2-Pro' -OutDirectory (Join-Path $TestDrive 'o') -BuildDirectory $Build -CatalogPath 'C:\k.json' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory (Join-Path $TestDrive 'o') -BuildDirectory $Build -CatalogPath 'C:\k.json' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
         Should -Invoke -ModuleName VmSmoke Get-DsoVmCredential -Times 0 -Exactly
         Should -Invoke -ModuleName VmSmoke Start-VM -Times 0 -Exactly
         Should -Invoke -ModuleName VmHost Restore-VMCheckpoint -Times 0 -Exactly
     }
     It '<Funkcja> rzuca przed jakimkolwiek wywołaniem WMI / Invoke-Command' -ForEach @(
-        @{ Funkcja = 'Save-DsoVmThumbnail'; Kod = { Save-DsoVmThumbnail -VmName 'DSO-26H2-Pro' -Path (Join-Path $TestDrive 't.png') } }
+        @{ Funkcja = 'Save-DsoVmThumbnail'; Kod = { Save-DsoVmThumbnail -VmName 'DSO-EN-Pro' -Path (Join-Path $TestDrive 't.png') } }
         @{ Funkcja = 'Start-DsoGuiInUserSession'; Kod = { Start-DsoGuiInUserSession -Session $null -Layout (Get-DsoVmLayout) } }
         @{ Funkcja = 'Get-DsoGuiProbe'; Kod = { Get-DsoGuiProbe -Session $null -Layout (Get-DsoVmLayout) -Since 'ts' } }
         @{ Funkcja = 'Get-DsoGuiUiProbe'; Kod = { Get-DsoGuiUiProbe -Session $null -Layout (Get-DsoVmLayout) -Texts ([ordered]@{ HistoryPage = 'x' }) } }
         @{ Funkcja = 'Invoke-DsoUserSessionScript'; Kod = { Invoke-DsoUserSessionScript -Session $null -Layout (Get-DsoVmLayout) -Name 'X' -ScriptText 'x' } }
         @{ Funkcja = 'Get-DsoPrivacyDetection'; Kod = { Get-DsoPrivacyDetection -Session $null -Layout (Get-DsoVmLayout) -TweakId @('privacy.a') } }
-        @{ Funkcja = 'Get-DsoAppsListing'; Kod = { Get-DsoAppsListing -Session $null -Layout (Get-DsoVmLayout) } }
-        @{ Funkcja = 'Get-DsoAutostartListing'; Kod = { Get-DsoAutostartListing -Session $null -Layout (Get-DsoVmLayout) } }
+        @{ Funkcja = 'Get-DsoAppsListing'; Kod = { Get-DsoAppsListing -Session $null -Layout (Get-DsoVmLayout) -Language pl } }
+        @{ Funkcja = 'Get-DsoAutostartListing'; Kod = { Get-DsoAutostartListing -Session $null -Layout (Get-DsoVmLayout) -Language pl } }
     ) {
         Mock -ModuleName VmSmoke Get-CimInstance {}
         Mock -ModuleName VmSmoke Invoke-Command -RemoveParameterValidation 'Session' {}

@@ -48,17 +48,19 @@ Opis działania:
     Kroki 1-4 bez kliknięć myszą (wzorce UIA i SendMessageTimeout). Dotyka wyłącznie VM; na hoście nic nie zmienia.
     Język: nazwy w opisie powyżej są polskie, ale sonda szuka tekstów okna w języku smoke (-Language pl|en). Host składa słownik
     Get-GuiProbeTexts (polski: stałe modułu zgodne z C# i tytuły z JSON katalogu; angielski: wyłącznie tabele tłumaczeń repo przez
-    Get-DsoUiText, brak = wyjątek, nigdy polski zastępczo; nazwy własne bez tłumaczenia jawnie w $script:UntranslatedTexts) i zapisuje
+    Get-DsoUiText (VmText.psm1), brak = wyjątek, nigdy polski zastępczo; nazwy własne bez tłumaczenia jawnie w $script:UntranslatedTexts) i zapisuje
     go do VM jako JSON UTF-8; skrypt sondy (czyste ASCII) czyta go z -TextsFile. Get-GuiUiCheck ocenia wynik tym samym słownikiem.
 #>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+Import-Module (Join-Path $PSScriptRoot 'VmText.psm1')
+
 $script:HtClient = 1
 $script:HtCaption = 2
 $script:RepoRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
 # Teksty okna, których szuka sonda UI, po polsku. Polski tekst = klucz tłumaczenia w C# (L.T/L.F, {l:T} w XAML); zgodność ze źródłami
-# pilnuje VmSmokeUi.Tests.ps1. Po angielsku Get-GuiProbeTexts bierze każdy z tabel tłumaczeń repo (Get-DsoUiText), brak = błąd.
+# pilnuje VmSmokeUi.Tests.ps1. Po angielsku Get-GuiProbeTexts bierze każdy z tabel tłumaczeń repo (Get-DsoUiText z VmText.psm1), brak = błąd.
 $script:ProbeTextsPolish = [ordered]@{
     HistoryPage = 'Historia zmian'                    # HistoryText.PageTitle: pozycja menu i nazwa listy wpisów
     HistoryFilter = 'Filtr'                           # HistoryText.FilterLabel
@@ -129,53 +131,6 @@ $script:InstallCategoryNames = [ordered]@{
     'browsers' = 'Przeglądarki'; 'messengers' = 'Komunikatory'; 'multimedia' = 'Multimedia'; 'documents' = 'Dokumenty'
     'tools' = 'Narzędzia'; 'remote-help' = 'Zdalna pomoc'; 'games' = 'Gry'; 'runtimes' = 'Środowiska uruchomieniowe'
 }
-# Tabele tłumaczeń wczytane raz na korzeń repo (słownik z rozróżnieniem wielkości liter).
-$script:TranslationCache = @{}
-
-function Get-DsoTranslationTable {
-    # Wszystkie tabele src\DSOptimizer.Core\Localization\Translations\*.json repo -> słownik polski -> angielski (Ordinal).
-    # Ten sam polski tekst z dwoma różnymi tłumaczeniami = błąd (sonda nie zgadywałaby, które pokazuje okno).
-    [CmdletBinding()]
-    param([Parameter(Mandatory)][string]$Root)
-    $Full = [System.IO.Path]::GetFullPath($Root)
-    if ($script:TranslationCache.ContainsKey($Full)) { return , $script:TranslationCache[$Full] }
-    $Directory = Join-Path $Full 'src\DSOptimizer.Core\Localization\Translations'
-    if (-not (Test-Path -LiteralPath $Directory -PathType Container)) { throw "Brak folderu tabel tłumaczeń '$Directory'." }
-    $Table = New-Object 'System.Collections.Generic.Dictionary[string,string]' ([System.StringComparer]::Ordinal)
-    foreach ($File in @(Get-ChildItem -LiteralPath $Directory -Filter '*.json' -File | Sort-Object Name)) {
-        $Json = [System.IO.File]::ReadAllText($File.FullName, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
-        foreach ($Entry in @($Json.entries)) {
-            if ($null -eq $Entry) { continue }
-            $Pl = [string]$Entry.pl
-            $En = [string]$Entry.en
-            if ($Table.ContainsKey($Pl)) {
-                if ($Table[$Pl] -cne $En) { throw "Tekst '$Pl' ma w tabelach dwa różne tłumaczenia: '$($Table[$Pl])' i '$En' ($($File.Name))." }
-                continue
-            }
-            $Table[$Pl] = $En
-        }
-    }
-    $script:TranslationCache[$Full] = $Table
-    return , $Table
-}
-
-function Get-DsoUiText {
-    # Tekst okna w języku sondy: pl = polski tekst (klucz tłumaczenia) bez zmian; en = wpis z tabel tłumaczeń repo. Brak wpisu (albo pusty
-    # angielski) = wyjątek „brak tłumaczenia” – sonda nigdy nie spada po cichu na polski.
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)][string]$Polish,
-        [Parameter(Mandatory)][ValidateSet('pl', 'en')][string]$Language,
-        [string]$Root = $script:RepoRoot
-    )
-    if ($Language -eq 'pl') { return $Polish }
-    $Table = Get-DsoTranslationTable -Root $Root
-    $English = $null
-    if (-not $Table.TryGetValue($Polish, [ref]$English) -or [string]::IsNullOrEmpty($English)) { throw "brak tłumaczenia: '$Polish' (tabele w '$Root')." }
-    return $English
-}
-
 function ConvertTo-GuiProbeLanguage {
     # Jak Get-DsoUiText, ale teksty z $script:UntranslatedTexts (nazwy własne poza L.T) zostają bez zmian w każdym języku.
     [CmdletBinding()]
@@ -1220,11 +1175,14 @@ function Get-GuiUiCheck {
     # -InstallExpected: wynik Get-GuiInstallTitle ({ Titles, Categories } z apps.json); brak albo puste tytuły = InstallPage niezaliczone.
     # -AutostartExpected: wynik VmSmoke\Get-GuiAutostartExpectedCount ({ Enabled, Disabled, MissingFile, Detail } z CLI --list-autostart);
     #   brak albo liczba $null = AutostartPage niezaliczone.
+    # -AutostartExpectedAfter: to samo z drugiego odczytu CLI zaraz po sondzie (smoke); okno ma być zgodne z jednym z dwóch odczytów.
+    #   Pominięte ($null) = tylko -AutostartExpected; podane z liczbą $null = AutostartPage niezaliczone.
     # -Texts: wynik Get-GuiProbeTexts w języku okna (ten sam słownik, który dostała sonda); wymagany.
     [CmdletBinding()]
     param(
         [AllowNull()]$Probe, [AllowNull()]$PrivacyExpected, [AllowNull()]$AppsExpected, [bool]$SettingsOpenable = $script:PrepSettingsOpenable,
         [AllowNull()][AllowEmptyCollection()][string[]]$RepairTitles, [AllowNull()]$InstallExpected, [AllowNull()]$AutostartExpected,
+        [AllowNull()]$AutostartExpectedAfter,
         [Parameter(Mandatory)][System.Collections.IDictionary]$Texts
     )
     $Names = 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage', 'AutostartPage'
@@ -1388,7 +1346,7 @@ function Get-GuiUiCheck {
         $Checks += New-GuiUiCheck -Name 'AutostartPage' -Passed $false -Detail 'brak pola AutostartMenuFound w wyniku sondy'
     }
     else {
-        $Checks += Get-GuiAutostartPageCheck -Get $Get -AutostartExpected $AutostartExpected -Texts $Texts
+        $Checks += Get-GuiAutostartPageCheck -Get $Get -AutostartExpected $AutostartExpected -AutostartExpectedAfter $AutostartExpectedAfter -Texts $Texts
     }
     return , $Checks
 }
@@ -1397,20 +1355,35 @@ function Get-GuiAutostartPageCheck {
     # Sprawdzenie AutostartPage (krok 12 sondy) z odczytu pól sondy przez -Get (blok z Get-GuiUiCheck). Liczba grupy = N z nazwy jej pozycji
     # przełącznika („<nazwa>, N” – wzorce z Get-GuiProbeTexts), porównana z liczbą z CLI (-AutostartExpected); przyciski serii bez zaznaczenia
     # („Wyłącz (0)”, „Włącz (0)”) muszą być nieaktywne. Kolejność pozycji przełącznika nie ma znaczenia.
+    # -AutostartExpectedAfter (smoke): drugi odczyt CLI zaraz po sondzie. Odczyt okna leży między odczytami CLI, a lista świeżego konta
+    # może się zmienić sama (pierwsze logowanie), więc wszystkie trzy liczby okna mają pochodzić z jednego z dwóch odczytów.
     [CmdletBinding()]
-    param([Parameter(Mandatory)][scriptblock]$Get, [AllowNull()]$AutostartExpected, [Parameter(Mandatory)][System.Collections.IDictionary]$Texts)
+    param(
+        [Parameter(Mandatory)][scriptblock]$Get, [AllowNull()]$AutostartExpected, [AllowNull()]$AutostartExpectedAfter,
+        [Parameter(Mandatory)][System.Collections.IDictionary]$Texts
+    )
     $Groups = [ordered]@{ Enabled = 'AutostartEnabled'; Disabled = 'AutostartDisabled'; MissingFile = 'AutostartMissingFile' }
-    $Expected = @{}
-    $ExpectedOk = $null -ne $AutostartExpected
-    $ExpectedDetail = 'CLI --list-autostart nie zwróciło wyniku'
-    if ($ExpectedOk) {
-        $ExpectedDetail = [string]$AutostartExpected.Detail
+    $Sources = @(, $AutostartExpected)
+    if ($null -ne $AutostartExpectedAfter) { $Sources += , $AutostartExpectedAfter }
+    $Reads = New-Object System.Collections.Generic.List[hashtable]
+    $ReadDetails = @()
+    $MissingDetails = @()
+    $ExpectedOk = $true
+    foreach ($Source in $Sources) {
+        $Counts = @{}
+        $SourceDetail = if ($null -eq $Source) { 'CLI --list-autostart nie zwróciło wyniku' } else { [string]$Source.Detail }
+        $SourceOk = $null -ne $Source
         foreach ($Key in $Groups.Keys) {
-            $Property = $AutostartExpected.PSObject.Properties[$Key]
-            $Expected[$Key] = if ($null -ne $Property -and $null -ne $Property.Value) { [int]$Property.Value } else { $null }
-            if ($null -eq $Expected[$Key]) { $ExpectedOk = $false }
+            $Property = if ($null -ne $Source) { $Source.PSObject.Properties[$Key] } else { $null }
+            $Counts[$Key] = if ($null -ne $Property -and $null -ne $Property.Value) { [int]$Property.Value } else { $null }
+            if ($null -eq $Counts[$Key]) { $SourceOk = $false }
         }
+        if (-not $SourceOk) { $ExpectedOk = $false; $MissingDetails += $SourceDetail }
+        $Reads.Add($Counts)
+        $ReadDetails += $SourceDetail
     }
+    $Changed = $Reads.Count -gt 1 -and @($Groups.Keys | Where-Object { $Reads[0][$_] -ne $Reads[1][$_] }).Count -gt 0
+    $ExpectedDetail = $MissingDetails -join ' / '
     $Menu = [bool](& $Get 'AutostartMenuFound' $false)
     $Loaded = [bool](& $Get 'AutostartLoaded' $false)
     $ReadFailed = [bool](& $Get 'AutostartReadFailed' $false)
@@ -1423,20 +1396,32 @@ function Get-GuiAutostartPageCheck {
     if ($ReadFailed) { $Parts += 'NIE: odczyt bez błędu („' + [string]$Texts.AutostartReadFailed + '”)' }
     if (-not $ExpectedOk) { $Parts += "brak oczekiwanych liczb ($ExpectedDetail)" }
     $GroupsOk = $true
+    $ShownCounts = @{}
     foreach ($Key in $Groups.Keys) {
         $Label = [string]$Texts[$Groups[$Key]]
         $Pattern = [string]$Texts["$($Groups[$Key])Pattern"]
-        $Cli = if ($null -ne $Expected[$Key]) { [string]$Expected[$Key] } else { '?' }
+        $Values = @($Reads | ForEach-Object { $_[$Key] })
+        $Cli = if ($null -ne $Values[0]) { [string]$Values[0] } else { '?' }
+        if ($Values.Count -gt 1 -and $Values[0] -ne $Values[1]) {
+            $CliAfter = if ($null -ne $Values[1]) { [string]$Values[1] } else { '?' }
+            $Cli = "$Cli przed, $CliAfter po"
+        }
         $Found = @($GroupNames | Where-Object { $_ -cmatch $Pattern })
         if ($Found.Count -eq 0) { $GroupsOk = $false; $Parts += "NIE: ${Label}: brak w przełączniku grup (CLI $Cli)"; continue }
         if ($Found.Count -gt 1) { $GroupsOk = $false; $Parts += "NIE: ${Label}: $($Found.Count) pozycje przełącznika (CLI $Cli)"; continue }
         $null = $Found[0] -cmatch $Pattern
         $Shown = [int]$Matches[1]
-        if ($null -ne $Expected[$Key] -and $Shown -eq $Expected[$Key]) { $Parts += "${Label}: $Shown (CLI $Cli)" }
+        $ShownCounts[$Key] = $Shown
+        if (@($Values | Where-Object { $null -ne $_ -and $_ -eq $Shown }).Count -gt 0) { $Parts += "${Label}: $Shown (CLI $Cli)" }
         else { $GroupsOk = $false; $Parts += "NIE: ${Label}: $Shown (CLI $Cli)" }
     }
+    # Każda liczba zgodna z którymś odczytem to za mało: wszystkie trzy muszą pochodzić z tego samego odczytu CLI.
+    if ($GroupsOk -and $ExpectedOk) {
+        $Whole = @($Reads | Where-Object { $Read = $_; @($Groups.Keys | Where-Object { $Read[$_] -ne $ShownCounts[$_] }).Count -eq 0 })
+        if ($Whole.Count -eq 0) { $GroupsOk = $false; $Parts += 'NIE: liczby grup nie pochodzą z jednego odczytu CLI' }
+    }
     # Tylko informacja: lista pusta po obu stronach (okno i CLI) i to, czy sonda szukała w kontenerze strony.
-    if ($GroupsOk -and $ExpectedOk -and ($Expected.Enabled + $Expected.Disabled + $Expected.MissingFile) -eq 0) { $Parts += 'wierszy 0' }
+    if ($GroupsOk -and $ExpectedOk -and ($ShownCounts.Enabled + $ShownCounts.Disabled + $ShownCounts.MissingFile) -eq 0) { $Parts += 'wierszy 0' }
     $Scoped = [bool](& $Get 'AutostartPageScoped' $false)
     $Parts += if ($Scoped) { 'kontener strony: tak' } else { 'kontener strony: nie' }
     $ButtonsOk = $true
@@ -1451,7 +1436,8 @@ function Get-GuiAutostartPageCheck {
         $Parts += 'NIE: ' + $IdleText + " ($Seen)"
     }
     $Detail = $Parts -join '; '
-    if ($ExpectedOk) { $Detail += "; $ExpectedDetail" }
+    if ($ExpectedOk -and $Changed) { $Detail += "; lista CLI zmieniła się w trakcie sondy (przed: $($ReadDetails[0]); po: $($ReadDetails[1]))" }
+    elseif ($ExpectedOk) { $Detail += "; $($ReadDetails[0])" }
     if ($AutostartError) { $Detail += "; sonda: $AutostartError" }
     $Passed = $Menu -and $Loaded -and -not $ReadFailed -and $ExpectedOk -and $GroupsOk -and $ButtonsOk -and -not $AutostartError
     return (New-GuiUiCheck -Name 'AutostartPage' -Passed $Passed -Detail $Detail)
@@ -1561,4 +1547,4 @@ function Get-GuiPrepPageCheck {
     return (New-GuiUiCheck -Name 'PrepPage' -Passed $PrepPassed -Detail $PrepDetail)
 }
 
-Export-ModuleMember -Function Get-DsoUiText, Get-GuiProbeTexts, Get-GuiPrepExpected, Get-GuiUiProbeScript, ConvertTo-DsoHitTestRange, Get-GuiPrivacySuggestedId, Get-GuiRepairTitle, Get-GuiInstallTitle, Get-GuiPrivacyExpectedCount, Get-GuiAppsExpectedCount, Get-GuiUiCheck
+Export-ModuleMember -Function Get-GuiProbeTexts, Get-GuiPrepExpected, Get-GuiUiProbeScript, ConvertTo-DsoHitTestRange, Get-GuiPrivacySuggestedId, Get-GuiRepairTitle, Get-GuiInstallTitle, Get-GuiPrivacyExpectedCount, Get-GuiAppsExpectedCount, Get-GuiUiCheck

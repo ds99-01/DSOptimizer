@@ -1,6 +1,6 @@
 ﻿<#
 Instrukcja uruchomienia:
-    Tylko w VM DSO-26H2-Home/Pro, jako Administrator (Setup przypadków Flow='AppRemove' w tests\vm\cases.psd1), np.:
+    Tylko w VM DSO z listy `Get-DsoVmDefinitions` (VmCommon), jako Administrator (Setup przypadków Flow='AppRemove' w tests\vm\cases.psd1), np.:
         & C:\dso\fixtures\Install-DsoTestProgram.ps1 -Mode quiet -KeyName DsoTestQuiet
         & C:\dso\fixtures\Install-DsoTestProgram.ps1 -Mode deferred -KeyName DsoTestDeferred -MarkerPath C:\dso\out\DsoTestDeferred.survived
         & C:\dso\fixtures\Install-DsoTestProgram.ps1 -Mode quiet -KeyName DsoTestUser -UserSid S-1-5-21-...
@@ -23,8 +23,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-if (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) {
-    throw "Install-DsoTestProgram działa tylko w VM DSO-26H2-Home/Pro (komputer: '$env:COMPUTERNAME'); nic nie zostało zmienione."
+if (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) {
+    throw "Install-DsoTestProgram działa tylko w VM DSO (DSO-EN-Home, DSO-EN-Pro, DSO-PL-Pro, DSO-PL-Home) (komputer: '$env:COMPUTERNAME'); nic nie zostało zmienione."
 }
 
 $Exe = Join-Path $FixturesDirectory 'DsoTestUninstaller.exe'

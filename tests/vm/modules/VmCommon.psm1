@@ -2,16 +2,14 @@
 Instrukcja uruchomienia:
     Import-Module .\tests\vm\modules\VmCommon.psm1 -Force
 Opis działania:
-    Wspólny moduł testów VM: generowanie hasła, poświadczenia VM trzymane wyłącznie poza repo
-    (%LOCALAPPDATA%\DSOptimizer-vm\<VmName>.credential.xml, Export-Clixml/DPAPI) oraz układ
-    katalogów roboczych wewnątrz VM. Hasło nigdy nie trafia do repo, logów ani wyjścia.
+    Wspólny moduł testów VM: poświadczenia VM (%LOCALAPPDATA%\DSOptimizer-vm\<VmName>.credential.xml,
+    Export-Clixml/DPAPI) oraz układ katalogów roboczych wewnątrz VM. Hasło kont Administrator i dso
+    to `admin` (VM testowe bez danych, cofane do checkpointu); poświadczenie zapisuje się też poza
+    repo (DPAPI), skąd czytają je skrypty.
+    Lista VM testów (nazwa, edycja, język, region, role) ma jedno źródło: Get-DsoVmDefinitions.
+    Bezpieczniki w VM są literałami pilnowanymi przez VmNames.Tests.ps1.
 #>
 Set-StrictMode -Version Latest
-
-$script:UpperChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-$script:LowerChars = 'abcdefghijklmnopqrstuvwxyz'
-$script:DigitChars = '0123456789'
-$script:SymbolChars = '-_.!#+='
 
 function Get-DsoRepoRoot {
     [CmdletBinding()]
@@ -26,50 +24,6 @@ function Get-DsoVmSecretDirectory {
     [OutputType([string])]
     param()
     return (Join-Path $env:LOCALAPPDATA 'DSOptimizer-vm')
-}
-
-function Get-DsoRandomIndex {
-    # Równomierny losowy indeks [0, Max) bez obciążenia modulo (rejection sampling).
-    param(
-        [Parameter(Mandatory)][System.Security.Cryptography.RandomNumberGenerator]$Generator,
-        [Parameter(Mandatory)][int]$Max
-    )
-    $Buffer = New-Object byte[] 4
-    $Limit = [uint32]::MaxValue - ([uint32]::MaxValue % [uint32]$Max)
-    do {
-        $Generator.GetBytes($Buffer)
-        $Value = [BitConverter]::ToUInt32($Buffer, 0)
-    } while ($Value -ge $Limit)
-    return [int]($Value % [uint32]$Max)
-}
-
-function New-DsoVmPassword {
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [ValidateRange(4, 128)][int]$Length = 20
-    )
-    $Classes = @($script:UpperChars, $script:LowerChars, $script:DigitChars, $script:SymbolChars)
-    $All = $Classes -join ''
-    $Generator = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
-    try {
-        $Chars = New-Object System.Collections.Generic.List[char]
-        foreach ($Class in $Classes) {
-            $Chars.Add($Class[(Get-DsoRandomIndex -Generator $Generator -Max $Class.Length)])
-        }
-        while ($Chars.Count -lt $Length) {
-            $Chars.Add($All[(Get-DsoRandomIndex -Generator $Generator -Max $All.Length)])
-        }
-        # Fisher-Yates, żeby wymuszone znaki nie stały zawsze na początku.
-        for ($i = $Chars.Count - 1; $i -gt 0; $i--) {
-            $j = Get-DsoRandomIndex -Generator $Generator -Max ($i + 1)
-            $Temp = $Chars[$i]; $Chars[$i] = $Chars[$j]; $Chars[$j] = $Temp
-        }
-        return (-join $Chars)
-    }
-    finally {
-        $Generator.Dispose()
-    }
 }
 
 function Get-DsoVmCredentialPath {
@@ -155,4 +109,47 @@ function New-VmSkipReport {
     }
 }
 
-Export-ModuleMember -Function New-VmSkipRecord, New-VmSkipReport, Get-DsoRepoRoot, Get-DsoVmSecretDirectory, New-DsoVmPassword, Get-DsoVmCredentialPath, Save-DsoVmCredential, Get-DsoVmCredential, Get-DsoVmLayout
+function Get-DsoVmDefinitions {
+    # Jedyne źródło listy VM testów; każde wywołanie zwraca nowe obiekty.
+    $Rows = @(
+        @{ Name = 'DSO-EN-Home'; Edition = 'Home'; EditionId = 'Core'; Language = 'en'; Culture = 'en-US'; InputLocale = '0409:00000409'; FullRun = $true; SmokeLanguages = @('en'); ReleaseExplorations = $true }
+        @{ Name = 'DSO-EN-Pro'; Edition = 'Pro'; EditionId = 'Professional'; Language = 'en'; Culture = 'en-US'; InputLocale = '0409:00000409'; FullRun = $true; SmokeLanguages = @('en', 'pl'); ReleaseExplorations = $true }
+        @{ Name = 'DSO-PL-Pro'; Edition = 'Pro'; EditionId = 'Professional'; Language = 'pl'; Culture = 'pl-PL'; InputLocale = '0415:00000415'; FullRun = $true; SmokeLanguages = @('pl', 'en'); ReleaseExplorations = $true }
+        @{ Name = 'DSO-PL-Home'; Edition = 'Home'; EditionId = 'Core'; Language = 'pl'; Culture = 'pl-PL'; InputLocale = '0415:00000415'; FullRun = $false; SmokeLanguages = @('pl'); ReleaseExplorations = $false }
+    )
+    foreach ($Row in $Rows) {
+        [pscustomobject][ordered]@{
+            Name                = [string]$Row.Name
+            ComputerName        = ([string]$Row.Name).ToUpperInvariant()
+            Edition             = [string]$Row.Edition
+            EditionId           = [string]$Row.EditionId
+            Language            = [string]$Row.Language
+            Culture             = [string]$Row.Culture
+            InputLocale         = [string]$Row.InputLocale
+            FullRun             = [bool]$Row.FullRun
+            SmokeLanguages      = [string[]]@($Row.SmokeLanguages)
+            ReleaseExplorations = [bool]$Row.ReleaseExplorations
+        }
+    }
+}
+
+function Get-DsoVmDefinition {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$VmName)
+    $All = @(Get-DsoVmDefinitions)
+    foreach ($Definition in $All) { if ($Definition.Name -ieq $VmName) { return $Definition } }
+    throw "Nieznana VM '$VmName'. Znane: $((@($All | ForEach-Object { $_.Name })) -join ', ')."
+}
+
+function Get-DsoVmNames {
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param([switch]$FullRun, [ValidateSet('en', 'pl')][string]$Language)
+    $Items = @(Get-DsoVmDefinitions)
+    if ($FullRun) { $Items = @($Items | Where-Object { $_.FullRun }) }
+    if ($Language) { $Items = @($Items | Where-Object { $_.Language -eq $Language }) }
+    return [string[]]@($Items | ForEach-Object { $_.Name })
+}
+
+function Get-DsoVmNamePattern { return '^DSO-(EN|PL)-(Home|Pro)\z' }
+Export-ModuleMember -Function New-VmSkipRecord, New-VmSkipReport, Get-DsoRepoRoot, Get-DsoVmSecretDirectory, Get-DsoVmCredentialPath, Save-DsoVmCredential, Get-DsoVmCredential, Get-DsoVmLayout, Get-DsoVmDefinitions, Get-DsoVmDefinition, Get-DsoVmNames, Get-DsoVmNamePattern

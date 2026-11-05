@@ -3,11 +3,11 @@ Instrukcja uruchomienia:
     Sesja PowerShell uruchomiona jako administrator, na hoście z Hyper-V, z modułami testów VM (tests\vm\modules) i tests\vm\explore\ExploreCommon.psm1.
     VM utworzone wcześniej przez New-TestVm.ps1 (checkpoint 'czysta-26H2', poświadczenia w %LOCALAPPDATA%\DSOptimizer-vm, autologon 'dso').
     Jedna VM na proces (Home i Pro w dwóch osobnych sesjach), np. (Task 1 Etapu 5):
-        .\tests\vm\explore\Invoke-E5Exploration.ps1 -VmName DSO-26H2-Pro -Phase defender,winutil -OutDirectory $env:TEMP\dso-explore\winutil\pro
-        .\tests\vm\explore\Invoke-E5Exploration.ps1 -VmName DSO-26H2-Home -Phase defender,winutil -OutDirectory $env:TEMP\dso-explore\winutil\home
+        .\tests\vm\explore\Invoke-E5Exploration.ps1 -VmName DSO-EN-Pro -Phase defender,winutil -OutDirectory $env:TEMP\dso-explore\winutil\pro
+        .\tests\vm\explore\Invoke-E5Exploration.ps1 -VmName DSO-EN-Home -Phase defender,winutil -OutDirectory $env:TEMP\dso-explore\winutil\home
     Pomiar pełny (Task 6 Etapu 5) – osobno dla każdej pary VM × wariant wydania (cztery wywołania), np.:
         .\tools\release\Build-Release.ps1 -Variant SingleExe -OutRoot $env:TEMP\dso-explore\wydania
-        .\tests\vm\explore\Invoke-E5Exploration.ps1 -VmName DSO-26H2-Pro -Phase defender,av,motw,startup,dpi -Variant SingleExe `
+        .\tests\vm\explore\Invoke-E5Exploration.ps1 -VmName DSO-EN-Pro -Phase defender,av,motw,startup,dpi -Variant SingleExe `
             -ArtifactPath C:\...\wydania\v4.0.0-SingleExe\DSOptimizer-4.0.0.exe -OutDirectory $env:TEMP\dso-explore\pomiar\pro-singleexe
         (Folder: -Variant Folder -ArtifactPath C:\...\wydania\v4.0.0-Folder\DSOptimizer-4.0.0.zip.)
     Bez -Phase: defender i winutil. Faza defender wchodzi zawsze jako pierwsza, gdy przebieg ma jakąkolwiek inną fazę (K1); kolejność
@@ -55,9 +55,9 @@ Opis działania:
     Przebieg jednej VM: [VHDX] -> revert do 'czysta-26H2' -> karta odłączona -> [VHDX podłączony] -> start (bez sieci) -> gotowość
     (zalogowany dso) -> fazy (sieć tylko na ich czas) -> [surowe pliki z C:\dso\e5\raw do <OutDirectory>\<VmName>\raw] -> ZAWSZE (finally)
     revert, odłączenie VHDX i karty oraz sprawdzenie stanu końcowego (VM Off, karta bez przełącznika, VHDX odłączony) przed zapisem JSON.
-    Ostatni bezpiecznik po stronie VM: Assert-E5InsideVm (nazwa komputera DSO-26H2-HOME/PRO i brak DSO_VM_TESTS_MOCK_ONLY) na
+    Ostatni bezpiecznik po stronie VM: Assert-E5InsideVm (nazwa komputera z listy (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) i brak DSO_VM_TESTS_MOCK_ONLY) na
     początku każdej funkcji ze skutkiem. Pierwszy błąd uwierzytelnienia przerywa cały skrypt (blokada konta). Skrypt dotyka wyłącznie
-    VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet); na hoście nie łączy się z internetem i zmienia wyłącznie pliki wyników oraz własny,
+    VM DSO z listy `Get-DsoVmDefinitions` (VmCommon) (ValidateSet); na hoście nie łączy się z internetem i zmienia wyłącznie pliki wyników oraz własny,
     nowo utworzony VHDX nośnika.
     RISK: przy fazach startup/av/motw/dpi host tworzy VHDX w katalogu wyników, podłącza go do hosta (Mount-VHD, chwilowa litera dysku),
     inicjalizuje i formatuje (Initialize-Disk, New-Partition, Format-Volume) – WYŁĄCZNIE ten dysk: numer z Mount-VHD, obiekt dysku
@@ -70,7 +70,7 @@ Opis działania:
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName = @('DSO-26H2-Pro', 'DSO-26H2-Home'),
+    [ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string[]]$VmName = @('DSO-EN-Pro', 'DSO-EN-Home'),
     [ValidateSet('defender', 'winutil', 'startup', 'av', 'motw', 'dpi')][string[]]$Phase = @('defender', 'winutil'),
     [string]$OutDirectory,
     [string]$CheckpointName = 'czysta-26H2',
@@ -187,19 +187,19 @@ function Test-E5VmComputerName {
     [CmdletBinding()]
     [OutputType([bool])]
     param([AllowEmptyString()][string]$ComputerName)
-    return (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -contains ([string]$ComputerName).ToUpperInvariant())
+    return (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -contains ([string]$ComputerName).ToUpperInvariant())
 }
 
 function Assert-E5InsideVm {
     # Ostatni bezpiecznik: sondy E5 aktualizują sygnatury Defendera, łączą się z GitHubem, rejestrują zadania Harmonogramu, uruchamiają
-    # WinUtil i zamykają procesy, więc działają WYŁĄCZNIE w VM DSO-26H2-Home/Pro i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY).
+    # WinUtil i zamykają procesy, więc działają WYŁĄCZNIE w VM DSO z listy `Get-DsoVmDefinitions` (VmCommon) i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY).
     [CmdletBinding()]
     param([string]$ComputerName = $env:COMPUTERNAME)
     if ($env:DSO_VM_TESTS_MOCK_ONLY) {
         throw 'Tryb DSO_VM_TESTS_MOCK_ONLY: sondy E5 nie mogą działać w testach na mockach (nic nie zostało uruchomione).'
     }
     if (-not (Test-E5VmComputerName -ComputerName $ComputerName)) {
-        throw "Sondy E5 działają tylko w VM DSO-26H2-HOME/DSO-26H2-PRO (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
+        throw "Sondy E5 działają tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
     }
 }
 
@@ -639,12 +639,12 @@ function Get-E5WindowProbeScript {
     [OutputType([string])]
     param()
     $Body = @'
-# Sonda okien pomiaru E5 (DSOptimizer, tests\vm\explore\Invoke-E5Exploration.ps1). Tylko w VM DSO-26H2-HOME/PRO, tylko odczyt.
+# Sonda okien pomiaru E5 (DSOptimizer, tests\vm\explore\Invoke-E5Exploration.ps1). Tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME), tylko odczyt.
 $ErrorActionPreference = 'Stop'
 $Out = [ordered]@{ Sid = $null; Elevated = $null; Windows = @(); Win32Windows = @(); Win32Error = $null; Error = $null }
 try {
     if ($env:DSO_VM_TESTS_MOCK_ONLY) { throw 'DSO_VM_TESTS_MOCK_ONLY: sonda nie czyta okien w testach.' }
-    if (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Sonda dziala tylko w VM DSO-26H2-HOME/PRO (komputer: '$env:COMPUTERNAME')." }
+    if (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Sonda dziala tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (komputer: '$env:COMPUTERNAME')." }
     $Identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     $Out.Sid = $Identity.User.Value
     $Out.Elevated = (New-Object System.Security.Principal.WindowsPrincipal($Identity)).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -1330,13 +1330,13 @@ function Get-E5WaitWindowProbeScript {
     [OutputType([string])]
     param()
     $Body = @'
-# Sonda okna programu (DSOptimizer, tests\vm\explore\Invoke-E5Exploration.ps1). Tylko w VM DSO-26H2-HOME/PRO, tylko odczyt.
+# Sonda okna programu (DSOptimizer, tests\vm\explore\Invoke-E5Exploration.ps1). Tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME), tylko odczyt.
 $ErrorActionPreference = 'Stop'
 $Out = [ordered]@{ Sid = $null; Elevated = $null; LanguageChosen = $false; LanguageChosenAtSeconds = $null; Found = $false; Seconds = $null; ProcessId = $null; ProcessIds = @(); Title = $null; ClassName = $null; Source = $null; Bounds = $null
     ProcessWindows = @(); Dpi = $null; ScreenWidth = $null; ScreenHeight = $null; LogPixels = $null; Error = $null }
 try {
     if ($env:DSO_VM_TESTS_MOCK_ONLY) { throw 'DSO_VM_TESTS_MOCK_ONLY: sonda nie czyta okien w testach.' }
-    if (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Sonda dziala tylko w VM DSO-26H2-HOME/PRO (komputer: '$env:COMPUTERNAME')." }
+    if (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Sonda dziala tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (komputer: '$env:COMPUTERNAME')." }
     $Req = [System.IO.File]::ReadAllText($Request, [System.Text.Encoding]::UTF8).TrimStart([char]0xFEFF) | ConvertFrom-Json
     $Identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     $Out.Sid = $Identity.User.Value
@@ -1415,12 +1415,12 @@ function Get-E5StartupProbeScript {
     [OutputType([string])]
     param()
     $Body = @'
-# Sonda czasu startu (DSOptimizer, tests\vm\explore\Invoke-E5Exploration.ps1). Tylko w VM DSO-26H2-HOME/PRO.
+# Sonda czasu startu (DSOptimizer, tests\vm\explore\Invoke-E5Exploration.ps1). Tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME).
 $ErrorActionPreference = 'Stop'
 $Out = [ordered]@{ Sid = $null; Elevated = $null; Runs = @(); Error = $null }
 try {
     if ($env:DSO_VM_TESTS_MOCK_ONLY) { throw 'DSO_VM_TESTS_MOCK_ONLY: sonda nie uruchamia niczego w testach.' }
-    if (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Sonda dziala tylko w VM DSO-26H2-HOME/PRO (komputer: '$env:COMPUTERNAME')." }
+    if (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Sonda dziala tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (komputer: '$env:COMPUTERNAME')." }
     $Req = [System.IO.File]::ReadAllText($Request, [System.Text.Encoding]::UTF8).TrimStart([char]0xFEFF) | ConvertFrom-Json
     $Identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     $Out.Sid = $Identity.User.Value
@@ -1518,12 +1518,12 @@ function Get-E5ExtractProbeScript {
     param()
     return @'
 param([Parameter(Mandatory)][string]$ResultFile, [Parameter(Mandatory)][string]$Request)
-# Sonda wypakowania zipu przez powloke (DSOptimizer, tests\vm\explore\Invoke-E5Exploration.ps1). Tylko w VM DSO-26H2-HOME/PRO.
+# Sonda wypakowania zipu przez powloke (DSOptimizer, tests\vm\explore\Invoke-E5Exploration.ps1). Tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME).
 $ErrorActionPreference = 'Stop'
 $Out = [ordered]@{ Sid = $null; Extracted = $false; Seconds = $null; ExeLength = $null; FileCount = $null; Error = $null }
 try {
     if ($env:DSO_VM_TESTS_MOCK_ONLY) { throw 'DSO_VM_TESTS_MOCK_ONLY: sonda nie wypakowuje niczego w testach.' }
-    if (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Sonda dziala tylko w VM DSO-26H2-HOME/PRO (komputer: '$env:COMPUTERNAME')." }
+    if (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Sonda dziala tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (komputer: '$env:COMPUTERNAME')." }
     $Req = [System.IO.File]::ReadAllText($Request, [System.Text.Encoding]::UTF8).TrimStart([char]0xFEFF) | ConvertFrom-Json
     $Out.Sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
     $Shell = New-Object -ComObject Shell.Application
@@ -2592,7 +2592,7 @@ function Restart-E5VmAndWait {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [Parameter(Mandatory)][pscredential]$Credential,
         [Parameter(Mandatory)][string]$RemoteScript,
         [int]$ReadyTimeoutSeconds = 1200
@@ -2798,7 +2798,7 @@ function Invoke-E5VmRun {
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [Parameter(Mandatory)][string[]]$Phases,
         [string]$CheckpointName = 'czysta-26H2',

@@ -3,16 +3,22 @@ Instrukcja uruchomienia:
     Sesja PowerShell uruchomiona jako administrator, na hoście z Hyper-V. VM utworzona przez New-TestVm.ps1 (checkpoint 'czysta-26H2').
     Przed przebiegiem zbuduj aplikację:
         dotnet build DSOptimizer.sln -c Release
-    Domyślnie (DSO-26H2-Pro, na końcu revert i VM Off):
+    Domyślnie (DSO-EN-Pro, na końcu revert i VM Off):
         .\tests\vm\Invoke-GuiSmoke.ps1 -OutDirectory $env:TEMP\dso-explore\smoke
     Home, albo Pro z oknem zostawionym do ręcznego przeklikania (VMConnect), bez revertu:
-        .\tests\vm\Invoke-GuiSmoke.ps1 -VmName DSO-26H2-Home -OutDirectory $env:TEMP\dso-explore\smoke
+        .\tests\vm\Invoke-GuiSmoke.ps1 -VmName DSO-EN-Home -OutDirectory $env:TEMP\dso-explore\smoke
         .\tests\vm\Invoke-GuiSmoke.ps1 -OutDirectory $env:TEMP\dso-explore\smoke -KeepRunning
-    Wybór języka w pierwszym oknie (domyślnie polski; angielski np. do przebiegu Etapu 5):
-        .\tests\vm\Invoke-GuiSmoke.ps1 -OutDirectory $env:TEMP\dso-explore\smoke -Language en
+    Język przebiegu: domyślnie język VM (tryb wykrywania: okno wyboru języka jest zamykane bez wyboru, a program ma sam wykryć
+    język z Windows i zapisać go w settings.json). Drugi język (klik kafla w oknie wyboru) przez -Language.
+    Macierz smoke wydania (SmokeLanguages z Get-DsoVmDefinitions), każdy język z osobnym -OutDirectory, bo gui-smoke-<VM>.json
+    nadpisałby się:
+        EN Home: en            EN Pro: en, pl            PL Pro: pl, en            PL Home: pl
+        .\tests\vm\Invoke-GuiSmoke.ps1 -VmName DSO-EN-Pro -OutDirectory $env:TEMP\dso-explore\smoke-en
+        .\tests\vm\Invoke-GuiSmoke.ps1 -VmName DSO-EN-Pro -Language pl -OutDirectory $env:TEMP\dso-explore\smoke-pl
 Opis działania:
     Revert do czystego checkpointu, start VM, kopia builda, start C:\dso\app\DSOptimizer.exe w sesji interaktywnej 'dso'
-    (zadanie Harmonogramu), wybór języka w pierwszym oknie (-Language pl|en, sprawdzenie LanguageChoice), po -StartupSeconds (domyślnie 45 s, koniec detekcji startowej) sprawdza: proces żyje, Responding=True
+    (zadanie Harmonogramu), okno wyboru języka (-Language pl|en; równy językowi VM = zamknięcie bez wyboru i sprawdzenie wykrytego
+    języka w settings.json, inny = klik kafla; sprawdzenie LanguageChoice), po -StartupSeconds (domyślnie 45 s, koniec detekcji startowej) sprawdza: proces żyje, Responding=True
     (z oknem głównym), brak zdarzeń .NET Runtime / Application Error / WER od startu, brak linii ERROR w
     %ProgramData%\DSOptimizer\logs\*.log. Sonda UI (UI Automation w sesji 'dso', bez myszy): pozycja menu „Historia zmian” otwiera
     stronę (HistoryMenu); po zastosowaniu „Szybsze otwieranie podmenu” (ux.menu-delay, safe, „Zastosuj (1)” bez potwierdzenia) wiersz
@@ -31,17 +37,18 @@ Opis działania:
     (RepairPage) i „Instalacja” (kategorie i tytuły z apps.json, „Zainstaluj (0)” nieaktywne – InstallPage); niczego nie zaznacza ani nie instaluje.
     Jako ostatnie sonda wchodzi przez menu na „Autostart” i po zakończonym odczycie listy (najwyżej 120 s, bez „Odczyt listy w toku”) sprawdza,
     że liczby w nazwach grup („Włączone, N”, „Wyłączone, N”, „Bez pliku, N”) są równe liczbom z CLI --list-autostart tego przebiegu,
-    uruchomionego przed sondą jako 'dso' („Bez pliku” wygrywa ze stanem), a „Wyłącz (0)” i „Włącz (0)” są nieaktywne (AutostartPage);
+    uruchomionego jako 'dso' przed sondą i drugi raz zaraz po niej („Bez pliku” wygrywa ze stanem; gdy lista zmieniła się między tymi
+    odczytami, np. przy pierwszym logowaniu konta, okno ma być zgodne z jednym z nich), a „Wyłącz (0)” i „Włącz (0)” są nieaktywne (AutostartPage);
     niczego nie zaznacza, nie wyłącza ani nie włącza. Razem 23 sprawdzenia.
     Zrzuty ekranu (Msvm_VirtualSystemManagementService.
     GetVirtualSystemThumbnailImage) po starcie i po sondzie UI oraz wynik (gui-smoke-<VM>.json) trafiają do -OutDirectory.
     Jedyna operacja to ta jedna bezpieczna pozycja (VM i tak wraca do checkpointu). Błąd uwierzytelnienia PowerShell Direct przerywa
     przebieg od razu (bez ponawiania). Bez -KeepRunning na końcu revert i VM Off. Kod wyjścia: 0 gdy wszystkie sprawdzenia
-    przeszły, 1 w przeciwnym razie. Dotyka wyłącznie DSO-26H2-Home i DSO-26H2-Pro (inne nazwy są odrzucane).
+    przeszły, 1 w przeciwnym razie. Dotyka wyłącznie VM DSO z listy `Get-DsoVmDefinitions` (VmCommon) (inne nazwy są odrzucane).
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName = 'DSO-26H2-Pro',
+    [ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName = 'DSO-EN-Pro',
     [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$OutDirectory,
     [switch]$KeepRunning,
     [string]$BuildDirectory,
@@ -49,7 +56,7 @@ param(
     [string]$CheckpointName = 'czysta-26H2',
     [ValidateRange(60, 7200)][int]$ReadyTimeoutSeconds = 1200,
     [ValidateRange(0, 600)][int]$StartupSeconds = 45,
-    [ValidateSet('pl', 'en')][string]$Language = 'pl'
+    [ValidateSet('pl', 'en')][string]$Language
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -61,6 +68,7 @@ try {
     Import-Module (Join-Path $VmRoot 'modules\VmHost.psm1') -Force
     Import-Module (Join-Path $VmRoot 'modules\VmSmoke.psm1') -Force
     $RepoRoot = Get-DsoRepoRoot
+    if (-not $PSBoundParameters.ContainsKey('Language')) { $Language = (Get-DsoVmDefinition -VmName $VmName).Language }
     if (-not $BuildDirectory) { $BuildDirectory = Join-Path $RepoRoot 'src\DSOptimizer.App\bin\Release\net481' }
     if (-not $CatalogPath) { $CatalogPath = Join-Path $VmRoot 'catalog\vm-test-catalog.json' }
 

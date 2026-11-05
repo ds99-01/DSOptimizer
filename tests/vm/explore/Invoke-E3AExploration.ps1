@@ -3,7 +3,7 @@ Instrukcja uruchomienia:
     VM (sesja PowerShell jako administrator, host z Hyper-V, VM utworzone przez New-TestVm.ps1, checkpoint 'czysta-26H2'):
         .\tests\vm\explore\Invoke-E3AExploration.ps1 -OutDirectory C:\ścieżka\do\wyników
     Jedna VM:
-        .\tests\vm\explore\Invoke-E3AExploration.ps1 -VmName DSO-26H2-Pro -OutDirectory C:\ścieżka\do\wyników
+        .\tests\vm\explore\Invoke-E3AExploration.ps1 -VmName DSO-PL-Pro -OutDirectory C:\ścieżka\do\wyników
     Host, tylko odczyt (bez Hyper-V, bez revertu; sesja admina daje pełniejsze dane, bez niej Win32_Tpm i Win32_EncryptableVolume mogą zwrócić odmowę dostępu):
         .\tests\vm\explore\Invoke-E3AExploration.ps1 -LocalReadOnly -OutDirectory C:\ścieżka\do\wyników
     Bez -OutDirectory wynik trafia do tests\vm\out\e3a-<data> (katalog out\ jest w .gitignore).
@@ -20,12 +20,12 @@ Opis działania:
     Przebieg VM (moduł ExploreCommon): przywrócenie checkpointu -> start -> Wait-VmReady -> PowerShell Direct -> zbieranie, a na końcu ZAWSZE
     (finally) zatrzymanie i powrót do checkpointu. Pierwszy błąd uwierzytelnienia przerywa cały skrypt (blokada konta).
     Wynik: <OutDirectory>\<VmName>\e3a-exploration.json (VM) albo <OutDirectory>\host\e3a-exploration.json (-LocalReadOnly), UTF-8.
-    Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy obcej VM.
+    Skrypt dotyka wyłącznie VM DSO-PL-Home i DSO-PL-Pro (ValidateSet), nigdy obcej VM.
     Kod wyjścia: 0 gdy zebrano wszystko bez błędu przebiegu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName = @('DSO-26H2-Home', 'DSO-26H2-Pro'),
+    [ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName = @('DSO-PL-Home', 'DSO-PL-Pro'),
     [string]$OutDirectory,
     [string]$CheckpointName = 'czysta-26H2',
     [ValidateRange(60, 7200)][int]$ReadyTimeoutSeconds = 1200,

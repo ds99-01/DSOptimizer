@@ -83,7 +83,7 @@ Describe 'C2 Task 1: New-VmSkipRecord i New-VmSkipReport (jeden kształt rekordu
     }
     It 'Write-VmSkippedRun zapisuje rekord o kształcie New-VmSkipRecord i szkielet report.json' {
         $Case = @{ Name = 'n'; TweakId = 'a.b'; Flow = 'DetectOnly'; RestorePoint = 'skip'; Skip = 'powód'; Expect = @{ Before = 'NotApplied' } }
-        $Run = InModuleScope VmHost -Parameters @{ Case = $Case; Out = "$TestDrive\out" } { Write-VmSkippedRun -VmName 'DSO-26H2-Test' -OutDirectory $Out -Cases @($Case) }
+        $Run = InModuleScope VmHost -Parameters @{ Case = $Case; Out = "$TestDrive\out" } { Write-VmSkippedRun -VmName 'DSO-PL-Home' -OutDirectory $Out -Cases @($Case) }
         $Report = Get-Content -LiteralPath $Run.ReportPath -Raw -Encoding UTF8 | ConvertFrom-Json
         ($Report.PSObject.Properties.Name -join ',') | Should -Be 'vmName,runLabel,startedAt,finishedAt,bootObservation,pester,cases'
         $Expected = New-VmSkipRecord -Case $Case

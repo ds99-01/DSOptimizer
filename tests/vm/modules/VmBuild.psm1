@@ -4,8 +4,11 @@ Instrukcja uruchomienia:
     (używane przez tests\vm\New-TestVm.ps1; wymaga sesji admina z Hyper-V tylko przy faktycznym tworzeniu VM)
 Opis działania:
     Skryptowane budowanie VM Hyper-V Gen2 (Secure Boot, vTPM) z Windows 11 26H2: obraz z install.wim/esd
-    jest nakładany offline (Expand-WindowsImage + bcdboot), potem dokładane są unattend.xml i skrypty
-    Specialize/FirstLogon. Instalator nie wymaga klikania. Hasło VM nigdy nie trafia do wyjścia ani logów.
+    jest wybierany po EditionId i języku (nie po numerze indeksu), nakładany offline (Expand-WindowsImage
+    + bcdboot), potem dokładane są unattend.xml (z językiem celu) i skrypty Specialize/FirstLogon.
+    Instalator nie wymaga klikania. Hasło kont Administrator i dso to `admin` (VM testowe bez danych,
+    cofane do checkpointu); poświadczenie zapisuje się też poza repo (DPAPI), skąd czytają je skrypty.
+    Po pierwszym starcie fakty z VM (EditionID, język) są porównywane z celem.
 #>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -18,25 +21,22 @@ function Get-TestVmTargets {
     [CmdletBinding()]
     [OutputType([hashtable[]])]
     param(
-        [string]$VmName,
-        [int]$EditionIndex
+        [Parameter(Mandatory)][string[]]$VmName
     )
-    $HasName = $PSBoundParameters.ContainsKey('VmName')
-    $HasIndex = $PSBoundParameters.ContainsKey('EditionIndex')
-    if ($HasName -ne $HasIndex) {
-        throw 'Podaj oba parametry (-VmName i -EditionIndex) albo żaden.'
-    }
-    if ($HasName) {
-        $Pairs = @(, @($VmName, $EditionIndex))
-    }
-    else {
-        $Pairs = @(@('DSO-26H2-Home', 1), @('DSO-26H2-Pro', 5))
-    }
-    $Targets = foreach ($Pair in $Pairs) {
-        if ($Pair[0] -notmatch '^[A-Za-z0-9-]{1,15}$') {
-            throw "Nazwa VM '$($Pair[0])' jest niepoprawna: max 15 znaków, tylko litery, cyfry i myślnik (nazwa komputera NetBIOS)."
+    $Seen = @{}
+    $Targets = foreach ($Name in $VmName) {
+        $Definition = Get-DsoVmDefinition -VmName $Name
+        if ($Seen.ContainsKey($Definition.Name)) {
+            throw "Nazwa VM '$($Definition.Name)' została podana więcej niż raz."
         }
-        @{ VmName = $Pair[0]; EditionIndex = [int]$Pair[1]; ComputerName = $Pair[0].ToUpperInvariant() }
+        $Seen[$Definition.Name] = $true
+        @{
+            VmName       = $Definition.Name
+            ComputerName = $Definition.ComputerName
+            EditionId    = $Definition.EditionId
+            Culture      = $Definition.Culture
+            InputLocale  = $Definition.InputLocale
+        }
     }
     return , @($Targets)
 }
@@ -52,9 +52,11 @@ function New-UnattendXml {
     param(
         [Parameter(Mandatory)][ValidatePattern('^[A-Za-z0-9-]{1,15}\z')][string]$ComputerName,
         [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Password,
+        [Parameter(Mandatory)][ValidatePattern('^[a-z]{2}-[A-Z]{2}\z')][string]$Culture,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9A-F]{4}:[0-9A-F]{8}\z')][string]$InputLocale,
         [string]$TemplatePath = (Join-Path $script:TemplateDirectory 'unattend.xml')
     )
-    $Text = (Read-TestVmTemplate -Path $TemplatePath).Replace('__COMPUTER_NAME__', $ComputerName)
+    $Text = (Read-TestVmTemplate -Path $TemplatePath).Replace('__COMPUTER_NAME__', $ComputerName).Replace('__CULTURE__', $Culture).Replace('__INPUT_LOCALE__', $InputLocale)
     if (-not $Text.Contains('__PASSWORD__')) {
         throw 'Szablon unattend nie zawiera tokenu hasła.'
     }
@@ -98,6 +100,78 @@ function Resolve-InstallImage {
         }
     }
     throw "Brak install.wim ani install.esd w '$SourcesPath'."
+}
+
+function Get-TestVmImageInfo {
+    # Odczyt tylko do czytania: lista obrazów, potem szczegóły każdego (EditionId i języki są tylko w szczegółach).
+    [CmdletBinding()]
+    [OutputType([pscustomobject[]])]
+    param(
+        [Parameter(Mandatory)][string]$ImagePath
+    )
+    $List = @(Get-WindowsImage -ImagePath $ImagePath -ErrorAction Stop)
+    $Result = foreach ($Item in $List) {
+        $Detail = Get-WindowsImage -ImagePath $ImagePath -Index ([int]$Item.ImageIndex) -ErrorAction Stop
+        [pscustomobject]@{
+            Index     = [int]$Detail.ImageIndex
+            Name      = [string]$Detail.ImageName
+            EditionId = [string]$Detail.EditionId
+            Languages = [string[]]@($Detail.Languages)
+            Version   = [string]$Detail.Version
+        }
+    }
+    return @($Result)
+}
+
+function Select-TestVmImage {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Images,
+        [Parameter(Mandatory)][string]$EditionId,
+        [Parameter(Mandatory)][string]$Culture
+    )
+    $Matching = @($Images | Where-Object { $_.EditionId -ceq $EditionId })
+    if ($Matching.Count -ne 1) {
+        throw "Obraz o EditionId '$EditionId': znaleziono $($Matching.Count) (wymagany dokładnie jeden). Nic nie zmieniono."
+    }
+    $Image = $Matching[0]
+    if (@($Image.Languages) -cnotcontains $Culture) {
+        throw "Obraz $($Image.Index) '$($Image.Name)' nie zawiera języka '$Culture' (ma: $(@($Image.Languages) -join ', ')). Nic nie zmieniono."
+    }
+    return $Image
+}
+
+function Assert-TestVmBuildFacts {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]$Facts,
+        [Parameter(Mandatory)]$Target
+    )
+    $Problems = @()
+    if ($Facts.EditionId -cne $Target.EditionId) {
+        $Problems += "EditionID w VM to '$($Facts.EditionId)', a cel wymaga '$($Target.EditionId)'"
+    }
+    if ($Facts.UiLanguage -ne $Target.Culture) {
+        $Problems += "język interfejsu w VM to '$($Facts.UiLanguage)', a cel wymaga '$($Target.Culture)'"
+    }
+    if ($Problems.Count -gt 0) {
+        throw "VM '$($Target.VmName)': $($Problems -join '; '). VM zostaje bez checkpointu; nic nie usunięto."
+    }
+}
+
+function Save-TestVmBuildReport {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$VmName,
+        [Parameter(Mandatory)]$Report
+    )
+    $Directory = Get-DsoVmSecretDirectory
+    $null = New-Item -ItemType Directory -Path $Directory -Force
+    $Path = Join-Path $Directory "$VmName.build.json"
+    $Json = $Report | ConvertTo-Json -Depth 4
+    [System.IO.File]::WriteAllText($Path, $Json, (New-Object System.Text.UTF8Encoding($false)))
+    return $Path
 }
 
 function Test-TestVmElevated {
@@ -275,7 +349,18 @@ function Wait-TestVmFirstBoot {
         if ($Remove) {
             foreach ($Secret in $Secrets) { Remove-Item -LiteralPath $Secret -Force -ErrorAction SilentlyContinue }
         }
+        $Version = $null
+        try { $Version = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction Stop } catch { $Version = $null }
+        $UiLanguage = ''
+        try { $UiLanguage = [string][Globalization.CultureInfo]::InstalledUICulture.Name } catch { $UiLanguage = '' }
+        $SystemLocale = ''
+        try { $SystemLocale = [string](Get-WinSystemLocale).Name } catch { $SystemLocale = '' }
         [pscustomobject]@{
+            EditionId    = $(if ($Version) { [string]$Version.EditionID } else { '' })
+            CurrentBuild = $(if ($Version) { [string]$Version.CurrentBuild } else { '' })
+            UBR          = $(if ($Version) { [int]$Version.UBR } else { 0 })
+            UiLanguage   = $UiLanguage
+            SystemLocale = $SystemLocale
             Marker   = [bool](Test-Path -LiteralPath 'C:\ProgramData\dso-vm-ready.txt')
             Leftover = @($Secrets | Where-Object { Test-Path -LiteralPath $_ })
             FirstLogonError = $(if (Test-Path -LiteralPath 'C:\ProgramData\dso-vm-firstlogon-error.txt') { Get-Content -LiteralPath 'C:\ProgramData\dso-vm-firstlogon-error.txt' -Raw } else { '' })
@@ -283,6 +368,7 @@ function Wait-TestVmFirstBoot {
     }
     $Ready = $false
     $LastError = ''
+    $State = $null
     while (-not $Ready) {
         try {
             $State = Invoke-Command -VMName $VmName -Credential $Credential -ErrorAction Stop -ScriptBlock $Probe -ArgumentList $false
@@ -316,6 +402,13 @@ function Wait-TestVmFirstBoot {
         }
         Start-Sleep -Seconds $PollSeconds
     }
+    return [pscustomobject]@{
+        EditionId    = [string]$State.EditionId
+        CurrentBuild = [string]$State.CurrentBuild
+        Ubr          = [int]$State.UBR
+        UiLanguage   = [string]$State.UiLanguage
+        SystemLocale = [string]$State.SystemLocale
+    }
 }
 
 function New-DsoTestVm {
@@ -329,7 +422,8 @@ function New-DsoTestVm {
         [ValidateRange(1, 16)][int]$ProcessorCount = 4,
         [switch]$WithNetwork,
         [string]$CheckpointName = 'czysta-26H2',
-        [ValidateRange(0.001, 600)][double]$FirstBootTimeoutMinutes = 45
+        [ValidateRange(0.001, 600)][double]$FirstBootTimeoutMinutes = 45,
+        [ValidateNotNullOrEmpty()][string]$Password = 'admin'
     )
     $ErrorActionPreference = 'Stop'
     Assert-TestVmHost -IsoPath $IsoPath
@@ -357,26 +451,27 @@ function New-DsoTestVm {
         $Letter = (Get-Volume -DiskImage $Image -ErrorAction Stop).DriveLetter
         $ImagePath = Resolve-InstallImage -SourcesPath "${Letter}:\sources"
 
+        # Wybór obrazu dla wszystkich celów przed jakimkolwiek zapisem: zły obraz drugiej VM nie zostawia pierwszej.
+        $AllImages = @(Get-TestVmImageInfo -ImagePath $ImagePath)
+        $Selected = @{}
         foreach ($Target in $Targets) {
-            $Info = Get-WindowsImage -ImagePath $ImagePath -Index $Target.EditionIndex
-            Write-Host "VM '$($Target.VmName)': edycja '$($Info.ImageName)' (index $($Target.EditionIndex))."
+            $Selected[$Target.VmName] = Select-TestVmImage -Images $AllImages -EditionId $Target.EditionId -Culture $Target.Culture
+        }
+        foreach ($Target in $Targets) {
+            $Chosen = $Selected[$Target.VmName]
+            Write-Host "VM '$($Target.VmName)': obraz $($Chosen.Index) '$($Chosen.Name)' (EditionId $($Chosen.EditionId), języki $(@($Chosen.Languages) -join ', '))."
         }
 
         $FirstLogon = Read-TestVmTemplate -Path (Join-Path $script:TemplateDirectory 'FirstLogon.ps1')
         foreach ($Target in $Targets) {
             $VmName = $Target.VmName
+            $Chosen = $Selected[$VmName]
             $VhdPath = Join-Path $VhdDirectory "$VmName.vhdx"
-            $Password = New-DsoVmPassword
-            try {
-                $null = Save-DsoVmCredential -VmName $VmName -Password $Password
-                $Unattend = New-UnattendXml -ComputerName $Target.ComputerName -Password $Password
-                $Specialize = New-SpecializeScript -Password $Password
-            }
-            finally {
-                $Password = $null
-            }
+            $null = Save-DsoVmCredential -VmName $VmName -Password $Password
+            $Unattend = New-UnattendXml -ComputerName $Target.ComputerName -Password $Password -Culture $Target.Culture -InputLocale $Target.InputLocale
+            $Specialize = New-SpecializeScript -Password $Password
             New-TestVmDisk -VhdPath $VhdPath -SizeBytes ([uint64]$VhdSizeGB * 1GB) -ImagePath $ImagePath `
-                -EditionIndex $Target.EditionIndex -UnattendXml $Unattend -SpecializeScript $Specialize -FirstLogonScript $FirstLogon
+                -EditionIndex $Chosen.Index -UnattendXml $Unattend -SpecializeScript $Specialize -FirstLogonScript $FirstLogon
             $Unattend = $null
             $Specialize = $null
             New-TestVmMachine -VmName $VmName -VhdPath $VhdPath -MemoryBytes ([uint64]$MemoryGB * 1GB) `
@@ -384,7 +479,22 @@ function New-DsoTestVm {
             Write-Host "Pierwszy start VM '$VmName' (instalacja bez nadzoru, do $FirstBootTimeoutMinutes min)."
             Start-VM -Name $VmName -ErrorAction Stop
             $Credential = Get-DsoVmCredential -VmName $VmName
-            Wait-TestVmFirstBoot -VmName $VmName -Credential $Credential -TimeoutMinutes $FirstBootTimeoutMinutes
+            $Facts = Wait-TestVmFirstBoot -VmName $VmName -Credential $Credential -TimeoutMinutes $FirstBootTimeoutMinutes
+            $Report = [ordered]@{
+                vmName       = $VmName
+                isoPath      = $IsoFullPath
+                imageIndex   = $Chosen.Index
+                imageName    = $Chosen.Name
+                editionId    = $Facts.EditionId
+                currentBuild = $Facts.CurrentBuild
+                ubr          = $Facts.Ubr
+                uiLanguage   = $Facts.UiLanguage
+                systemLocale = $Facts.SystemLocale
+                builtAt      = (Get-Date).ToString('o')
+            }
+            $ReportPath = Save-TestVmBuildReport -VmName $VmName -Report $Report
+            Write-Host "VM '$VmName': EditionID $($Facts.EditionId), build $($Facts.CurrentBuild).$($Facts.Ubr), język $($Facts.UiLanguage); raport: $ReportPath"
+            Assert-TestVmBuildFacts -Facts $Facts -Target $Target
             Checkpoint-VM -Name $VmName -SnapshotName $CheckpointName -ErrorAction Stop
             Write-Host "VM '$VmName' gotowa, checkpoint '$CheckpointName' utworzony."
         }
@@ -397,4 +507,4 @@ function New-DsoTestVm {
     }
 }
 
-Export-ModuleMember -Function Get-TestVmTargets, New-UnattendXml, New-SpecializeScript, Resolve-InstallImage, Assert-TestVmHost, New-TestVmDisk, New-TestVmMachine, Wait-TestVmFirstBoot, New-DsoTestVm
+Export-ModuleMember -Function Get-TestVmTargets, New-UnattendXml, New-SpecializeScript, Resolve-InstallImage, Get-TestVmImageInfo, Select-TestVmImage, Assert-TestVmBuildFacts, Save-TestVmBuildReport, Assert-TestVmHost, New-TestVmDisk, New-TestVmMachine, Wait-TestVmFirstBoot, New-DsoTestVm

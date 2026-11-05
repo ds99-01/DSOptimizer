@@ -705,11 +705,11 @@ Describe 'Wysyłka funkcji do VM (C4) i struktura skryptu' {
         $Text.Substring(0, 400) | Should -Match 'Instrukcja uruchomienia'
         $Text | Should -Match 'Opis działania'
     }
-    It 'parametr VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro (nigdy obcej VM), w skrypcie i w Invoke-C4Exploration' {
+    It 'parametr VmName przyjmuje tylko DSO-PL-Home i DSO-PL-Pro (nigdy obcej VM), w skrypcie i w Invoke-C4Exploration' {
         $Attr = (Get-Command $script:C4ScriptPath).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        $Attr.ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
         $Attr2 = (Get-Command Invoke-C4Exploration).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        $Attr2.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        $Attr2.ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
         { Invoke-C4Exploration -VmName 'ObcaVM' -OutDirectory $TestDrive } | Should -Throw
     }
     Context 'Wybór sond (-Probe)' {
@@ -740,13 +740,13 @@ Describe 'Wysyłka funkcji do VM (C4) i struktura skryptu' {
         It 'Invoke-C4Exploration -Probe: do Invoke-ExploreAll idzie skrypt z Invoke-C4EntryPoint i wybranymi sondami; bez -Probe punkt wejścia Invoke-C4Collection' {
             $script:Seen = $null
             Mock Invoke-ExploreAll { $script:Seen = @{ Entry = $EntryCommand; Script = $RemoteScript }; [pscustomobject]@{ Paths = @(); Errors = @() } }
-            $null = Invoke-C4Exploration -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Probe 'menu', 'cmdline'
+            $null = Invoke-C4Exploration -VmName 'DSO-PL-Home' -OutDirectory $TestDrive -Probe 'menu', 'cmdline'
             $script:Seen.Entry | Should -Be 'Invoke-C4EntryPoint'
             $script:Seen.Script | Should -Match "function Invoke-C4EntryPoint \{\s+Invoke-C4Collection -Probe @\('menu','cmdline'\)\s+\}"
             $Errors = $null
             [void][System.Management.Automation.Language.Parser]::ParseInput($script:Seen.Script, [ref]$null, [ref]$Errors)
             @($Errors).Count | Should -Be 0
-            $null = Invoke-C4Exploration -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive
+            $null = Invoke-C4Exploration -VmName 'DSO-PL-Home' -OutDirectory $TestDrive
             $script:Seen.Entry | Should -Be 'Invoke-C4Collection'
             $script:Seen.Script | Should -Not -Match 'Invoke-C4EntryPoint'
         }
@@ -759,12 +759,12 @@ Describe 'Wysyłka funkcji do VM (C4) i struktura skryptu' {
 
     Context 'Tryby ręcznego testu UAC i walidacja startu' {
         It 'Assert-C4ModeArguments: tryby wykluczają się, wymagają jawnie jednej VM, nie łączą się z -Probe; bez trybu nic nie sprawdza' {
-            { Assert-C4ModeArguments -Prepare $true -Finish $true -VmName 'DSO-26H2-Pro' -VmNameExplicit $true } | Should -Throw '*wykluczają*'
-            { Assert-C4ModeArguments -Prepare $true -Finish $false -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -VmNameExplicit $true } | Should -Throw '*JEDNEJ*'
-            { Assert-C4ModeArguments -Prepare $false -Finish $true -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -VmNameExplicit $false } | Should -Throw '*JEDNEJ*'
-            { Assert-C4ModeArguments -Prepare $true -Finish $false -VmName 'DSO-26H2-Pro' -VmNameExplicit $true -Probe 'menu' } | Should -Throw '*-Probe*'
-            { Assert-C4ModeArguments -Prepare $true -Finish $false -VmName 'DSO-26H2-Pro' -VmNameExplicit $true } | Should -Not -Throw
-            { Assert-C4ModeArguments -Prepare $false -Finish $false -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -VmNameExplicit $false } | Should -Not -Throw
+            { Assert-C4ModeArguments -Prepare $true -Finish $true -VmName 'DSO-PL-Pro' -VmNameExplicit $true } | Should -Throw '*wykluczają*'
+            { Assert-C4ModeArguments -Prepare $true -Finish $false -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -VmNameExplicit $true } | Should -Throw '*JEDNEJ*'
+            { Assert-C4ModeArguments -Prepare $false -Finish $true -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -VmNameExplicit $false } | Should -Throw '*JEDNEJ*'
+            { Assert-C4ModeArguments -Prepare $true -Finish $false -VmName 'DSO-PL-Pro' -VmNameExplicit $true -Probe 'menu' } | Should -Throw '*-Probe*'
+            { Assert-C4ModeArguments -Prepare $true -Finish $false -VmName 'DSO-PL-Pro' -VmNameExplicit $true } | Should -Not -Throw
+            { Assert-C4ModeArguments -Prepare $false -Finish $false -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -VmNameExplicit $false } | Should -Not -Throw
         }
         It 'parametry trybów: -Variant tylko Plain/Subkey/ValuePath, -VmName nadal tylko Home/Pro' {
             $Params = (Get-Command $script:C4ScriptPath).Parameters
@@ -772,7 +772,7 @@ Describe 'Wysyłka funkcji do VM (C4) i struktura skryptu' {
             $Params.ContainsKey('PrepareManualUacTest') | Should -BeTrue
             $Params.ContainsKey('FinishManualUacTest') | Should -BeTrue
             $Params.ContainsKey('WithExtended') | Should -BeTrue
-            ($Params['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }).ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+            ($Params['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }).ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
         }
         It 'Assert-C4PrepareResult: kompletny wynik przechodzi; błąd kroku, błąd drzewa, kod icacls <> 0, brak Deny, brak zapisów jednej klasy i brak kroku => wyjątek' {
             $Good = {
@@ -809,18 +809,18 @@ Describe 'Wysyłka funkcji do VM (C4) i struktura skryptu' {
             }
         }
         It 'instrukcja po Prepare: po polsku, vmconnect, użytkownik dso, Pokaż więcej opcji, UAC, komenda Finish; Shift tylko z Extended' {
-            $With = (Get-C4ManualUacInstructions -VmName 'DSO-26H2-Pro' -Variant Subkey -WithExtended $true -OutDirectory 'C:\wyniki dir') -join "`n"
-            $With | Should -Match 'vmconnect localhost DSO-26H2-Pro'
+            $With = (Get-C4ManualUacInstructions -VmName 'DSO-PL-Pro' -Variant Subkey -WithExtended $true -OutDirectory 'C:\wyniki dir') -join "`n"
+            $With | Should -Match 'vmconnect localhost DSO-PL-Pro'
             $With | Should -Match "użytkownik 'dso'"
             $With | Should -Match 'Pokaż więcej opcji'
             $With | Should -Match 'UAC'
             $With | Should -Match 'Z KLAWISZEM SHIFT'
             $With | Should -Match 'DSO: Przejmij \(administrator\)'
-            $With | Should -Match ([regex]::Escape('-FinishManualUacTest -VmName DSO-26H2-Pro -OutDirectory "C:\wyniki dir"'))
+            $With | Should -Match ([regex]::Escape('-FinishManualUacTest -VmName DSO-PL-Pro -OutDirectory "C:\wyniki dir"'))
             $With | Should -Match 'autologon'
             $With | Should -Match 'klasyczne menu od razu'
             $With | Should -Match 'Nie wymaga sesji użytkownika dso'
-            $Without = (Get-C4ManualUacInstructions -VmName 'DSO-26H2-Home' -Variant Plain -WithExtended $false -OutDirectory 'C:\w') -join "`n"
+            $Without = (Get-C4ManualUacInstructions -VmName 'DSO-PL-Home' -Variant Plain -WithExtended $false -OutDirectory 'C:\w') -join "`n"
             $Without | Should -Not -Match 'Z KLAWISZEM SHIFT'
             $Without | Should -Not -Match 'Przejmij \(administrator\)'
         }
@@ -855,7 +855,7 @@ Describe 'Przebieg hosta C4 (orkiestracja na mockach; Hyper-V nietknięty)' {
         Mock -ModuleName ExploreCommon Invoke-Command { throw 'HOST: Invoke-Command niedozwolone w tym teście' }
     }
     It 'bez zmockowanego wyłącznika prawdziwa orkiestracja zatrzymuje się na DSO_VM_TESTS_MOCK_ONLY: błąd zapisany, zero Start-VM i revertu' {
-        $Outcome = Invoke-C4Exploration -VmName @('DSO-26H2-Pro') -OutDirectory $TestDrive
+        $Outcome = Invoke-C4Exploration -VmName @('DSO-PL-Pro') -OutDirectory $TestDrive
         @($Outcome.Paths).Count | Should -Be 0
         $Outcome.Errors[0] | Should -Match 'DSO_VM_TESTS_MOCK_ONLY'
         Should -Invoke -ModuleName ExploreCommon Start-VM -Times 0 -Exactly
@@ -867,32 +867,32 @@ Describe 'Przebieg hosta C4 (orkiestracja na mockach; Hyper-V nietknięty)' {
             Mock -ModuleName ExploreCommon Invoke-Command { if ($ArgumentList) { $script:Order.Add("collect:$($ArgumentList[1])"); '{"meta":{"EditionID":"Professional"},"probes":{}}' } else { throw 'nieoczekiwane Invoke-Command' } }
         }
         It 'revert -> start -> ready -> zbieranie (Invoke-C4Collection jednym wywołaniem) -> usunięcie sesji -> revert; JSON c4-exploration.json' {
-            $Outcome = Invoke-C4Exploration -VmName @('DSO-26H2-Pro') -OutDirectory $TestDrive
-            ($Order -join ',') | Should -Be 'restore:DSO-26H2-Pro,start:DSO-26H2-Pro,ready:DSO-26H2-Pro,collect:Invoke-C4Collection,removesession,restore:DSO-26H2-Pro'
-            $Outcome.Paths | Should -Be @((Join-Path $TestDrive 'DSO-26H2-Pro\c4-exploration.json'))
+            $Outcome = Invoke-C4Exploration -VmName @('DSO-PL-Pro') -OutDirectory $TestDrive
+            ($Order -join ',') | Should -Be 'restore:DSO-PL-Pro,start:DSO-PL-Pro,ready:DSO-PL-Pro,collect:Invoke-C4Collection,removesession,restore:DSO-PL-Pro'
+            $Outcome.Paths | Should -Be @((Join-Path $TestDrive 'DSO-PL-Pro\c4-exploration.json'))
             @($Outcome.Errors).Count | Should -Be 0
             $Doc = Get-Content -LiteralPath $Outcome.Paths[0] -Raw -Encoding UTF8 | ConvertFrom-Json
-            $Doc.vmName | Should -Be 'DSO-26H2-Pro'
+            $Doc.vmName | Should -Be 'DSO-PL-Pro'
             $Doc.checkpoint | Should -Be 'czysta-26H2'
         }
         It 'OutDirectory spoza FileSystem jest odrzucony przez Save-ExploreResult bez utworzenia czegokolwiek (Variable:)' {
-            $Outcome = Invoke-C4Exploration -VmName @('DSO-26H2-Home') -OutDirectory 'Variable:\DsoNieFilesystemC4'
+            $Outcome = Invoke-C4Exploration -VmName @('DSO-PL-Home') -OutDirectory 'Variable:\DsoNieFilesystemC4'
             @($Outcome.Paths).Count | Should -Be 0
             $Outcome.Errors[0] | Should -Match 'FileSystem'
             Test-Path -LiteralPath (Join-Path (Get-Location) 'DsoNieFilesystemC4') | Should -BeFalse
         }
         It 'dwie VM po kolei: Home, potem Pro, każda z własnym revertem' {
-            $null = Invoke-C4Exploration -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory $TestDrive
-            @($Order | Where-Object { $_ -like 'restore:*' }) | Should -Be @('restore:DSO-26H2-Home', 'restore:DSO-26H2-Home', 'restore:DSO-26H2-Pro', 'restore:DSO-26H2-Pro')
+            $null = Invoke-C4Exploration -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -OutDirectory $TestDrive
+            @($Order | Where-Object { $_ -like 'restore:*' }) | Should -Be @('restore:DSO-PL-Home', 'restore:DSO-PL-Home', 'restore:DSO-PL-Pro', 'restore:DSO-PL-Pro')
         }
         It 'błąd zbierania: revert w finally nadal jest, błąd zapisany, druga VM zebrana' {
             $script:Fail = $true
             Mock -ModuleName ExploreCommon Invoke-Command { if ($script:Fail) { $script:Fail = $false; throw 'zerwana sesja' }; '{"meta":{},"probes":{}}' }
-            $Outcome = Invoke-C4Exploration -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory $TestDrive
+            $Outcome = Invoke-C4Exploration -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -OutDirectory $TestDrive
             @($Outcome.Errors).Count | Should -Be 1
             $Outcome.Errors[0] | Should -Match 'zerwana sesja'
             @($Outcome.Paths).Count | Should -Be 1
-            $Order | Should -Contain 'restore:DSO-26H2-Home'
+            $Order | Should -Contain 'restore:DSO-PL-Home'
         }
         It 'błąd uwierzytelnienia zatrzymuje całość: druga VM nietknięta, revert pierwszej jest' {
             Mock -ModuleName ExploreCommon Wait-VmReady {
@@ -900,83 +900,83 @@ Describe 'Przebieg hosta C4 (orkiestracja na mockach; Hyper-V nietknięty)' {
                 $F.Data['VmAuthFailure'] = $true
                 throw $F
             }
-            { Invoke-C4Exploration -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory $TestDrive } | Should -Throw '*inny tekst*'
+            { Invoke-C4Exploration -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -OutDirectory $TestDrive } | Should -Throw '*inny tekst*'
             ($Order | Where-Object { $_ -like '*Pro*' }) | Should -BeNullOrEmpty
-            $Order[-1] | Should -Be 'restore:DSO-26H2-Home'
+            $Order[-1] | Should -Be 'restore:DSO-PL-Home'
         }
         It 'ręczny test UAC Prepare: revert -> start -> ready -> zbieranie -> usunięcie sesji i BRAK końcowego revertu (VM zostaje uruchomiona); plik c4-manual-uac-prepare.json; wariant w punkcie wejścia' {
             $script:Defs = $null
             $script:GoodJson = Get-GoodPrepareJson
             Mock -ModuleName ExploreCommon Invoke-Command { if ($ArgumentList) { $script:Order.Add('collect'); $script:Defs = $ArgumentList[0]; $script:GoodJson } else { throw 'x' } }
-            $Path = Invoke-C4ManualUacTest -Mode Prepare -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Variant ValuePath -WithExtended
-            ($Order -join ',') | Should -Be 'restore:DSO-26H2-Pro,start:DSO-26H2-Pro,ready:DSO-26H2-Pro,collect,removesession'
-            $Path | Should -Be (Join-Path $TestDrive 'DSO-26H2-Pro\c4-manual-uac-prepare.json')
+            $Path = Invoke-C4ManualUacTest -Mode Prepare -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive -Variant ValuePath -WithExtended
+            ($Order -join ',') | Should -Be 'restore:DSO-PL-Pro,start:DSO-PL-Pro,ready:DSO-PL-Pro,collect,removesession'
+            $Path | Should -Be (Join-Path $TestDrive 'DSO-PL-Pro\c4-manual-uac-prepare.json')
             $script:Defs | Should -Match 'Invoke-C4ManualUacCollection -Mode Prepare -Structure ValuePath -Extended\s+\}'
             Should -Invoke -ModuleName ExploreCommon Stop-VM -Times 0 -Exactly
         }
         It 'ręczny test UAC Prepare: błąd zbierania => VM przywrócona (revert), wyjątek propagowany' {
             Mock -ModuleName ExploreCommon Invoke-Command { throw 'zerwana sesja' }
-            { Invoke-C4ManualUacTest -Mode Prepare -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive } | Should -Throw '*zerwana sesja*'
-            $Order[-1] | Should -Be 'restore:DSO-26H2-Home'
+            { Invoke-C4ManualUacTest -Mode Prepare -VmName 'DSO-PL-Home' -OutDirectory $TestDrive } | Should -Throw '*zerwana sesja*'
+            $Order[-1] | Should -Be 'restore:DSO-PL-Home'
         }
         It 'ręczny test UAC Prepare: błąd uwierzytelnienia => revert i wyjątek z flagą auth (stop)' {
             Mock -ModuleName ExploreCommon Wait-VmReady { $F = [System.InvalidOperationException]::new('odmowa'); $F.Data['VmAuthFailure'] = $true; throw $F }
             $Caught = $null
-            try { Invoke-C4ManualUacTest -Mode Prepare -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive } catch { $Caught = $_.Exception }
+            try { Invoke-C4ManualUacTest -Mode Prepare -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive } catch { $Caught = $_.Exception }
             Test-VmAuthFailure -Exception $Caught | Should -BeTrue
-            $Order[-1] | Should -Be 'restore:DSO-26H2-Pro'
+            $Order[-1] | Should -Be 'restore:DSO-PL-Pro'
         }
         It 'ręczny test UAC Finish: bez revertu i startu na początku, zbieranie, usunięcie sesji, ZAWSZE revert; plik c4-manual-uac-finish.json' {
             Mock -ModuleName ExploreCommon Invoke-Command { if ($ArgumentList) { $script:Order.Add('collect'); '{"meta":{},"probes":{}}' } else { throw 'x' } }
-            $Path = Invoke-C4ManualUacTest -Mode Finish -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive
-            ($Order -join ',') | Should -Be 'ready:DSO-26H2-Pro,collect,removesession,restore:DSO-26H2-Pro'
-            $Path | Should -Be (Join-Path $TestDrive 'DSO-26H2-Pro\c4-manual-uac-finish.json')
+            $Path = Invoke-C4ManualUacTest -Mode Finish -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive
+            ($Order -join ',') | Should -Be 'ready:DSO-PL-Pro,collect,removesession,restore:DSO-PL-Pro'
+            $Path | Should -Be (Join-Path $TestDrive 'DSO-PL-Pro\c4-manual-uac-finish.json')
         }
         It 'ręczny test UAC Finish: revert także po błędzie zbierania i po błędzie gotowości' {
             Mock -ModuleName ExploreCommon Invoke-Command { throw 'zerwana sesja' }
-            { Invoke-C4ManualUacTest -Mode Finish -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive } | Should -Throw '*zerwana sesja*'
-            $Order[-1] | Should -Be 'restore:DSO-26H2-Pro'
+            { Invoke-C4ManualUacTest -Mode Finish -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive } | Should -Throw '*zerwana sesja*'
+            $Order[-1] | Should -Be 'restore:DSO-PL-Pro'
             $Order.Clear()
             Mock -ModuleName ExploreCommon Wait-VmReady { throw 'VM nie była gotowa' }
-            { Invoke-C4ManualUacTest -Mode Finish -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive } | Should -Throw '*nie była gotowa*'
-            $Order[-1] | Should -Be 'restore:DSO-26H2-Pro'
+            { Invoke-C4ManualUacTest -Mode Finish -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive } | Should -Throw '*nie była gotowa*'
+            $Order[-1] | Should -Be 'restore:DSO-PL-Pro'
             ($Order | Where-Object { $_ -like 'start:*' }) | Should -BeNullOrEmpty
         }
         It 'ręczny test UAC Prepare: niekompletny wynik z VM => wyjątek, revert jako ostatnie wywołanie, plik JSON zostaje do diagnozy' {
             Mock -ModuleName ExploreCommon Invoke-Command { if ($ArgumentList) { $script:Order.Add('collect'); '{"meta":{},"probes":{"manualUac":[{"Name":"przygotowanie-reczny-uac","Error":"brak konta dso","Extra":null}]}}' } else { throw 'x' } }
-            { Invoke-C4ManualUacTest -Mode Prepare -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive } | Should -Throw '*niekompletna*brak konta dso*'
-            $Order[-1] | Should -Be 'restore:DSO-26H2-Pro'
-            Test-Path -LiteralPath (Join-Path $TestDrive 'DSO-26H2-Pro\c4-manual-uac-prepare.json') | Should -BeTrue
+            { Invoke-C4ManualUacTest -Mode Prepare -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive } | Should -Throw '*niekompletna*brak konta dso*'
+            $Order[-1] | Should -Be 'restore:DSO-PL-Pro'
+            Test-Path -LiteralPath (Join-Path $TestDrive 'DSO-PL-Pro\c4-manual-uac-prepare.json') | Should -BeTrue
         }
         It 'ręczny test UAC Prepare: kompletny wynik z VM => VM zostaje (brak końcowego revertu)' {
             $Good = Get-GoodPrepareJson
             $script:GoodJson = $Good
             Mock -ModuleName ExploreCommon Invoke-Command { if ($ArgumentList) { $script:Order.Add('collect'); $script:GoodJson } else { throw 'x' } }
-            $null = Invoke-C4ManualUacTest -Mode Prepare -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive
+            $null = Invoke-C4ManualUacTest -Mode Prepare -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive
             $Order[-1] | Should -Be 'removesession'
         }
         It 'ręczny test UAC Finish: Wait-VmReady bez wymagania sesji dso (-SkipInteractiveUserCheck), Prepare z wymaganiem' {
             Mock -ModuleName ExploreCommon Invoke-Command { if ($ArgumentList) { $script:Order.Add('collect'); '{"meta":{},"probes":{}}' } else { throw 'x' } }
-            $null = Invoke-C4ManualUacTest -Mode Finish -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive
+            $null = Invoke-C4ManualUacTest -Mode Finish -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive
             Should -Invoke -ModuleName ExploreCommon Wait-VmReady -Times 1 -Exactly -ParameterFilter { $SkipInteractiveUserCheck.IsPresent }
         }
         It 'ręczny test UAC Finish: błąd odczytu => JSON z błędem zapisany PRZED revertem, potem revert; brak poświadczeń też kończy się revertem' {
             Mock -ModuleName ExploreCommon Invoke-Command { throw 'zerwana sesja' }
-            { Invoke-C4ManualUacTest -Mode Finish -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive } | Should -Throw '*zerwana sesja*'
-            $Order[-1] | Should -Be 'restore:DSO-26H2-Pro'
-            $Saved = Get-Content -LiteralPath (Join-Path $TestDrive 'DSO-26H2-Pro\c4-manual-uac-finish.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+            { Invoke-C4ManualUacTest -Mode Finish -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive } | Should -Throw '*zerwana sesja*'
+            $Order[-1] | Should -Be 'restore:DSO-PL-Pro'
+            $Saved = Get-Content -LiteralPath (Join-Path $TestDrive 'DSO-PL-Pro\c4-manual-uac-finish.json') -Raw -Encoding UTF8 | ConvertFrom-Json
             $Saved.error | Should -Match 'zerwana sesja'
             $Saved.mode | Should -Be 'Finish'
             $Order.Clear()
             Mock -ModuleName ExploreCommon Get-DsoVmCredential { throw 'brak poświadczeń' }
-            { Invoke-C4ManualUacTest -Mode Finish -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive } | Should -Throw '*brak poświadczeń*'
-            $Order | Should -Be @('restore:DSO-26H2-Home')
+            { Invoke-C4ManualUacTest -Mode Finish -VmName 'DSO-PL-Home' -OutDirectory $TestDrive } | Should -Throw '*brak poświadczeń*'
+            $Order | Should -Be @('restore:DSO-PL-Home')
         }
         It 'ręczny test UAC: tylko VM z allowlisty' {
             { Invoke-C4ManualUacTest -Mode Prepare -VmName 'ObcaVM' -OutDirectory $TestDrive } | Should -Throw
         }
         It 'checkpoint z parametru trafia do revertu; skrypt nie dubluje logiki Hyper-V (tylko Invoke-ExploreAll)' {
-            $null = Invoke-C4Exploration -VmName @('DSO-26H2-Home') -OutDirectory $TestDrive -CheckpointName 'inny'
+            $null = Invoke-C4Exploration -VmName @('DSO-PL-Home') -OutDirectory $TestDrive -CheckpointName 'inny'
             Should -Invoke -ModuleName ExploreCommon Restore-VmCleanState -Times 2 -Exactly -ParameterFilter { $CheckpointName -eq 'inny' }
             $Text = [System.IO.File]::ReadAllText($script:C4ScriptPath, [System.Text.Encoding]::UTF8)
             $Text | Should -Match 'Invoke-ExploreAll'

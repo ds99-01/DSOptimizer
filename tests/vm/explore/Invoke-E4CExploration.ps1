@@ -4,18 +4,18 @@ Instrukcja uruchomienia:
     VM utworzone wcześniej przez New-TestVm.ps1 (checkpoint 'czysta-26H2', poświadczenia w %LOCALAPPDATA%\DSOptimizer-vm, autologon 'dso').
     Build DSOptimizera potrzebny tylko w fazie cli-install (pozostałe fazy wołają wyłącznie winget i whoami w VM).
     Przykład (jedna VM na proces; Home i Pro można uruchomić równolegle w dwóch sesjach, każda z własną VM):
-        .\tests\vm\explore\Invoke-E4CExploration.ps1 -VmName DSO-26H2-Pro -OutDirectory $env:TEMP\dso-explore\exploration
+        .\tests\vm\explore\Invoke-E4CExploration.ps1 -VmName DSO-EN-Pro -OutDirectory $env:TEMP\dso-explore\exploration
     Bez -Phase: wszystkie fazy (baseline zawsze pierwsza; adminprotection tylko na Pro, tuż przed final).
     -NoNetwork: pomija fazy network i install-all; karta VM nie jest podłączana do 'Default Switch'.
     -ShowPlan: wypisuje rozstrzygnięte argumenty i plan (JSON) i kończy, nic nie uruchamia.
     Faza cli-install (Task 11) tylko jawnie i na czystej VM, po `dotnet build DSOptimizer.sln -c Release`:
-        .\tests\vm\explore\Invoke-E4CExploration.ps1 -VmName DSO-26H2-Pro -Phase cli-install -OutDirectory $env:TEMP\dso-explore\cli-install
+        .\tests\vm\explore\Invoke-E4CExploration.ps1 -VmName DSO-EN-Pro -Phase cli-install -OutDirectory $env:TEMP\dso-explore\cli-install
         Build kopiowany do C:\dso\app (Copy-DsoBuildToVm, -BuildDirectory domyślnie src\DSOptimizer.App\bin\Release\net481); Pro 1–2 godziny.
     -CliIds <id>[,<id>…] (plan RustDesk): własna lista serii cli-install zamiast planu (Pro = cała apps.json, Home = CliHomeIds), każde id
     install.<nazwa> albo winget:<pełny id>, bez spacji i przecinków; -CliRepeat: po --list-install drugie --install-apps z tymi samymi id
     (raport cli-install-again.json, np. „Była już zainstalowana” bez pobierania). Przykład (Task 7, po jednej VM na proces):
-        .\tests\vm\explore\Invoke-E4CExploration.ps1 -VmName DSO-26H2-Pro -Phase cli-install -CliIds install.7zip,install.rustdesk -CliRepeat -OutDirectory $env:TEMP\dso-explore\rustdesk-cli\pro
-        .\tests\vm\explore\Invoke-E4CExploration.ps1 -VmName DSO-26H2-Home -Phase cli-install -CliIds install.rustdesk -CliRepeat -OutDirectory $env:TEMP\dso-explore\rustdesk-cli\home
+        .\tests\vm\explore\Invoke-E4CExploration.ps1 -VmName DSO-EN-Pro -Phase cli-install -CliIds install.7zip,install.rustdesk -CliRepeat -OutDirectory $env:TEMP\dso-explore\rustdesk-cli\pro
+        .\tests\vm\explore\Invoke-E4CExploration.ps1 -VmName DSO-EN-Home -Phase cli-install -CliIds install.rustdesk -CliRepeat -OutDirectory $env:TEMP\dso-explore\rustdesk-cli\home
     Przykłady działają w sesji PowerShell; przez powershell.exe -File lista „a,b” przychodzi jako jeden napis z przecinkiem (odrzucony walidacją,
     VM nietknięta) – wtedy: powershell.exe -Command "& .\tests\vm\explore\Invoke-E4CExploration.ps1 -CliIds @('install.7zip','install.rustdesk') …".
     -OutDirectory jest wymagany: ścieżka bezwzględna poza repo; w repo tylko katalog ignorowany przez git.
@@ -41,15 +41,15 @@ Opis działania:
     Highest i Limited, przywrócenie wartości + restart) -> final (bez sieci, źródło już pobrane: install, search, show, list, procesy).
     Przebieg jednej VM: revert do 'czysta-26H2' -> start (bez sieci) -> gotowość (zalogowany dso) -> fazy -> kopia surowych plików
     -> ZAWSZE (finally) revert, odłączenie karty i sprawdzenie stanu końcowego (VM Off, karta bez przełącznika) przed zapisem JSON.
-    Ostatni bezpiecznik po stronie VM: Assert-E4CInsideVm (nazwa komputera DSO-26H2-HOME/PRO i brak DSO_VM_TESTS_MOCK_ONLY) na
+    Ostatni bezpiecznik po stronie VM: Assert-E4CInsideVm (nazwa komputera z listy (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) i brak DSO_VM_TESTS_MOCK_ONLY) na
     początku każdej funkcji ze skutkiem. Pierwszy błąd uwierzytelnienia przerywa cały skrypt (blokada konta). Skrypt dotyka wyłącznie
-    VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy innej VM; na hoście nie uruchamia winget i niczego nie zmienia.
+    VM DSO z listy `Get-DsoVmDefinitions` (VmCommon) (ValidateSet), nigdy innej VM; na hoście nie uruchamia winget i niczego nie zmienia.
     Wynik: <OutDirectory>\<VmName>\e4c.json (UTF-8) i <OutDirectory>\<VmName>\raw\*.
     Kod wyjścia: 0 gdy wszystkie wybrane VM zebrane bez błędu przebiegu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName = @('DSO-26H2-Pro', 'DSO-26H2-Home'),
+    [ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string[]]$VmName = @('DSO-EN-Pro', 'DSO-EN-Home'),
     [ValidateSet('baseline', 'offline-fresh', 'network', 'install-all', 'cli-install', 'adminprotection', 'final')][string[]]$Phase = @('baseline', 'offline-fresh', 'network', 'install-all', 'adminprotection', 'final'),
     [string]$OutDirectory,
     [string]$CheckpointName = 'czysta-26H2',
@@ -64,6 +64,7 @@ param(
 )
 
 Import-Module (Join-Path $PSScriptRoot 'ExploreCommon.psm1') -Force
+Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'modules\VmCommon.psm1')
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Plan (dane z planu Tasku 2 Etapu 4c i spec pkt 4).
@@ -138,19 +139,19 @@ function Test-E4CVmComputerName {
     [CmdletBinding()]
     [OutputType([bool])]
     param([AllowEmptyString()][string]$ComputerName)
-    return (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -contains ([string]$ComputerName).ToUpperInvariant())
+    return (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -contains ([string]$ComputerName).ToUpperInvariant())
 }
 
 function Assert-E4CInsideVm {
     # Ostatni bezpiecznik: sondy E4C rejestrują zadania Harmonogramu, uruchamiają winget (instalacje), piszą do rejestru i restartują
-    # komputer, więc działają WYŁĄCZNIE w VM DSO-26H2-Home/Pro i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY).
+    # komputer, więc działają WYŁĄCZNIE w VM DSO z listy `Get-DsoVmDefinitions` (VmCommon) i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY).
     [CmdletBinding()]
     param([string]$ComputerName = $env:COMPUTERNAME)
     if ($env:DSO_VM_TESTS_MOCK_ONLY) {
         throw 'Tryb DSO_VM_TESTS_MOCK_ONLY: sondy E4C nie mogą działać w testach na mockach (nic nie zostało uruchomione).'
     }
     if (-not (Test-E4CVmComputerName -ComputerName $ComputerName)) {
-        throw "Sondy E4C działają tylko w VM DSO-26H2-HOME/DSO-26H2-PRO (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
+        throw "Sondy E4C działają tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
     }
 }
 
@@ -303,7 +304,7 @@ function Get-E4CRunnerScript {
     param()
     return @'
 param([Parameter(Mandatory)][string]$Request)
-# Runner pomiaru E4C (DSOptimizer, tests\vm\explore\Invoke-E4CExploration.ps1). Tylko w VM DSO-26H2-HOME/PRO.
+# Runner pomiaru E4C (DSOptimizer, tests\vm\explore\Invoke-E4CExploration.ps1). Tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME).
 $ErrorActionPreference = 'Stop'
 $Req = Get-Content -LiteralPath $Request -Raw -Encoding UTF8 | ConvertFrom-Json
 $Result = [ordered]@{
@@ -322,7 +323,7 @@ function Save-RunnerJson([string]$Path, $Data) {
 }
 try {
     if ($env:DSO_VM_TESTS_MOCK_ONLY) { throw 'DSO_VM_TESTS_MOCK_ONLY: runner nie uruchamia niczego w testach.' }
-    if (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Runner dziala tylko w VM DSO-26H2-HOME/PRO (komputer: '$env:COMPUTERNAME')." }
+    if (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Runner dziala tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (komputer: '$env:COMPUTERNAME')." }
     $Identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     $Result.Sid = $Identity.User.Value
     $Result.Account = $Identity.Name
@@ -1160,10 +1161,10 @@ function Get-E4CInstallIds {
     [CmdletBinding()]
     [OutputType([string[]])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [Parameter(Mandatory)]$Plan
     )
-    if ($VmName -eq 'DSO-26H2-Home') { return @($Plan.HomeInstall | ForEach-Object { [string]$_ }) }
+    if ((Get-DsoVmDefinition -VmName $VmName).Edition -eq 'Home') { return @($Plan.HomeInstall | ForEach-Object { [string]$_ }) }
     $Runtimes = @($Plan.Apps | Where-Object { $_.Category -eq 'runtimes' } | ForEach-Object { [string]$_.WingetId })
     $Rest = @($Plan.Apps | Where-Object { $_.Category -ne 'runtimes' } | ForEach-Object { [string]$_.WingetId })
     return @($Runtimes + $Rest)
@@ -1175,11 +1176,11 @@ function Get-E4CCliInstallIds {
     [CmdletBinding()]
     [OutputType([string[]])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [Parameter(Mandatory)]$Plan,
         [string]$AppsCatalogPath = (Join-Path (Get-DsoRepoRoot) 'src\DSOptimizer.Catalog\catalog\apps.json')
     )
-    if ($VmName -eq 'DSO-26H2-Home') { return @($Plan.CliHomeIds | ForEach-Object { [string]$_ }) }
+    if ((Get-DsoVmDefinition -VmName $VmName).Edition -eq 'Home') { return @($Plan.CliHomeIds | ForEach-Object { [string]$_ }) }
     if (-not [System.IO.File]::Exists($AppsCatalogPath)) { throw "Brak listy aplikacji '$AppsCatalogPath'." }
     $Entries = @((Get-Content -LiteralPath $AppsCatalogPath -Raw -Encoding UTF8 | ConvertFrom-Json).entries | Where-Object { $null -ne $_ })
     if ($Entries.Count -eq 0) { throw "Lista aplikacji '$AppsCatalogPath' jest pusta." }
@@ -1238,13 +1239,13 @@ function Get-E4CPhaseOrder {
     [OutputType([string[]])]
     param(
         [Parameter(Mandatory)][string[]]$Phase,
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [bool]$Network = $true
     )
     $Order = @('baseline', 'offline-fresh', 'network', 'install-all', 'cli-install', 'adminprotection', 'final')
     $Wanted = @($Phase) + @('baseline')
     if (-not $Network) { $Wanted = @($Wanted | Where-Object { @(Get-E4CNetworkPhases) -notcontains $_ }) }
-    if ($VmName -ne 'DSO-26H2-Pro') { $Wanted = @($Wanted | Where-Object { $_ -ne 'adminprotection' }) }
+    if ((Get-DsoVmDefinition -VmName $VmName).Edition -ne 'Pro') { $Wanted = @($Wanted | Where-Object { $_ -ne 'adminprotection' }) }
     return @($Order | Where-Object { $Wanted -contains $_ })
 }
 
@@ -1306,7 +1307,7 @@ function Restart-E4CVmAndWait {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][AllowNull()][System.Management.Automation.Runspaces.PSSession]$Session,
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [Parameter(Mandatory)][pscredential]$Credential,
         [Parameter(Mandatory)][string]$RemoteScript,
         [int]$ReadyTimeoutSeconds = 1200
@@ -1360,7 +1361,7 @@ function Complete-E4CVmCleanup {
     # Koniec przebiegu: revert do checkpointu, odłączenie karty i sprawdzenie kontraktu stanu końcowego: VM Off i karta bez przełącznika.
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [Parameter(Mandatory)][string]$CheckpointName
     )
     $Out = [ordered]@{ Ok = $false; RevertError = $null; DisconnectError = $null; CheckError = $null; FinalState = $null; FinalSwitch = $null; Violations = @(); Problems = @() }
@@ -1386,7 +1387,7 @@ function Invoke-E4CVmRun {
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [Parameter(Mandatory)][string[]]$Phases,
         [string]$CheckpointName = 'czysta-26H2',

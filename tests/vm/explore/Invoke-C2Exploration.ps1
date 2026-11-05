@@ -5,7 +5,7 @@ Instrukcja uruchomienia:
     Obie VM, po kolei (Home, potem Pro):
         .\tests\vm\explore\Invoke-C2Exploration.ps1 -OutDirectory C:\ścieżka\do\wyników
     Jedna VM:
-        .\tests\vm\explore\Invoke-C2Exploration.ps1 -VmName DSO-26H2-Pro -OutDirectory C:\ścieżka\do\wyników
+        .\tests\vm\explore\Invoke-C2Exploration.ps1 -VmName DSO-PL-Pro -OutDirectory C:\ścieżka\do\wyników
     Bez -OutDirectory wynik trafia do tests\vm\out\c2-<data> (katalog out\ jest w .gitignore).
 Opis działania:
     Skrypt zbiera dowody z prawdziwej VM 26H2 dla partii C2 (pozycje perf.*). Wartości rejestru i stanu nie pochodzą z pamięci
@@ -31,12 +31,12 @@ Opis działania:
     zbieranie, a na końcu ZAWSZE (finally) zatrzymanie i powrót do checkpointu. Pierwszy błąd uwierzytelnienia przerywa cały skrypt
     (bez prób na drugiej VM, blokada konta). Inny błąd jednej VM jest zapisany i nie przerywa drugiej.
     Wynik: <OutDirectory>\<VmName>\c2-exploration.json (UTF-8).
-    Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), na hoście niczego nie zmienia.
+    Skrypt dotyka wyłącznie VM DSO-PL-Home i DSO-PL-Pro (ValidateSet), na hoście niczego nie zmienia.
     Kod wyjścia: 0 gdy wszystkie wybrane VM zebrane bez błędu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName = @('DSO-26H2-Home', 'DSO-26H2-Pro'),
+    [ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName = @('DSO-PL-Home', 'DSO-PL-Pro'),
     [string]$OutDirectory,
     [string]$CheckpointName = 'czysta-26H2',
     [ValidateRange(60, 7200)][int]$ReadyTimeoutSeconds = 1200
@@ -264,7 +264,7 @@ function Invoke-C2Exploration {
     # Wszystkie wybrane VM po kolei. Błąd uwierzytelnienia = stop całości; inny błąd = zapis i dalej (logika we wspólnym module).
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [string]$CheckpointName = 'czysta-26H2',
         [int]$ReadyTimeoutSeconds = 1200

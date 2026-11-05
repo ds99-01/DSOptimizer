@@ -13,7 +13,7 @@ Opis działania:
     (rozpoznany przez Test-VmAuthFailure z VmHost, nie przez kopię tekstu). Dla skryptów z własną orkiestracją (od E5): reguła katalogu
     wyników (Assert-ExploreOutDirectory), kopia surowych plików z VM kawałkami Base64 (Copy-ExploreRawFiles) i kontrakt stanu końcowego
     VM (Complete-ExploreVmCleanup: revert, odłączenie dodanych dysków i karty, VM Off, karta bez przełącznika, dyski odłączone).
-    Dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro; na hoście niczego nie zmienia.
+    Dotyka wyłącznie VM DSO z listy `Get-DsoVmDefinitions` (VmCommon); na hoście niczego nie zmienia.
 #>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -406,7 +406,7 @@ function Complete-ExploreVmCleanup {
     # nie jest podłączony. Błąd jednego kroku nie przerywa kolejnych; wszystko trafia do Problems (Ok = brak problemów).
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [Parameter(Mandatory)][string]$CheckpointName,
         [AllowEmptyCollection()][string[]]$DetachDiskPath = @()
     )
@@ -452,7 +452,7 @@ function Save-ExploreResult {
     param(
         [Parameter(Mandatory)]$Result,
         [Parameter(Mandatory)][string]$OutDirectory,
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [Parameter(Mandatory)][ValidatePattern('^[A-Za-z0-9-]+\.json\z')][string]$FileName
     )
     # Ścieżka względna liczona od bieżącej lokalizacji PowerShell ($PWD), bo katalog procesu .NET bywa inny; File.WriteAllText używa tego drugiego.
@@ -472,7 +472,7 @@ function Invoke-ExploreVmRun {
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [Parameter(Mandatory)][ValidatePattern('^[A-Za-z0-9-]+\.json\z')][string]$FileName,
         [Parameter(Mandatory)][string]$RemoteScript,
@@ -571,7 +571,7 @@ function Invoke-ExploreAll {
     # Wszystkie wybrane VM po kolei. Błąd uwierzytelnienia (Test-VmAuthFailure) = stop całości; inny błąd = zapis i dalej.
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string[]]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [Parameter(Mandatory)][ValidatePattern('^[A-Za-z0-9-]+\.json\z')][string]$FileName,
         [Parameter(Mandatory)][string]$RemoteScript,

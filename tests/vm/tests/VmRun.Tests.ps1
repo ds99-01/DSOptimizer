@@ -86,36 +86,53 @@ Describe 'ConvertTo-DsoCliArguments' {
 Describe 'Invoke-DsoCli' {
     It 'parsuje raport' {
         Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { @{ ExitCode = 0; TimedOut = $false; Json = '{"exitCode":0,"state":"Applied"}' } }
-        $Result = Invoke-DsoCli -Session $null -ExePath 'C:\dso\app\DSOptimizer.exe' -Arguments @('--detect', 'a.b') -OutPath 'C:\dso\out\a.json'
+        $Result = Invoke-DsoCli -Session $null -ExePath 'C:\dso\app\DSOptimizer.exe' -Arguments @('--detect', 'a.b') -OutPath 'C:\dso\out\a.json' -Language pl
         $Result.Report.state | Should -Be 'Applied'
     }
-    It 'dokleja --lang pl na końcu argumentów (PS Direct)' {
+    It 'Language pl dokleja --lang pl na końcu argumentów (PS Direct)' {
         Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $global:DsoLangArgs = $ArgumentList[1]; @{ ExitCode = 0; TimedOut = $false; Json = $null } }
-        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @('--detect', 'a.b', '--out', 'C:\o.json') -OutPath 'C:\o.json'
+        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @('--detect', 'a.b', '--out', 'C:\o.json') -OutPath 'C:\o.json' -Language pl
         @($global:DsoLangArgs) | Should -Be @('--detect', 'a.b', '--out', 'C:\o.json', '--lang', 'pl')
         Remove-Variable -Name DsoLangArgs -Scope Global -ErrorAction SilentlyContinue
     }
-    It 'bez argumentów też dostaje samo --lang pl' {
+    It 'Language en dokleja --lang en' {
         Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $global:DsoLangArgs = $ArgumentList[1]; @{ ExitCode = 0; TimedOut = $false; Json = $null } }
-        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @() -OutPath 'C:\o.json'
+        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @('--detect', 'x', '--out', 'C:\o.json') -OutPath 'C:\o.json' -Language en
+        @($global:DsoLangArgs) | Should -Be @('--detect', 'x', '--out', 'C:\o.json', '--lang', 'en')
+        Remove-Variable -Name DsoLangArgs -Scope Global -ErrorAction SilentlyContinue
+    }
+    It 'Language system nie dokleja --lang' {
+        Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $global:DsoLangArgs = $ArgumentList[1]; @{ ExitCode = 0; TimedOut = $false; Json = $null } }
+        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @('--detect', 'x', '--out', 'C:\o.json') -OutPath 'C:\o.json' -Language system
+        @($global:DsoLangArgs) | Should -Not -Contain '--lang'
+        @($global:DsoLangArgs) | Should -Be @('--detect', 'x', '--out', 'C:\o.json')
+        Remove-Variable -Name DsoLangArgs -Scope Global -ErrorAction SilentlyContinue
+    }
+    It 'bez argumentów Language pl daje samo --lang pl' {
+        Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $global:DsoLangArgs = $ArgumentList[1]; @{ ExitCode = 0; TimedOut = $false; Json = $null } }
+        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @() -OutPath 'C:\o.json' -Language pl
         @($global:DsoLangArgs) | Should -Be @('--lang', 'pl')
         Remove-Variable -Name DsoLangArgs -Scope Global -ErrorAction SilentlyContinue
     }
-    It 'dokleja --lang pl także w gałęzi -RunAsUser (zadanie Harmonogramu)' {
+    It 'Language en dokleja --lang en także w gałęzi -RunAsUser (zadanie Harmonogramu)' {
         Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $global:DsoLangArgs = $ArgumentList[1]; @{ ExitCode = 0; TimedOut = $false; Json = $null } }
-        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @('--list-apps') -OutPath 'C:\o.json' -RunAsUser 'dso'
-        @($global:DsoLangArgs) | Should -Be @('--list-apps', '--lang', 'pl')
-        Remove-Variable -Name DsoLangArgs -Scope Global -ErrorAction SilentlyContinue
-    }
-    It 'nie dubluje --lang, gdy wywołujący już go podał' {
-        Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $global:DsoLangArgs = $ArgumentList[1]; @{ ExitCode = 0; TimedOut = $false; Json = $null } }
-        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @('--list-apps', '--lang', 'en') -OutPath 'C:\o.json'
+        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @('--list-apps') -OutPath 'C:\o.json' -RunAsUser 'dso' -Language en
         @($global:DsoLangArgs) | Should -Be @('--list-apps', '--lang', 'en')
         Remove-Variable -Name DsoLangArgs -Scope Global -ErrorAction SilentlyContinue
     }
+    It '--lang w argumentach = wyjątek przed sesją' {
+        Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { @{ ExitCode = 0; TimedOut = $false; Json = $null } }
+        { Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @('--detect', 'x', '--lang', 'pl') -OutPath 'C:\o.json' -Language pl } | Should -Throw '*-Language*'
+        Should -Invoke -ModuleName VmRun Invoke-Command -Times 0
+    }
+    It 'Language jest obowiązkowy i przyjmuje tylko pl, en, system' {
+        $Param = (Get-Command Invoke-DsoCli).Parameters['Language']
+        $Param.Attributes.Mandatory | Should -Contain $true
+        ($Param.Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }).ValidValues | Should -Be @('pl', 'en', 'system')
+    }
     It 'bez pliku JSON zwraca Report = null i zachowuje ExitCode' {
         Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { @{ ExitCode = 740; TimedOut = $false; Json = $null } }
-        $Result = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @() -OutPath 'C:\o.json'
+        $Result = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @() -OutPath 'C:\o.json' -Language pl
         $Result.Report | Should -BeNullOrEmpty
         $Result.ExitCode | Should -Be 740
     }
@@ -168,19 +185,19 @@ Describe 'Invoke-VmCase' {
         $script:Layout = Get-DsoVmLayout
     }
     It 'Full: 5 wywołań CLI w kolejności detect, apply, detect, undo, detect' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @('x'); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @('x'); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         $Record.Steps.Step | Should -Be @('detect-before', 'apply', 'detect-after-apply', 'undo', 'detect-after-undo')
         Should -Invoke -ModuleName VmRun Invoke-VmSetup -Times 1
     }
     It 'ApplyOnly: 3 wywołania' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         @($Record.Steps).Count | Should -Be 3
         $Record.Steps.Step | Should -Be @('detect-before', 'apply', 'detect-after-apply')
     }
     It 'Invoke-VmCase używa innej ścieżki --out dla każdego wywołania' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'Full'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
         $global:DsoOutPaths = [System.Collections.Generic.List[string]]::new()
         Mock -ModuleName VmRun Invoke-DsoCli { $global:DsoOutPaths.Add($OutPath); [pscustomobject]@{ ExitCode = 0; TimedOut = $false; Report = [pscustomobject]@{ exitCode = 0 }; Json = '{}'; ReportError = $null } }
         Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout | Out-Null
@@ -190,7 +207,7 @@ Describe 'Invoke-VmCase' {
         Remove-Variable -Name DsoOutPaths -Scope Global
     }
     It 'NotWrittenTo trafia do Get-VmStateSnapshot opakowane w Registry i Services' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }
             Expect = @{ NotWrittenTo = @(@{ Path = 'HKCU\S'; Name = 'V' }) } }
         $global:DsoSnapArgs = [System.Collections.Generic.List[object]]::new()
         Mock -ModuleName VmRun Get-VmStateSnapshot { $global:DsoSnapArgs.Add($Snapshot); [pscustomobject]@{ Registry = @(); Services = @() } }
@@ -202,13 +219,13 @@ Describe 'Invoke-VmCase' {
         Remove-Variable -Name DsoSnapArgs -Scope Global
     }
     It 'liczy punkty przywracania tylko gdy Expect.RestorePointCreated; brak oczekiwanego wzrostu = jeden odczyt po apply' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'required'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ RestorePointCreated = $false } }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'required'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ RestorePointCreated = $false } }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         $Record.RestorePointCountBefore | Should -Be 1
         $Record.RestorePointCountAfter | Should -Be 1
         Should -Invoke -ModuleName VmRun Get-VmRestorePointCount -Times 2 -Exactly
         Should -Invoke -ModuleName VmRun Start-Sleep -Times 0 -Exactly
-        $NoExpect = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
+        $NoExpect = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
         $Rec2 = Invoke-VmCase -Session $null -Case $NoExpect -Layout $script:Layout
         $Rec2.RestorePointCountBefore | Should -BeNullOrEmpty
         $Rec2.RestorePointCountAfter | Should -BeNullOrEmpty
@@ -216,7 +233,7 @@ Describe 'Invoke-VmCase' {
     It 'RestorePointCreated = $true: licznik po apply odpytywany do wzrostu (wyścig pomiaru)' {
         $global:DsoCounts = [System.Collections.Generic.Queue[int]]::new([int[]]@(1, 1, 1, 2))
         Mock -ModuleName VmRun Get-VmRestorePointCount { $global:DsoCounts.Dequeue() }
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'required'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ RestorePointCreated = $true } }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'required'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ RestorePointCreated = $true } }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         $Record.RestorePointCountBefore | Should -Be 1
         $Record.RestorePointCountAfter | Should -Be 2
@@ -225,7 +242,7 @@ Describe 'Invoke-VmCase' {
         Remove-Variable -Name DsoCounts -Scope Global
     }
     It 'RestorePointCreated = $true: licznik nie rośnie = odpytywanie kończy się po 10 s (41 odczytów po apply)' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'required'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ RestorePointCreated = $true } }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'required'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ RestorePointCreated = $true } }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         $Record.RestorePointCountBefore | Should -Be 1
         $Record.RestorePointCountAfter | Should -Be 1
@@ -235,7 +252,7 @@ Describe 'Invoke-VmCase' {
     It 'RestorePointCreated = $true: od razu wzrost = brak czekania' {
         $global:DsoCounts = [System.Collections.Generic.Queue[int]]::new([int[]]@(3, 4))
         Mock -ModuleName VmRun Get-VmRestorePointCount { $global:DsoCounts.Dequeue() }
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'required'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ RestorePointCreated = $true } }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'required'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ RestorePointCreated = $true } }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         $Record.RestorePointCountAfter | Should -Be 4
         Should -Invoke -ModuleName VmRun Start-Sleep -Times 0 -Exactly
@@ -297,7 +314,7 @@ Describe 'Poprawki rundy 1' {
         It 'kasuje stary raport, zwraca ExitCode 740 i Report = null' {
             $Out = Join-Path $script:Dir 'o.json'
             Set-Content -LiteralPath $Out -Value '{"state":"Applied"}' -Encoding UTF8
-            $Result = Invoke-DsoCli -Session $null -ExePath "$env:SystemRoot\System32\cmd.exe" -Arguments '/c', 'exit', '740' -OutPath $Out
+            $Result = Invoke-DsoCli -Session $null -ExePath "$env:SystemRoot\System32\cmd.exe" -Arguments '/c', 'exit', '740' -OutPath $Out -Language pl
             $Result.ExitCode | Should -Be 740
             $Result.TimedOut | Should -BeFalse
             $Result.Report | Should -BeNullOrEmpty
@@ -305,7 +322,7 @@ Describe 'Poprawki rundy 1' {
         }
         It 'przekroczenie czasu: ExitCode -1, TimedOut, proces zabity' {
             $Out = Join-Path $script:Dir 'o2.json'
-            $Result = Invoke-DsoCli -Session $null -ExePath "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -Arguments '-NoProfile', '-Command', 'Start-Sleep', '37;#' -OutPath $Out -TimeoutSeconds 1
+            $Result = Invoke-DsoCli -Session $null -ExePath "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -Arguments '-NoProfile', '-Command', 'Start-Sleep', '37;#' -OutPath $Out -TimeoutSeconds 1 -Language pl
             $Result.ExitCode | Should -Be -1
             $Result.TimedOut | Should -BeTrue
             Start-Sleep -Milliseconds 500
@@ -314,7 +331,7 @@ Describe 'Poprawki rundy 1' {
         It 'uszkodzony JSON: Report null, ReportError wypełniony, Json zachowany' {
             $Out = Join-Path $script:Dir 'o3.json'
             Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { @{ ExitCode = 0; TimedOut = $false; Json = '{zepsuty' } }
-            $Result = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @() -OutPath $Out
+            $Result = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @() -OutPath $Out -Language pl
             $Result.Report | Should -BeNullOrEmpty
             $Result.ReportError | Should -Not -BeNullOrEmpty
             $Result.Json | Should -Be '{zepsuty'
@@ -376,7 +393,7 @@ Describe 'Poprawki rundy 1' {
         Mock -ModuleName VmRun Invoke-VmSetup {}
         Mock -ModuleName VmRun Get-VmStateSnapshot { [pscustomobject]@{ Registry = @(); Services = @() } }
         Mock -ModuleName VmRun Invoke-DsoCli { [pscustomobject]@{ ExitCode = 0; TimedOut = $false; Report = $null; Json = '{zepsuty'; ReportError = 'zly json' } }
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'ApplyOnly'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout (Get-DsoVmLayout)
         $Record.Steps[0].Json | Should -Be '{zepsuty'
         $Record.Steps[0].ReportError | Should -Be 'zly json'
@@ -452,7 +469,7 @@ Describe 'Task 6: Invoke-VmCase DetectOnly i katalog wbudowany' {
         $script:Layout = Get-DsoVmLayout
     }
     It 'DetectOnly woła CLI raz (detect) i zwraca SnapshotBefore' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'DetectOnly'; RestorePoint = 'skip'; Setup = @('x'); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ Before = 'NotApplied' } }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'DetectOnly'; RestorePoint = 'skip'; Setup = @('x'); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ Before = 'NotApplied' } }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         $Record.Steps.Step | Should -Be @('detect-before')
         Should -Invoke -ModuleName VmRun Invoke-DsoCli -Times 1 -Exactly -ParameterFilter { $Arguments[0] -eq '--detect' }
@@ -460,12 +477,12 @@ Describe 'Task 6: Invoke-VmCase DetectOnly i katalog wbudowany' {
         $Record.SnapshotBefore | Should -Not -BeNullOrEmpty
     }
     It 'Catalog = BuiltIn: argumenty CLI bez --catalog' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'DetectOnly'; RestorePoint = 'skip'; Catalog = 'BuiltIn'; Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ Before = 'NotApplied' } }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'DetectOnly'; RestorePoint = 'skip'; Catalog = 'BuiltIn'; Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ Before = 'NotApplied' } }
         Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout | Out-Null
         Should -Invoke -ModuleName VmRun Invoke-DsoCli -Times 1 -Exactly -ParameterFilter { $Arguments -notcontains '--catalog' }
     }
     It 'Catalog domyślny (Test): argumenty zawierają --catalog z katalogiem VM' {
-        $Case = @{ Name = 'c'; TweakId = 'a.b'; Flow = 'DetectOnly'; RestorePoint = 'skip'; Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ Before = 'NotApplied' } }
+        $Case = @{ CliLanguage = 'pl'; Name = 'c'; TweakId = 'a.b'; Flow = 'DetectOnly'; RestorePoint = 'skip'; Snapshot = @{ Registry = @(); Services = @() }; Expect = @{ Before = 'NotApplied' } }
         Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout | Out-Null
         Should -Invoke -ModuleName VmRun Invoke-DsoCli -Times 1 -Exactly -ParameterFilter { $Arguments -contains '--catalog' -and @($Arguments | Where-Object { $_ -like '*vm-test-catalog.json' }).Count -eq 1 }
     }
@@ -502,9 +519,9 @@ Describe 'Task 7: Execute w Import-VmCases i ConvertTo-DsoCliArguments' {
         { Import-VmCases -CasesPath "$TestDrive\t7e.psd1" -CatalogPath $script:CatalogPath } | Should -Throw -ExpectedMessage '*Check*'
     }
     It 'Execute przyjmuje MessageContains razem z oczekiwanym Failed (akcja kończy się błędem z komunikatem)' {
-        Write-CasesFile -Path "$TestDrive\t7m.psd1" -CaseBody "$script:ExecBody; Check = '`$true'; Expect = @{ ExecuteExit = 1; ExecuteOutcome = 'Failed'; MessageContains = 'brak sieci' }"
+        Write-CasesFile -Path "$TestDrive\t7m.psd1" -CaseBody "$script:ExecBody; Check = '`$true'; Expect = @{ ExecuteExit = 1; ExecuteOutcome = 'Failed'; MessageContains = 'brak aktywnego połączenia w profilu publicznym – nic nie zmieniono' }"
         $Cases = Import-VmCases -CasesPath "$TestDrive\t7m.psd1" -CatalogPath $script:CatalogPath
-        $Cases[0].Expect.MessageContains | Should -Be 'brak sieci'
+        $Cases[0].Expect.MessageContains | Should -Be 'brak aktywnego połączenia w profilu publicznym – nic nie zmieniono'
         $Cases[0].Expect.ExecuteOutcome | Should -Be 'Failed'
     }
     It 'MessageContains w DetectOnly nadal jest odrzucony (brak komunikatu do sprawdzenia)' {
@@ -592,7 +609,7 @@ Describe 'Task 7: Invoke-VmCase Execute' {
             if ($Text -match 'MARKER-CLEANUP' -and $global:DsoCleanupThrows) { throw 'sprzątanie nie powiodło się' }
         }
         $script:Layout = Get-DsoVmLayout
-        $script:Case = @{ Name = 'a'; TweakId = 'vmtest.action-marker'; Flow = 'Execute'; RestorePoint = 'skip'; Setup = @(); Check = '# MARKER-CHECK'; Cleanup = '# MARKER-CLEANUP'
+        $script:Case = @{ CliLanguage = 'pl'; Name = 'a'; TweakId = 'vmtest.action-marker'; Flow = 'Execute'; RestorePoint = 'skip'; Setup = @(); Check = '# MARKER-CHECK'; Cleanup = '# MARKER-CLEANUP'
             Expect = @{ ExecuteExit = 0; ExecuteOutcome = 'Executed' } }
     }
     AfterEach {
@@ -637,7 +654,7 @@ Describe 'Task 7: Invoke-VmCase Execute' {
         $Record.CleanupError | Should -BeLike '*sprzątanie nie powiodło się*'
     }
     It 'bez Check i Cleanup: CheckResult pusty, Invoke-Command nie jest wołany' {
-        $Plain = @{ Name = 'a'; TweakId = 'x.y'; Flow = 'Execute'; RestorePoint = 'skip'; Expect = @{ ExecuteExit = 0; ExecuteOutcome = 'Executed' } }
+        $Plain = @{ CliLanguage = 'pl'; Name = 'a'; TweakId = 'x.y'; Flow = 'Execute'; RestorePoint = 'skip'; Expect = @{ ExecuteExit = 0; ExecuteOutcome = 'Executed' } }
         $Record = Invoke-VmCase -Session $null -Case $Plain -Layout $script:Layout
         $Record.CheckResult | Should -BeNullOrEmpty
         $global:DsoScriptCalls.Count | Should -Be 0
@@ -698,11 +715,11 @@ Describe 'Task 8: Reboot w Import-VmCases' {
 Describe 'Task 8: Split-VmCaseRuns' {
     It 'zwykłe i pominięte Reboot w main, każdy aktywny Reboot osobno' {
         $Cases = @(
-            @{ Name = 'a'; Flow = 'Full' }
-            @{ Name = 'r 1'; Flow = 'Reboot' }
-            @{ Name = 'b'; Flow = 'DetectOnly' }
-            @{ Name = 'r2'; Flow = 'Reboot'; Skip = 'powód' }
-            @{ Name = 'r3'; Flow = 'Reboot' }
+            @{ CliLanguage = 'pl'; Name = 'a'; Flow = 'Full' }
+            @{ CliLanguage = 'pl'; Name = 'r 1'; Flow = 'Reboot' }
+            @{ CliLanguage = 'pl'; Name = 'b'; Flow = 'DetectOnly' }
+            @{ CliLanguage = 'pl'; Name = 'r2'; Flow = 'Reboot'; Skip = 'powód' }
+            @{ CliLanguage = 'pl'; Name = 'r3'; Flow = 'Reboot' }
         )
         $Plan = @(Split-VmCaseRuns -Cases $Cases)
         $Plan.Count | Should -Be 3
@@ -713,7 +730,7 @@ Describe 'Task 8: Split-VmCaseRuns' {
         $Plan[2].Label | Should -Be 'reboot-r3'
     }
     It 'bez zwykłych przypadków nie tworzy pustego main' {
-        $Plan = @(Split-VmCaseRuns -Cases @(@{ Name = 'r'; Flow = 'Reboot' }))
+        $Plan = @(Split-VmCaseRuns -Cases @(@{ CliLanguage = 'pl'; Name = 'r'; Flow = 'Reboot' }))
         $Plan.Count | Should -Be 1
         $Plan[0].Label | Should -Be 'reboot-r'
     }
@@ -743,7 +760,7 @@ Describe 'Task 8: Invoke-VmCase Flow Reboot' {
         Mock -ModuleName VmRun Test-VmRestartMarker { $false }
         $script:Layout = Get-DsoVmLayout
         $script:Reconnect = { $global:Dso8Events.Add('reconnect'); $global:Dso8Reconnects++; $global:Dso8Sessions[$global:Dso8Reconnects] }
-        $script:RebootCase = @{ Name = 'rb'; TweakId = 'a.b'; Flow = 'Reboot'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
+        $script:RebootCase = @{ CliLanguage = 'pl'; Name = 'rb'; TweakId = 'a.b'; Flow = 'Reboot'; RestorePoint = 'skip'; Setup = @(); Snapshot = @{ Registry = @(); Services = @() }; Expect = @{} }
         $T = [datetime]'2026-10-17T10:00:00'
         $script:T0 = $T; $script:T1 = $T.AddMinutes(5); $script:T2 = $T.AddMinutes(10)
     }
@@ -852,7 +869,7 @@ Describe 'Etap 4a T7: AppRemove w Import-VmCases' {
         $script:AppExpect = "ListedBefore = `$true; RemoveExit = 0; RemoveOutcome = 'Removed'; ListedAfter = `$false"
     }
     It 'przyjmuje AppRemove z AppId, Check, Cleanup, RunAs i pełnym Expect' {
-        Write-CasesFile -Path "$TestDrive\a1.psd1" -CaseBody "$script:AppBody; Cleanup = 'Write-Output 1'; RunAs = 'dso'; Setup = @('Write-Output 1'); Expect = @{ $script:AppExpect; Group = 'Suggested'; Removability = 'Removable'; RequiresReboot = `$false; RestorePointStatus = 'ProtectionDisabled'; Aborted = `$false; MessageContains = 'x'; WarningContains = 'Usunięta'; WarningAbsent = 'y' }"
+        Write-CasesFile -Path "$TestDrive\a1.psd1" -CaseBody "$script:AppBody; Cleanup = 'Write-Output 1'; RunAs = 'dso'; Setup = @('Write-Output 1'); Expect = @{ $script:AppExpect; Group = 'Suggested'; Removability = 'Removable'; RequiresReboot = `$false; RestorePointStatus = 'ProtectionDisabled'; Aborted = `$false; MessageContains = 'Seria przerwana przed pierwszym usunięciem – bez punktu przywracania.'; WarningContains = 'Usunięta dla wszystkich kont na tym komputerze.'; WarningAbsent = @{ AnyOf = @('Uruchom DSOptimizer na koncie {0}, żeby to usunąć.') } }"
         $Cases = Import-VmCases -CasesPath "$TestDrive\a1.psd1" -CatalogPath $script:CatalogPath
         $Cases[0].Flow | Should -Be 'AppRemove'
         $Cases[0].AppId | Should -Be 'appx:Microsoft.BingNews_8wekyb3d8bbwe'
@@ -971,7 +988,7 @@ Describe 'Etap 4a T7: Invoke-DsoCli -RunAsUser (zadanie Harmonogramu)' {
             $global:DsoRunAsArgs = $ArgumentList
             @{ ExitCode = 0; TimedOut = $false; Json = '{"exitCode":0,"outcome":"Removed"}' }
         }
-        $Result = Invoke-DsoCli -Session $null -ExePath 'C:\dso\app\DSOptimizer.exe' -Arguments @('--remove-app', 'appx:x', '--out', 'C:\dso\out\r.json') -OutPath 'C:\dso\out\r.json' -RunAsUser 'dso'
+        $Result = Invoke-DsoCli -Session $null -ExePath 'C:\dso\app\DSOptimizer.exe' -Arguments @('--remove-app', 'appx:x', '--out', 'C:\dso\out\r.json') -OutPath 'C:\dso\out\r.json' -RunAsUser 'dso' -Language pl
         $Result.Report.outcome | Should -Be 'Removed'
         $global:DsoRunAsBlock | Should -Match 'Register-ScheduledTask'
         $global:DsoRunAsBlock | Should -Match 'LogonType Interactive'
@@ -982,7 +999,7 @@ Describe 'Etap 4a T7: Invoke-DsoCli -RunAsUser (zadanie Harmonogramu)' {
     }
     It 'bez -RunAsUser używa Start-Process (konto sesji PS Direct)' {
         Mock -ModuleName VmRun Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $global:DsoPlainBlock = $ScriptBlock.ToString(); @{ ExitCode = 0; TimedOut = $false; Json = $null } }
-        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @() -OutPath 'C:\o.json'
+        $null = Invoke-DsoCli -Session $null -ExePath 'x' -Arguments @() -OutPath 'C:\o.json' -Language pl
         $global:DsoPlainBlock | Should -Match 'Start-Process'
         $global:DsoPlainBlock | Should -Not -Match 'Register-ScheduledTask'
         Remove-Variable -Name DsoPlainBlock -Scope Global -ErrorAction SilentlyContinue
@@ -1014,7 +1031,7 @@ Describe 'Etap 4a T7: Invoke-DsoCli -RunAsUser (zadanie Harmonogramu)' {
             $global:DsoTaskOut = $Out
             foreach ($Step in @(@{ State = 'Ready'; Result = 267011 }, @{ State = 'Queued'; Result = 267011 }, @{ State = 'Running'; Result = 267009 }, @{ State = 'Ready'; Result = 1 })) { $global:DsoTaskInfo.Enqueue($Step) }
             Mock -ModuleName VmRun Start-ScheduledTask { $global:DsoTaskEvents.Add('start'); Set-Content -LiteralPath $global:DsoTaskOut -Value '{"exitCode":1,"outcome":"Refused"}' -Encoding UTF8 }
-            $Result = Invoke-DsoCli -Session $null -ExePath 'C:\dso\app\DSOptimizer.exe' -Arguments @('--remove-app', 'appx:x', '--out', $Out) -OutPath $Out -RunAsUser 'dso'
+            $Result = Invoke-DsoCli -Session $null -ExePath 'C:\dso\app\DSOptimizer.exe' -Arguments @('--remove-app', 'appx:x', '--out', $Out) -OutPath $Out -RunAsUser 'dso' -Language pl
             $Result.ExitCode | Should -Be 1
             $Result.TimedOut | Should -BeFalse
             $Result.Report.outcome | Should -Be 'Refused'
@@ -1025,7 +1042,7 @@ Describe 'Etap 4a T7: Invoke-DsoCli -RunAsUser (zadanie Harmonogramu)' {
         }
         It 'przekroczenie czasu: ExitCode -1, TimedOut, zadanie zatrzymane i wyrejestrowane' {
             $global:DsoTaskInfo.Enqueue(@{ State = 'Running'; Result = 267009 })
-            $Result = Invoke-DsoCli -Session $null -ExePath 'C:\dso\app\DSOptimizer.exe' -Arguments @('--list-apps') -OutPath (Join-Path $script:Dir 'x.json') -RunAsUser 'dso' -TimeoutSeconds 0
+            $Result = Invoke-DsoCli -Session $null -ExePath 'C:\dso\app\DSOptimizer.exe' -Arguments @('--list-apps') -OutPath (Join-Path $script:Dir 'x.json') -RunAsUser 'dso' -TimeoutSeconds 0 -Language pl
             $Result.ExitCode | Should -Be -1
             $Result.TimedOut | Should -BeTrue
             $global:DsoTaskEvents | Should -Contain 'stop'
@@ -1049,7 +1066,7 @@ Describe 'Etap 4a T7: Invoke-VmCase AppRemove' {
             if ($Text -match 'MARKER-CLEANUP') { $global:DsoAppEvents.Add('cleanup') }
         }
         $script:Layout = Get-DsoVmLayout
-        $script:AppCase = @{ Name = 'app'; AppId = 'appx:Microsoft.BingNews_8wekyb3d8bbwe'; Flow = 'AppRemove'; RestorePoint = 'ifavailable'; Setup = @('x'); Check = '# MARKER-CHECK'; Cleanup = '# MARKER-CLEANUP'
+        $script:AppCase = @{ CliLanguage = 'pl'; Name = 'app'; AppId = 'appx:Microsoft.BingNews_8wekyb3d8bbwe'; Flow = 'AppRemove'; RestorePoint = 'ifavailable'; Setup = @('x'); Check = '# MARKER-CHECK'; Cleanup = '# MARKER-CLEANUP'
             Expect = @{ ListedBefore = $true; RemoveExit = 0; RemoveOutcome = 'Removed'; ListedAfter = $false } }
     }
     AfterEach { Remove-Variable -Name DsoAppEvents -Scope Global -ErrorAction SilentlyContinue }
@@ -1155,7 +1172,7 @@ Describe 'Etap 4c T7: AppInstall w Import-VmCases' {
         $script:ListBody = "Name = 'list'; Flow = 'AppInstall'; Command = 'list-install'; Check = '`$true'"
     }
     It 'przyjmuje install-apps z AppIds, RunAs, Setup, Cleanup i pełnym Expect' {
-        Write-CasesFile -Path "$TestDrive\i1.psd1" -CaseBody "$script:InstBody; RunAs = 'dso'; Setup = @('Write-Output 1'); Cleanup = 'Write-Output 1'; Expect = @{ Exit = 1; Outcomes = @{ 'install.7zip' = @('Failed', 'Skipped'); 'install.vlc' = 'Skipped' }; WingetState = 'Ready'; MessageContains = 'brak połączenia' }"
+        Write-CasesFile -Path "$TestDrive\i1.psd1" -CaseBody "$script:InstBody; RunAs = 'dso'; Setup = @('Write-Output 1'); Cleanup = 'Write-Output 1'; Expect = @{ Exit = 1; Outcomes = @{ 'install.7zip' = @('Failed', 'Skipped'); 'install.vlc' = 'Skipped' }; WingetState = 'Ready'; MessageContains = 'Nie wykonano – brak połączenia z internetem albo ze źródłem winget' }"
         $Cases = Import-VmCases -CasesPath "$TestDrive\i1.psd1" -CatalogPath $script:CatalogPath
         $Cases[0].Flow | Should -Be 'AppInstall'
         @($Cases[0].AppIds) | Should -Be @('install.7zip', 'install.vlc')
@@ -1278,7 +1295,7 @@ Describe 'Etap 4c T7: AppInstall w Import-VmCases' {
         $Other.Expect.Exit | Should -Be 1
         $Other.Expect.Outcomes['install.7zip'] | Should -Be 'Refused'
         $Other.Expect.Outcomes['install.vlc'] | Should -Be 'Refused'
-        $Other.Expect.MessageContains | Should -Be 'uruchom DSOptimizer na koncie'
+        @($Other.Expect.MessageContains.AnyOf) | Should -Be @('Instalacja działa tylko na koncie zalogowanego użytkownika: uruchom DSOptimizer na koncie {0} (Administrator Protection: program podniesiony działa na ukrytym koncie {1}).', 'Instalacja działa tylko na koncie zalogowanego użytkownika: uruchom DSOptimizer na koncie {0}.')
         $Other.Check | Should -BeLike '*C:\ProgramData\DSOptimizer\logs\winget*'
         $Msi = $Inst | Where-Object Name -eq 'list-install-msi-dso'
         $Msi.AppsCatalog | Should -Be 'C:\dso\fixtures\vm-test-apps.json'
@@ -1300,7 +1317,7 @@ Describe 'Etap 4c T7: AppInstall w Import-VmCases' {
             $Case.ContainsKey('Skip') | Should -BeFalse
             $Case.Expect.Exit | Should -Be 1
             $Case.Expect.WingetState | Should -Be 'Ready'
-            $Case.Expect.MessageContains | Should -BeExactly 'brak połączenia z GitHubem'
+            $Case.Expect.MessageContains | Should -BeExactly 'Nie wykonano – brak połączenia z GitHubem'
             $Case.Expect.Outcomes['install.rustdesk'] | Should -Be 'Failed'
             $Case.Expect.WingetCodes.ContainsKey('install.rustdesk') | Should -BeTrue
             $Case.Expect.WingetCodes['install.rustdesk'] | Should -BeNullOrEmpty
@@ -1384,7 +1401,7 @@ Describe 'Etap 4c T7: Invoke-VmCase AppInstall' {
             if ($Text -match 'MARKER-CLEANUP') { $global:DsoInstEvents.Add('cleanup') }
         }
         $script:Layout = Get-DsoVmLayout
-        $script:InstCase = @{ Name = 'inst'; Flow = 'AppInstall'; Command = 'install-apps'; AppIds = @('install.7zip', 'install.vlc'); RunAs = 'dso'
+        $script:InstCase = @{ CliLanguage = 'pl'; Name = 'inst'; Flow = 'AppInstall'; Command = 'install-apps'; AppIds = @('install.7zip', 'install.vlc'); RunAs = 'dso'
             Setup = @('x'); Check = '# MARKER-CHECK'; Cleanup = '# MARKER-CLEANUP'; Expect = @{ Exit = 1 } }
     }
     AfterEach { Remove-Variable -Name DsoInstEvents -Scope Global -ErrorAction SilentlyContinue }
@@ -1403,7 +1420,7 @@ Describe 'Etap 4c T7: Invoke-VmCase AppInstall' {
         )
     }
     It 'list-install z AppsCatalog, bez RunAs = konto sesji PS Direct' {
-        $Case = @{ Name = 'list'; Flow = 'AppInstall'; Command = 'list-install'; AppsCatalog = 'C:\dso\fixtures\vm-test-apps.json'; Check = '# MARKER-CHECK'; Expect = @{ Exit = 0 } }
+        $Case = @{ CliLanguage = 'pl'; Name = 'list'; Flow = 'AppInstall'; Command = 'list-install'; AppsCatalog = 'C:\dso\fixtures\vm-test-apps.json'; Check = '# MARKER-CHECK'; Expect = @{ Exit = 0 } }
         $Record = Invoke-VmCase -Session $null -Case $Case -Layout $script:Layout
         $Record.Steps.Step | Should -Be @('list-install')
         $global:DsoInstEvents | Should -Contain 'cli:--list-install --apps-catalog C:\dso\fixtures\vm-test-apps.json --out C:\dso\out\list-list-install.json|as:'

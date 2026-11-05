@@ -127,9 +127,9 @@ Describe 'Resolve-ExploreOutDirectory' {
 
 Describe 'Save-ExploreResult' {
     It 'zapisuje UTF-8 do <Out>\<Vm>\<plik> i zachowuje Exists=false oraz 0' {
-        $Result = [ordered]@{ vmName = 'DSO-26H2-Home'; probes = @([ordered]@{ Name = 'a'; Registry = @([ordered]@{ Key = 'k'; Exists = $false; Kind = $null; Value = $null }, [ordered]@{ Key = 'z'; Exists = $true; Kind = 'DWord'; Value = 0 }) }); note = 'zażółć' }
-        $Path = Save-ExploreResult -Result $Result -OutDirectory $TestDrive -VmName 'DSO-26H2-Home' -FileName 'c2-exploration.json'
-        $Path | Should -Be (Join-Path (Join-Path $TestDrive 'DSO-26H2-Home') 'c2-exploration.json')
+        $Result = [ordered]@{ vmName = 'DSO-EN-Home'; probes = @([ordered]@{ Name = 'a'; Registry = @([ordered]@{ Key = 'k'; Exists = $false; Kind = $null; Value = $null }, [ordered]@{ Key = 'z'; Exists = $true; Kind = 'DWord'; Value = 0 }) }); note = 'zażółć' }
+        $Path = Save-ExploreResult -Result $Result -OutDirectory $TestDrive -VmName 'DSO-EN-Home' -FileName 'c2-exploration.json'
+        $Path | Should -Be (Join-Path (Join-Path $TestDrive 'DSO-EN-Home') 'c2-exploration.json')
         $Json = Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json
         $Json.note | Should -Be 'zażółć'
         $Json.probes[0].Registry[0].Exists | Should -BeFalse
@@ -140,10 +140,10 @@ Describe 'Save-ExploreResult' {
         $Before = Get-Location
         try {
             Set-Location -LiteralPath $TestDrive
-            $Path = Save-ExploreResult -Result @{ a = 1 } -OutDirectory 'rel-out' -VmName 'DSO-26H2-Pro' -FileName 'rel.json'
+            $Path = Save-ExploreResult -Result @{ a = 1 } -OutDirectory 'rel-out' -VmName 'DSO-EN-Pro' -FileName 'rel.json'
         }
         finally { Set-Location -LiteralPath $Before.Path }
-        $Expected = [IO.Path]::GetFullPath((Join-Path $TestDrive 'rel-out\DSO-26H2-Pro\rel.json'))
+        $Expected = [IO.Path]::GetFullPath((Join-Path $TestDrive 'rel-out\DSO-EN-Pro\rel.json'))
         [IO.Path]::IsPathRooted($Path) | Should -BeTrue
         $Path | Should -Be $Expected
         Test-Path -LiteralPath $Expected | Should -BeTrue
@@ -154,14 +154,14 @@ Describe 'Save-ExploreResult' {
         $null = New-Item -ItemType Directory -Path $Work -Force
         try {
             Set-Location -LiteralPath $Work
-            { Save-ExploreResult -Result @{ a = 1 } -OutDirectory 'Variable:\DsoNieFilesystem' -VmName 'DSO-26H2-Pro' -FileName 'x.json' } | Should -Throw '*FileSystem*'
+            { Save-ExploreResult -Result @{ a = 1 } -OutDirectory 'Variable:\DsoNieFilesystem' -VmName 'DSO-EN-Pro' -FileName 'x.json' } | Should -Throw '*FileSystem*'
         }
         finally { Set-Location -LiteralPath $Before.Path }
         @(Get-ChildItem -LiteralPath $Work -Force).Count | Should -Be 0
     }
     It 'odrzuca obcą VM i nazwę pliku ze ścieżką' {
         { Save-ExploreResult -Result @{} -OutDirectory $TestDrive -VmName 'ObcaVM' -FileName 'x.json' } | Should -Throw
-        { Save-ExploreResult -Result @{} -OutDirectory $TestDrive -VmName 'DSO-26H2-Pro' -FileName '..\x.json' } | Should -Throw
+        { Save-ExploreResult -Result @{} -OutDirectory $TestDrive -VmName 'DSO-EN-Pro' -FileName '..\x.json' } | Should -Throw
     }
 }
 
@@ -187,8 +187,8 @@ Describe 'Complete-ExploreVmCleanup (wspólny kontrakt stanu końcowego VM)' {
         Set-NoLiveVmDefaultMock -ModuleName ExploreCommon
         $script:Order = [System.Collections.Generic.List[string]]::new()
         $script:Attached = [System.Collections.Generic.List[string]]::new()
-        $script:Attached.Add('C:\VM\DSO-26H2-Pro.vhdx')
-        $script:Attached.Add('C:\w\DSO-26H2-Pro\usb-SingleExe.vhdx')
+        $script:Attached.Add('C:\VM\DSO-EN-Pro.vhdx')
+        $script:Attached.Add('C:\w\DSO-EN-Pro\usb-SingleExe.vhdx')
         Mock -ModuleName ExploreCommon Restore-VmCleanState { $script:Order.Add("revert $VmName $CheckpointName") }
         Mock -ModuleName ExploreCommon Get-VMHardDiskDrive { @($script:Attached | ForEach-Object { [pscustomobject]@{ VMName = $VMName; Path = $_; ControllerType = 'SCSI'; ControllerNumber = 0; ControllerLocation = 1 } }) }
         Mock -ModuleName ExploreCommon Remove-VMHardDiskDrive -RemoveParameterType 'VMHardDiskDrive' { $script:Order.Add("detach $(@($VMHardDiskDrive)[0].Path)"); $null = $script:Attached.Remove(@($VMHardDiskDrive)[0].Path) }
@@ -197,37 +197,37 @@ Describe 'Complete-ExploreVmCleanup (wspólny kontrakt stanu końcowego VM)' {
         Mock -ModuleName ExploreCommon Get-VMNetworkAdapter { [pscustomobject]@{ VMName = $VMName; SwitchName = $null } }
     }
     It 'revert -> odłączenie tylko wskazanego dysku -> odłączenie karty -> odczyt stanu; Ok przy VM Off, karcie bez przełącznika i bez dysku' {
-        $R = Complete-ExploreVmCleanup -VmName 'DSO-26H2-Pro' -CheckpointName 'czysta-26H2' -DetachDiskPath @('C:\w\DSO-26H2-Pro\usb-SingleExe.vhdx')
-        @($script:Order) | Should -Be @('revert DSO-26H2-Pro czysta-26H2', 'detach C:\w\DSO-26H2-Pro\usb-SingleExe.vhdx', 'disconnect DSO-26H2-Pro', 'state DSO-26H2-Pro')
+        $R = Complete-ExploreVmCleanup -VmName 'DSO-EN-Pro' -CheckpointName 'czysta-26H2' -DetachDiskPath @('C:\w\DSO-EN-Pro\usb-SingleExe.vhdx')
+        @($script:Order) | Should -Be @('revert DSO-EN-Pro czysta-26H2', 'detach C:\w\DSO-EN-Pro\usb-SingleExe.vhdx', 'disconnect DSO-EN-Pro', 'state DSO-EN-Pro')
         $R.Ok | Should -BeTrue
         @($R.AttachedDisks).Count | Should -Be 0
-        @($script:Attached) | Should -Be @('C:\VM\DSO-26H2-Pro.vhdx')
+        @($script:Attached) | Should -Be @('C:\VM\DSO-EN-Pro.vhdx')
     }
     It 'bez dysków do odłączenia: jak dotąd (revert, karta, stan), Remove-VMHardDiskDrive nie jest wołany' {
-        $R = Complete-ExploreVmCleanup -VmName 'DSO-26H2-Home' -CheckpointName 'czysta-26H2'
+        $R = Complete-ExploreVmCleanup -VmName 'DSO-EN-Home' -CheckpointName 'czysta-26H2'
         $R.Ok | Should -BeTrue
         Should -Invoke -ModuleName ExploreCommon Remove-VMHardDiskDrive -Times 0 -Exactly
-        @($script:Order) | Should -Be @('revert DSO-26H2-Home czysta-26H2', 'disconnect DSO-26H2-Home', 'state DSO-26H2-Home')
+        @($script:Order) | Should -Be @('revert DSO-EN-Home czysta-26H2', 'disconnect DSO-EN-Home', 'state DSO-EN-Home')
     }
     It 'dysk, którego nie da się odłączyć, i VM nie Off z kartą na przełączniku = naruszenia kontraktu; błędy kroków nie przerywają kolejnych' {
         Mock -ModuleName ExploreCommon Restore-VmCleanState { throw 'checkpoint zablokowany' }
         Mock -ModuleName ExploreCommon Remove-VMHardDiskDrive -RemoveParameterType 'VMHardDiskDrive' { throw 'dysk w użyciu' }
         Mock -ModuleName ExploreCommon Get-VM { [pscustomobject]@{ Name = $Name; State = 'Running' } }
         Mock -ModuleName ExploreCommon Get-VMNetworkAdapter { [pscustomobject]@{ VMName = $VMName; SwitchName = 'Default Switch' } }
-        $R = Complete-ExploreVmCleanup -VmName 'DSO-26H2-Pro' -CheckpointName 'czysta-26H2' -DetachDiskPath @('C:\w\DSO-26H2-Pro\usb-SingleExe.vhdx')
+        $R = Complete-ExploreVmCleanup -VmName 'DSO-EN-Pro' -CheckpointName 'czysta-26H2' -DetachDiskPath @('C:\w\DSO-EN-Pro\usb-SingleExe.vhdx')
         $R.Ok | Should -BeFalse
         $R.RevertError | Should -Match 'zablokowany'
         $R.DetachError | Should -Match 'w użyciu'
-        @($R.AttachedDisks) | Should -Be @('C:\w\DSO-26H2-Pro\usb-SingleExe.vhdx')
+        @($R.AttachedDisks) | Should -Be @('C:\w\DSO-EN-Pro\usb-SingleExe.vhdx')
         ($R.Violations -join ' | ') | Should -Match 'Running'
         ($R.Violations -join ' | ') | Should -Match 'Default Switch'
         ($R.Violations -join ' | ') | Should -Match 'usb-SingleExe\.vhdx'
         Should -Invoke -ModuleName ExploreCommon Disconnect-VMNetworkAdapter -Times 1 -Exactly
     }
-    It 'VmName tylko DSO-26H2-Home/Pro; obca VM odrzucona przed jakimkolwiek krokiem' {
+    It 'VmName tylko DSO-EN-Home/Pro; obca VM odrzucona przed jakimkolwiek krokiem' {
         { Complete-ExploreVmCleanup -VmName 'ObcaVM' -CheckpointName 'czysta-26H2' } | Should -Throw
         $Attr = (Get-Command -Module ExploreCommon -Name 'Complete-ExploreVmCleanup').Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        $Attr.ValidValues | Should -Be @('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')
         @($script:Order).Count | Should -Be 0
     }
 }
@@ -278,48 +278,48 @@ Describe 'Orkiestracja (mocki; VM i Hyper-V nietknięte)' {
         }
     }
     It 'revert -> start -> ready -> zbieranie -> usunięcie sesji -> revert; JSON w <Out>\<Vm>\<plik>' {
-        $Path = Invoke-ExploreVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -FileName 'c2-exploration.json' -RemoteScript 'function X {}' -EntryCommand 'Invoke-C2Collection' -ReadyTimeoutSeconds 60
-        ($Order -join ',') | Should -Be 'restore:DSO-26H2-Pro,start:DSO-26H2-Pro,ready:DSO-26H2-Pro,collect,removesession,restore:DSO-26H2-Pro'
-        $Path | Should -Be (Join-Path $TestDrive 'DSO-26H2-Pro\c2-exploration.json')
+        $Path = Invoke-ExploreVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -FileName 'c2-exploration.json' -RemoteScript 'function X {}' -EntryCommand 'Invoke-C2Collection' -ReadyTimeoutSeconds 60
+        ($Order -join ',') | Should -Be 'restore:DSO-EN-Pro,start:DSO-EN-Pro,ready:DSO-EN-Pro,collect,removesession,restore:DSO-EN-Pro'
+        $Path | Should -Be (Join-Path $TestDrive 'DSO-EN-Pro\c2-exploration.json')
         $Doc = Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json
-        $Doc.vmName | Should -Be 'DSO-26H2-Pro'
+        $Doc.vmName | Should -Be 'DSO-EN-Pro'
         $Doc.checkpoint | Should -Be 'czysta-26H2'
         $Doc.meta.CurrentBuild | Should -Be '1'
     }
     It 'bez -PassUserSid nie pyta o SID i woła punkt wejścia bez -UserSid; z nim przekazuje SID' {
-        Invoke-ExploreVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'Invoke-C2Collection' | Out-Null
+        Invoke-ExploreVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'Invoke-C2Collection' | Out-Null
         $Calls[0][1] | Should -Be 'Invoke-C2Collection'
         $Calls[0][2] | Should -BeNullOrEmpty
-        Invoke-ExploreVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -FileName 'b.json' -RemoteScript 'x' -EntryCommand 'Invoke-C1Collection' -PassUserSid | Out-Null
+        Invoke-ExploreVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -FileName 'b.json' -RemoteScript 'x' -EntryCommand 'Invoke-C1Collection' -PassUserSid | Out-Null
         $Calls[1][2] | Should -Be 'S-1-5-21-1'
     }
     It 'Mode Prepare: VM zostaje uruchomiona po sukcesie (bez końcowego revertu), po błędzie revert' {
-        $Path = Invoke-ExploreVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -FileName 'p.json' -RemoteScript 'x' -EntryCommand 'E' -Mode Prepare
-        ($Order -join ',') | Should -Be 'restore:DSO-26H2-Pro,start:DSO-26H2-Pro,ready:DSO-26H2-Pro,collect,removesession'
-        $Path | Should -Be (Join-Path $TestDrive 'DSO-26H2-Pro\p.json')
+        $Path = Invoke-ExploreVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -FileName 'p.json' -RemoteScript 'x' -EntryCommand 'E' -Mode Prepare
+        ($Order -join ',') | Should -Be 'restore:DSO-EN-Pro,start:DSO-EN-Pro,ready:DSO-EN-Pro,collect,removesession'
+        $Path | Should -Be (Join-Path $TestDrive 'DSO-EN-Pro\p.json')
         $Order.Clear()
         Mock -ModuleName ExploreCommon Invoke-Command { throw 'zerwana sesja' }
-        { Invoke-ExploreVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -FileName 'p.json' -RemoteScript 'x' -EntryCommand 'E' -Mode Prepare } | Should -Throw '*zerwana sesja*'
-        $Order[-1] | Should -Be 'restore:DSO-26H2-Pro'
+        { Invoke-ExploreVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -FileName 'p.json' -RemoteScript 'x' -EntryCommand 'E' -Mode Prepare } | Should -Throw '*zerwana sesja*'
+        $Order[-1] | Should -Be 'restore:DSO-EN-Pro'
     }
     It 'Mode Finish: bez startu i revertu na początku, zbieranie, zawsze revert (także po błędzie)' {
-        $null = Invoke-ExploreVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -FileName 'f.json' -RemoteScript 'x' -EntryCommand 'E' -Mode Finish
-        ($Order -join ',') | Should -Be 'ready:DSO-26H2-Pro,collect,removesession,restore:DSO-26H2-Pro'
+        $null = Invoke-ExploreVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -FileName 'f.json' -RemoteScript 'x' -EntryCommand 'E' -Mode Finish
+        ($Order -join ',') | Should -Be 'ready:DSO-EN-Pro,collect,removesession,restore:DSO-EN-Pro'
         $Order.Clear()
         Mock -ModuleName ExploreCommon Invoke-Command { throw 'zerwana sesja' }
-        { Invoke-ExploreVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -FileName 'f.json' -RemoteScript 'x' -EntryCommand 'E' -Mode Finish } | Should -Throw
-        $Order[-1] | Should -Be 'restore:DSO-26H2-Pro'
+        { Invoke-ExploreVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -FileName 'f.json' -RemoteScript 'x' -EntryCommand 'E' -Mode Finish } | Should -Throw
+        $Order[-1] | Should -Be 'restore:DSO-EN-Pro'
     }
     It 'błąd zbierania: nadal revert w finally, wyjątek propagowany' {
         Mock -ModuleName ExploreCommon Invoke-Command { if ($ArgumentList) { throw 'zerwana sesja' } else { 'S-1' } }
-        { Invoke-ExploreVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw '*zerwana sesja*'
-        $Order[-1] | Should -Be 'restore:DSO-26H2-Pro'
+        { Invoke-ExploreVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw '*zerwana sesja*'
+        $Order[-1] | Should -Be 'restore:DSO-EN-Pro'
     }
     It 'błąd revertu po błędzie zbierania: oba komunikaty w wyjątku' {
         Mock -ModuleName ExploreCommon Invoke-Command { if ($ArgumentList) { throw 'zerwana sesja' } else { 'S-1' } }
         $script:RestoreCalls = 0
         Mock -ModuleName ExploreCommon Restore-VmCleanState { $script:RestoreCalls++; if ($script:RestoreCalls -ge 2) { throw 'revert padł' } }
-        { Invoke-ExploreVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw '*zerwana sesja*revert padł*'
+        { Invoke-ExploreVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw '*zerwana sesja*revert padł*'
     }
     It 'wyczerpane próby logowania + nieudany revert: znacznik w komunikacie i flaga auth zachowana (Invoke-ExploreAll nadal staje)' {
         Mock -ModuleName ExploreCommon Wait-VmReady {
@@ -329,10 +329,10 @@ Describe 'Orkiestracja (mocki; VM i Hyper-V nietknięte)' {
         }
         $script:RestoreCalls = 0
         Mock -ModuleName ExploreCommon Restore-VmCleanState { $script:RestoreCalls++; if ($script:RestoreCalls -ge 2) { throw 'revert padł' } }
-        { Invoke-ExploreVmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw '*po wyczerpaniu prób logowania*revert padł*'
+        { Invoke-ExploreVmRun -VmName 'DSO-EN-Home' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw '*po wyczerpaniu prób logowania*revert padł*'
         $script:RestoreCalls = 0
         $Caught = $null
-        try { Invoke-ExploreAll -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' }
+        try { Invoke-ExploreAll -VmName @('DSO-EN-Home', 'DSO-EN-Pro') -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' }
         catch { $Caught = $_.Exception }
         $Caught | Should -Not -BeNullOrEmpty
         Test-VmAuthFailure -Exception $Caught | Should -BeTrue
@@ -344,14 +344,14 @@ Describe 'Orkiestracja (mocki; VM i Hyper-V nietknięte)' {
             $Failure.Data['VmAuthFailure'] = $true
             throw $Failure
         }
-        { Invoke-ExploreAll -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw '*inny tekst*'
+        { Invoke-ExploreAll -VmName @('DSO-EN-Home', 'DSO-EN-Pro') -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw '*inny tekst*'
         ($Order | Where-Object { $_ -like '*Pro*' }) | Should -BeNullOrEmpty
-        $Order[-1] | Should -Be 'restore:DSO-26H2-Home'
+        $Order[-1] | Should -Be 'restore:DSO-EN-Home'
     }
     It 'znacznik z VmHost w komunikacie też zatrzymuje całość (wyjątek spłaszczony do tekstu)' {
         $script:Text = "VM x: $(Get-VmAuthFailureMarker), przerywam"
         Mock -ModuleName ExploreCommon Wait-VmReady { throw $script:Text }
-        { Invoke-ExploreAll -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw
+        { Invoke-ExploreAll -VmName @('DSO-EN-Home', 'DSO-EN-Pro') -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw
         ($Order | Where-Object { $_ -like '*Pro*' }) | Should -BeNullOrEmpty
     }
     It 'inny błąd jednej VM nie przerywa drugiej, błędy są zebrane' {
@@ -360,15 +360,15 @@ Describe 'Orkiestracja (mocki; VM i Hyper-V nietknięte)' {
             if ($ArgumentList) { if ($script:Fail) { $script:Fail = $false; throw 'padło raz' } else { $script:Order.Add('collect'); '{"meta":{},"probes":{}}' } }
             else { 'S-1' }
         }
-        $Outcome = Invoke-ExploreAll -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E'
+        $Outcome = Invoke-ExploreAll -VmName @('DSO-EN-Home', 'DSO-EN-Pro') -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E'
         @($Outcome.Errors).Count | Should -Be 1
         @($Outcome.Paths).Count | Should -Be 1
-        ($Order | Where-Object { $_ -eq 'start:DSO-26H2-Pro' }) | Should -Not -BeNullOrEmpty
+        ($Order | Where-Object { $_ -eq 'start:DSO-EN-Pro' }) | Should -Not -BeNullOrEmpty
     }
-    It 'VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro (obca VM odrzucona)' {
+    It 'VmName przyjmuje tylko DSO-EN-Home i DSO-EN-Pro (obca VM odrzucona)' {
         foreach ($Command in 'Invoke-ExploreVmRun', 'Invoke-ExploreAll') {
             $Attr = (Get-Command -Module ExploreCommon -Name $Command).Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-            $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+            $Attr.ValidValues | Should -Be @('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')
         }
         { Invoke-ExploreVmRun -VmName 'ObcaVM' -OutDirectory $TestDrive -FileName 'a.json' -RemoteScript 'x' -EntryCommand 'E' } | Should -Throw
         $Order | Should -BeNullOrEmpty

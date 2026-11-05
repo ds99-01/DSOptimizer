@@ -1,7 +1,7 @@
 ﻿#Requires -Version 5.1
 <#
 Instrukcja uruchomienia:
-    Tylko na runnerze GitHub Actions albo w VM DSO-26H2-Home/Pro, w 64-bitowym Windows PowerShell 5.1 jako Administrator
+    Tylko na runnerze GitHub Actions albo w VM DSO (DSO-EN-Home, DSO-EN-Pro, DSO-PL-Pro, DSO-PL-Home), w 64-bitowym Windows PowerShell 5.1 jako Administrator
     i na czystej maszynie (bez zainstalowanego DSOptimizera):
         .\tools\release\Test-InstallerSmoke.ps1 -InstallerPath <DSOptimizer-X.Y.Z-setup.exe> -ZipPath <DSOptimizer-X.Y.Z.zip> -Version X.Y.Z -LogDirectory <katalog>
     Kody wyjścia: 0 = wszystko zaliczone, 1 = coś niezaliczone, 2 = odmowa startu (zła albo nieczysta maszyna, nic nie zmieniono).
@@ -27,7 +27,7 @@ param(
 $SmokeAppId = '{82DBAF33-36AA-4F12-A327-EEC64159D8E8}'
 $SmokeMutexName = 'Global\DSOptimizer.SingleInstance'
 $SmokeUninstallSubKey = 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\' + $SmokeAppId + '_is1'
-$SmokeVmNames = @('DSO-26H2-HOME', 'DSO-26H2-PRO')
+$SmokeVmNames = @('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME')
 
 function Test-SmokeMachineAllowed {
     [CmdletBinding()]
@@ -318,7 +318,7 @@ if ($MyInvocation.InvocationName -ne '.') {
 
     # Strażnik przed jakimkolwiek skutkiem ubocznym.
     if (-not (Test-SmokeMachineAllowed -GitHubActions $env:GITHUB_ACTIONS -ComputerName $env:COMPUTERNAME)) {
-        Write-Host "Test-InstallerSmoke działa tylko na runnerze GitHub Actions i w VM DSO-26H2-Home/Pro (komputer: '$env:COMPUTERNAME'); nic nie zostało zmienione."
+        Write-Host "Test-InstallerSmoke działa tylko na runnerze GitHub Actions i w VM DSO (DSO-EN-Home, DSO-EN-Pro, DSO-PL-Pro, DSO-PL-Home) (komputer: '$env:COMPUTERNAME'); nic nie zostało zmienione."
         exit 2
     }
     if (-not [Environment]::Is64BitProcess) {

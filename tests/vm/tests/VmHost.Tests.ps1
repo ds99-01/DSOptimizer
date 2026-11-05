@@ -21,7 +21,7 @@ Describe 'Restore-VmCleanState' -Skip:(-not $script:HasHyperV) {
         Mock -ModuleName VmHost Get-VM { [pscustomobject]@{ Name = 'v'; State = 'Running' } }
         Mock -ModuleName VmHost Stop-VM {}
         Mock -ModuleName VmHost Restore-VMCheckpoint {}
-        Restore-VmCleanState -VmName 'DSO-26H2-Test' -CheckpointName 'czysta-26H2'
+        Restore-VmCleanState -VmName 'DSO-PL-Home' -CheckpointName 'czysta-26H2'
         Should -Invoke -ModuleName VmHost Stop-VM -Times 1 -ParameterFilter { $TurnOff }
         Should -Invoke -ModuleName VmHost Restore-VMCheckpoint -Times 1 -ParameterFilter { $Name -eq 'czysta-26H2' }
     }
@@ -29,7 +29,7 @@ Describe 'Restore-VmCleanState' -Skip:(-not $script:HasHyperV) {
         Mock -ModuleName VmHost Get-VM { [pscustomobject]@{ Name = 'v'; State = 'Off' } }
         Mock -ModuleName VmHost Stop-VM {}
         Mock -ModuleName VmHost Restore-VMCheckpoint {}
-        Restore-VmCleanState -VmName 'DSO-26H2-Test' -CheckpointName 'czysta-26H2'
+        Restore-VmCleanState -VmName 'DSO-PL-Home' -CheckpointName 'czysta-26H2'
         Should -Invoke -ModuleName VmHost Stop-VM -Times 0
         Should -Invoke -ModuleName VmHost Restore-VMCheckpoint -Times 1
     }
@@ -40,13 +40,13 @@ Describe 'Wait-VmReady' -Skip:(-not $script:HasHyperV) {
     It 'rzuca po przekroczeniu czasu' {
         Mock -ModuleName VmHost New-PSSession { throw 'brak' }
         Mock -ModuleName VmHost Start-Sleep {}
-        { Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 0 } | Should -Throw -ExpectedMessage '*v*'
+        { Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 0 } | Should -Throw -ExpectedMessage '*v*'
     }
     It 'zwraca sesję, gdy explorer.exe ma właściciela dso' {
         Mock -ModuleName VmHost New-PSSession { $script:FakeSession }
         Mock -ModuleName VmHost Start-Sleep {}
         Mock -ModuleName VmHost Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $true }
-        $Session = Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 60
+        $Session = Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 60
         [object]::ReferenceEquals($Session, $script:FakeSession) | Should -BeTrue
     }
     It '-SkipInteractiveUserCheck: zwraca sesję bez wymagania explorer.exe użytkownika dso (próba gotowości to tylko PowerShell Direct)' {
@@ -54,7 +54,7 @@ Describe 'Wait-VmReady' -Skip:(-not $script:HasHyperV) {
         Mock -ModuleName VmHost Start-Sleep {}
         # Wykonuje faktyczny blok próby lokalnie: z przełącznikiem to tylko `return $true` (bez Get-CimInstance explorer.exe).
         Mock -ModuleName VmHost Invoke-Command -RemoveParameterValidation 'Session' -MockWith { & $ScriptBlock }
-        $Session = Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 60 -SkipInteractiveUserCheck
+        $Session = Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 60 -SkipInteractiveUserCheck
         [object]::ReferenceEquals($Session, $script:FakeSession) | Should -BeTrue
     }
     It 'rzuca z nazwą VM, gdy explorer.exe nie ma właściciela dso, i zamyka sesję' {
@@ -62,7 +62,7 @@ Describe 'Wait-VmReady' -Skip:(-not $script:HasHyperV) {
         Mock -ModuleName VmHost Start-Sleep {}
         Mock -ModuleName VmHost Invoke-Command -RemoveParameterValidation 'Session' -MockWith { $false }
         Mock -ModuleName VmHost Remove-PSSession -RemoveParameterValidation 'Session' -MockWith {}
-        { Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 1 } | Should -Throw -ExpectedMessage '*v*'
+        { Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 1 } | Should -Throw -ExpectedMessage '*v*'
         Should -Invoke -ModuleName VmHost Remove-PSSession -Times 1 -ParameterFilter { $true }
     }
 }
@@ -108,27 +108,27 @@ Describe 'Invoke-DsoVmRun' -Skip:(-not $script:HasHyperV) {
         Mock -ModuleName VmHost Invoke-Pester { [pscustomobject]@{ PassedCount = 3; FailedCount = 0; SkippedCount = 0; Failed = @() } }
     }
     It 'przywraca checkpoint na początku i na końcu' {
-        Invoke-DsoVmRun -VmName 'DSO-26H2-Test' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive | Out-Null
+        Invoke-DsoVmRun -VmName 'DSO-PL-Home' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive | Out-Null
         Should -Invoke -ModuleName VmHost Restore-VmCleanState -Times 2
     }
     It 'przywraca checkpoint także po błędzie Pestera' {
         Mock -ModuleName VmHost Invoke-Pester { throw 'boom' }
-        { Invoke-DsoVmRun -VmName 'DSO-26H2-Test' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive } | Should -Throw
+        { Invoke-DsoVmRun -VmName 'DSO-PL-Home' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive } | Should -Throw
         Should -Invoke -ModuleName VmHost Restore-VmCleanState -Times 2
     }
     It 'nie woła Remove-PSSession dla pustej sesji' {
-        Invoke-DsoVmRun -VmName 'DSO-26H2-Test' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive | Out-Null
+        Invoke-DsoVmRun -VmName 'DSO-PL-Home' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive | Out-Null
         Should -Invoke -ModuleName VmHost Remove-PSSession -Times 0
     }
     It 'zamyka niepustą sesję' {
         Mock -ModuleName VmHost Wait-VmReady { $script:FakeSession }
-        Invoke-DsoVmRun -VmName 'DSO-26H2-Test' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive | Out-Null
+        Invoke-DsoVmRun -VmName 'DSO-PL-Home' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive | Out-Null
         Should -Invoke -ModuleName VmHost Remove-PSSession -Times 1
     }
     It 'zapisuje report.json z wynikiem Pestera' {
-        $Run = Invoke-DsoVmRun -VmName 'DSO-26H2-Test' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive
+        $Run = Invoke-DsoVmRun -VmName 'DSO-PL-Home' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive
         $Run.Passed | Should -Be 3
-        $Run.VmName | Should -Be 'DSO-26H2-Test'
+        $Run.VmName | Should -Be 'DSO-PL-Home'
         (Get-Content $Run.ReportPath -Raw | ConvertFrom-Json).pester.passed | Should -Be 3
     }
     It 'w report.json zapisuje nazwy i błędy nieudanych testów' {
@@ -138,7 +138,7 @@ Describe 'Invoke-DsoVmRun' -Skip:(-not $script:HasHyperV) {
                 Failed      = @([pscustomobject]@{ ExpandedPath = 'przypadek.apply'; ErrorRecord = @([System.Management.Automation.ErrorRecord]::new([System.Exception]::new('zły stan'), 'e', 'NotSpecified', $null)) })
             }
         }
-        $Run = Invoke-DsoVmRun -VmName 'DSO-26H2-Test' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive
+        $Run = Invoke-DsoVmRun -VmName 'DSO-PL-Home' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive
         $Report = Get-Content $Run.ReportPath -Raw | ConvertFrom-Json
         $Run.Failed | Should -Be 1
         @($Report.pester.failedTests).Count | Should -Be 1
@@ -146,7 +146,7 @@ Describe 'Invoke-DsoVmRun' -Skip:(-not $script:HasHyperV) {
         $Report.pester.failedTests[0].error | Should -BeLike '*zły stan*'
     }
     It 'nie zapisuje hasła w report.json' {
-        $Run = Invoke-DsoVmRun -VmName 'DSO-26H2-Test' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive
+        $Run = Invoke-DsoVmRun -VmName 'DSO-PL-Home' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive
         (Get-Content $Run.ReportPath -Raw) | Should -Not -BeLike '*Test-Haslo-1!*'
     }
 }
@@ -198,13 +198,13 @@ Describe 'Wait-VmReady: błędy logowania i ponowienia' -Skip:(-not $script:HasH
     BeforeEach { Set-NoLiveVmDefaultMock -ModuleName VmHost; Mock -ModuleName VmHost Assert-DsoVmLiveAllowed {}; Mock -ModuleName VmHost Start-Sleep {}; Mock -ModuleName VmHost Get-VM { [pscustomobject]@{ Name = 'v'; State = 'Running'; Heartbeat = 'OkApplicationsHealthy' } } }
     It 'błąd uwierzytelnienia przerywa od razu, bez ponawiania (lockout VM)' {
         Mock -ModuleName VmHost New-PSSession { throw 'The credential is invalid.' }
-        { Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 600 } | Should -Throw -ExpectedMessage '*credential is invalid*'
+        { Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 600 } | Should -Throw -ExpectedMessage '*credential is invalid*'
         Should -Invoke -ModuleName VmHost New-PSSession -Times 1 -Exactly
     }
     It 'błąd uwierzytelnienia niesie flagę VmAuthFailure rozpoznawaną przez Test-VmAuthFailure' {
         Mock -ModuleName VmHost New-PSSession { throw 'The credential is invalid.' }
         $Caught = $null
-        try { Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 600 } catch { $Caught = $_.Exception }
+        try { Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 600 } catch { $Caught = $_.Exception }
         $Caught | Should -Not -BeNullOrEmpty
         $Caught.Data['VmAuthFailure'] | Should -BeTrue
         Test-VmAuthFailure -Exception $Caught | Should -BeTrue
@@ -215,7 +215,7 @@ Describe 'Wait-VmReady: błędy logowania i ponowienia' -Skip:(-not $script:HasH
         Mock -ModuleName VmHost Remove-PSSession -RemoveParameterValidation 'Session' -MockWith {}
         Mock -ModuleName VmHost Invoke-Command -RemoveParameterValidation 'Session' -MockWith { throw 'Access is denied.' }
         $Caught = $null
-        try { Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 600 } catch { $Caught = $_.Exception }
+        try { Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 600 } catch { $Caught = $_.Exception }
         Should -Invoke -ModuleName VmHost New-PSSession -Times 8 -Exactly
         $Caught | Should -Not -BeNullOrEmpty
         $Caught.Message | Should -BeLike '*wygląda na błąd uwierzytelnienia*'
@@ -224,18 +224,18 @@ Describe 'Wait-VmReady: błędy logowania i ponowienia' -Skip:(-not $script:HasH
     It 'wyczerpanie prób bez wzorca uwierzytelnienia NIE niesie flagi VmAuthFailure' {
         Mock -ModuleName VmHost New-PSSession { throw 'dziwny błąd xyz' }
         $Caught = $null
-        try { Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 600 } catch { $Caught = $_.Exception }
+        try { Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 600 } catch { $Caught = $_.Exception }
         $Caught | Should -Not -BeNullOrEmpty
         Test-VmAuthFailure -Exception $Caught | Should -BeFalse
     }
     It 'nieznany błąd jest ponawiany ograniczoną liczbę razy (8)' {
         Mock -ModuleName VmHost New-PSSession { throw 'dziwny błąd xyz' }
-        { Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 600 } | Should -Throw -ExpectedMessage '*dziwny błąd xyz*'
+        { Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 600 } | Should -Throw -ExpectedMessage '*dziwny błąd xyz*'
         Should -Invoke -ModuleName VmHost New-PSSession -Times 8 -Exactly
     }
     It 'timeout zawiera ostatni błąd New-PSSession' {
         Mock -ModuleName VmHost New-PSSession { throw 'The virtual machine is not ready yet' }
-        { Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 1 } | Should -Throw -ExpectedMessage '*not ready yet*'
+        { Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 1 } | Should -Throw -ExpectedMessage '*not ready yet*'
     }
 }
 
@@ -250,7 +250,7 @@ Describe 'Invoke-DsoVmRun: poprawki rundy 1' -Skip:(-not $script:HasHyperV) {
         Mock -ModuleName VmHost Copy-Item -RemoveParameterValidation 'FromSession' -MockWith {}
         Mock -ModuleName VmHost Remove-PSSession -RemoveParameterValidation 'Session' -MockWith {}
         Mock -ModuleName VmHost Invoke-Pester { [pscustomobject]@{ PassedCount = 3; FailedCount = 0; SkippedCount = 0; Failed = @() } }
-        $RunArgs = @{ VmName = 'DSO-26H2-Test'; Credential = $script:Credential; BuildDirectory = $TestDrive; CatalogPath = "$TestDrive\k.json"; OutDirectory = $TestDrive }
+        $RunArgs = @{ VmName = 'DSO-PL-Home'; Credential = $script:Credential; BuildDirectory = $TestDrive; CatalogPath = "$TestDrive\k.json"; OutDirectory = $TestDrive }
     }
     It 'błąd przywracania w finally nie zastępuje pierwotnego błędu' {
         $global:DsoRestoreCalls = 0
@@ -267,7 +267,7 @@ Describe 'Invoke-DsoVmRun: poprawki rundy 1' -Skip:(-not $script:HasHyperV) {
         { Invoke-DsoVmRun @RunArgs -Cases @() } | Should -Throw -ExpectedMessage '*czystym stanie*'
     }
     It 'stare rekordy z poprzedniego przebiegu nie trafiają do report.json' {
-        $Records = Join-Path $TestDrive 'DSO-26H2-Test\main\records'
+        $Records = Join-Path $TestDrive 'DSO-PL-Home\main\records'
         New-Item -ItemType Directory -Path $Records -Force | Out-Null
         Set-Content -LiteralPath "$Records\stary.json" -Value '{"Name":"stary"}'
         $Run = Invoke-DsoVmRun @RunArgs -Cases @()
@@ -301,10 +301,10 @@ Describe 'Invoke-DsoVmRun: poprawki rundy 1' -Skip:(-not $script:HasHyperV) {
 
 Describe 'Invoke-VmTests.ps1: zero przypadków' {
     It 'kończy się błędem (exit 1) i komunikatem, zanim dotknie VM' {
-        # Skrypt idzie w osobnym procesie (mocki nie działają), więc nazwa spełnia wzorzec, ale nie należy do żadnej VM:
-        # nawet po przestawieniu kontroli pustych przypadków nic nie zrobi revertu ani startu prawdziwej VM.
-        $VmName = 'DSO-26H2-Brak'
-        if (Get-Command -Name Get-VM -ErrorAction SilentlyContinue) { Get-VM -Name $VmName -ErrorAction SilentlyContinue | Should -BeNullOrEmpty -Because "VM $VmName nie może istnieć" }
+        # Skrypt idzie w osobnym procesie (mocki nie działają), a VM o tej nazwie może istnieć: proces potomny dziedziczy DSO_VM_TESTS_MOCK_ONLY,
+        # więc Assert-DsoVmLiveAllowed blokuje każdy dotyk VM, a kontrola pustych przypadków kończy przebieg przed VM.
+        $env:DSO_VM_TESTS_MOCK_ONLY | Should -Be '1'
+        $VmName = 'DSO-EN-Pro'
         Set-Content -LiteralPath "$TestDrive\puste.psd1" -Value '@{ Cases = @() }' -Encoding UTF8
         $Output = & powershell.exe -NoProfile -File (Join-Path $script:VmRoot 'Invoke-VmTests.ps1') -VmName $VmName -CasesPath "$TestDrive\puste.psd1" -OutDirectory "$TestDrive\out" 2>&1 | Out-String
         $LASTEXITCODE | Should -Be 1
@@ -369,6 +369,12 @@ Describe 'Scenariusze VM: brak fałszywej zieleni (przez Invoke-DsoVmRun, kontek
         $Result.failed | Should -Be 0 -Because (@($Result.messages) -join '; ')
         $Result.passed | Should -Be 19
         $Result.cases | Should -Be 2
+    }
+    It 'MessageLanguage: polski komunikat przy przypadku rozwiązanym dla en psuje tylko asercję komunikatu (4 zielone, 1 czerwony)' {
+        $Result = Invoke-DryRun -Variant 'MessageLanguage'
+        $Result.threw | Should -BeNullOrEmpty -Because "$($Result.threw)"
+        $Result.passed | Should -Be 4 -Because 'przebieg, kod, wynik i Check zielone, czerwony tylko komunikat'
+        $Result.failed | Should -Be 1
     }
     It 'AppInstall: kod, wyniki i kody winget pozycji, komplet pozycji, status zainstalowana, stan winget, komunikat, Check i Cleanup są zielone (15 testów)' {
         $Result = Invoke-DryRun -Variant 'AppInstall'
@@ -448,6 +454,9 @@ Describe 'Scenariusze VM: brak fałszywej zieleni (przez Invoke-DsoVmRun, kontek
         @{ Variant = 'AppInstallCheckFails'; Fragment = 'Check zwrócił: False' }
         @{ Variant = 'AppInstallWrongWingetCode'; Fragment = "kod winget pozycji 'install.7zip'" }
         @{ Variant = 'AppInstallUnexpectedWingetCode'; Fragment = "'install.vlc' nie powinna mieć kodu winget" }
+        # Komunikat po polsku przy przypadku rozwiązanym dla en: czerwony, a komunikat nazywa klucz z tabel i język tekstów.
+        @{ Variant = 'MessageLanguage'; Fragment = "klucze: 'brak aktywnego połączenia w profilu publicznym*TextLanguage en" }
+        @{ Variant = 'MessageUnresolved'; Fragment = 'przypadek bez Resolve-VmCaseTexts' }
     ) {
         $Result = Invoke-DryRun -Variant $Variant
         $Result.threw | Should -BeNullOrEmpty -Because "$($Result.threw)"
@@ -477,40 +486,40 @@ Describe 'Wait-VmReady: heartbeat i limit prób' -Skip:(-not $script:HasHyperV) 
     It 'brak heartbeatu: rzuca z nazwą VM i stanem, New-PSSession nie jest wołane' {
         Mock -ModuleName VmHost Get-VM { [pscustomobject]@{ Name = 'v'; State = 'Running'; Heartbeat = 'NoContact' } }
         Mock -ModuleName VmHost New-PSSession { $script:FakeSession }
-        { Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 1 } |
-            Should -Throw -ExpectedMessage "*DSO-26H2-Test*NoContact*"
+        { Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 1 } |
+            Should -Throw -ExpectedMessage "*DSO-PL-Home*NoContact*"
         Should -Invoke -ModuleName VmHost New-PSSession -Times 0 -Exactly
     }
     It 'heartbeat OkApplicationsUnknown wystarcza' {
         Mock -ModuleName VmHost Get-VM { [pscustomobject]@{ Name = 'v'; State = 'Running'; Heartbeat = 'OkApplicationsUnknown' } }
         Mock -ModuleName VmHost New-PSSession { $script:FakeSession }
-        $S = Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 60
+        $S = Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 60
         [object]::ReferenceEquals($S, $script:FakeSession) | Should -BeTrue
     }
     It 'heartbeat pojawia się po kilku odpytaniach, potem sesja' {
         $script:HbCalls = 0
         Mock -ModuleName VmHost Get-VM { $script:HbCalls++; [pscustomobject]@{ Name = 'v'; State = 'Running'; Heartbeat = $(if ($script:HbCalls -lt 3) { 'NoContact' } else { 'OkApplicationsHealthy' }) } }
         Mock -ModuleName VmHost New-PSSession { $script:FakeSession }
-        Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 60 | Out-Null
+        Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 60 | Out-Null
         Should -Invoke -ModuleName VmHost New-PSSession -Times 1 -Exactly
     }
     It 'przejściowe błędy: dokładnie 8 prób, potem rzuca z ostatnim błędem' {
         Mock -ModuleName VmHost New-PSSession { throw 'The virtual machine is not ready yet' }
-        { Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 600 } | Should -Throw -ExpectedMessage '*not ready yet*'
+        { Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 600 } | Should -Throw -ExpectedMessage '*not ready yet*'
         Should -Invoke -ModuleName VmHost New-PSSession -Times 8 -Exactly
     }
     It 'sukces w próbie 3 zwraca sesję po 3 wywołaniach' {
         $script:Tries = 0
         Mock -ModuleName VmHost New-PSSession { $script:Tries++; if ($script:Tries -lt 3) { throw 'not ready' }; $script:FakeSession }
-        $S = Wait-VmReady -VmName 'DSO-26H2-Test' -Credential $script:Credential -TimeoutSeconds 600
+        $S = Wait-VmReady -VmName 'DSO-PL-Home' -Credential $script:Credential -TimeoutSeconds 600
         [object]::ReferenceEquals($S, $script:FakeSession) | Should -BeTrue
         Should -Invoke -ModuleName VmHost New-PSSession -Times 3 -Exactly
     }
     It 'odrzuca nazwę z końcowym znakiem nowej linii' {
         Mock -ModuleName VmHost New-PSSession { $script:FakeSession }
-        { Wait-VmReady -VmName "DSO-26H2-Pro`n" -Credential $script:Credential -TimeoutSeconds 1 } | Should -Throw
-        { Restore-VmCleanState -VmName "DSO-26H2-Pro`n" -CheckpointName 'c' } | Should -Throw
-        { Invoke-DsoVmRun -VmName "DSO-26H2-Pro`n" -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive } | Should -Throw
+        { Wait-VmReady -VmName "DSO-EN-Pro`n" -Credential $script:Credential -TimeoutSeconds 1 } | Should -Throw
+        { Restore-VmCleanState -VmName "DSO-EN-Pro`n" -CheckpointName 'c' } | Should -Throw
+        { Invoke-DsoVmRun -VmName "DSO-EN-Pro`n" -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive } | Should -Throw
         Should -Invoke -ModuleName VmHost New-PSSession -Times 0 -Exactly
     }
 }
@@ -533,19 +542,19 @@ Describe 'Task 8: Invoke-DsoVmRun z RunLabel' -Skip:(-not $script:HasHyperV) {
             $global:Dso8Container = $Configuration.Run.Container.Value
             [pscustomobject]@{ PassedCount = 3; FailedCount = 0; SkippedCount = 0; Failed = @() }
         }
-        $script:RunArgs = @{ VmName = 'DSO-26H2-Test'; Credential = $script:Credential; BuildDirectory = $TestDrive; CatalogPath = "$TestDrive\k.json"; OutDirectory = $TestDrive; Cases = @() }
+        $script:RunArgs = @{ VmName = 'DSO-PL-Home'; Credential = $script:Credential; BuildDirectory = $TestDrive; CatalogPath = "$TestDrive\k.json"; OutDirectory = $TestDrive; Cases = @() }
     }
     AfterAll { Remove-Variable -Name Dso8Container -Scope Global -ErrorAction SilentlyContinue }
     It 'domyślna etykieta main: raport w out\<VM>\main\report.json' {
         $Run = Invoke-DsoVmRun @script:RunArgs
         $Run.RunLabel | Should -Be 'main'
-        $Run.ReportPath | Should -Be (Join-Path $TestDrive 'DSO-26H2-Test\main\report.json')
+        $Run.ReportPath | Should -Be (Join-Path $TestDrive 'DSO-PL-Home\main\report.json')
         Test-Path $Run.ReportPath | Should -BeTrue
         (Get-Content $Run.ReportPath -Raw | ConvertFrom-Json).runLabel | Should -Be 'main'
     }
     It 'własna etykieta: osobny katalog raportu' {
         $Run = Invoke-DsoVmRun @script:RunArgs -RunLabel 'reboot-x'
-        $Run.ReportPath | Should -Be (Join-Path $TestDrive 'DSO-26H2-Test\reboot-x\report.json')
+        $Run.ReportPath | Should -Be (Join-Path $TestDrive 'DSO-PL-Home\reboot-x\report.json')
     }
     It 'odrzuca etykietę z separatorem ścieżki' {
         { Invoke-DsoVmRun @script:RunArgs -RunLabel '..\x' } | Should -Throw
@@ -576,7 +585,7 @@ Describe 'Task 8: Invoke-DsoVmRun z RunLabel' -Skip:(-not $script:HasHyperV) {
         $Data.Reconnect | Should -BeOfType [scriptblock]
         $Session = & $Data.Reconnect
         $Session | Should -Not -BeNullOrEmpty
-        Should -Invoke -ModuleName VmHost New-PSSession -Times 2 -Exactly -ParameterFilter { $VMName -eq 'DSO-26H2-Test' }
+        Should -Invoke -ModuleName VmHost New-PSSession -Times 2 -Exactly -ParameterFilter { $VMName -eq 'DSO-PL-Home' }
     }
 }
 
@@ -592,7 +601,7 @@ Describe 'Task 8: Invoke-DsoVmRunSet' {
             @{ Name = 'r1'; Flow = 'Reboot' }
             @{ Name = 'b'; Flow = 'Full' }
         )
-        $script:SetArgs = @{ VmName = 'DSO-26H2-Test'; Credential = $script:Credential; BuildDirectory = 'B'; CatalogPath = 'C'; OutDirectory = 'O'; CheckpointName = 'cp'; ReadyTimeoutSeconds = 60 }
+        $script:SetArgs = @{ VmName = 'DSO-PL-Home'; Credential = $script:Credential; BuildDirectory = 'B'; CatalogPath = 'C'; OutDirectory = 'O'; CheckpointName = 'cp'; ReadyTimeoutSeconds = 60 }
     }
     AfterAll { Remove-Variable -Name Dso8Labels -Scope Global -ErrorAction SilentlyContinue }
     It '1 przypadek Reboot i 2 zwykłe: dwa wywołania Invoke-DsoVmRun z różnymi RunLabel' {
@@ -648,13 +657,13 @@ Describe 'Fix 1: Wait-VmHeartbeatDrop i Reconnect' -Skip:(-not $script:HasHyperV
     AfterAll { Remove-Variable -Name Dso8Hb, Dso8Order -Scope Global -ErrorAction SilentlyContinue }
     It 'OK -> NoContact -> OK: czekanie kończy się na NoContact, bez New-PSSession' {
         foreach ($S in 'OkApplicationsHealthy', 'OkApplicationsHealthy', 'LostCommunication', 'OkApplicationsHealthy') { $global:Dso8Hb.Enqueue($S) }
-        Wait-VmHeartbeatDrop -VmName 'DSO-26H2-Test' | Should -BeTrue
-        Should -Invoke -ModuleName VmHost Get-VM -Times 3 -Exactly -ParameterFilter { $VMName -eq 'DSO-26H2-Test' }
+        Wait-VmHeartbeatDrop -VmName 'DSO-PL-Home' | Should -BeTrue
+        Should -Invoke -ModuleName VmHost Get-VM -Times 3 -Exactly -ParameterFilter { $VMName -eq 'DSO-PL-Home' }
         Should -Invoke -ModuleName VmHost New-PSSession -Times 0 -Exactly
     }
     It 'heartbeat stale OK: jedno ostrzeżenie i powrót po limicie (60 odczytów)' {
         $Warnings = @()
-        Wait-VmHeartbeatDrop -VmName 'DSO-26H2-Test' -WarningVariable Warnings -WarningAction SilentlyContinue | Should -BeFalse
+        Wait-VmHeartbeatDrop -VmName 'DSO-PL-Home' -WarningVariable Warnings -WarningAction SilentlyContinue | Should -BeFalse
         @($Warnings).Count | Should -Be 1
         Should -Invoke -ModuleName VmHost Get-VM -Times 60 -Exactly
     }
@@ -672,7 +681,7 @@ Describe 'Fix 1: Wait-VmHeartbeatDrop i Reconnect' -Skip:(-not $script:HasHyperV
             $null = & $Reconnect 2
             [pscustomobject]@{ PassedCount = 1; FailedCount = 0; SkippedCount = 0; Failed = @() }
         }
-        Invoke-DsoVmRun -VmName 'DSO-26H2-Test' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive | Out-Null
+        Invoke-DsoVmRun -VmName 'DSO-PL-Home' -Credential $script:Credential -BuildDirectory $TestDrive -CatalogPath "$TestDrive\k.json" -Cases @() -OutDirectory $TestDrive | Out-Null
         # Start VM (zamockowana Wait-VmReady), potem Reconnect próba 1: 2 odczyty heartbeatu (OK, LostCommunication) bez New-PSSession,
         # dopiero potem prawdziwa Wait-VmReady (Get-VM + New-PSSession; domknięcie widzi wyeksportowaną funkcję); próba 2 bez czekania na heartbeat.
         @($global:Dso8Order) | Should -Be @('wait-vmready', 'get-vm', 'get-vm', 'get-vm', 'new-pssession', 'get-vm', 'new-pssession')
@@ -690,7 +699,7 @@ Describe 'Fix 2: wybór sesji do kopiowania logów' -Skip:(-not $script:HasHyper
         Mock -ModuleName VmHost Copy-Item -RemoveParameterValidation 'FromSession' -MockWith {}
         Mock -ModuleName VmHost Remove-PSSession -RemoveParameterValidation 'Session' -MockWith {}
         Mock -ModuleName VmHost Invoke-Pester { [pscustomobject]@{ PassedCount = 1; FailedCount = 0; SkippedCount = 0; Failed = @() } }
-        $script:RunArgs2 = @{ VmName = 'DSO-26H2-Test'; Credential = $script:Credential; BuildDirectory = $TestDrive; CatalogPath = "$TestDrive\k.json"; OutDirectory = $TestDrive; Cases = @() }
+        $script:RunArgs2 = @{ VmName = 'DSO-PL-Home'; Credential = $script:Credential; BuildDirectory = $TestDrive; CatalogPath = "$TestDrive\k.json"; OutDirectory = $TestDrive; Cases = @() }
     }
     It 'otwarta sesja oryginalna: logi kopiowane przez nią' {
         Mock -ModuleName VmHost Test-VmSessionOpen { $null -ne $Session }

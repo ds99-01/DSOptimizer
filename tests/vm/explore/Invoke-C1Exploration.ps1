@@ -5,7 +5,7 @@ Instrukcja uruchomienia:
     Obie VM, po kolei (Home, potem Pro):
         .\tests\vm\explore\Invoke-C1Exploration.ps1 -OutDirectory C:\ścieżka\do\wyników
     Jedna VM:
-        .\tests\vm\explore\Invoke-C1Exploration.ps1 -VmName DSO-26H2-Pro -OutDirectory C:\ścieżka\do\wyników
+        .\tests\vm\explore\Invoke-C1Exploration.ps1 -VmName DSO-PL-Pro -OutDirectory C:\ścieżka\do\wyników
     Bez -OutDirectory wynik trafia do tests\vm\out\c1-<data> (katalog out\ jest w .gitignore).
 Opis działania:
     Skrypt zbiera dowody z prawdziwej VM 26H2 dla partii C1 (tweaki ux.* i disk.*). Wartości rejestru i stanu nie pochodzą
@@ -23,12 +23,12 @@ Opis działania:
     Wynik: <OutDirectory>\<VmName>\c1-exploration.json (UTF-8) z metadanymi (build, UBR, EditionID, kultura, czas).
     Hive użytkownika 'dso' musi być załadowany (Wait-VmReady czeka na jego explorer.exe); jeśli nie jest, JSON zapisuje
     HiveLoaded=false i pomija odczyty HKU (skrypt niczego nie ładuje przez 'reg load').
-    Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro, na hoście niczego nie zmienia.
+    Skrypt dotyka wyłącznie VM DSO-PL-Home i DSO-PL-Pro, na hoście niczego nie zmienia.
     Kod wyjścia: 0 gdy obie (wybrane) VM zebrane bez błędu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName = @('DSO-26H2-Home', 'DSO-26H2-Pro'),
+    [ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName = @('DSO-PL-Home', 'DSO-PL-Pro'),
     [string]$OutDirectory,
     [string]$CheckpointName = 'czysta-26H2',
     [ValidateRange(60, 7200)][int]$ReadyTimeoutSeconds = 1200
@@ -332,7 +332,7 @@ function Invoke-C1VmExploration {
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [string]$CheckpointName = 'czysta-26H2',
         [int]$ReadyTimeoutSeconds = 1200
@@ -345,7 +345,7 @@ function Invoke-C1Exploration {
     # Wszystkie wybrane VM po kolei. Błąd uwierzytelnienia = stop całości; inny błąd = zapis i dalej (logika we wspólnym module).
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [string]$CheckpointName = 'czysta-26H2',
         [int]$ReadyTimeoutSeconds = 1200

@@ -164,19 +164,21 @@ Describe 'Czysta logika (bez VM)' {
 }
 
 Describe 'Bezpieczniki (VM-only, mock-only)' {
-    It 'Test-E4B2VmComputerName: tylko DSO-26H2-HOME/PRO' {
-        Test-E4B2VmComputerName -ComputerName 'dso-26h2-pro' | Should -BeTrue
-        Test-E4B2VmComputerName -ComputerName 'DSO-26H2-HOME' | Should -BeTrue
+    It 'Test-E4B2VmComputerName: tylko cztery nazwy DSO (EN/PL, Home/Pro), stara nazwa odrzucona' {
+        Test-E4B2VmComputerName -ComputerName 'dso-en-pro' | Should -BeTrue
+        Test-E4B2VmComputerName -ComputerName 'dso-pl-home' | Should -BeTrue
+        Test-E4B2VmComputerName -ComputerName 'DSO-26H2-PRO' | Should -BeFalse
+        Test-E4B2VmComputerName -ComputerName 'DSO-PL-HOME' | Should -BeTrue
         Test-E4B2VmComputerName -ComputerName 'BRUTEFORCE_LTSC' | Should -BeFalse
         Test-E4B2VmComputerName -ComputerName '' | Should -BeFalse
     }
     It 'Assert-E4B2InsideVm rzuca w trybie mock-only, nawet z nazwą VM; poza trybem rzuca na hoście' {
-        { Assert-E4B2InsideVm -ComputerName 'DSO-26H2-PRO' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Assert-E4B2InsideVm -ComputerName 'DSO-PL-PRO' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
         $Saved = $env:DSO_VM_TESTS_MOCK_ONLY
         try {
             [Environment]::SetEnvironmentVariable('DSO_VM_TESTS_MOCK_ONLY', $null)
             { Assert-E4B2InsideVm -ComputerName 'HOST-PC' } | Should -Throw '*tylko w VM*'
-            { Assert-E4B2InsideVm -ComputerName 'DSO-26H2-HOME' } | Should -Not -Throw
+            { Assert-E4B2InsideVm -ComputerName 'DSO-PL-HOME' } | Should -Not -Throw
         }
         finally { $env:DSO_VM_TESTS_MOCK_ONLY = $Saved }
     }
@@ -505,7 +507,7 @@ Describe 'Wysyłka funkcji do VM i treść skryptu' {
         $Text | Should -Match 'Opis działania'
         foreach ($Command in (Get-Command $script:E4B2ScriptPath), (Get-Command Invoke-E4B2VmRun), (Get-Command Complete-E4B2VmCleanup)) {
             $Attr = $Command.Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-            $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+            $Attr.ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
         }
     }
     It 'plik testów też ma BOM UTF-8' {
@@ -527,8 +529,8 @@ Describe 'Argumenty przebiegu' {
         Assert-E4B2OutDirectory -Path (Join-Path $env:TEMP 'dso-explore') -RepoRoot $Real | Should -Be (Join-Path $env:TEMP 'dso-explore')   # poza repo
     }
     It 'Get-E4B2RunArguments: VM, fazy w kolejności i plan' {
-        $Arguments = Get-E4B2RunArguments -VmName 'DSO-26H2-Pro' -Phase @('network', 'sfc') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
-        @($Arguments.VmName) | Should -Be @('DSO-26H2-Pro')
+        $Arguments = Get-E4B2RunArguments -VmName 'DSO-PL-Pro' -Phase @('network', 'sfc') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
+        @($Arguments.VmName) | Should -Be @('DSO-PL-Pro')
         @($Arguments.Phases) | Should -Be @('baseline', 'sfc', 'network')
         $Arguments.Plan.SageRunId | Should -Be (Get-E4B2Plan).SageRunId
     }
@@ -557,18 +559,18 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
     }
     It 'przebieg: revert -> start -> gotowość -> fazy, sieć tylko na fazę network -> kopia surowych plików -> revert -> odłączenie -> zapis' {
         $Phases = Get-E4B2PhaseOrder -Phase @('dism', 'network', 'final')
-        $Path = Invoke-E4B2VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases $Phases 6>$null
-        $Path | Should -Be 'C:\w\DSO-26H2-Pro\e4b2.json'
-        @($script:Calls) | Should -Be @('revert DSO-26H2-Pro', 'start DSO-26H2-Pro', 'ready', 'phase baseline', 'phase dism', 'connect DSO-26H2-Pro Default Switch', 'phase network',
-            'disconnect DSO-26H2-Pro', 'phase final', 'copy raw', 'revert DSO-26H2-Pro', 'disconnect DSO-26H2-Pro', 'save e4b2.json')
+        $Path = Invoke-E4B2VmRun -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive -Phases $Phases 6>$null
+        $Path | Should -Be 'C:\w\DSO-PL-Pro\e4b2.json'
+        @($script:Calls) | Should -Be @('revert DSO-PL-Pro', 'start DSO-PL-Pro', 'ready', 'phase baseline', 'phase dism', 'connect DSO-PL-Pro Default Switch', 'phase network',
+            'disconnect DSO-PL-Pro', 'phase final', 'copy raw', 'revert DSO-PL-Pro', 'disconnect DSO-PL-Pro', 'save e4b2.json')
         $script:SavedResult.cleanup.Ok | Should -BeTrue
         $script:SavedResult.userSid | Should -Be 'S-1-5-21-1-1001'
         $script:SavedResult.error | Should -BeNullOrEmpty
     }
     It 'błąd fazy network: karta odłączona od razu, dalsze fazy idą, wynik częściowy zapisany, wyjątek z nazwą VM' {
         Mock Invoke-E4B2VmPhase { $script:Calls.Add("phase $Phase"); if ($Phase -eq 'network') { throw 'DISM padł' }; [pscustomobject]@{ phase = $Phase } }
-        { Invoke-E4B2VmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('baseline', 'network', 'final') 6>$null } | Should -Throw '*DSO-26H2-Home*DISM padł*'
-        $script:Calls.IndexOf('disconnect DSO-26H2-Home') | Should -BeLessThan $script:Calls.IndexOf('phase final')
+        { Invoke-E4B2VmRun -VmName 'DSO-PL-Home' -OutDirectory $TestDrive -Phases @('baseline', 'network', 'final') 6>$null } | Should -Throw '*DSO-PL-Home*DISM padł*'
+        $script:Calls.IndexOf('disconnect DSO-PL-Home') | Should -BeLessThan $script:Calls.IndexOf('phase final')
         $script:Calls[-1] | Should -Be 'save e4b2.json'
         $script:SavedResult.phases.baseline.phase | Should -Be 'baseline'
         $script:SavedResult.phases.final.phase | Should -Be 'final'
@@ -576,15 +578,15 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
     It 'stan końcowy niezgodny z kontraktem (VM nie Off, karta na przełączniku): zapisany i zgłoszony' {
         Mock Get-VM { [pscustomobject]@{ Name = $Name; State = 'Running' } }
         Mock Get-VMNetworkAdapter { [pscustomobject]@{ VMName = $VMName; Name = 'Network Adapter'; SwitchName = 'Default Switch' } }
-        { Invoke-E4B2VmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('baseline') 3>$null 6>$null } | Should -Throw '*stan końcowy*'
+        { Invoke-E4B2VmRun -VmName 'DSO-PL-Home' -OutDirectory $TestDrive -Phases @('baseline') 3>$null 6>$null } | Should -Throw '*stan końcowy*'
         ($script:SavedResult.cleanup.Violations -join ' ') | Should -Match 'Running'
         ($script:SavedResult.cleanup.Violations -join ' ') | Should -Match 'Default Switch'
     }
     It 'błąd uwierzytelnienia: przekazany dalej, revert wykonany; Invoke-E4B2Exploration zatrzymuje całość' {
         Mock Wait-VmReady { $E = [System.InvalidOperationException]::new('błąd uwierzytelnienia PowerShell Direct'); $E.Data['VmAuthFailure'] = $true; throw $E }
-        { Invoke-E4B2VmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('baseline') } | Should -Throw '*uwierzytelnienia*'
-        $script:Calls | Should -Contain 'revert DSO-26H2-Pro'
-        $Arguments = Get-E4B2RunArguments -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -Phase @('baseline') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
+        { Invoke-E4B2VmRun -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive -Phases @('baseline') } | Should -Throw '*uwierzytelnienia*'
+        $script:Calls | Should -Contain 'revert DSO-PL-Pro'
+        $Arguments = Get-E4B2RunArguments -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -Phase @('baseline') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
         Mock Invoke-E4B2VmRun { $E = [System.InvalidOperationException]::new('x'); $E.Data['VmAuthFailure'] = $true; throw $E }
         { Invoke-E4B2Exploration -Arguments $Arguments 6>$null } | Should -Throw
         Should -Invoke Invoke-E4B2VmRun -Times 1 -Exactly -Scope It
@@ -594,10 +596,10 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
 Describe 'Blok główny SKRYPTU (-ShowPlan; bez VM)' {
     It '-ShowPlan: kod 0, plan i fazy; bez -OutDirectory kod 1' {
         $env:DSO_VM_TESTS_MOCK_ONLY | Should -Be '1'
-        $Output = & $script:E4B2ScriptPath -ShowPlan -VmName DSO-26H2-Pro -Phase sfc -NoNetwork -OutDirectory (Join-Path $TestDrive 'w') 6>$null
+        $Output = & $script:E4B2ScriptPath -ShowPlan -VmName DSO-PL-Pro -Phase sfc -NoNetwork -OutDirectory (Join-Path $TestDrive 'w') 6>$null
         $LASTEXITCODE | Should -Be 0
         $Plan = ($Output | Out-String) | ConvertFrom-Json
-        @($Plan.VmName) | Should -Be @('DSO-26H2-Pro')
+        @($Plan.VmName) | Should -Be @('DSO-PL-Pro')
         @($Plan.Phases) | Should -Be @('baseline', 'sfc')
         $Plan.Network | Should -BeFalse
         Test-Path -LiteralPath (Join-Path $TestDrive 'w') | Should -BeFalse

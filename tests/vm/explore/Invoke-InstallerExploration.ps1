@@ -4,14 +4,15 @@ Instrukcja uruchomienia:
     VM utworzone wcześniej przez New-TestVm.ps1 (checkpoint 'czysta-26H2', poświadczenia w %LOCALAPPDATA%\DSOptimizer-vm, autologon 'dso').
     Jedna VM na proces. Wydanie: katalog z tools\release\Build-Release.ps1 -Variant Folder (DSOptimizer-<wersja>.zip,
     DSOptimizer-<wersja>-setup.exe i SHA256SUMS.txt z sumami obu plików), np.:
-        .\tests\vm\explore\Invoke-InstallerExploration.ps1 -VmName DSO-26H2-Pro -ArtifactDirectory <katalog wydania> `
+        .\tests\vm\explore\Invoke-InstallerExploration.ps1 -VmName DSO-EN-Pro -ArtifactDirectory <katalog wydania> `
             -OutDirectory $env:TEMP\dso-explore\instalator\vm
-        .\tests\vm\explore\Invoke-InstallerExploration.ps1 -VmName DSO-26H2-Home -ArtifactDirectory <katalog wydania> -Phase upgrade `
+        .\tests\vm\explore\Invoke-InstallerExploration.ps1 -VmName DSO-EN-Home -ArtifactDirectory <katalog wydania> -Phase upgrade `
             -UpgradeInstallerPath <katalog wyższej wersji>\DSOptimizer-<wyższa>-setup.exe -OutDirectory $env:TEMP\dso-explore\instalator\vm
     -Phase: smoke, running, upgrade, wizard, motw (kolejność stała; domyślnie smoke, running, wizard, motw). upgrade wymaga
     -UpgradeInstallerPath: instalator wersji wyższej niż wydanie, obok niego SHA256SUMS.txt z jego sumą i DSOptimizer-<wyższa>.zip
     z sumą (pliki po aktualizacji są porównywane z tym zipem).
-    -Language: języki kreatora (pl, en; domyślnie oba), każdy na osobnym reverrcie.
+    -Language: języki kreatora (pl, en; domyślnie oba), każdy na osobnym reverrcie; /LANG kreatora nie zależy od języka Windows.
+    Język programu w fazie running (wybór w oknie A, teksty odmowy, CLI) = język VM (Get-DsoVmDefinition); teksty z tabel tłumaczeń.
     -ShowPlan: wypisuje rozstrzygnięte argumenty i plan (JSON) i kończy, nic nie uruchamia.
     -OutDirectory jest wymagany: ścieżka bezwzględna poza repo; w repo tylko katalog ignorowany przez git.
     Instalator uruchamia się wyłącznie w VM, nigdy na hoście.
@@ -25,10 +26,10 @@ Opis działania:
     Fazy:
       smoke   - Test-InstallerSmoke.ps1 z tools\release w sesji PowerShell Direct (-LogDirectory C:\dso\out\smoke), wynik
                 smoke-result.json; sprawdzenie: passed.
-      running - cicha instalacja; okno A z Program Files (do 60 s na proces i mutex Global\DSOptimizer.SingleInstance, wybór języka pl);
+      running - cicha instalacja; okno A z Program Files (do 60 s na proces i mutex Global\DSOptimizer.SingleInstance, wybór języka VM);
                 kopia przenośna B jako zadanie: sonda Win32 (EnumWindows, WM_GETTEXT) w sesji dso w 30 s znajduje okno „DSOptimizer”
-                z tekstem od „DSOptimizer już działa”, klika „OK” (WM_COMMAND); B kończy się kodem 1, A żyje; CLI --apply z kopii przenośnej jako dso = kod 1
-                i errors[0] od „Działa już inna kopia DSOptimizera”; --list-apps jako dso: wiersz DSOptimizer w grupie Protected;
+                z pełnym tekstem odmowy w języku VM (np. „DSOptimizer już działa (okno albo polecenie…”), klika „OK” (WM_COMMAND); B kończy się kodem 1,
+                A żyje; CLI --apply z kopii przenośnej jako dso = kod 1 i errors[0] od pełnego tekstu odmowy CLI w języku VM; --list-apps jako dso: wiersz DSOptimizer w grupie Protected;
                 instalator ponownie: kod 7, DisplayVersion i sumy plików bez zmian; deinstalator: pliki i klucz zostają; relaunch:
                 A z mutexem żyje przed startem C i tuż przed zamknięciem (odczyt zapisany, zamknięcie liczy się tylko dla żywego A);
                 zadanie C z --relaunched, najpierw wykrycie procesu C, potem A trzyma mutex jeszcze co najmniej 8 s (dłużej niż
@@ -66,7 +67,7 @@ Opis działania:
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName = 'DSO-26H2-Pro',
+    [ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName = 'DSO-EN-Pro',
     # Katalog wydania: DSOptimizer-<wersja>.zip, DSOptimizer-<wersja>-setup.exe i SHA256SUMS.txt.
     [string]$ArtifactDirectory,
     [string]$OutDirectory,
@@ -82,6 +83,7 @@ param(
 $script:InstallerScriptRoot = $PSScriptRoot
 Import-Module (Join-Path $PSScriptRoot 'ExploreCommon.psm1') -Force
 Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'modules\VmCommon.psm1')
+Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'modules\VmText.psm1')
 Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'modules\VmSmoke.psm1')
 Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'modules\VmRun.psm1')
 
@@ -138,8 +140,9 @@ function Get-InstallerPlan {
         TaskNames                = [ordered]@{ A = 'DSO-Inst-A'; B = 'DSO-Inst-B'; C = 'DSO-Inst-C'; Wizard = 'DSO-Inst-Wizard'; Motw = 'DSO-Inst-MotwOpen' }
         WindowTitle              = 'DSOptimizer'
         OkButton                 = 'OK'
-        RefusalPrefix            = 'DSOptimizer już działa'
-        CliRefusalPrefix         = 'Działa już inna kopia DSOptimizera'
+        # Pełne polskie teksty odmowy = klucze tabel tłumaczeń (app.json, windows.json); tekst w języku programu daje Get-InstallerProgramTexts.
+        RefusalText              = 'DSOptimizer już działa (okno albo polecenie w trybie wiersza poleceń). Przełącz się na otwarte okno albo poczekaj, aż polecenie się skończy.'
+        CliRefusalText           = 'Działa już inna kopia DSOptimizera (okno albo polecenie, które zmienia system). Nic nie zostało zmienione; spróbuj ponownie po jej zamknięciu.'
         CliApplyArguments        = @('--apply', 'privacy.widgets', '--restore-point', 'skip')
         AppListName              = 'DSOptimizer'
         ProtectedGroup           = 'Protected'
@@ -169,26 +172,63 @@ function Get-InstallerPlan {
         }
         # Tytuły okna SmartScreen (PL/EN), te same co w Invoke-E5Exploration.ps1.
         SmartScreenTitles        = @('System Windows ochronił ten komputer', 'Windows protected your PC')
-        # SmartScreen bez sieci (pierwszy przebieg na VM 26H2 PL, 2026-11-04): okno ApplicationFrameWindow bez tytułu Win32, nagłówek
-        # widoczny jako tekst UI Automation. Angielskiego odpowiednika nie widziano na VM, więc go tu nie ma.
-        SmartScreenOfflineTitles = @('Obecnie nie można uzyskać dostępu do filtru SmartScreen')
+        # SmartScreen bez sieci: okno bez sensownego tytułu Win32 (na EN tylko ogólne 'Window Dialog'), nagłówek widoczny jako tekst
+        # UI Automation. PL: widziany na VM 26H2 PL 2026-11-04. EN: widziany na VM 26H2 EN 2026-11-05. To teksty Windows, nie programu.
+        SmartScreenOfflineTitles = @('Obecnie nie można uzyskać dostępu do filtru SmartScreen', "SmartScreen can't be reached right now")
         # Limit czasu odczytu UI Automation w sondzie okien (bez limitu sonda nie wróciła w 120 s przy oknie SmartScreen).
         MotwUiaSeconds           = 30
     }
 }
 
+function Get-InstallerProgramTexts {
+    # Teksty odmowy w języku programu (język VM) z tabel tłumaczeń; brak klucza = wyjątek z VmText.
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][ValidateSet('pl', 'en')][string]$Language, [string]$Root)
+    $Plan = Get-InstallerPlan
+    $Extra = @{}
+    if (-not [string]::IsNullOrEmpty($Root)) { $Extra.Root = $Root }
+    $Result = [ordered]@{}
+    foreach ($Item in @(@('Refusal', $Plan.RefusalText), @('CliRefusal', $Plan.CliRefusalText))) {
+        # Klucz musi istnieć w tabelach także dla pl (Get-DsoUiText dla pl zwraca polski tekst bez sprawdzania).
+        if (-not (Test-DsoTextKey -Polish $Item[1] @Extra)) { throw "brak tłumaczenia: '$($Item[1])' (klucz $($Item[0]) nie jest w tabelach tłumaczeń)." }
+        $Result[$Item[0]] = Get-DsoUiText -Polish $Item[1] -Language $Language @Extra
+    }
+    return $Result
+}
+
+function Resolve-InstallerProgramContext {
+    # Teksty programu potrzebne eksploracji, policzone raz PRZED dotknięciem VM: klucze sprawdzone w obu językach (pl i en), brak =
+    # wyjątek „brak tłumaczenia”. Zwraca teksty języka VM: { Language; Refusal; CliRefusal; ProbeTexts (JSON dla sond) }.
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$VmName, [string]$Root)
+    $Language = [string](Get-DsoVmDefinition -VmName $VmName).Language
+    foreach ($Code in @('pl', 'en')) { $null = Get-InstallerProgramTexts -Language $Code -Root $Root }
+    $Texts = Get-InstallerProgramTexts -Language $Language -Root $Root
+    return [ordered]@{ Language = $Language; Refusal = $Texts.Refusal; CliRefusal = $Texts.CliRefusal; ProbeTexts = (Get-InstallerProbeTexts -Language $Language -Root $Root) }
+}
+
+function Get-InstallerContextProgramTexts {
+    # Teksty policzone na początku przebiegu (Context.ProgramTexts); przy kontekście bez nich (testy faz) liczone na miejscu.
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][System.Collections.IDictionary]$Context)
+    if ($Context.Contains('ProgramTexts') -and $null -ne $Context.ProgramTexts) { return $Context.ProgramTexts }
+    return (Resolve-InstallerProgramContext -VmName $Context.VmName)
+}
+
 function Get-InstallerProbeTexts {
     # Teksty dla sond w VM jako JSON (UTF-8 przez -DataFiles): sondy są w ASCII, a teksty mają polskie znaki.
+    # refusalText = pełny tekst okna odmowy w języku programu.
     [CmdletBinding()]
     [OutputType([string])]
-    param()
+    param([Parameter(Mandatory)][ValidateSet('pl', 'en')][string]$Language, [string]$Root)
     $Plan = Get-InstallerPlan
+    $Program = Get-InstallerProgramTexts -Language $Language -Root $Root
     $Wizard = [ordered]@{}
     foreach ($Code in $Plan.WizardTexts.Keys) {
         $Item = $Plan.WizardTexts[$Code]
         $Wizard[$Code] = [ordered]@{ next = @($Item.Next); install = @($Item.Install); finish = @($Item.Finish); desktopTask = $Item.DesktopTask; launchTask = $Item.LaunchTask }
     }
-    $Texts = [ordered]@{ installedExe = $Plan.InstalledExe; refusalPrefix = $Plan.RefusalPrefix; windowTitle = $Plan.WindowTitle; okButton = $Plan.OkButton
+    $Texts = [ordered]@{ installedExe = $Plan.InstalledExe; refusalText = $Program.Refusal; windowTitle = $Plan.WindowTitle; okButton = $Plan.OkButton
         wizardClass = $Plan.WizardClassName; wizard = $Wizard }
     return ($Texts | ConvertTo-Json -Depth 6 -Compress)
 }
@@ -505,19 +545,31 @@ function Get-InstallerRunningVerdict {
     $Checks += New-InstallerCheck -Name 'WindowA' -Passed ((Test-InstallerTrue $Found) -and (Test-InstallerTrue $Mutex)) `
         -Detail "okno A z $($Plan.InstalledExe): proces $(Format-InstallerValue $Found), mutex $(Format-InstallerValue $Mutex) (w $($Plan.AppStartSeconds) s)"
 
+    # Teksty odmowy w języku programu fazy (język VM); brak albo nieznany język = niezaliczone, bez zgadywania.
+    $ProgramLanguage = [string](& $V 'programLanguage')
+    $ProgramTexts = $null
+    if ($ProgramLanguage -cin @('pl', 'en')) { $ProgramTexts = Get-InstallerProgramTexts -Language $ProgramLanguage }
+    $NoLanguage = 'brak języka programu (programLanguage)'
+    $RefusalText = if ($null -ne $ProgramTexts) { $ProgramTexts.Refusal } else { $null }
+    $CliRefusalText = if ($null -ne $ProgramTexts) { $ProgramTexts.CliRefusal } else { $null }
+
     $Message = & $V 'portable.message'; $Clicked = & $V 'portable.clickedOk'; $Closed = & $V 'portable.closed'; $ProbeErrorB = & $V 'portable.probeError'
     # Clicked = komunikat WM_COMMAND wysłany; dopiero Closed (okno zniknęło w 5 s) potwierdza, że OK zadziałało.
-    $MessageDetail = "kopia przenośna B: okno '$($Plan.WindowTitle)' z tekstem '$(Format-InstallerValue $Message)', OK kliknięte: $(Format-InstallerValue $Clicked), okno zamknięte: $(Format-InstallerValue $Closed) (oczekiwano tekstu od '$($Plan.RefusalPrefix)')"
+    $ExpectedB = if ($null -ne $RefusalText) { "oczekiwano tekstu od '$RefusalText'" } else { $NoLanguage }
+    $MessageDetail = "kopia przenośna B: okno '$($Plan.WindowTitle)' z tekstem '$(Format-InstallerValue $Message)', OK kliknięte: $(Format-InstallerValue $Clicked), okno zamknięte: $(Format-InstallerValue $Closed) ($ExpectedB)"
     if ($ProbeErrorB) { $MessageDetail += "; błąd sondy: $ProbeErrorB" }
-    $Checks += New-InstallerCheck -Name 'PortableMessage' -Passed ((Test-InstallerStartsWith $Message $Plan.RefusalPrefix) -and (Test-InstallerTrue $Clicked) -and (Test-InstallerTrue $Closed) -and -not $ProbeErrorB) -Detail $MessageDetail
+    $MessageOk = ($null -ne $RefusalText) -and (Test-InstallerStartsWith (Format-InstallerUiText $Message) (Format-InstallerUiText $RefusalText))
+    $Checks += New-InstallerCheck -Name 'PortableMessage' -Passed ($MessageOk -and (Test-InstallerTrue $Clicked) -and (Test-InstallerTrue $Closed) -and -not $ProbeErrorB) -Detail $MessageDetail
     $TaskResult = & $V 'portable.taskResult'
     $Checks += New-InstallerCheck -Name 'PortableExit' -Passed (Test-InstallerCode $TaskResult 1) -Detail "zadanie kopii B: LastTaskResult $(Format-InstallerValue $TaskResult) (oczekiwano 1)"
     $AAlive = & $V 'portable.aAlive'
     $Checks += New-InstallerCheck -Name 'WindowAAlive' -Passed (Test-InstallerTrue $AAlive) -Detail "okno A po odmowie kopii B żyje: $(Format-InstallerValue $AAlive)"
 
     $CliCode = & $V 'cliApply.exitCode'; $CliError = & $V 'cliApply.firstError'
-    $Checks += New-InstallerCheck -Name 'CliRefused' -Passed ((Test-InstallerCode $CliCode 1) -and (Test-InstallerStartsWith $CliError $Plan.CliRefusalPrefix)) `
-        -Detail "CLI $(@($Plan.CliApplyArguments) -join ' ') jako dso: kod $(Format-InstallerValue $CliCode), errors[0] '$(Format-InstallerValue $CliError)' (oczekiwano 1 i '$($Plan.CliRefusalPrefix)…')"
+    $CliMessageOk = ($null -ne $CliRefusalText) -and (Test-InstallerStartsWith (Format-InstallerUiText $CliError) (Format-InstallerUiText $CliRefusalText))
+    $ExpectedCli = if ($null -ne $CliRefusalText) { "oczekiwano 1 i '$CliRefusalText'" } else { $NoLanguage }
+    $Checks += New-InstallerCheck -Name 'CliRefused' -Passed ((Test-InstallerCode $CliCode 1) -and $CliMessageOk) `
+        -Detail "CLI $(@($Plan.CliApplyArguments) -join ' ') jako dso: kod $(Format-InstallerValue $CliCode), errors[0] '$(Format-InstallerValue $CliError)' ($ExpectedCli)"
 
     $ListCode = & $V 'listApps.exitCode'; $Group = & $V 'listApps.group'
     $Checks += New-InstallerCheck -Name 'ListAppsProtected' -Passed ((Test-InstallerCode $ListCode 0) -and ([string]$Group -ceq $Plan.ProtectedGroup)) `
@@ -553,7 +605,7 @@ function Get-InstallerRunningVerdict {
     $CMutex = & $V 'relaunch.mutex'
     $Checks += New-InstallerCheck -Name 'RelaunchMutex' -Passed (Test-InstallerTrue $CMutex) -Detail "relaunch: mutex $($Plan.MutexName) jest: $(Format-InstallerValue $CMutex)"
     $Seen = & $V 'relaunch.refusalSeen'; $ProbeErrorC = & $V 'relaunch.probeError'
-    $SeenDetail = "relaunch: okno '$($Plan.RefusalPrefix)…' widoczne (sonda w czasie trzymania mutexa przez A i po jego zamknięciu): $(Format-InstallerValue $Seen) (oczekiwano False)"
+    $SeenDetail = "relaunch: okno odmowy '$(Format-InstallerValue $RefusalText)' widoczne (sonda w czasie trzymania mutexa przez A i po jego zamknięciu): $(Format-InstallerValue $Seen) (oczekiwano False)"
     if ($ProbeErrorC) { $SeenDetail += "; błąd sondy: $ProbeErrorC" }
     $Checks += New-InstallerCheck -Name 'RelaunchNoRefusal' -Passed ((Test-InstallerFalse $Seen) -and -not $ProbeErrorC) -Detail $SeenDetail
 
@@ -706,7 +758,7 @@ function Get-InstallerProbeHelpersText {
     param()
     return @'
 if ($env:DSO_VM_TESTS_MOCK_ONLY) { throw 'DSO_VM_TESTS_MOCK_ONLY: sonda nie dziala w testach.' }
-if (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Sonda dziala tylko w VM DSO-26H2-HOME/PRO (komputer: '$env:COMPUTERNAME')." }
+if (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -notcontains ([string]$env:COMPUTERNAME).ToUpperInvariant()) { throw "Sonda dziala tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (komputer: '$env:COMPUTERNAME')." }
 if (-not ('DsoInst.Native' -as [type])) {
     Add-Type -ReferencedAssemblies 'Accessibility' -TypeDefinition @"
 using System;
@@ -815,7 +867,7 @@ function Write-ProbeResult($Result, [string]$Path) {
 
 function Get-InstallerRefusalProbeScript {
     # Sonda okna odmowy: do -WaitSeconds szuka okna najwyższego poziomu „DSOptimizer” (klasa #32770, MessageBox) z tekstem od
-    # refusalPrefix; z -Click klika w nim wyłącznie przycisk okButton. Zwraca Found, Text, Clicked, ProcessId i widziane teksty.
+    # refusalText (pelny tekst odmowy w jezyku programu, biale znaki zwiniete); z -Click klika w nim wyłącznie przycisk okButton. Zwraca Found, Text, Clicked, ProcessId i widziane teksty.
     # Okno, teksty i przycisk przez Win32 (EnumWindows, WM_GETTEXT, WM_COMMAND): zarządzane UI Automation na VM 26H2 widzi kontrolki
     # MessageBox jako Pane bez nazwy typu Text i bez InvokePattern (pierwszy przebieg 2026-11-04).
     [CmdletBinding()]
@@ -848,7 +900,7 @@ try {
                     if ([string]::IsNullOrEmpty($Name)) { continue }
                     $Readable++
                     if (-not $Seen.Contains($Name)) { $Seen.Add($Name) }
-                    if ($Name.StartsWith([string]$Texts.refusalPrefix, [System.StringComparison]::Ordinal)) { $Match = $Window; $Out.Text = $Name; break }
+                    if ((Format-UiText $Name).StartsWith((Format-UiText $Texts.refusalText), [System.StringComparison]::Ordinal)) { $Match = $Window; $Out.Text = $Name; break }
                 }
                 if ($Match -ne [IntPtr]::Zero) { break }
                 if ($Readable -eq 0) { $Unreadable++; $Failures++; $LastError = "okno '$($Texts.windowTitle)' (#32770) bez czytelnego tekstu" }
@@ -1449,7 +1501,7 @@ function Invoke-InstallerRefusalProbe {
     $Arguments = "-TextsFile $TextsPath -WaitSeconds $WaitSeconds"
     if ($Click) { $Arguments += ' -Click' }
     $Json = Invoke-DsoUserSessionScript -Session $Context.Session -Layout (Get-InstallerLayout -Kind 'Portable') -Name $Name -ScriptText (Get-InstallerRefusalProbeScript) `
-        -ArgumentText $Arguments -UserName $Plan.UserName -TimeoutSeconds ($WaitSeconds + 60) -DataFiles @{ 'inst-texts.json' = (Get-InstallerProbeTexts) }
+        -ArgumentText $Arguments -UserName $Plan.UserName -TimeoutSeconds ($WaitSeconds + 60) -DataFiles @{ 'inst-texts.json' = (Get-InstallerContextProgramTexts -Context $Context).ProbeTexts }
     if ([string]::IsNullOrWhiteSpace($Json)) { throw "Sonda $Name nie zwróciła wyniku." }
     $Result = $Json | ConvertFrom-Json
     if ($Result.Error) { throw "Sonda ${Name}: $($Result.Error)" }
@@ -1501,9 +1553,12 @@ function Invoke-InstallerRunningPhase {
     # (1) cicha instalacja
     $Data.install = [ordered]@{ exitCode = (Invoke-InstallerSetup -Context $Context -FilePath $Setup -Step 'install') }
     # (2) okno A z Program Files; wybór języka (czysty checkpoint nie ma settings.json), żeby komunikaty miały stały język
+    # Język programu fazy = język VM; z niego biorą się wybór w oknie A, teksty sond, CLI i werdykt.
+    $ProgramLanguage = (Get-InstallerContextProgramTexts -Context $Context).Language
+    $Data.programLanguage = $ProgramLanguage
     $Data.windowA = Start-InstallerWindowA -Context $Context
     $PidA = [int]$Data.windowA.pid
-    try { $Data.languageChoice = Confirm-DsoLanguageChoice -Session $Context.Session -Layout (Get-InstallerLayout -Kind 'Installed') -Language 'pl' -UserName $Plan.UserName }
+    try { $Data.languageChoice = Confirm-DsoLanguageChoice -Session $Context.Session -Layout (Get-InstallerLayout -Kind 'Installed') -Language $ProgramLanguage -UserName $Plan.UserName }
     catch { $Record.problems += "wybór języka w oknie A: $($_.Exception.Message)" }
     # (3) kopia przenośna B: okno odmowy, OK, kod 1, A żyje
     $null = Start-DsoGuiInUserSession -Session $Context.Session -Layout (Get-InstallerLayout -Kind 'Portable') -UserName $Plan.UserName -TaskName $Plan.TaskNames.B
@@ -1521,15 +1576,16 @@ function Invoke-InstallerRunningPhase {
         aAlive = [bool](Invoke-InstallerRemote -Context $Context -ScriptBlock $script:InstProcessAliveBlock -ArgumentList @($PidA)) }
     Add-InstallerTimeline -Context $Context -Text "kopia B: okno $(Get-InstallerValue $Refusal 'Found'), kod $($Data.portable.taskResult)"
     # (4) CLI zmieniające system z kopii przenośnej jako dso
+    $CliLanguage = $ProgramLanguage
     $ApplyOut = "$($Plan.OutDirectory)\cli-apply.json"
     $Cli = Invoke-DsoCli -Session $Context.Session -ExePath $Plan.PortableExe -Arguments (@($Plan.CliApplyArguments) + @('--out', $ApplyOut)) -OutPath $ApplyOut `
-        -RunAsUser $Plan.UserName -TimeoutSeconds ([int]$Plan.CliTimeoutSeconds)
+        -RunAsUser $Plan.UserName -TimeoutSeconds ([int]$Plan.CliTimeoutSeconds) -Language $CliLanguage
     $FirstError = $null
     if ($null -ne $Cli.Report -and $null -ne $Cli.Report.PSObject.Properties['errors']) { $FirstError = @($Cli.Report.errors) | Select-Object -First 1 }
     $Data.cliApply = [ordered]@{ exitCode = $Cli.ExitCode; timedOut = [bool]$Cli.TimedOut; firstError = $FirstError; reportError = $Cli.ReportError }
     # (5) --list-apps jako dso: wpis DSOptimizer w grupie Protected
     $ListOut = "$($Plan.OutDirectory)\list-apps.json"
-    $List = Invoke-DsoCli -Session $Context.Session -ExePath $Plan.PortableExe -Arguments @('--list-apps', '--out', $ListOut) -OutPath $ListOut -RunAsUser $Plan.UserName -TimeoutSeconds ([int]$Plan.CliTimeoutSeconds)
+    $List = Invoke-DsoCli -Session $Context.Session -ExePath $Plan.PortableExe -Arguments @('--list-apps', '--out', $ListOut) -OutPath $ListOut -RunAsUser $Plan.UserName -TimeoutSeconds ([int]$Plan.CliTimeoutSeconds) -Language $CliLanguage
     $Row = $null
     if ($null -ne $List.Report -and $null -ne $List.Report.PSObject.Properties['apps']) { $Row = @($List.Report.apps | Where-Object { $null -ne $_ -and [string]$_.name -ceq $Plan.AppListName }) | Select-Object -First 1 }
     $Data.listApps = [ordered]@{ exitCode = $List.ExitCode; group = $(if ($null -ne $Row) { [string]$Row.group } else { $null }); row = $Row }
@@ -1651,7 +1707,7 @@ function Invoke-InstallerWizardPhase {
     Add-InstallerTimeline -Context $Context -Text "kreator /LANG=$Language uruchomiony (log $WizardLog)"
     $Arguments = "-TextsFile $($Plan.OutDirectory)\inst-texts.json -Language $Language -ShotPrefix $($Plan.OutDirectory)\wizard-$Language -StartSeconds $([int]$Plan.WizardProgramSeconds)"
     $Json = Invoke-DsoUserSessionScript -Session $Context.Session -Layout (Get-InstallerLayout -Kind 'Portable') -Name "Inst-Wizard-$Language" -ScriptText (Get-InstallerWizardProbeScript) `
-        -ArgumentText $Arguments -UserName $Plan.UserName -TimeoutSeconds ([int]$Plan.WizardProbeSeconds) -DataFiles @{ 'inst-texts.json' = (Get-InstallerProbeTexts) }
+        -ArgumentText $Arguments -UserName $Plan.UserName -TimeoutSeconds ([int]$Plan.WizardProbeSeconds) -DataFiles @{ 'inst-texts.json' = (Get-InstallerContextProgramTexts -Context $Context).ProbeTexts }
     if ([string]::IsNullOrWhiteSpace($Json)) { throw 'Sonda kreatora nie zwróciła wyniku.' }
     $Probe = $Json | ConvertFrom-Json
     # Pola przez Get-InstallerValue/Get-InstallerList: wynik błędu sondy ma tylko Ok i Error, a StrictMode rzuca przy brakującej właściwości.
@@ -1725,14 +1781,18 @@ function Invoke-InstallerVmRun {
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [Parameter(Mandatory)][object[]]$Runs,
         [Parameter(Mandatory)][System.Collections.IDictionary]$Artifact,
         [string]$CheckpointName = 'czysta-26H2',
-        [int]$ReadyTimeoutSeconds = 1200
+        [int]$ReadyTimeoutSeconds = 1200,
+        # Korzeń repo z tabelami tłumaczeń (testy z fikstury); pusty = repo skryptu.
+        [string]$TextRoot
     )
     Assert-DsoVmLiveAllowed
+    # Teksty programu liczone raz, przed poświadczeniami i revertem: brak klucza w tabelach = błąd bez dotykania VM.
+    $ProgramTexts = Resolve-InstallerProgramContext -VmName $VmName -Root $TextRoot
     $Credential = Get-DsoVmCredential -VmName $VmName
     $Plan = Get-InstallerPlan
     $StartedAt = Get-Date
@@ -1755,7 +1815,7 @@ function Invoke-InstallerVmRun {
             Write-Host "$(Get-Date -Format 'HH:mm:ss') $VmName $($Run.Key)"
             # Chwila na dokończenie logowania dso (powłoka, pakiety) przed pierwszym zadaniem w jego sesji.
             Start-Sleep -Seconds ([int]$Plan.SettleAfterLogonSeconds)
-            $Context = [ordered]@{ Session = $Session; Plan = $Plan; Artifact = $Artifact; VmName = $VmName; VmDirectory = $VmDirectory; Run = $Run; Timeline = $Timeline }
+            $Context = [ordered]@{ Session = $Session; Plan = $Plan; Artifact = $Artifact; VmName = $VmName; VmDirectory = $VmDirectory; Run = $Run; Timeline = $Timeline; ProgramTexts = $ProgramTexts }
             Invoke-InstallerPhase -Run $Run -Context $Context -Record $Record
         }
         catch {
@@ -1795,7 +1855,7 @@ function Invoke-InstallerExplorationMain {
     [CmdletBinding()]
     [OutputType([int])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')][string]$VmName,
         [AllowEmptyString()][AllowNull()][string]$ArtifactDirectory,
         [AllowEmptyString()][AllowNull()][string]$OutDirectory,
         [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$Phase,

@@ -5,14 +5,14 @@ Instrukcja uruchomienia:
     Obie VM (Home, potem Pro), bez sieci:
         .\tests\vm\explore\Invoke-E4A3Exploration.ps1 -OutDirectory C:\ścieżka\poza\repo\exploration
     Jedna VM:
-        .\tests\vm\explore\Invoke-E4A3Exploration.ps1 -VmName DSO-26H2-Pro -OutDirectory C:\...\exploration
+        .\tests\vm\explore\Invoke-E4A3Exploration.ps1 -VmName DSO-PL-Pro -OutDirectory C:\...\exploration
     -ShowPlan: wypisuje rozstrzygnięte argumenty i plan (JSON) i kończy, nic nie uruchamia.
     -OutDirectory jest wymagany: ścieżka bezwzględna poza repo; w repo tylko katalog ignorowany przez git.
     Czas: ok. 5-8 minut na VM.
 Opis działania:
     Pomiar partii 3 Etapu 4a (strona „Przygotowanie”): odczyty CIM strony (grafika, urządzenia z problemem, aktywacja, produkt, BIOS,
     procesor) z czasami zapytań oraz otwieranie Ustawień (ms-settings:) z podniesionego procesu konta dso. Wszystko dzieje się WYŁĄCZNIE
-    w VM DSO-26H2-Home/Pro; na hoście skrypt tylko zapisuje wyniki.
+    w VM DSO-PL-Home/Pro; na hoście skrypt tylko zapisuje wyniki.
     Przebieg jednej VM: revert do 'czysta-26H2' -> start -> gotowość (zalogowany dso) -> fazy -> kopia zrzutów -> ZAWSZE (finally) revert
     i sprawdzenie stanu końcowego (VM Off, karta bez przełącznika) przed zapisem JSON. Błąd sprzątania trafia do wyniku.
     Konteksty w VM:
@@ -24,15 +24,15 @@ Opis działania:
            czas do procesu SystemSettings.exe i okna Ustawień, token SystemSettings.exe (podniesienie, poziom integralności), właściciel,
            nazwy elementów okna (UI Automation) i zrzut pulpitu dso.
     Fazy: inventory (K1 + K2: zapytania) -> settings (K2: oba adresy po kolei, między nimi zamknięcie Ustawień) -> devices (K1: kod 22,
-    karta graficzna, INF); wszystko cofa revert. Ostatni bezpiecznik po stronie VM: Assert-E4A3InsideVm (nazwa komputera DSO-26H2-HOME/PRO
+    karta graficzna, INF); wszystko cofa revert. Ostatni bezpiecznik po stronie VM: Assert-E4A3InsideVm (nazwa komputera z listy (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME)
     i brak DSO_VM_TESTS_MOCK_ONLY) na początku każdej funkcji ze skutkiem. Pierwszy błąd uwierzytelnienia przerywa cały skrypt (blokada
-    konta). Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy obcej VM; na hoście niczego nie zmienia.
+    konta). Skrypt dotyka wyłącznie VM DSO-PL-Home i DSO-PL-Pro (ValidateSet), nigdy obcej VM; na hoście niczego nie zmienia.
     Wynik: <OutDirectory>\<VmName>\e4a3.json (UTF-8), zrzuty K2 <OutDirectory>\<VmName>\shots\*.png.
     Kod wyjścia: 0 gdy wszystkie wybrane VM zebrane bez błędu przebiegu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName = @('DSO-26H2-Home', 'DSO-26H2-Pro'),
+    [ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName = @('DSO-PL-Home', 'DSO-PL-Pro'),
     [string]$OutDirectory,
     [string]$CheckpointName = 'czysta-26H2',
     [ValidateRange(60, 7200)][int]$ReadyTimeoutSeconds = 1200,
@@ -83,19 +83,19 @@ function Test-E4A3VmComputerName {
     [CmdletBinding()]
     [OutputType([bool])]
     param([AllowEmptyString()][string]$ComputerName)
-    return (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -contains ([string]$ComputerName).ToUpperInvariant())
+    return (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -contains ([string]$ComputerName).ToUpperInvariant())
 }
 
 function Assert-E4A3InsideVm {
     # Ostatni bezpiecznik: sondy E4A3 wyłączają urządzenia, usuwają kartę graficzną z menedżera urządzeń, rejestrują zadania, uruchamiają
-    # Ustawienia i zamykają je, więc działają WYŁĄCZNIE w VM DSO-26H2-Home/Pro i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY).
+    # Ustawienia i zamykają je, więc działają WYŁĄCZNIE w VM DSO-PL-Home/Pro i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY).
     [CmdletBinding()]
     param([string]$ComputerName = $env:COMPUTERNAME)
     if ($env:DSO_VM_TESTS_MOCK_ONLY) {
         throw 'Tryb DSO_VM_TESTS_MOCK_ONLY: sondy E4A3 nie mogą działać w testach na mockach (nic nie zostało uruchomione).'
     }
     if (-not (Test-E4A3VmComputerName -ComputerName $ComputerName)) {
-        throw "Sondy E4A3 działają tylko w VM DSO-26H2-HOME/DSO-26H2-PRO (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
+        throw "Sondy E4A3 działają tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
     }
 }
 
@@ -791,7 +791,7 @@ function Complete-E4A3VmCleanup {
     # Koniec przebiegu: revert do checkpointu i sprawdzenie kontraktu stanu końcowego: VM w stanie Off i karta bez przełącznika.
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][string]$CheckpointName
     )
     $Out = [ordered]@{ Ok = $false; RevertError = $null; CheckError = $null; FinalState = $null; FinalSwitch = $null; Violations = @(); Problems = @() }
@@ -814,7 +814,7 @@ function Invoke-E4A3VmRun {
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [string]$CheckpointName = 'czysta-26H2',
         [int]$ReadyTimeoutSeconds = 1200

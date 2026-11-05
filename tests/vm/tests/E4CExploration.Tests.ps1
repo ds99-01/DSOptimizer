@@ -73,11 +73,11 @@ Describe 'Plan pomiaru (plan Tasku 2 Etapu 4c, spec pkt 4 i 8)' {
     }
     It 'Get-E4CInstallIds: Pro = cała lista (środowiska uruchomieniowe najpierw), Home = po jednej z każdej kategorii, w tym Discord (per user)' {
         $Plan = Get-E4CPlan
-        $Pro = @(Get-E4CInstallIds -VmName 'DSO-26H2-Pro' -Plan $Plan)
+        $Pro = @(Get-E4CInstallIds -VmName 'DSO-EN-Pro' -Plan $Plan)
         $Pro.Count | Should -Be 34
         $Pro[0..4] | Should -Be @('Microsoft.VCRedist.2015+.x64', 'Microsoft.VCRedist.2015+.x86', 'Microsoft.DotNet.DesktopRuntime.8', 'Microsoft.DotNet.DesktopRuntime.9', 'Microsoft.DotNet.DesktopRuntime.10')
         $Pro[5] | Should -Be 'Google.Chrome'
-        $Home1 = @(Get-E4CInstallIds -VmName 'DSO-26H2-Home' -Plan $Plan)
+        $Home1 = @(Get-E4CInstallIds -VmName 'DSO-EN-Home' -Plan $Plan)
         $Home1 | Should -Contain 'Discord.Discord'
         $Categories = @($Home1 | ForEach-Object { $Id = $_; @($Plan.Apps | Where-Object { $_.WingetId -eq $Id })[0].Category } | Select-Object -Unique)
         foreach ($Category in 'browsers', 'messengers', 'multimedia', 'documents', 'tools', 'remote-help', 'games', 'runtimes') { $Categories | Should -Contain $Category }
@@ -85,10 +85,10 @@ Describe 'Plan pomiaru (plan Tasku 2 Etapu 4c, spec pkt 4 i 8)' {
     }
     It 'Get-E4CPhaseOrder: stała kolejność, baseline zawsze, adminprotection tylko Pro i przed final, bez sieci bez network/install-all' {
         $All = @('final', 'adminprotection', 'install-all', 'network', 'offline-fresh', 'baseline')
-        @(Get-E4CPhaseOrder -Phase $All -VmName 'DSO-26H2-Pro') | Should -Be @('baseline', 'offline-fresh', 'network', 'install-all', 'adminprotection', 'final')
-        @(Get-E4CPhaseOrder -Phase $All -VmName 'DSO-26H2-Home') | Should -Be @('baseline', 'offline-fresh', 'network', 'install-all', 'final')
-        @(Get-E4CPhaseOrder -Phase @('final') -VmName 'DSO-26H2-Pro') | Should -Be @('baseline', 'final')
-        @(Get-E4CPhaseOrder -Phase $All -VmName 'DSO-26H2-Pro' -Network $false) | Should -Be @('baseline', 'offline-fresh', 'adminprotection', 'final')
+        @(Get-E4CPhaseOrder -Phase $All -VmName 'DSO-EN-Pro') | Should -Be @('baseline', 'offline-fresh', 'network', 'install-all', 'adminprotection', 'final')
+        @(Get-E4CPhaseOrder -Phase $All -VmName 'DSO-EN-Home') | Should -Be @('baseline', 'offline-fresh', 'network', 'install-all', 'final')
+        @(Get-E4CPhaseOrder -Phase @('final') -VmName 'DSO-EN-Pro') | Should -Be @('baseline', 'final')
+        @(Get-E4CPhaseOrder -Phase $All -VmName 'DSO-EN-Pro' -Network $false) | Should -Be @('baseline', 'offline-fresh', 'adminprotection', 'final')
         @(Get-E4CNetworkPhases) | Should -Be @('network', 'install-all', 'cli-install')
     }
 }
@@ -100,11 +100,11 @@ Describe 'Faza cli-install (Task 11: seria --install-apps przez CLI z siecią)' 
     }
     It 'plan: Pro = cała lista apps.json w kolejności pliku, Home = po jednej pozycji z każdej kategorii (w tym Discord) + winget:PuTTY.PuTTY (kandydat Tasku 2)' {
         $Plan = Get-E4CPlan
-        $Pro = @(Get-E4CCliInstallIds -VmName 'DSO-26H2-Pro' -Plan $Plan -AppsCatalogPath $script:AppsCatalog)
+        $Pro = @(Get-E4CCliInstallIds -VmName 'DSO-EN-Pro' -Plan $Plan -AppsCatalogPath $script:AppsCatalog)
         $Pro | Should -Be @($script:AppsEntries | ForEach-Object { [string]$_.id })
         $Pro.Count | Should -Be 36
         $Pro | Should -Contain 'install.rustdesk'
-        $HomeIds = @(Get-E4CCliInstallIds -VmName 'DSO-26H2-Home' -Plan $Plan -AppsCatalogPath $script:AppsCatalog)
+        $HomeIds = @(Get-E4CCliInstallIds -VmName 'DSO-EN-Home' -Plan $Plan -AppsCatalogPath $script:AppsCatalog)
         $HomeIds[-1] | Should -BeExactly "winget:$($Plan.SearchCandidate.WingetId)"
         $HomeIds[-1] | Should -BeExactly 'winget:PuTTY.PuTTY'
         $HomeIds | Should -Contain 'install.discord'
@@ -120,10 +120,10 @@ Describe 'Faza cli-install (Task 11: seria --install-apps przez CLI z siecią)' 
         $Plan.DsoLogDirectory | Should -Be 'C:\ProgramData\DSOptimizer\logs'
     }
     It 'Get-E4CCliInstallIds: brak pliku listy albo pusta lista = wyjątek' {
-        { Get-E4CCliInstallIds -VmName 'DSO-26H2-Pro' -Plan (Get-E4CPlan) -AppsCatalogPath (Join-Path $TestDrive 'brak.json') } | Should -Throw
+        { Get-E4CCliInstallIds -VmName 'DSO-EN-Pro' -Plan (Get-E4CPlan) -AppsCatalogPath (Join-Path $TestDrive 'brak.json') } | Should -Throw
         $Empty = Join-Path $TestDrive 'empty.json'
         Set-Content -LiteralPath $Empty -Value '{ "entries": [] }' -Encoding UTF8
-        { Get-E4CCliInstallIds -VmName 'DSO-26H2-Pro' -Plan (Get-E4CPlan) -AppsCatalogPath $Empty } | Should -Throw '*pust*'
+        { Get-E4CCliInstallIds -VmName 'DSO-EN-Pro' -Plan (Get-E4CPlan) -AppsCatalogPath $Empty } | Should -Throw '*pust*'
     }
     It 'Get-E4CCliArguments: --install-apps z id po przecinku i --out; --list-install z --out; złe id albo ścieżka = wyjątek' {
         Get-E4CCliArguments -Command 'install-apps' -AppIds @('install.vlc', 'winget:PuTTY.PuTTY') -OutPath 'C:\dso\e4c\raw\cli-install.json' |
@@ -136,9 +136,9 @@ Describe 'Faza cli-install (Task 11: seria --install-apps przez CLI z siecią)' 
         { Get-E4CCliArguments -Command 'remove-app' -OutPath 'C:\x\a.json' } | Should -Throw
     }
     It 'Get-E4CPhaseOrder: cli-install tylko jawnie, po install-all i przed adminprotection; bez sieci wypada' {
-        @(Get-E4CPhaseOrder -Phase @('cli-install') -VmName 'DSO-26H2-Pro') | Should -Be @('baseline', 'cli-install')
-        @(Get-E4CPhaseOrder -Phase @('final', 'cli-install', 'install-all', 'adminprotection') -VmName 'DSO-26H2-Pro') | Should -Be @('baseline', 'install-all', 'cli-install', 'adminprotection', 'final')
-        @(Get-E4CPhaseOrder -Phase @('cli-install') -VmName 'DSO-26H2-Home' -Network $false) | Should -Be @('baseline')
+        @(Get-E4CPhaseOrder -Phase @('cli-install') -VmName 'DSO-EN-Pro') | Should -Be @('baseline', 'cli-install')
+        @(Get-E4CPhaseOrder -Phase @('final', 'cli-install', 'install-all', 'adminprotection') -VmName 'DSO-EN-Pro') | Should -Be @('baseline', 'install-all', 'cli-install', 'adminprotection', 'final')
+        @(Get-E4CPhaseOrder -Phase @('cli-install') -VmName 'DSO-EN-Home' -Network $false) | Should -Be @('baseline')
         $Default = (Get-Command $script:E4CScriptPath).ScriptBlock.Ast.ParamBlock.Parameters | Where-Object { $_.Name.VariablePath.UserPath -eq 'Phase' }
         $Default.DefaultValue.Extent.Text | Should -Not -Match 'cli-install'
         @($Default.Attributes | Where-Object { $_.TypeName.Name -eq 'ValidateSet' } | ForEach-Object { $_.PositionalArguments.Value }) | Should -Contain 'cli-install'
@@ -146,7 +146,7 @@ Describe 'Faza cli-install (Task 11: seria --install-apps przez CLI z siecią)' 
     It 'Read-E4CJournalInstallEntries: tylko wpisy app-install (id, status, zdarzenia Started i wynik); brak pliku = pusta lista' {
         $Path = Join-Path $TestDrive 'journal.json'
         $Json = @'
-{ "schemaVersion": 1, "machine": "DSO-26H2-PRO", "entries": [
+{ "schemaVersion": 1, "machine": "DSO-EN-PRO", "entries": [
   { "entryId": "1", "kind": "app-install", "title": "VLC", "tweakId": "install.vlc", "userSid": "S-1-5-21-1", "status": "Active", "appliedAt": "2026-10-24T20:00:00+00:00",
     "events": [ { "at": "2026-10-24T20:00:00+00:00", "action": "install-app", "outcome": "Started", "message": "a" }, { "at": "2026-10-24T20:01:00+00:00", "action": "install-app", "outcome": "Installed", "message": "b" } ] },
   { "entryId": "2", "kind": "app-removal", "tweakId": "win32:X", "status": "Active", "events": [] },
@@ -267,15 +267,15 @@ Describe 'Plan RustDesk (Task 6): -CliIds, -CliRepeat i odczyty RustDesk w fazie
         Test-E4CCliId -Id $null | Should -BeFalse
     }
     It 'Get-E4CRunArguments: -CliIds i -CliRepeat trafiają do argumentów przebiegu; złe id (np. ze spacją) = wyjątek' {
-        $Arguments = Get-E4CRunArguments -VmName @('DSO-26H2-Pro') -Phase @('cli-install') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -CliIds @('install.7zip', 'install.rustdesk') -CliRepeat $true
+        $Arguments = Get-E4CRunArguments -VmName @('DSO-EN-Pro') -Phase @('cli-install') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -CliIds @('install.7zip', 'install.rustdesk') -CliRepeat $true
         @($Arguments.CliIds) | Should -Be @('install.7zip', 'install.rustdesk')
         $Arguments.CliRepeat | Should -BeTrue
-        $Default = Get-E4CRunArguments -VmName @('DSO-26H2-Home') -Phase @('cli-install') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
+        $Default = Get-E4CRunArguments -VmName @('DSO-EN-Home') -Phase @('cli-install') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
         @($Default.CliIds).Count | Should -Be 0
         $Default.CliRepeat | Should -BeFalse
-        { Get-E4CRunArguments -VmName @('DSO-26H2-Home') -Phase @('cli-install') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -CliIds @('install.rustdesk', 'install.a b') } |
+        { Get-E4CRunArguments -VmName @('DSO-EN-Home') -Phase @('cli-install') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -CliIds @('install.rustdesk', 'install.a b') } |
             Should -Throw '*install.a b*'
-        { Get-E4CRunArguments -VmName @('DSO-26H2-Home') -Phase @('cli-install') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -CliIds @('') } | Should -Throw
+        { Get-E4CRunArguments -VmName @('DSO-EN-Home') -Phase @('cli-install') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -CliIds @('') } | Should -Throw
     }
     Context 'Get-E4CRustDeskState (tylko odczyt; mocki usługi i zapory)' {
         BeforeEach {
@@ -423,19 +423,21 @@ Describe 'Analiza wyjścia (czysta logika)' {
 }
 
 Describe 'Bezpieczniki (VM-only, mock-only)' {
-    It 'Test-E4CVmComputerName: tylko DSO-26H2-HOME/PRO' {
-        Test-E4CVmComputerName -ComputerName 'dso-26h2-pro' | Should -BeTrue
-        Test-E4CVmComputerName -ComputerName 'DSO-26H2-HOME' | Should -BeTrue
+    It 'Test-E4CVmComputerName: tylko cztery nazwy DSO (EN/PL, Home/Pro), stara nazwa odrzucona' {
+        Test-E4CVmComputerName -ComputerName 'dso-en-pro' | Should -BeTrue
+        Test-E4CVmComputerName -ComputerName 'dso-pl-home' | Should -BeTrue
+        Test-E4CVmComputerName -ComputerName 'DSO-26H2-PRO' | Should -BeFalse
+        Test-E4CVmComputerName -ComputerName 'DSO-EN-HOME' | Should -BeTrue
         Test-E4CVmComputerName -ComputerName 'BRUTEFORCE_LTSC' | Should -BeFalse
         Test-E4CVmComputerName -ComputerName '' | Should -BeFalse
     }
     It 'Assert-E4CInsideVm rzuca w trybie mock-only, nawet z nazwą VM; poza trybem rzuca na hoście' {
-        { Assert-E4CInsideVm -ComputerName 'DSO-26H2-PRO' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
+        { Assert-E4CInsideVm -ComputerName 'DSO-EN-PRO' } | Should -Throw '*DSO_VM_TESTS_MOCK_ONLY*'
         $Saved = $env:DSO_VM_TESTS_MOCK_ONLY
         try {
             [Environment]::SetEnvironmentVariable('DSO_VM_TESTS_MOCK_ONLY', $null)
             { Assert-E4CInsideVm -ComputerName 'HOST-PC' } | Should -Throw '*tylko w VM*'
-            { Assert-E4CInsideVm -ComputerName 'DSO-26H2-HOME' } | Should -Not -Throw
+            { Assert-E4CInsideVm -ComputerName 'DSO-EN-HOME' } | Should -Not -Throw
         }
         finally { $env:DSO_VM_TESTS_MOCK_ONLY = $Saved }
     }
@@ -760,7 +762,7 @@ Describe 'Wysyłka funkcji do VM i treść skryptu' {
         $Text | Should -Match 'Opis działania'
         foreach ($Command in (Get-Command $script:E4CScriptPath), (Get-Command Invoke-E4CVmRun), (Get-Command Complete-E4CVmCleanup)) {
             $Attr = $Command.Parameters['VmName'].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-            $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+            $Attr.ValidValues | Should -Be @('DSO-EN-Home', 'DSO-EN-Pro', 'DSO-PL-Pro', 'DSO-PL-Home')
         }
     }
     It 'plik testów też ma BOM UTF-8' {
@@ -782,10 +784,10 @@ Describe 'Argumenty przebiegu' {
         Assert-E4COutDirectory -Path (Join-Path $env:TEMP 'dso-explore') -RepoRoot $Real | Should -Be (Join-Path $env:TEMP 'dso-explore')   # poza repo
     }
     It 'Get-E4CRunArguments: VM w kolejności (Pro najpierw), fazy per VM, plan' {
-        $Arguments = Get-E4CRunArguments -VmName @('DSO-26H2-Pro', 'DSO-26H2-Home') -Phase @('adminprotection', 'network') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
-        @($Arguments.VmName) | Should -Be @('DSO-26H2-Pro', 'DSO-26H2-Home')
-        @($Arguments.Phases['DSO-26H2-Pro']) | Should -Be @('baseline', 'network', 'adminprotection')
-        @($Arguments.Phases['DSO-26H2-Home']) | Should -Be @('baseline', 'network')
+        $Arguments = Get-E4CRunArguments -VmName @('DSO-EN-Pro', 'DSO-EN-Home') -Phase @('adminprotection', 'network') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
+        @($Arguments.VmName) | Should -Be @('DSO-EN-Pro', 'DSO-EN-Home')
+        @($Arguments.Phases['DSO-EN-Pro']) | Should -Be @('baseline', 'network', 'adminprotection')
+        @($Arguments.Phases['DSO-EN-Home']) | Should -Be @('baseline', 'network')
         $Arguments.Plan.Locale | Should -Be 'pl-PL'
     }
 }
@@ -813,14 +815,14 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
         $script:SavedResult = $null
     }
     It 'przebieg Pro: revert -> start -> gotowość -> fazy, sieć tylko na network/install-all, adminprotection z dwoma restartami -> kopia -> revert -> odłączenie -> zapis' {
-        $Phases = Get-E4CPhaseOrder -Phase @('offline-fresh', 'network', 'install-all', 'adminprotection', 'final') -VmName 'DSO-26H2-Pro'
-        $Path = Invoke-E4CVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases $Phases 6>$null
-        $Path | Should -Be 'C:\w\DSO-26H2-Pro\e4c.json'
-        @($script:Calls) | Should -Be @('revert DSO-26H2-Pro', 'start DSO-26H2-Pro', 'ready', 'phase baseline', 'phase offline-fresh',
-            'connect DSO-26H2-Pro Default Switch', 'phase network', 'disconnect DSO-26H2-Pro',
-            'connect DSO-26H2-Pro Default Switch', 'phase install-all', 'disconnect DSO-26H2-Pro',
+        $Phases = Get-E4CPhaseOrder -Phase @('offline-fresh', 'network', 'install-all', 'adminprotection', 'final') -VmName 'DSO-EN-Pro'
+        $Path = Invoke-E4CVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases $Phases 6>$null
+        $Path | Should -Be 'C:\w\DSO-EN-Pro\e4c.json'
+        @($script:Calls) | Should -Be @('revert DSO-EN-Pro', 'start DSO-EN-Pro', 'ready', 'phase baseline', 'phase offline-fresh',
+            'connect DSO-EN-Pro Default Switch', 'phase network', 'disconnect DSO-EN-Pro',
+            'connect DSO-EN-Pro Default Switch', 'phase install-all', 'disconnect DSO-EN-Pro',
             'phase ap-set', 'restart', 'phase ap-probe', 'phase ap-restore', 'restart',
-            'phase final', 'copy raw', 'revert DSO-26H2-Pro', 'disconnect DSO-26H2-Pro', 'save e4c.json')
+            'phase final', 'copy raw', 'revert DSO-EN-Pro', 'disconnect DSO-EN-Pro', 'save e4c.json')
         $script:SavedResult.cleanup.Ok | Should -BeTrue
         $script:SavedResult.userSid | Should -Be 'S-1-5-21-1-1001'
         $script:SavedResult.error | Should -BeNullOrEmpty
@@ -830,21 +832,21 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
         $script:PlanJsons = [System.Collections.Generic.List[string]]::new()
         Mock Invoke-E4CVmPhase -RemoveParameterValidation 'Session' { $script:PlanJsons.Add($PlanJson); [pscustomobject]@{ phase = $Phase } }
         Mock Copy-DsoBuildToVm -RemoveParameterValidation 'Session' { $script:Calls.Add('copy build') }
-        $null = Invoke-E4CVmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('baseline') 6>$null
+        $null = Invoke-E4CVmRun -VmName 'DSO-EN-Home' -OutDirectory $TestDrive -Phases @('baseline') 6>$null
         $Sent = $script:PlanJsons[0] | ConvertFrom-Json
-        @($Sent.InstallIds) | Should -Be @(Get-E4CInstallIds -VmName 'DSO-26H2-Home' -Plan (Get-E4CPlan))
-        @($Sent.CliIds) | Should -Be @(Get-E4CCliInstallIds -VmName 'DSO-26H2-Home' -Plan (Get-E4CPlan))
+        @($Sent.InstallIds) | Should -Be @(Get-E4CInstallIds -VmName 'DSO-EN-Home' -Plan (Get-E4CPlan))
+        @($Sent.CliIds) | Should -Be @(Get-E4CCliInstallIds -VmName 'DSO-EN-Home' -Plan (Get-E4CPlan))
         Should -Invoke Copy-DsoBuildToVm -Times 0 -Exactly
     }
     It 'przebieg cli-install (Pro): build w VM przed fazami, sieć tylko na cli-install, cała lista w planie, potem kopia -> revert -> odłączenie -> zapis' {
         $script:PlanJsons = [System.Collections.Generic.List[string]]::new()
         Mock Invoke-E4CVmPhase -RemoveParameterValidation 'Session' { $script:Calls.Add("phase $Phase"); $script:PlanJsons.Add($PlanJson); [pscustomobject]@{ phase = $Phase } }
         Mock Copy-DsoBuildToVm -RemoveParameterValidation 'Session' { $script:Calls.Add("copy build $BuildDirectory $CatalogPath $($Layout.Exe)") }
-        $Path = Invoke-E4CVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('baseline', 'cli-install') -BuildDirectory 'C:\b' -CatalogPath 'C:\c.json' 6>$null
-        $Path | Should -Be 'C:\w\DSO-26H2-Pro\e4c.json'
-        @($script:Calls) | Should -Be @('revert DSO-26H2-Pro', 'start DSO-26H2-Pro', 'ready', 'copy build C:\b C:\c.json C:\dso\app\DSOptimizer.exe', 'phase baseline',
-            'connect DSO-26H2-Pro Default Switch', 'phase cli-install', 'disconnect DSO-26H2-Pro',
-            'copy raw', 'revert DSO-26H2-Pro', 'disconnect DSO-26H2-Pro', 'save e4c.json')
+        $Path = Invoke-E4CVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('baseline', 'cli-install') -BuildDirectory 'C:\b' -CatalogPath 'C:\c.json' 6>$null
+        $Path | Should -Be 'C:\w\DSO-EN-Pro\e4c.json'
+        @($script:Calls) | Should -Be @('revert DSO-EN-Pro', 'start DSO-EN-Pro', 'ready', 'copy build C:\b C:\c.json C:\dso\app\DSOptimizer.exe', 'phase baseline',
+            'connect DSO-EN-Pro Default Switch', 'phase cli-install', 'disconnect DSO-EN-Pro',
+            'copy raw', 'revert DSO-EN-Pro', 'disconnect DSO-EN-Pro', 'save e4c.json')
         @(($script:PlanJsons[0] | ConvertFrom-Json).CliIds).Count | Should -Be 36
         ($script:PlanJsons[0] | ConvertFrom-Json).CliRepeat | Should -BeFalse
         $script:SavedResult.cleanup.Ok | Should -BeTrue
@@ -854,10 +856,10 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
         $script:PlanJsons = [System.Collections.Generic.List[string]]::new()
         Mock Invoke-E4CVmPhase -RemoveParameterValidation 'Session' { $script:Calls.Add("phase $Phase"); $script:PlanJsons.Add($PlanJson); [pscustomobject]@{ phase = $Phase } }
         Mock Copy-DsoBuildToVm -RemoveParameterValidation 'Session' { $script:Calls.Add('copy build') }
-        $null = Invoke-E4CVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('baseline', 'cli-install') -BuildDirectory 'C:\b' -CatalogPath 'C:\c.json' -CliIds @('install.7zip', 'install.rustdesk') -CliRepeat 6>$null
-        @($script:Calls) | Should -Be @('revert DSO-26H2-Pro', 'start DSO-26H2-Pro', 'ready', 'copy build', 'phase baseline',
-            'connect DSO-26H2-Pro Default Switch', 'phase cli-install', 'disconnect DSO-26H2-Pro',
-            'copy raw', 'revert DSO-26H2-Pro', 'disconnect DSO-26H2-Pro', 'save e4c.json')
+        $null = Invoke-E4CVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('baseline', 'cli-install') -BuildDirectory 'C:\b' -CatalogPath 'C:\c.json' -CliIds @('install.7zip', 'install.rustdesk') -CliRepeat 6>$null
+        @($script:Calls) | Should -Be @('revert DSO-EN-Pro', 'start DSO-EN-Pro', 'ready', 'copy build', 'phase baseline',
+            'connect DSO-EN-Pro Default Switch', 'phase cli-install', 'disconnect DSO-EN-Pro',
+            'copy raw', 'revert DSO-EN-Pro', 'disconnect DSO-EN-Pro', 'save e4c.json')
         foreach ($Json in $script:PlanJsons) {
             $Sent = $Json | ConvertFrom-Json
             @($Sent.CliIds) | Should -Be @('install.7zip', 'install.rustdesk')
@@ -866,7 +868,7 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
         $script:SavedResult.cleanup.Ok | Should -BeTrue
         # Home: te same -CliIds nadpisują CliHomeIds; bez -CliRepeat plan ma CliRepeat = false.
         $script:PlanJsons.Clear()
-        $null = Invoke-E4CVmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('baseline') -CliIds @('install.rustdesk') 6>$null
+        $null = Invoke-E4CVmRun -VmName 'DSO-EN-Home' -OutDirectory $TestDrive -Phases @('baseline') -CliIds @('install.rustdesk') 6>$null
         $Sent = $script:PlanJsons[0] | ConvertFrom-Json
         @($Sent.CliIds) | Should -Be @('install.rustdesk')
         $Sent.CliRepeat | Should -BeFalse
@@ -874,69 +876,69 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
     It 'błąd fazy cli-install z -CliRepeat: karta odłączona od razu, revert i odłączenie w finally' {
         Mock Copy-DsoBuildToVm -RemoveParameterValidation 'Session' { $script:Calls.Add('copy build') }
         Mock Invoke-E4CVmPhase -RemoveParameterValidation 'Session' { $script:Calls.Add("phase $Phase"); if ($Phase -eq 'cli-install') { throw 'CLI padło' }; [pscustomobject]@{ phase = $Phase } }
-        { Invoke-E4CVmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('baseline', 'cli-install') -BuildDirectory 'C:\b' -CatalogPath 'C:\c.json' -CliIds @('install.rustdesk') -CliRepeat 6>$null } | Should -Throw '*CLI padło*'
-        $script:Calls.IndexOf('disconnect DSO-26H2-Home') | Should -Be ($script:Calls.IndexOf('phase cli-install') + 1)
-        @($script:Calls)[-3..-1] | Should -Be @('revert DSO-26H2-Home', 'disconnect DSO-26H2-Home', 'save e4c.json')
+        { Invoke-E4CVmRun -VmName 'DSO-EN-Home' -OutDirectory $TestDrive -Phases @('baseline', 'cli-install') -BuildDirectory 'C:\b' -CatalogPath 'C:\c.json' -CliIds @('install.rustdesk') -CliRepeat 6>$null } | Should -Throw '*CLI padło*'
+        $script:Calls.IndexOf('disconnect DSO-EN-Home') | Should -Be ($script:Calls.IndexOf('phase cli-install') + 1)
+        @($script:Calls)[-3..-1] | Should -Be @('revert DSO-EN-Home', 'disconnect DSO-EN-Home', 'save e4c.json')
     }
     It 'złe -CliIds (id ze spacją) = wyjątek przed revertem i startem VM' {
-        { Invoke-E4CVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('baseline', 'cli-install') -BuildDirectory 'C:\b' -CatalogPath 'C:\c.json' -CliIds @('install.a b') 6>$null } | Should -Throw '*install.a b*'
+        { Invoke-E4CVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('baseline', 'cli-install') -BuildDirectory 'C:\b' -CatalogPath 'C:\c.json' -CliIds @('install.a b') 6>$null } | Should -Throw '*install.a b*'
         Should -Invoke Restore-VmCleanState -Times 0 -Exactly
         Should -Invoke Start-VM -Times 0 -Exactly
     }
     It 'Invoke-E4CExploration przekazuje -CliIds i -CliRepeat z argumentów przebiegu do każdej VM' {
         $script:Runs = [System.Collections.Generic.List[string]]::new()
         Mock Invoke-E4CVmRun { $script:Runs.Add("$VmName|$(@($CliIds) -join ',')|$([bool]$CliRepeat)"); "C:\w\$VmName\e4c.json" }
-        $Arguments = Get-E4CRunArguments -VmName @('DSO-26H2-Pro', 'DSO-26H2-Home') -Phase @('cli-install') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -CliIds @('install.rustdesk') -CliRepeat $true
+        $Arguments = Get-E4CRunArguments -VmName @('DSO-EN-Pro', 'DSO-EN-Home') -Phase @('cli-install') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60 -CliIds @('install.rustdesk') -CliRepeat $true
         $null = Invoke-E4CExploration -Arguments $Arguments 6>$null
-        @($script:Runs) | Should -Be @('DSO-26H2-Pro|install.rustdesk|True', 'DSO-26H2-Home|install.rustdesk|True')
+        @($script:Runs) | Should -Be @('DSO-EN-Pro|install.rustdesk|True', 'DSO-EN-Home|install.rustdesk|True')
         $script:Runs.Clear()
-        $Default = Get-E4CRunArguments -VmName @('DSO-26H2-Pro') -Phase @('cli-install') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
+        $Default = Get-E4CRunArguments -VmName @('DSO-EN-Pro') -Phase @('cli-install') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
         $null = Invoke-E4CExploration -Arguments $Default 6>$null
-        @($script:Runs) | Should -Be @('DSO-26H2-Pro||False')
+        @($script:Runs) | Should -Be @('DSO-EN-Pro||False')
     }
     It 'cli-install bez katalogu builda = wyjątek przed revertem i startem VM' {
-        { Invoke-E4CVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('baseline', 'cli-install') 6>$null } | Should -Throw '*BuildDirectory*'
+        { Invoke-E4CVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('baseline', 'cli-install') 6>$null } | Should -Throw '*BuildDirectory*'
         Should -Invoke Restore-VmCleanState -Times 0 -Exactly
         Should -Invoke Start-VM -Times 0 -Exactly
     }
     It 'błąd fazy cli-install: karta odłączona od razu, revert i odłączenie w finally, wynik częściowy zapisany' {
         Mock Copy-DsoBuildToVm -RemoveParameterValidation 'Session' { $script:Calls.Add('copy build') }
         Mock Invoke-E4CVmPhase -RemoveParameterValidation 'Session' { $script:Calls.Add("phase $Phase"); if ($Phase -eq 'cli-install') { throw 'CLI padło' }; [pscustomobject]@{ phase = $Phase } }
-        { Invoke-E4CVmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('baseline', 'cli-install') -BuildDirectory 'C:\b' -CatalogPath 'C:\c.json' 6>$null } | Should -Throw '*DSO-26H2-Home*CLI padło*'
-        $script:Calls.IndexOf('disconnect DSO-26H2-Home') | Should -Be ($script:Calls.IndexOf('phase cli-install') + 1)
-        @($script:Calls)[-3..-1] | Should -Be @('revert DSO-26H2-Home', 'disconnect DSO-26H2-Home', 'save e4c.json')
+        { Invoke-E4CVmRun -VmName 'DSO-EN-Home' -OutDirectory $TestDrive -Phases @('baseline', 'cli-install') -BuildDirectory 'C:\b' -CatalogPath 'C:\c.json' 6>$null } | Should -Throw '*DSO-EN-Home*CLI padło*'
+        $script:Calls.IndexOf('disconnect DSO-EN-Home') | Should -Be ($script:Calls.IndexOf('phase cli-install') + 1)
+        @($script:Calls)[-3..-1] | Should -Be @('revert DSO-EN-Home', 'disconnect DSO-EN-Home', 'save e4c.json')
         $script:SavedResult.phases.baseline.phase | Should -Be 'baseline'
     }
     It 'błąd fazy install-all: karta odłączona od razu, dalsze fazy idą, revert i odłączenie w finally, wynik częściowy zapisany, wyjątek z nazwą VM' {
         Mock Invoke-E4CVmPhase -RemoveParameterValidation 'Session' { $script:Calls.Add("phase $Phase"); if ($Phase -eq 'install-all') { throw 'sesja padła' }; [pscustomobject]@{ phase = $Phase } }
-        { Invoke-E4CVmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('baseline', 'install-all', 'final') 6>$null } | Should -Throw '*DSO-26H2-Home*sesja padła*'
-        $script:Calls.IndexOf('disconnect DSO-26H2-Home') | Should -BeLessThan $script:Calls.IndexOf('phase final')
-        $script:Calls | Should -Contain 'revert DSO-26H2-Home'
+        { Invoke-E4CVmRun -VmName 'DSO-EN-Home' -OutDirectory $TestDrive -Phases @('baseline', 'install-all', 'final') 6>$null } | Should -Throw '*DSO-EN-Home*sesja padła*'
+        $script:Calls.IndexOf('disconnect DSO-EN-Home') | Should -BeLessThan $script:Calls.IndexOf('phase final')
+        $script:Calls | Should -Contain 'revert DSO-EN-Home'
         $script:Calls[-1] | Should -Be 'save e4c.json'
-        $script:Calls[-2] | Should -Be 'disconnect DSO-26H2-Home'
-        $script:Calls[-3] | Should -Be 'revert DSO-26H2-Home'
+        $script:Calls[-2] | Should -Be 'disconnect DSO-EN-Home'
+        $script:Calls[-3] | Should -Be 'revert DSO-EN-Home'
         $script:SavedResult.phases.baseline.phase | Should -Be 'baseline'
         $script:SavedResult.phases.final.phase | Should -Be 'final'
     }
     It 'błąd w adminprotection po ustawieniu wartości: przywrócenie i tak próbowane, potem revert w finally' {
         Mock Invoke-E4CVmPhase -RemoveParameterValidation 'Session' { $script:Calls.Add("phase $Phase"); if ($Phase -eq 'ap-probe') { throw 'sonda padła' }; [pscustomobject]@{ phase = $Phase; data = [pscustomobject]@{ Before = [pscustomobject]@{ Exists = $true; Value = 1 } } } }
-        { Invoke-E4CVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('baseline', 'adminprotection', 'final') 6>$null } | Should -Throw '*sonda padła*'
+        { Invoke-E4CVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('baseline', 'adminprotection', 'final') 6>$null } | Should -Throw '*sonda padła*'
         $script:Calls | Should -Contain 'phase ap-restore'
         $script:Calls.IndexOf('phase ap-restore') | Should -BeLessThan $script:Calls.IndexOf('phase final')
-        $script:Calls | Should -Contain 'revert DSO-26H2-Pro'
+        $script:Calls | Should -Contain 'revert DSO-EN-Pro'
     }
     It 'stan końcowy niezgodny z kontraktem (VM nie Off, karta na przełączniku): zapisany i zgłoszony' {
         Mock Get-VM { [pscustomobject]@{ Name = $Name; State = 'Running' } }
         Mock Get-VMNetworkAdapter { [pscustomobject]@{ VMName = $VMName; Name = 'Network Adapter'; SwitchName = 'Default Switch' } }
-        { Invoke-E4CVmRun -VmName 'DSO-26H2-Home' -OutDirectory $TestDrive -Phases @('baseline') 3>$null 6>$null } | Should -Throw '*stan końcowy*'
+        { Invoke-E4CVmRun -VmName 'DSO-EN-Home' -OutDirectory $TestDrive -Phases @('baseline') 3>$null 6>$null } | Should -Throw '*stan końcowy*'
         ($script:SavedResult.cleanup.Violations -join ' ') | Should -Match 'Running'
         ($script:SavedResult.cleanup.Violations -join ' ') | Should -Match 'Default Switch'
     }
     It 'błąd uwierzytelnienia: przekazany dalej, revert wykonany; Invoke-E4CExploration zatrzymuje całość po pierwszej VM' {
         Mock Wait-VmReady { $E = [System.InvalidOperationException]::new('błąd uwierzytelnienia PowerShell Direct'); $E.Data['VmAuthFailure'] = $true; throw $E }
-        { Invoke-E4CVmRun -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -Phases @('baseline') } | Should -Throw '*uwierzytelnienia*'
-        $script:Calls | Should -Contain 'revert DSO-26H2-Pro'
-        $Arguments = Get-E4CRunArguments -VmName @('DSO-26H2-Pro', 'DSO-26H2-Home') -Phase @('baseline') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
+        { Invoke-E4CVmRun -VmName 'DSO-EN-Pro' -OutDirectory $TestDrive -Phases @('baseline') } | Should -Throw '*uwierzytelnienia*'
+        $script:Calls | Should -Contain 'revert DSO-EN-Pro'
+        $Arguments = Get-E4CRunArguments -VmName @('DSO-EN-Pro', 'DSO-EN-Home') -Phase @('baseline') -OutDirectory 'C:\w' -CheckpointName 'c' -ReadyTimeoutSeconds 60
         Mock Invoke-E4CVmRun { $E = [System.InvalidOperationException]::new('x'); $E.Data['VmAuthFailure'] = $true; throw $E }
         { Invoke-E4CExploration -Arguments $Arguments 6>$null } | Should -Throw
         Should -Invoke Invoke-E4CVmRun -Times 1 -Exactly -Scope It
@@ -946,30 +948,30 @@ Describe 'Orkiestracja hosta (mocki Hyper-V)' -Skip:(-not $script:HasHyperV) {
 Describe 'Blok główny SKRYPTU (-ShowPlan; bez VM)' {
     It '-ShowPlan: kod 0, plan i fazy; bez -OutDirectory kod 1' {
         $env:DSO_VM_TESTS_MOCK_ONLY | Should -Be '1'
-        $Output = & $script:E4CScriptPath -ShowPlan -VmName DSO-26H2-Pro -Phase network -NoNetwork -OutDirectory (Join-Path $TestDrive 'w') 6>$null
+        $Output = & $script:E4CScriptPath -ShowPlan -VmName DSO-EN-Pro -Phase network -NoNetwork -OutDirectory (Join-Path $TestDrive 'w') 6>$null
         $LASTEXITCODE | Should -Be 0
         $Plan = ($Output | Out-String) | ConvertFrom-Json
-        @($Plan.VmName) | Should -Be @('DSO-26H2-Pro')
-        @($Plan.Phases.'DSO-26H2-Pro') | Should -Be @('baseline')
+        @($Plan.VmName) | Should -Be @('DSO-EN-Pro')
+        @($Plan.Phases.'DSO-EN-Pro') | Should -Be @('baseline')
         $Plan.Network | Should -BeFalse
         Test-Path -LiteralPath (Join-Path $TestDrive 'w') | Should -BeFalse
         & $script:E4CScriptPath -ShowPlan 6>$null | Out-Null
         $LASTEXITCODE | Should -Be 1
     }
     It '-ShowPlan bez -Phase: cli-install nie wchodzi; z -Phase cli-install: baseline + cli-install, z siecią' {
-        $All = (& $script:E4CScriptPath -ShowPlan -VmName DSO-26H2-Pro -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-String) | ConvertFrom-Json
-        @($All.Phases.'DSO-26H2-Pro') | Should -Not -Contain 'cli-install'
-        $Cli = (& $script:E4CScriptPath -ShowPlan -VmName DSO-26H2-Home -Phase cli-install -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-String) | ConvertFrom-Json
+        $All = (& $script:E4CScriptPath -ShowPlan -VmName DSO-EN-Pro -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-String) | ConvertFrom-Json
+        @($All.Phases.'DSO-EN-Pro') | Should -Not -Contain 'cli-install'
+        $Cli = (& $script:E4CScriptPath -ShowPlan -VmName DSO-EN-Home -Phase cli-install -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-String) | ConvertFrom-Json
         $LASTEXITCODE | Should -Be 0
-        @($Cli.Phases.'DSO-26H2-Home') | Should -Be @('baseline', 'cli-install')
+        @($Cli.Phases.'DSO-EN-Home') | Should -Be @('baseline', 'cli-install')
         $Cli.Network | Should -BeTrue
     }
     It '-ShowPlan z -CliIds i -CliRepeat: id i powtórzenie w planie; id ze spacją = kod 1' {
-        $Cli = (& $script:E4CScriptPath -ShowPlan -VmName DSO-26H2-Pro -Phase cli-install -CliIds install.7zip, install.rustdesk -CliRepeat -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-String) | ConvertFrom-Json
+        $Cli = (& $script:E4CScriptPath -ShowPlan -VmName DSO-EN-Pro -Phase cli-install -CliIds install.7zip, install.rustdesk -CliRepeat -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-String) | ConvertFrom-Json
         $LASTEXITCODE | Should -Be 0
         @($Cli.CliIds) | Should -Be @('install.7zip', 'install.rustdesk')
         $Cli.CliRepeat | Should -BeTrue
-        & $script:E4CScriptPath -ShowPlan -VmName DSO-26H2-Home -Phase cli-install -CliIds 'install.a b' -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-Null
+        & $script:E4CScriptPath -ShowPlan -VmName DSO-EN-Home -Phase cli-install -CliIds 'install.a b' -OutDirectory (Join-Path $TestDrive 'w') 6>$null | Out-Null
         $LASTEXITCODE | Should -Be 1
     }
 }

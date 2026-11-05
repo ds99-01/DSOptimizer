@@ -4,7 +4,7 @@ Instrukcja uruchomienia:
     VM utworzone wcześniej przez New-TestVm.ps1 (checkpoint 'czysta-26H2', poświadczenia w %LOCALAPPDATA%\DSOptimizer-vm, autologon 'dso').
     Build DSOptimizera NIE jest potrzebny (pomiar woła wyłącznie narzędzia systemowe w VM).
     Przykład (jedna VM na proces; Home i Pro można uruchomić równolegle w dwóch sesjach, każda z własną VM):
-        .\tests\vm\explore\Invoke-E4B2Exploration.ps1 -VmName DSO-26H2-Pro -OutDirectory $env:TEMP\dso-explore\exploration
+        .\tests\vm\explore\Invoke-E4B2Exploration.ps1 -VmName DSO-PL-Pro -OutDirectory $env:TEMP\dso-explore\exploration
     Bez -Phase: wszystkie fazy (baseline zawsze pierwsza, final zawsze ostatnia, jeśli wybrana).
     -NoNetwork: pomija fazę network; karta VM nie jest podłączana do 'Default Switch'.
     -ShowPlan: wypisuje rozstrzygnięte argumenty i plan (JSON) i kończy, nic nie uruchamia.
@@ -17,7 +17,7 @@ Opis działania:
     z PowerShell Direct (sesja 0) i raz w sesji dso (zadanie Harmonogramu Interactive + Highest, czyli jak DSOptimizer po UAC).
     Zakres zawężony decyzją autora (R8, 2026-10-22): żadnego uszkadzania plików systemowych, żadnej zmiany właściciela ani ACL;
     SFC i DISM tylko na zdrowej VM; Windows.old = zwykły folder z plikami testowymi utworzony kontem Administratora.
-    Wszystkie zmiany WYŁĄCZNIE w VM DSO-26H2-Home/Pro; na hoście skrypt tylko podłącza/odłącza kartę sieciową VM (Default Switch,
+    Wszystkie zmiany WYŁĄCZNIE w VM DSO-PL-Home/Pro; na hoście skrypt tylko podłącza/odłącza kartę sieciową VM (Default Switch,
     wyłącznie na fazę network), kopiuje surowe pliki wyników z VM i zapisuje JSON.
     Narzędzia startują z pełnej ścieżki System32 (Process, CreateNoWindow jak CREATE_NO_WINDOW w DSOptimizerze); stdout i stderr
     trafiają BAJTOWO do plików C:\dso\e4b2\raw\<nazwa>.out.bin/.err.bin (bez dekodowania), a segmenty CBS.log i dism.log z danego
@@ -26,15 +26,15 @@ Opis działania:
     Przebieg jednej VM: revert do 'czysta-26H2' -> start (bez sieci) -> gotowość (zalogowany dso) -> fazy: baseline (stan i bezczynna VM)
     -> dism -> sfc -> cleanup -> windowsold -> [sieć] network [koniec sieci] -> final (bezczynna VM po wszystkim) -> kopia surowych
     plików -> ZAWSZE (finally) revert, odłączenie karty i sprawdzenie stanu końcowego (VM Off, karta bez przełącznika) przed zapisem JSON.
-    Ostatni bezpiecznik po stronie VM: Assert-E4B2InsideVm (nazwa komputera DSO-26H2-HOME/PRO i brak DSO_VM_TESTS_MOCK_ONLY) na
+    Ostatni bezpiecznik po stronie VM: Assert-E4B2InsideVm (nazwa komputera z listy (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) i brak DSO_VM_TESTS_MOCK_ONLY) na
     początku każdej funkcji ze skutkiem. Pierwszy błąd uwierzytelnienia przerywa cały skrypt (blokada konta). Skrypt dotyka wyłącznie
-    VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy innej VM; na hoście niczego nie zmienia.
+    VM DSO-PL-Home i DSO-PL-Pro (ValidateSet), nigdy innej VM; na hoście niczego nie zmienia.
     Wynik: <OutDirectory>\<VmName>\e4b2.json (UTF-8) i <OutDirectory>\<VmName>\raw\*.
     Kod wyjścia: 0 gdy wszystkie wybrane VM zebrane bez błędu przebiegu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName = @('DSO-26H2-Home', 'DSO-26H2-Pro'),
+    [ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName = @('DSO-PL-Home', 'DSO-PL-Pro'),
     [ValidateSet('baseline', 'dism', 'sfc', 'cleanup', 'windowsold', 'network', 'final')][string[]]$Phase = @('baseline', 'dism', 'sfc', 'cleanup', 'windowsold', 'network', 'final'),
     [string]$OutDirectory,
     [string]$CheckpointName = 'czysta-26H2',
@@ -94,19 +94,19 @@ function Test-E4B2VmComputerName {
     [CmdletBinding()]
     [OutputType([bool])]
     param([AllowEmptyString()][string]$ComputerName)
-    return (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -contains ([string]$ComputerName).ToUpperInvariant())
+    return (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -contains ([string]$ComputerName).ToUpperInvariant())
 }
 
 function Assert-E4B2InsideVm {
     # Ostatni bezpiecznik: sondy E4B2 uruchamiają DISM, SFC i cleanmgr, usuwają pliki, zatrzymują usługi i piszą do rejestru,
-    # więc działają WYŁĄCZNIE w VM DSO-26H2-Home/Pro i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY).
+    # więc działają WYŁĄCZNIE w VM DSO-PL-Home/Pro i nigdy w testach na mockach (DSO_VM_TESTS_MOCK_ONLY).
     [CmdletBinding()]
     param([string]$ComputerName = $env:COMPUTERNAME)
     if ($env:DSO_VM_TESTS_MOCK_ONLY) {
         throw 'Tryb DSO_VM_TESTS_MOCK_ONLY: sondy E4B2 nie mogą działać w testach na mockach (nic nie zostało uruchomione).'
     }
     if (-not (Test-E4B2VmComputerName -ComputerName $ComputerName)) {
-        throw "Sondy E4B2 działają tylko w VM DSO-26H2-HOME/DSO-26H2-PRO (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
+        throw "Sondy E4B2 działają tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
     }
 }
 
@@ -1431,7 +1431,7 @@ function Complete-E4B2VmCleanup {
     # Koniec przebiegu: revert do checkpointu, odłączenie karty i sprawdzenie kontraktu stanu końcowego: VM Off i karta bez przełącznika.
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][string]$CheckpointName
     )
     $Out = [ordered]@{ Ok = $false; RevertError = $null; DisconnectError = $null; CheckError = $null; FinalState = $null; FinalSwitch = $null; Violations = @(); Problems = @() }
@@ -1457,7 +1457,7 @@ function Invoke-E4B2VmRun {
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [Parameter(Mandatory)][string[]]$Phases,
         [string]$CheckpointName = 'czysta-26H2',

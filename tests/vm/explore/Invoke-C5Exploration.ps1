@@ -5,7 +5,7 @@ Instrukcja uruchomienia:
     Obie VM, po kolei (Home, potem Pro):
         .\tests\vm\explore\Invoke-C5Exploration.ps1 -OutDirectory C:\ścieżka\poza\repo\exploration
     Jedna VM, wybrane sondy:
-        .\tests\vm\explore\Invoke-C5Exploration.ps1 -VmName DSO-26H2-Pro -Probe panels,explorer -OutDirectory C:\ścieżka\poza\repo\exploration
+        .\tests\vm\explore\Invoke-C5Exploration.ps1 -VmName DSO-PL-Pro -Probe panels,explorer -OutDirectory C:\ścieżka\poza\repo\exploration
     -OutDirectory jest wymagany: ścieżka bezwzględna (dysk albo UNC) poza repo; w repo tylko katalog ignorowany przez git.
     Czas: ok. 25-35 minut na VM (panele 2 x 30 wariantów po ok. 13 s, Store, Explorer, start i revert VM).
     Tylko sonda uzupełniająca paneli (3 warianty, K1 i K2): ok. 5 minut na VM.
@@ -47,7 +47,7 @@ Opis działania:
     reszta zostaje i jest zapisana (LeftProcesses), bo VM i tak wraca do checkpointu. WM_CLOSE jest asynchroniczne: po nim pętla do 5 s co 250 ms,
     aż uchwyt zniknie (inaczej WindowsStillOpen), a każdy odczyt 3 s/10 s zapisuje też WSZYSTKIE widoczne okna CabinetWClass i
     ApplicationFrameWindow (ShellWindows), żeby ponowne użycie istniejącego okna było widać mimo braku nowego uchwytu.
-    Ostatni bezpiecznik po stronie VM: Assert-C5InsideVm (nazwa komputera DSO-26H2-HOME/PRO z New-TestVm i brak DSO_VM_TESTS_MOCK_ONLY) na
+    Ostatni bezpiecznik po stronie VM: Assert-C5InsideVm (nazwa komputera z listy (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) z New-TestVm i brak DSO_VM_TESTS_MOCK_ONLY) na
     początku każdej sondy i każdej funkcji ze skutkiem - na hoście i w testach na mockach nic nie ruszy.
     Każda sonda i każda jej część w try/catch: błąd jednej trafia do wyniku, nie przerywa reszty. Pierwszy błąd uwierzytelnienia przerywa cały
     skrypt (bez prób na drugiej VM, blokada konta). Inny błąd jednej VM jest zapisany i nie przerywa drugiej.
@@ -55,12 +55,12 @@ Opis działania:
     -Variant: filtr wariantów sondy panels (np. -Probe panels -Variant security-maintenance-control,system-properties-control,devices-printers-explorer);
     wymaga sondy panels; bez -Variant wszystkie 30 wariantów.
     -ShowPlan: wypisuje rozstrzygnięte argumenty (VM, katalog, checkpoint, limit, sondy, warianty) jako JSON i kończy, nic nie uruchamia.
-    Skrypt dotyka wyłącznie VM DSO-26H2-Home i DSO-26H2-Pro (ValidateSet), nigdy obcej VM.
+    Skrypt dotyka wyłącznie VM DSO-PL-Home i DSO-PL-Pro (ValidateSet), nigdy obcej VM.
     Kod wyjścia: 0 gdy wszystkie wybrane VM zebrane bez błędu, 1 w przeciwnym razie.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName = @('DSO-26H2-Home', 'DSO-26H2-Pro'),
+    [ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName = @('DSO-PL-Home', 'DSO-PL-Pro'),
     [string]$OutDirectory,
     [string]$CheckpointName = 'czysta-26H2',
     [ValidateRange(60, 7200)][int]$ReadyTimeoutSeconds = 1200,
@@ -89,19 +89,19 @@ function Test-C5VmComputerName {
     [CmdletBinding()]
     [OutputType([bool])]
     param([AllowEmptyString()][string]$ComputerName)
-    return (@('DSO-26H2-HOME', 'DSO-26H2-PRO') -contains ([string]$ComputerName).ToUpperInvariant())
+    return (@('DSO-EN-HOME', 'DSO-EN-PRO', 'DSO-PL-PRO', 'DSO-PL-HOME') -contains ([string]$ComputerName).ToUpperInvariant())
 }
 
 function Assert-C5InsideVm {
     # Ostatni bezpiecznik: sondy C5 zatrzymują Explorera, rejestrują Appx, tworzą zadania i otwierają panele, więc działają WYŁĄCZNIE w VM
-    # DSO-26H2-Home/Pro i nigdy w testach na mockach (zmienna DSO_VM_TESTS_MOCK_ONLY ustawiana przez tests\vm\tests\Support\NoLiveVm.ps1).
+    # DSO-PL-Home/Pro i nigdy w testach na mockach (zmienna DSO_VM_TESTS_MOCK_ONLY ustawiana przez tests\vm\tests\Support\NoLiveVm.ps1).
     [CmdletBinding()]
     param([string]$ComputerName = $env:COMPUTERNAME)
     if ($env:DSO_VM_TESTS_MOCK_ONLY) {
         throw 'Tryb DSO_VM_TESTS_MOCK_ONLY: sondy C5 nie mogą działać w testach na mockach (nic nie zostało uruchomione).'
     }
     if (-not (Test-C5VmComputerName -ComputerName $ComputerName)) {
-        throw "Sondy C5 działają tylko w VM DSO-26H2-HOME/DSO-26H2-PRO (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
+        throw "Sondy C5 działają tylko w VM DSO (DSO-EN-HOME, DSO-EN-PRO, DSO-PL-PRO, DSO-PL-HOME) (ten komputer: '$ComputerName'); nic nie zostało uruchomione."
     }
 }
 
@@ -1655,7 +1655,7 @@ function Invoke-C5Exploration {
     # Wszystkie wybrane VM po kolei. Błąd uwierzytelnienia = stop całości; inny błąd = zapis i dalej (logika we wspólnym module).
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][ValidateSet('DSO-26H2-Home', 'DSO-26H2-Pro')][string[]]$VmName,
+        [Parameter(Mandatory)][ValidateSet('DSO-PL-Home', 'DSO-PL-Pro')][string[]]$VmName,
         [Parameter(Mandatory)][string]$OutDirectory,
         [string]$CheckpointName = 'czysta-26H2',
         [int]$ReadyTimeoutSeconds = 1200,

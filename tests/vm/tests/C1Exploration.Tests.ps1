@@ -341,20 +341,20 @@ Describe 'Invoke-C1VmExploration (orkiestracja na mockach)' {
         }
     }
     It 'revert -> start -> ready -> zbieranie -> revert, plik JSON zapisany' {
-        $Paths = @(Invoke-C1VmExploration -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60)
-        ($Order -join ',') | Should -Be 'restore:DSO-26H2-Pro,start:DSO-26H2-Pro,ready:DSO-26H2-Pro,collect,removesession,restore:DSO-26H2-Pro'
-        Test-Path -LiteralPath (Join-Path $TestDrive 'DSO-26H2-Pro\c1-exploration.json') | Should -BeTrue
+        $Paths = @(Invoke-C1VmExploration -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60)
+        ($Order -join ',') | Should -Be 'restore:DSO-PL-Pro,start:DSO-PL-Pro,ready:DSO-PL-Pro,collect,removesession,restore:DSO-PL-Pro'
+        Test-Path -LiteralPath (Join-Path $TestDrive 'DSO-PL-Pro\c1-exploration.json') | Should -BeTrue
     }
     It 'błąd zbierania: nadal revert w finally, wyjątek propagowany' {
         Mock -ModuleName ExploreCommon Invoke-Command { if ($ArgumentList) { throw 'zerwana sesja' } else { 'S-1' } }
-        { Invoke-C1VmExploration -VmName 'DSO-26H2-Pro' -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60 } | Should -Throw '*zerwana sesja*'
-        $Order[-1] | Should -Be 'restore:DSO-26H2-Pro'
+        { Invoke-C1VmExploration -VmName 'DSO-PL-Pro' -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60 } | Should -Throw '*zerwana sesja*'
+        $Order[-1] | Should -Be 'restore:DSO-PL-Pro'
     }
     It 'błąd uwierzytelnienia zatrzymuje cały skrypt: druga VM nietknięta, revert pierwszej jest' {
         Mock -ModuleName ExploreCommon Wait-VmReady { throw "VM 'x': błąd uwierzytelnienia PowerShell Direct, przerywam bez ponawiania: coś" }
-        { Invoke-C1Exploration -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60 } | Should -Throw '*uwierzytelnienia*'
+        { Invoke-C1Exploration -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60 } | Should -Throw '*uwierzytelnienia*'
         ($Order | Where-Object { $_ -like '*Pro*' }) | Should -BeNullOrEmpty
-        $Order[-1] | Should -Be 'restore:DSO-26H2-Home'
+        $Order[-1] | Should -Be 'restore:DSO-PL-Home'
     }
     It 'inny błąd jednej VM nie przerywa drugiej, błędy są zebrane' {
         $script:Fail = $true
@@ -362,15 +362,15 @@ Describe 'Invoke-C1VmExploration (orkiestracja na mockach)' {
             if ($ArgumentList) { if ($script:Fail) { $script:Fail = $false; throw 'padło raz' } else { $script:Order.Add('collect'); '{"meta":{},"probes":[]}' } }
             else { 'S-1' }
         }
-        $Outcome = Invoke-C1Exploration -VmName @('DSO-26H2-Home', 'DSO-26H2-Pro') -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60
+        $Outcome = Invoke-C1Exploration -VmName @('DSO-PL-Home', 'DSO-PL-Pro') -OutDirectory $TestDrive -CheckpointName 'czysta-26H2' -ReadyTimeoutSeconds 60
         @($Outcome.Errors).Count | Should -Be 1
         @($Outcome.Paths).Count | Should -Be 1
-        ($Order | Where-Object { $_ -eq 'start:DSO-26H2-Pro' }) | Should -Not -BeNullOrEmpty
+        ($Order | Where-Object { $_ -eq 'start:DSO-PL-Pro' }) | Should -Not -BeNullOrEmpty
     }
-    It 'parametr VmName przyjmuje tylko DSO-26H2-Home i DSO-26H2-Pro' {
+    It 'parametr VmName przyjmuje tylko DSO-PL-Home i DSO-PL-Pro' {
         $Attr = (Get-Command (Join-Path $PSScriptRoot '..\explore\Invoke-C1Exploration.ps1')).Parameters['VmName'].Attributes |
             Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
-        $Attr.ValidValues | Should -Be @('DSO-26H2-Home', 'DSO-26H2-Pro')
+        $Attr.ValidValues | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro')
     }
 }
 
