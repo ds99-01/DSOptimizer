@@ -78,7 +78,7 @@ public sealed class InstallViewModel : ObservableObject
 
     /// <param name="session">Odczyt, wyszukiwanie i seria instalacji (wołane tylko przez Task.Run).</param>
     /// <param name="install">„Zainstaluj (N)”: okno serii, potwierdzenie, postęp i wynik (MainViewModel).</param>
-    /// <param name="showRepairWinget">„Przejdź do: Napraw winget”: kategoria „Naprawy”, pozycja <c>repair.winget</c> w panelu.</param>
+    /// <param name="showRepairWinget">„Przejdź do: Napraw winget”: strona „Naprawy i narzędzia”, pozycja <c>repair.winget</c> w panelu.</param>
     /// <param name="log">Linia do dziennika w oknie.</param>
     /// <param name="clock">Czas odczytu listy (licznik w menu dopiero po pierwszym odczycie).</param>
     public InstallViewModel(

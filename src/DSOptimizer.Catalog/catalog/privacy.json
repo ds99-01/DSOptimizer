@@ -2,6 +2,7 @@
   {
     "id": "privacy.widgets",
     "category": "privacy",
+    "group": "start",
     "kind": "tweak",
     "title": "Wyłącz Widżety",
     "summary": "Win+W przestaje otwierać Widżety, a przycisk znika z paska zadań.",
@@ -11,7 +12,7 @@
     "scope": "machine",
     "suggested": true,
     "warnings": [
-      "Przycisk zniknie po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”)."
+      "Przycisk zniknie po ponownym zalogowaniu (albo po restarcie Eksploratora w „Naprawach i narzędziach”)."
     ],
     "registry": [
       { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh", "name": "AllowNewsAndInterests", "type": "DWord", "value": 0, "original": "<RemoveEntry>" }
@@ -20,6 +21,7 @@
   {
     "id": "privacy.search-web-results",
     "category": "privacy",
+    "group": "start",
     "kind": "tweak",
     "title": "Wyłącz wyniki z internetu w wyszukiwaniu Windows",
     "summary": "Wyszukiwanie w menu Start i na pasku zadań przestaje pokazywać podpowiedzi i wyniki z internetu.",
@@ -38,6 +40,7 @@
   {
     "id": "privacy.settings-suggestions",
     "category": "privacy",
+    "group": "ads",
     "kind": "tweak",
     "title": "Wyłącz rekomendacje i oferty w Ustawieniach",
     "summary": "Wyłącza przełącznik „Rekomendacje i oferty w ustawieniach” w sekcji Prywatność.",
@@ -55,6 +58,7 @@
   {
     "id": "privacy.windows-tips",
     "category": "privacy",
+    "group": "ads",
     "kind": "tweak",
     "title": "Wyłącz porady i sugestie Windows",
     "summary": "Odznacza pole „Uzyskaj porady i sugestie podczas korzystania z systemu Windows” w ustawieniach powiadomień.",
@@ -70,6 +74,7 @@
   {
     "id": "privacy.settings-account-notifications",
     "category": "privacy",
+    "group": "ads",
     "kind": "tweak",
     "title": "Wyłącz powiadomienia o koncie w Ustawieniach",
     "summary": "Wyłącza przełącznik „Pokaż powiadomienia w ustawieniach”, czyli komunikaty o koncie w aplikacji Ustawienia.",
@@ -85,6 +90,7 @@
   {
     "id": "privacy.start-recommendations",
     "category": "privacy",
+    "group": "start",
     "kind": "tweak",
     "title": "Wyłącz zalecenia w menu Start",
     "summary": "Wyłącza w ustawieniach menu Start przełącznik zaleceń, czyli porad i propozycji nowych aplikacji.",
@@ -103,6 +109,7 @@
   {
     "id": "privacy.start-recommended-section",
     "category": "privacy",
+    "group": "start",
     "kind": "tweak",
     "title": "Ukryj sekcję „Proponowane” w menu Start",
     "summary": "Chowa z menu Start sekcję „Proponowane” z polecanymi aplikacjami, plikami i stronami.",
@@ -122,6 +129,7 @@
   {
     "id": "privacy.advertising-id",
     "category": "privacy",
+    "group": "ads",
     "kind": "tweak",
     "title": "Wyłącz identyfikator reklamowy",
     "summary": "Wyłącza identyfikator reklamowy, którego aplikacje mogą używać do dopasowywania reklam.",
@@ -138,6 +146,7 @@
   {
     "id": "privacy.tailored-experiences",
     "category": "privacy",
+    "group": "ads",
     "kind": "tweak",
     "title": "Wyłącz spersonalizowane oferty",
     "summary": "Wyłącza przełącznik „Spersonalizowane oferty”, przez który Microsoft może dobierać porady i oferty do tego, jak używasz komputera.",
@@ -153,6 +162,7 @@
   {
     "id": "privacy.spotlight",
     "category": "privacy",
+    "group": "ads",
     "kind": "tweak",
     "title": "Wyłącz Windows Spotlight (zdjęcia dnia)",
     "summary": "Wyłącza Windows Spotlight, czyli codzienne zdjęcia od Microsoftu na pulpicie z podpisami i linkami do Binga.",
@@ -171,6 +181,7 @@
   {
     "id": "privacy.diagnostic-data-required",
     "category": "privacy",
+    "group": "telemetry",
     "kind": "tweak",
     "title": "Ogranicz dane diagnostyczne do wymaganych",
     "summary": "Polityka ogranicza dane diagnostyczne wysyłane do Microsoftu do wymaganych i blokuje przełącznik danych opcjonalnych.",
@@ -190,6 +201,7 @@
   {
     "id": "privacy.feedback-notifications",
     "category": "privacy",
+    "group": "telemetry",
     "kind": "tweak",
     "title": "Wyłącz powiadomienia o opiniach",
     "summary": "Wyłącza powiadomienia z prośbą o opinię i chowa listę „Częstotliwość opinii” w Ustawieniach.",
@@ -208,6 +220,7 @@
   {
     "id": "privacy.diagtrack",
     "category": "privacy",
+    "group": "telemetry",
     "kind": "tweak",
     "title": "Wyłącz usługę telemetrii DiagTrack",
     "summary": "Zatrzymuje usługę „Środowiska użytkownika połączonego i telemetria” (DiagTrack) i nie pozwala jej startować.",

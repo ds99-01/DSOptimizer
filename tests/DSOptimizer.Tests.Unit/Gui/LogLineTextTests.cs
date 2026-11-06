@@ -157,4 +157,20 @@ public class LogLineTextTests
     {
         Assert.Throws<ArgumentNullException>(() => LogLineText.Split(null!));
     }
+
+    [Fact]
+    public void OneLineSummary_MultilineAndLong()
+    {
+        var multi = LogLineText.OneLineSummary(new GuiLogLine(At, GuiLogLevel.Info, "a\r\nb"));
+        Assert.EndsWith("a | b", multi);
+        Assert.DoesNotContain("\n", multi);
+        Assert.StartsWith(LogLineText.Time(At) + " ", multi);
+
+        var long900 = LogLineText.OneLineSummary(new GuiLogLine(At, GuiLogLevel.Error, new string('x', 900)));
+        Assert.Equal(LogLineText.Time(At).Length + 1 + GuiText.MaxResultMessageLength, long900.Length);
+        Assert.EndsWith("…", long900);
+    }
+
+    [Fact]
+    public void OneLineSummary_Null_IsEmpty() => Assert.Equal(string.Empty, LogLineText.OneLineSummary(null));
 }

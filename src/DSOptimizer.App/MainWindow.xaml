@@ -6,6 +6,7 @@
                  xmlns:views="clr-namespace:DSOptimizer.App.Views"
                  xmlns:gui="clr-namespace:DSOptimizer.Core.Gui;assembly=DSOptimizer.Core"
                  xmlns:l="clr-namespace:DSOptimizer.App.Gui"
+                 xmlns:sys="clr-namespace:System;assembly=mscorlib"
                  Title="DSOptimizer" MinWidth="800" MinHeight="520"
                  WindowStartupLocation="Manual" TextOptions.TextFormattingMode="Display"
                  ExtendsContentIntoTitleBar="True" WindowBackdropType="None" WindowCornerPreference="Round"
@@ -104,8 +105,8 @@
       </DataTemplate.Triggers>
     </DataTemplate>
 
-    <!-- Kategoria w lewej kolumnie: ikona 20 px, nazwa (ucięta z podpowiedzią) i licznik („zastosowane/tweaki” albo liczba pozycji);
-         w zwiniętym menu sama ikona wyśrodkowana, „Nazwa – licznik” w podpowiedzi -->
+    <!-- Kategoria w lewej kolumnie: ikona 20 px, nazwa (ucięta z podpowiedzią) i licznik „zastosowane/tweaki” (strona „Naprawy i narzędzia”
+         bez licznika, HasCounter = False); w zwiniętym menu sama ikona wyśrodkowana, „Nazwa – licznik” w podpowiedzi -->
     <DataTemplate DataType="{x:Type vm:CategoryViewModel}">
       <Grid x:Name="Root" Background="Transparent" ToolTipService.IsEnabled="False">
         <Grid.ToolTip>
@@ -133,11 +134,25 @@
         <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
           <Setter TargetName="CategoryName" Property="FontWeight" Value="SemiBold" />
         </DataTrigger>
+        <DataTrigger Binding="{Binding HasCounter}" Value="False">
+          <Setter TargetName="Counter" Property="Visibility" Value="Collapsed" />
+        </DataTrigger>
         <DataTrigger Binding="{Binding IsNavCompact, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
           <Setter TargetName="Icon" Property="Margin" Value="18,0,18,0" />
           <Setter TargetName="CategoryName" Property="Visibility" Value="Collapsed" />
           <Setter TargetName="Counter" Property="Visibility" Value="Collapsed" />
           <Setter TargetName="Root" Property="ToolTipService.IsEnabled" Value="True" />
+        </DataTrigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Linia między grupami menu (NavSeparatorViewModel): 1 px wyśrodkowany w wierszu GuiLayout.NavSeparatorHeight (6 + 1 + 6),
+         wcięty po 16 px jak linia nad „Ustawieniami”, w zwiniętym menu po 12 px -->
+    <DataTemplate DataType="{x:Type vm:NavSeparatorViewModel}">
+      <Border x:Name="Line" Height="1" VerticalAlignment="Center" Margin="16,0,16,0" Background="{StaticResource SideDividerBrush}" />
+      <DataTemplate.Triggers>
+        <DataTrigger Binding="{Binding IsNavCompact, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+          <Setter TargetName="Line" Property="Margin" Value="12,0,12,0" />
         </DataTrigger>
       </DataTemplate.Triggers>
     </DataTemplate>
@@ -368,23 +383,48 @@
       </DataTemplate.Triggers>
     </DataTemplate>
 
-    <!-- Nagłówek grupy („Ustawienia” / „Akcje” albo kategoria w wynikach wyszukiwania) + cienka linia.
+    <!-- Nagłówek grupy tematycznej z katalogu (w liście i w stałym wierszu nad nią): nazwa i obok licznik „zastosowane/wszystkie”
+         jak licznik kategorii w menu, z podpowiedzią i nazwą dla czytnika ekranu „1 z 4 ustawień zastosowanych”. -->
+    <DataTemplate DataType="{x:Type vm:ListGroupViewModel}">
+      <StackPanel Orientation="Horizontal">
+        <TextBlock Style="{StaticResource SectionHeaderText}" Text="{Binding Title}" />
+        <TextBlock Style="{StaticResource SubText}" Margin="8,0,0,0" VerticalAlignment="Center" Text="{Binding CounterText}"
+                   AutomationProperties.Name="{Binding CounterDescription}"
+                   Visibility="{Binding HasCounter, Converter={StaticResource BoolToVisibility}}">
+          <TextBlock.ToolTip>
+            <ToolTip Style="{StaticResource BrandToolTip}" Content="{Binding CounterDescription}" />
+          </TextBlock.ToolTip>
+        </TextBlock>
+      </StackPanel>
+    </DataTemplate>
+
+    <!-- Nagłówek grupy + cienka linia. Tekst („Ustawienia” / „Akcje”, kategoria sekcji albo „Kategoria · grupa” w wynikach wyszukiwania)
+         albo grupa tematyczna (szablon ListGroupViewModel wyżej).
          Odstęp 16 nad każdym nagłówkiem poza pierwszą widoczną grupą (GroupStyle.AlternationCount numeruje grupy od 0). -->
     <DataTemplate x:Key="SectionHeaderTemplate">
       <StackPanel x:Name="HeaderRoot">
-        <TextBlock x:Name="Header" Style="{StaticResource SectionHeaderText}" Margin="0,16,0,4" Text="{Binding Name}" />
+        <ContentPresenter x:Name="Header" Margin="0,16,0,4" Content="{Binding Name}">
+          <ContentPresenter.Resources>
+            <DataTemplate DataType="{x:Type sys:String}">
+              <TextBlock Style="{StaticResource SectionHeaderText}" Text="{Binding}" />
+            </DataTemplate>
+          </ContentPresenter.Resources>
+        </ContentPresenter>
         <Border Height="1" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
       </StackPanel>
       <DataTemplate.Triggers>
         <DataTrigger Binding="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=GroupItem}}" Value="0">
           <Setter TargetName="Header" Property="Margin" Value="0,0,0,4" />
         </DataTrigger>
-        <!-- Pierwszy nagłówek „Ustawienia” przejmuje stały wiersz nad listą (z „Zaznacz sugerowane”): zwinięty, bez dubla -->
+        <!-- Pierwszy nagłówek strony kategorii („Ustawienia” albo pierwsza widoczna grupa tematyczna) przejmuje stały wiersz nad listą
+             (z „Zaznacz sugerowane”): zwinięty, bez dubla. W wynikach (wyszukiwanie, „Zaznaczone”) stały wiersz ma sam przycisk, więc nagłówek zostaje.
+             Strona „Naprawy i narzędzia” (IsService, jedyna z grupami z kategorii: CategoryListGrouping.Categories) zawsze zostawia nagłówek „Naprawy”. -->
         <MultiDataTrigger>
           <MultiDataTrigger.Conditions>
             <Condition Binding="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=GroupItem}}" Value="0" />
             <Condition Binding="{Binding DataContext.IsSelectSuggestedVisible, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="True" />
-            <Condition Binding="{Binding DataContext.IsSearching, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="False" />
+            <Condition Binding="{Binding DataContext.UsesResultsView, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="False" />
+            <Condition Binding="{Binding DataContext.SelectedCategory.IsService, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="False" />
           </MultiDataTrigger.Conditions>
           <Setter TargetName="HeaderRoot" Property="Visibility" Value="Collapsed" />
         </MultiDataTrigger>
@@ -423,13 +463,14 @@
   <Grid Background="{DynamicResource ApplicationBackgroundBrush}"
         TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <!-- Pasek marki | baner restartu (zwinięty, gdy nic nie czeka na restart) | treść (z paskiem akcji na dole) | uchwyt wysokości dziennika | dziennik.
-         Wysokość dziennika ustawia okno po rozmiarze startowym (GuiLayout.InitialLogHeight), górną granicę przy każdej zmianie rozmiaru. -->
+         Dziennik startuje zwinięty do jednego paska (GuiLayout.LogCollapsedHeight, uchwyt 0); rozwija go tylko użytkownik. Wysokość, MinHeight i uchwyt
+         ustawia okno (ApplyLogState) po rozmiarze startowym i przy zmianie IsLogExpanded, górną granicę przy każdej zmianie rozmiaru. -->
     <Grid.RowDefinitions>
       <RowDefinition Height="44" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
-      <RowDefinition Height="5" />
-      <RowDefinition x:Name="LogRow" Height="146" MinHeight="146" />
+      <RowDefinition x:Name="SplitterRow" Height="0" />
+      <RowDefinition x:Name="LogRow" Height="36" />
     </Grid.RowDefinitions>
     <!-- Menu 304 (GuiLayout.NavFullWidth) = najmniejsza wielokrotność 4, przy której „Bezpieczeństwo i szyfrowanie” pogrubione
          + licznik dwucyfrowy mieszczą się obok ikony 20 px z zapasem ≥ 5 px: Hanken Grotesk SemiBold 14 px 193 + licznik „88/88” 33
@@ -529,7 +570,9 @@
       </DockPanel>
     </Border>
     </StackPanel>
-    <!-- Lewa kolumna: Specyfikacja, potem kategorie w kolejności GuiSession.Categories z licznikiem pozycji (szablony wg typu);
+    <!-- Lewa kolumna: pięć grup rozdzielonych liniami (MainViewModel.NavItems, szablony wg typu): Specyfikacja i Przygotowanie |
+         kategorie ustawień z licznikiem | Aplikacje, Autostart, Instalacja | Naprawy i narzędzia | Historia zmian. Wiersz strony
+         GuiLayout.NavRowHeight, linia GuiLayout.NavSeparatorHeight (kontener bez fokusu: strzałki ją przeskakują), góra listy GuiLayout.NavListTop;
          na dole, za linią, „Ustawienia” (druga lista z jedną pozycją). Każda lista wiąże własne zaznaczenie (SelectedNavItem,
          SelectedPinnedItem): strona z drugiej listy = null w tej liście, więc podświetlona jest jedna pozycja w obu listach,
          a klik w dowolną pozycję zmienia stronę (null z ListBoxa SelectedPage ignoruje).
@@ -539,9 +582,9 @@
         <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
-      <ListBox x:Name="NavList" Margin="0,10,0,0" Style="{StaticResource NavListBox}"
-               ItemsSource="{Binding NavItems}" SelectedItem="{Binding SelectedNavItem, Mode=TwoWay}"
-               AutomationProperties.Name="{l:T 'Menu'}" PreviewMouseLeftButtonUp="OnNavClick" />
+      <views:NavMenuListBox x:Name="NavList" Margin="0,10,0,0" Style="{StaticResource NavListBox}"
+                            ItemsSource="{Binding NavItems}" SelectedItem="{Binding SelectedNavItem, Mode=TwoWay}"
+                            AutomationProperties.Name="{l:T 'Menu'}" PreviewMouseLeftButtonUp="OnNavClick" />
       <StackPanel Grid.Row="1" Margin="0,6,0,6">
         <!-- Linia wcięta po 16 px z obu stron, jak w renderze 09; w zwiniętym menu po 12 px -->
         <Border Height="1" Background="{StaticResource SideDividerBrush}">
@@ -613,7 +656,7 @@
         <ColumnDefinition x:Name="DetailColumn" Width="246" />
       </Grid.ColumnDefinitions>
 
-      <!-- Tab: szukaj → filtr ryzyka → „Odśwież stan” → „Zaznacz sugerowane” → lista (TabIndex lokalnie w tym panelu; w drzewie przyciski są pierwsze) -->
+      <!-- Tab: szukaj → „Pokaż” → filtr ryzyka → „Odśwież stan” → „Zaznacz sugerowane” → lista (TabIndex lokalnie w tym panelu; w drzewie przyciski są pierwsze) -->
       <DockPanel Margin="0,0,20,0" KeyboardNavigation.TabNavigation="Local">
         <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
           <Grid.ColumnDefinitions>
@@ -625,32 +668,43 @@
             <TextBlock Style="{StaticResource SubText}" Text="{Binding PageSubtitle}" ToolTip="{Binding PageSubtitle}" />
           </StackPanel>
           <Button Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
-                  Content="{l:T 'Odśwież stan'}" Tag="Refresh" Command="{Binding RefreshCommand}" KeyboardNavigation.TabIndex="3" />
+                  Content="{l:T 'Odśwież stan'}" Tag="Refresh" Command="{Binding RefreshCommand}" KeyboardNavigation.TabIndex="4" />
         </Grid>
 
-        <!-- Wyszukiwarka (wszystkie kategorie, Esc czyści) i filtr ryzyka -->
-        <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
-          </Grid.ColumnDefinitions>
+        <!-- Wyszukiwarka (wszystkie kategorie; Esc czyści tekst, a bez tekstu wychodzi z widoku „Zaznaczone”), filtr „Pokaż” (stan) i filtr ryzyka.
+             Listy stoją obok wyszukiwarki, a gdy miałaby mniej niż GuiLayout.SearchMinWidth, schodzą pod nią (SearchFilterRow, decyzja P1 b).
+             Obie listy mają stałą szerokość najdłuższej opcji (ComboBoxSizing.FitWidestOption), więc wybór opcji nie przestawia wiersza.
+             „Pokaż” znika na stronie „Naprawy i narzędzia” poza wynikami (IsShowFilterVisible) przez SearchFilterRow.IsShown: w rzędzie stoi wtedy samo
+             „Ryzyko”, ale decyzja o drugim wierszu liczy szerokość obu grup, więc wiersz nie przeskakuje przy wpisaniu frazy ani wejściu w „Zaznaczone”. -->
+        <views:SearchFilterRow DockPanel.Dock="Top" Margin="0,0,0,12">
           <TextBox x:Name="SearchBox" Style="{StaticResource SearchTextBox}" Tag="{x:Static gui:GuiText.SearchPlaceholder}"
                    AutomationProperties.Name="{l:T 'Szukaj'}" KeyboardNavigation.TabIndex="1"
                    AutomationProperties.HelpText="{x:Static gui:GuiText.SearchPlaceholder}"
                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
             <TextBox.InputBindings>
-              <KeyBinding Key="Escape" Command="{Binding ClearSearchCommand}" />
+              <KeyBinding Key="Escape" Command="{Binding EscapeCommand}" />
             </TextBox.InputBindings>
           </TextBox>
-          <TextBlock Grid.Column="1" Style="{StaticResource SubText}" Margin="14,0,8,0" VerticalAlignment="Center" Text="{l:T 'Ryzyko'}" />
-          <ComboBox Grid.Column="2" Style="{StaticResource BrandComboBox}" AutomationProperties.Name="{l:T 'Ryzyko'}" KeyboardNavigation.TabIndex="2"
-                    ItemsSource="{Binding RiskFilterOptions}" SelectedValuePath="Value" SelectedValue="{Binding RiskFilter}" />
-        </Grid>
+          <StackPanel Orientation="Horizontal" Margin="0,0,14,0" views:SearchFilterRow.IsShown="{Binding IsShowFilterVisible}">
+            <TextBlock Style="{StaticResource SubText}" Margin="0,0,8,0" VerticalAlignment="Center" Text="{x:Static gui:GuiText.ShowLabel}" />
+            <ComboBox Style="{StaticResource BrandComboBox}" views:ComboBoxSizing.FitWidestOption="True"
+                      AutomationProperties.Name="{x:Static gui:GuiText.ShowLabel}" KeyboardNavigation.TabIndex="2"
+                      ItemsSource="{Binding ShowFilterOptions}" SelectedValuePath="Value" SelectedValue="{Binding ShowFilter}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Style="{StaticResource SubText}" Margin="0,0,8,0" VerticalAlignment="Center" Text="{l:T 'Ryzyko'}" />
+            <ComboBox Style="{StaticResource BrandComboBox}" views:ComboBoxSizing.FitWidestOption="True"
+                      AutomationProperties.Name="{l:T 'Ryzyko'}" KeyboardNavigation.TabIndex="3"
+                      ItemsSource="{Binding RiskFilterOptions}" SelectedValuePath="Value" SelectedValue="{Binding RiskFilter}" />
+          </StackPanel>
+        </views:SearchFilterRow>
 
         <!-- Stały wiersz nagłówka listy z „Zaznacz sugerowane” po prawej (nie przewija się z listą). Na stronie kategorii niesie nagłówek
              „Ustawienia” (jego własny w liście jest wtedy zwinięty, patrz SectionHeaderTemplate), bo sugerowane są wyłącznie ustawienia, a ustawienia
-             idą w liście pierwsze; w wynikach wyszukiwania (nagłówki to kategorie) jest sam przycisk. Widoczny tylko przy IsSelectSuggestedVisible. -->
+             idą w liście pierwsze. Kategoria z grupami tematycznymi niesie tu w miejsce „Ustawień” nagłówek pierwszej widocznej grupy z licznikiem
+             (CategoryViewModel.FirstVisibleGroup, po filtrze), więc lista nie traci wiersza na nagłówek. Przy liście z własnymi nagłówkami
+             (IsListGrouped) etykiety „Ustawienia” nie ma; w wynikach (wyszukiwanie i widok „Zaznaczone”, UsesResultsView) jest sam przycisk.
+             Widoczny tylko przy IsSelectSuggestedVisible. -->
         <Grid DockPanel.Dock="Top" Visibility="{Binding IsSelectSuggestedVisible, Converter={StaticResource BoolToVisibility}}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -664,17 +718,36 @@
             <Style TargetType="Grid">
               <Setter Property="Margin" Value="0,0,0,4" />
               <Style.Triggers>
-                <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                <DataTrigger Binding="{Binding UsesResultsView}" Value="True">
                   <Setter Property="Margin" Value="0,0,0,8" />
                 </DataTrigger>
               </Style.Triggers>
             </Style>
           </Grid.Style>
+          <!-- Nagłówek pierwszej widocznej grupy tematycznej (szablon ListGroupViewModel), tylko przy grupach z katalogu i poza wynikami.
+               ContentControl, nie ContentPresenter: ContentPresenter poza szablonem zostawiał przy wiązaniu ścieżki Content = null (sprawdzone). -->
+          <ContentControl VerticalAlignment="Center" Margin="0,0,12,4" Focusable="False" IsTabStop="False"
+                          Content="{Binding SelectedCategory.FirstVisibleGroup}">
+            <ContentControl.Style>
+              <Style TargetType="ContentControl">
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                  <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                      <Condition Binding="{Binding SelectedCategory.Grouping}" Value="{x:Static vm:CategoryListGrouping.CatalogGroups}" />
+                      <Condition Binding="{Binding UsesResultsView}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Visibility" Value="Visible" />
+                  </MultiDataTrigger>
+                </Style.Triggers>
+              </Style>
+            </ContentControl.Style>
+          </ContentControl>
           <TextBlock VerticalAlignment="Center" Margin="0,0,12,4" Text="{x:Static vm:ItemViewModel.SettingsSection}">
             <TextBlock.Style>
               <Style TargetType="TextBlock" BasedOn="{StaticResource SectionHeaderText}">
                 <Style.Triggers>
-                  <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                  <DataTrigger Binding="{Binding IsListGrouped}" Value="True">
                     <Setter Property="Visibility" Value="Collapsed" />
                   </DataTrigger>
                 </Style.Triggers>
@@ -682,13 +755,13 @@
             </TextBlock.Style>
           </TextBlock>
           <Button Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}"
-                  Content="{l:T 'Zaznacz sugerowane'}" Command="{Binding SelectSuggestedCommand}" KeyboardNavigation.TabIndex="4" />
+                  Content="{l:T 'Zaznacz sugerowane'}" Command="{Binding SelectSuggestedCommand}" KeyboardNavigation.TabIndex="5" />
           <Border Grid.Row="1" Grid.ColumnSpan="2" Height="1">
             <Border.Style>
               <Style TargetType="Border">
                 <Setter Property="Background" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
                 <Style.Triggers>
-                  <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                  <DataTrigger Binding="{Binding UsesResultsView}" Value="True">
                     <Setter Property="Visibility" Value="Collapsed" />
                   </DataTrigger>
                 </Style.Triggers>
@@ -697,7 +770,8 @@
           </Border>
         </Grid>
 
-        <!-- Lista (kategoria z sekcjami albo wyniki z nagłówkami kategorii), pod nią „Ukryte przez filtr” -->
+        <!-- Lista (kategoria z sekcjami albo wyniki – wyszukiwanie, „Zaznaczone” – z nagłówkami kategorii), pod nią „Ukryte przez filtr”.
+             Esc na liście jak w wyszukiwarce (EscapeCommand w OnItemListKeyDown). -->
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -711,7 +785,7 @@
               <Style TargetType="ListBox" BasedOn="{StaticResource ItemListBox}">
                 <Setter Property="ItemsSource" Value="{Binding SelectedCategory.ItemsView}" />
                 <Style.Triggers>
-                  <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                  <DataTrigger Binding="{Binding UsesResultsView}" Value="True">
                     <Setter Property="ItemsSource" Value="{Binding SearchResultsView}" />
                   </DataTrigger>
                 </Style.Triggers>
@@ -861,8 +935,33 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <StackPanel VerticalAlignment="Center">
-          <TextBlock FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Text="{Binding SelectionBarTitle}"
-                     ToolTip="{Binding SelectionBarTitle}" />
+          <!-- Tytuł i tuż za nim link „Pokaż zaznaczone” (widok „Zaznaczone”), przy HasSelection i poza tym widokiem. Siatka wyrównana do lewej:
+               kolumna * ma szerokość tytułu, dopóki się mieści, a przy braku miejsca tytuł ucina się wielokropkiem, a link zostaje widoczny. -->
+          <Grid HorizontalAlignment="Left">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock FontSize="13.5" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Text="{Binding SelectionBarTitle}"
+                       ToolTip="{Binding SelectionBarTitle}" />
+            <Button Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Content="{x:Static gui:GuiText.ShowSelectedLink}"
+                    Command="{Binding ShowSelectedCommand}">
+              <Button.Style>
+                <Style TargetType="Button" BasedOn="{StaticResource TextLinkButton}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                  <Style.Triggers>
+                    <MultiDataTrigger>
+                      <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding HasSelection}" Value="True" />
+                        <Condition Binding="{Binding IsSelectedView}" Value="False" />
+                      </MultiDataTrigger.Conditions>
+                      <Setter Property="Visibility" Value="Visible" />
+                    </MultiDataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Button.Style>
+            </Button>
+          </Grid>
           <TextBlock TextTrimming="CharacterEllipsis" Text="{Binding SelectionBarDetails}"
                      ToolTip="{Binding SelectionBarDetails}">
             <TextBlock.Style>
@@ -887,25 +986,81 @@
       </Grid>
     </Border>
 
-    <!-- Uchwyt wysokości dziennika (linia podziału nad nagłówkiem); wysokość nie jest zapamiętywana -->
+    <!-- Uchwyt wysokości dziennika (linia podziału nad nagłówkiem); tylko przy rozwiniętym dzienniku, wysokość nie jest zapamiętywana -->
     <GridSplitter Grid.Row="3" Grid.Column="1" Margin="22,0,16,0" Style="{StaticResource LogSplitter}"
+                  Visibility="{Binding IsLogExpanded, Converter={StaticResource BoolToVisibility}}"
                   AutomationProperties.Name="{l:T 'Wysokość dziennika'}" />
 
-    <!-- Dziennik: zawsze widoczny, tekst do zaznaczania (LogView), przewija do najnowszej linii -->
-    <DockPanel Grid.Row="4" Grid.Column="1" Margin="22,8,16,10">
-      <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
+    <!-- Linia nad paskiem zwiniętego dziennika (rozwinięty ma ją w uchwycie) -->
+    <Border Grid.Row="4" Grid.Column="1" Margin="22,0,16,0" Height="1" VerticalAlignment="Top"
+            Background="{DynamicResource DividerStrokeColorDefaultBrush}">
+      <Border.Style>
+        <Style TargetType="Border">
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding IsLogExpanded}" Value="True">
+              <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </Border.Style>
+    </Border>
+
+    <!-- Dziennik: pasek 36 (Dziennik, ostatnia linia, licznik, Kopiuj wszystko, strzałka); lista linii (LogView, przewija do najnowszej)
+         tylko po rozwinięciu, ale linie zbiera zawsze, więc „Kopiuj wszystko” działa także zwinięte -->
+    <DockPanel Grid.Row="4" Grid.Column="1" Margin="22,0,16,0">
+      <DockPanel.Style>
+        <Style TargetType="DockPanel">
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding IsLogExpanded}" Value="True">
+              <Setter Property="Margin" Value="22,0,16,10" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </DockPanel.Style>
+      <Grid DockPanel.Dock="Top" Height="36">
         <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <TextBlock Style="{StaticResource SectionHeaderText}" Text="{l:T 'Dziennik'}" />
-        <TextBlock Grid.Column="1" Style="{StaticResource SubText}" VerticalAlignment="Center" Text="{Binding LogSummary}" />
-        <Button Grid.Column="2" Margin="16,0,0,0" Style="{StaticResource TextLinkButton}" Content="{l:T 'Kopiuj wszystko'}"
+        <TextBlock Style="{StaticResource SectionHeaderText}" VerticalAlignment="Center" Text="{l:T 'Dziennik'}" />
+        <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="14,0,14,0"
+                   Text="{Binding LastLogText}" ToolTip="{Binding LastLogToolTip}" AutomationProperties.Name="{Binding LastLogToolTip}">
+          <TextBlock.Style>
+            <Style TargetType="TextBlock" BasedOn="{StaticResource SubText}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsLogExpanded}" Value="True">
+                  <Setter Property="Visibility" Value="Hidden" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
+        <!-- Kolor licznika z istniejących pędzli: błąd Critical, ostrzeżenie Caution, zero zostaje w stylu SubText -->
+        <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{Binding LogSummary}">
+          <TextBlock.Style>
+            <Style TargetType="TextBlock" BasedOn="{StaticResource SubText}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding LogSummaryLevel}" Value="Error">
+                  <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding LogSummaryLevel}" Value="Warning">
+                  <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
+        <Button Grid.Column="3" Margin="16,0,0,0" Style="{StaticResource TextLinkButton}" Content="{l:T 'Kopiuj wszystko'}"
                 Tag="Copy" Click="OnCopyLogClick" />
+        <Button Grid.Column="4" Margin="8,0,0,0" Style="{StaticResource LogToggleButton}" Command="{Binding ToggleLogCommand}"
+                AutomationProperties.Name="{Binding LogToggleText}" ToolTip="{Binding LogToggleText}" />
       </Grid>
       <!-- Prawy klik: Kopiuj, Kopiuj cały dziennik, na linii ze ścieżką Kopiuj ścieżkę, na linku Otwórz lokalizację pliku -->
-      <RichTextBox x:Name="LogBox" Style="{StaticResource LogTextBox}" AutomationProperties.Name="{l:T 'Dziennik'}" />
+      <RichTextBox x:Name="LogBox" Style="{StaticResource LogTextBox}" AutomationProperties.Name="{l:T 'Dziennik'}"
+                   Visibility="{Binding IsLogExpanded, Converter={StaticResource BoolToVisibility}}" />
     </DockPanel>
   </Grid>
 </ui:FluentWindow>

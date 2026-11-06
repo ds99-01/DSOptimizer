@@ -15,6 +15,9 @@ public sealed record TweakDefinition
 
     public required string Category { get; init; }
 
+    /// <summary>Klucz grupy tematycznej w kategorii (zob. <c>CatalogGroups</c>); null = bez grupy.</summary>
+    public string? Group { get; init; }
+
     public required TweakKind Kind { get; init; }
 
     public required string Title { get; init; }

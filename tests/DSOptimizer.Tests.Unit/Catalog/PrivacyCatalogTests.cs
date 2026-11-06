@@ -107,6 +107,32 @@ public class PrivacyCatalogTests
             Privacy().Select(d => d.Id).OrderBy(i => i, StringComparer.Ordinal));
     }
 
+    [Fact]
+    public void Groups_AsDesigned()
+    {
+        var expected = new Dictionary<string, string>
+        {
+            ["privacy.widgets"] = "start",
+            ["privacy.search-web-results"] = "start",
+            ["privacy.start-recommendations"] = "start",
+            ["privacy.start-recommended-section"] = "start",
+            ["privacy.settings-suggestions"] = "ads",
+            ["privacy.windows-tips"] = "ads",
+            ["privacy.settings-account-notifications"] = "ads",
+            ["privacy.advertising-id"] = "ads",
+            ["privacy.tailored-experiences"] = "ads",
+            ["privacy.spotlight"] = "ads",
+            ["privacy.diagnostic-data-required"] = "telemetry",
+            ["privacy.feedback-notifications"] = "telemetry",
+            ["privacy.diagtrack"] = "telemetry",
+        };
+
+        Assert.Equal(13, expected.Count);
+        Assert.Equal(
+            expected.OrderBy(p => p.Key, StringComparer.Ordinal),
+            Privacy().ToDictionary(d => d.Id, d => d.Group!).OrderBy(p => p.Key, StringComparer.Ordinal));
+    }
+
     [Theory]
     [MemberData(nameof(ExpectedIds))]
     public void Entry_MatchesResearchSpecification(string id)
@@ -175,7 +201,7 @@ public class PrivacyCatalogTests
         var def = Get("privacy.widgets");
         var text = string.Join(" ", def.Warnings);
         // Spec opisów 2026-10-26: akcja wskazana nazwą kategorii, bez identyfikatora w tekście uwagi.
-        Assert.Contains("restarcie Eksploratora w „Narzędziach”", text, StringComparison.Ordinal);
+        Assert.Contains("restarcie Eksploratora w „Naprawach i narzędziach”", text, StringComparison.Ordinal);
         Assert.Contains("przycisk", text, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Win+W", def.Description, StringComparison.Ordinal);
         Assert.Contains("AllowNewsAndInterests", def.Description, StringComparison.Ordinal);

@@ -62,6 +62,7 @@ public partial class MainWindow
         _itemFocus = new ListFocusKeeper(ItemList, item => item is ItemViewModel row ? row.Id : null);
         _itemFocus.ReturnFocusFrom(RunButton);
         SizeChanged += OnWindowSizeChanged;
+        viewModel.PropertyChanged += OnViewModelPropertyChanged;
         StateChanged += OnWindowStateChanged;
         Loaded += OnLoaded;
     }
@@ -80,7 +81,7 @@ public partial class MainWindow
     {
         base.OnSourceInitialized(e);
         ApplyInitialBounds();
-        ApplyInitialLogHeight();
+        ApplyLogState();
         var chrome = WindowChrome.GetWindowChrome(this);
         if (chrome is null)
         {
@@ -173,14 +174,42 @@ public partial class MainWindow
         ApplyNavWidth(bounds.Width);
     }
 
-    /// <summary>Dziennik startuje z 20% wysokości okna (146–240); górna granica = połowa okna. Wysokość nie jest zapamiętywana.</summary>
-    private void ApplyInitialLogHeight()
+    /// <summary>
+    /// Stan dziennika (start i zmiana <see cref="MainViewModel.IsLogExpanded"/>). Zwinięty: uchwyt 0, wiersz <see cref="GuiLayout.LogCollapsedHeight"/>,
+    /// bez MinHeight i MaxHeight. Rozwinięty: uchwyt 5, MinHeight 146, start 20% okna (146–240), górna granica = połowa okna, potem przewinięcie
+    /// do ostatniej linii. Wysokość nie jest zapamiętywana, dziennik nigdy nie rozwija się sam.
+    /// </summary>
+    private void ApplyLogState()
     {
-        var height = double.IsNaN(Height) ? ActualHeight : Height;
-        if (height > 0)
+        if (!_viewModel.IsLogExpanded)
         {
-            LogRow.Height = new GridLength(GuiLayout.InitialLogHeight(height));
-            LogRow.MaxHeight = GuiLayout.MaxLogHeight(height);
+            SplitterRow.Height = new GridLength(0);
+            LogRow.MinHeight = 0;
+            LogRow.MaxHeight = double.PositiveInfinity;
+            LogRow.Height = new GridLength(GuiLayout.LogCollapsedHeight);
+            return;
+        }
+
+        // Bieżąca wysokość okna: po maksymalizacji Height zostaje przy wartości sprzed niej, ActualHeight jest wysokością na ekranie.
+        var height = ActualHeight > 0 ? ActualHeight : Height;
+        if (double.IsNaN(height) || height <= 0)
+        {
+            return;
+        }
+
+        SplitterRow.Height = new GridLength(5);
+        LogRow.MinHeight = 146;
+        LogRow.MaxHeight = GuiLayout.MaxLogHeight(height);
+        LogRow.Height = new GridLength(GuiLayout.InitialLogHeight(height));
+        // Pole tekstowe dopiero staje się widoczne: przewinięcie po policzeniu układu.
+        Dispatcher.BeginInvoke(new Action(_logView.ScrollToEnd), System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.IsLogExpanded))
+        {
+            ApplyLogState();
         }
     }
 
@@ -190,7 +219,7 @@ public partial class MainWindow
     /// </summary>
     private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (e.NewSize.Height > 0)
+        if (e.NewSize.Height > 0 && _viewModel.IsLogExpanded)
         {
             LogRow.MaxHeight = GuiLayout.MaxLogHeight(e.NewSize.Height);
         }
@@ -338,14 +367,14 @@ public partial class MainWindow
     }
 
     /// <summary>
-    /// Klik w pozycję menu czyści wyszukiwanie także wtedy, gdy to już zaznaczona kategoria (zmiana zaznaczenia
-    /// czyści je w <see cref="MainViewModel.SelectedPage"/>, ale ponowny klik w tę samą pozycję jej nie zmienia).
+    /// Klik w pozycję menu czyści wyszukiwanie i wychodzi z widoku „Zaznaczone” także wtedy, gdy to już zaznaczona kategoria (zmiana
+    /// zaznaczenia robi to w <see cref="MainViewModel.SelectedPage"/>, ale ponowny klik w tę samą pozycję jej nie zmienia).
     /// </summary>
     private void OnNavClick(object sender, MouseButtonEventArgs e)
     {
         if (e.OriginalSource is DependencyObject source && ItemsControl.ContainerFromElement(NavList, source) is ListBoxItem)
         {
-            _viewModel.ClearSearchCommand.Execute(null);
+            _viewModel.ResetListViewCommand.Execute(null);
         }
     }
 
@@ -408,9 +437,18 @@ public partial class MainWindow
     /// Na wierszu (fokus na samym wierszu, nie na polu wyboru): Spacja przełącza zaznaczenie tweaka do serii,
     /// Enter pokazuje wiersz w panelu szczegółów i przenosi fokus na „Uruchom”, gdy jest widoczne i aktywne; inaczej nic nie robi
     /// (treść panelu jest osiągalna Tabem). Autopowtórzenie Entera nie wciska „Uruchom” – <see cref="OnDetailPanelPreviewKeyDown"/>.
+    /// Esc na liście (także na polu wyboru) jak w wyszukiwarce: <see cref="MainViewModel.EscapeCommand"/> czyści tekst wyszukiwania,
+    /// a bez tekstu wychodzi z widoku „Zaznaczone”; gdy nie ma czego zrobić, klawisz idzie dalej.
     /// </summary>
     private void OnItemListKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.Escape && _viewModel.EscapeCommand.CanExecute(null))
+        {
+            _viewModel.EscapeCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+
         if (e.OriginalSource is not ListBoxItem { DataContext: ItemViewModel item })
         {
             return;

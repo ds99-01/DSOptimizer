@@ -52,6 +52,29 @@ public class BuiltInCatalogTests
     }
 
     [Fact]
+    public void GroupedCategories_EveryItemHasGroup()
+    {
+        var definitions = CatalogLoader.Load(BuiltInCatalog.Sources).Definitions;
+        var grouped = definitions.Select(d => d.Category).Distinct().Where(c => CatalogGroups.For(c).Count > 0).ToList();
+
+        Assert.NotEmpty(grouped);
+        Assert.All(definitions.Where(d => grouped.Contains(d.Category)), d => Assert.True(d.Group is not null, $"{d.Id}: brak group"));
+    }
+
+    [Fact]
+    public void EveryDefinedGroupHasItems()
+    {
+        var definitions = CatalogLoader.Load(BuiltInCatalog.Sources).Definitions;
+        foreach (var category in Categories)
+        {
+            foreach (var group in CatalogGroups.For(category))
+            {
+                Assert.True(definitions.Any(d => d.Category == category && d.Group == group), $"{category}/{group}: brak pozycji");
+            }
+        }
+    }
+
+    [Fact]
     public void Definitions_TweakAndAction_HaveBenefit()
     {
         var definitions = CatalogLoader.Load(BuiltInCatalog.Sources).Definitions;

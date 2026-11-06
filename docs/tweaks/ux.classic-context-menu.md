@@ -21,7 +21,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: `HKU\<SID>\Software\Classe
 
 ## Ryzyka i ostrzeżenia
 - `risk=caution`, `suggested=false`.
-- Ostrzeżenie w katalogu: „Menu zmieni się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).”
+- Ostrzeżenie w katalogu: „Menu zmieni się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Naprawach i narzędziach”).”
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): DSOptimizer sam Eksploratora nie restartuje (restart to pozycja `tools.restart-explorer`); wpis w HKCU przesłania rejestrację menu Windows 11 dla tego konta, a cofnięcie przywraca stan sprzed zmiany.
 
 ## Test VM

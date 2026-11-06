@@ -44,6 +44,22 @@ public class CatalogValidatorTests
         => CatalogValidator.Validate(definitions).Select(error => error.Rule).ToList();
 
     [Fact]
+    public void UnknownGroup_IsReported()
+        => Assert.Contains("group-unknown", Rules(Valid() with { Category = "privacy", Group = "nope" }));
+
+    [Fact]
+    public void KnownGroup_HasNoError()
+        => Assert.DoesNotContain("group-unknown", Rules(Valid() with { Id = "privacy.x", Category = "privacy", Group = "ads" }));
+
+    [Fact]
+    public void GroupInCategoryWithoutGroups_IsReported()
+        => Assert.Contains("group-unknown", Rules(Valid() with { Group = "ads" }));
+
+    [Fact]
+    public void NoGroup_IsNotReported()
+        => Assert.DoesNotContain("group-unknown", Rules(Valid() with { Category = "privacy", Id = "privacy.x" }));
+
+    [Fact]
     public void ValidDefinitions_HaveNoErrors()
         => Assert.Empty(CatalogValidator.Validate(new[] { Valid(), ValidAction() }));
 

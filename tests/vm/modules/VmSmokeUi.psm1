@@ -12,13 +12,15 @@ Opis działania:
       4. mierzy WM_NCHITTEST na pasku marki (44 DIP) w stanie normalnym i po maksymalizacji: punkt w środku paska, 2 px nad
          jego dolną krawędzią i 2 px pod nią (nad treścią), plus pionowy przekrój od 12 px nad paskiem do 12 px pod nim.
          Oczekiwane w obu stanach: HTCAPTION (2) w pasku, HTCLIENT (1) pod nim. Okno zostaje zmaksymalizowane (zrzut).
-      5. klika PRAWDZIWĄ myszą (SetCursorPos + mouse_event, środek prostokąta z UIA) dwa filtry: „Ryzyko” (kategoria sondy)
-         i „Filtr” („Historia zmian”): lista ma się rozwinąć (ExpandCollapseState = Expanded do 1 s), klik w drugą opcję zmienia wybraną
-         wartość, klik w pierwszą wraca (FilterRiskOpened/Selected, FilterHistoryOpened/Selected, FilterError). Wzorce UIA same by tego
+      5. klika PRAWDZIWĄ myszą (SetCursorPos + mouse_event, środek prostokąta z UIA) trzy filtry: „Ryzyko” i „Pokaż” (kategoria sondy,
+         bo na stronie „Naprawy i narzędzia” „Pokaż” jest ukryte poza wyszukiwaniem) oraz „Filtr” („Historia zmian”): lista ma się
+         rozwinąć (ExpandCollapseState = Expanded do 1 s), klik w drugą opcję zmienia wybraną wartość, klik w pierwszą wraca
+         (FilterRiskOpened/Selected, FilterShowOpened/Selected, FilterHistoryOpened/Selected, FilterError). Wzorce UIA same by tego
          nie wykryły: Invoke/Expand omijają hit-test, a błąd z v3.4 (nakładka ToggleButton 0x0) łapie tylko prawdziwy klik.
           6. wiersze listy prawdziwą myszą: tweak - klik w tytuł tylko wybiera wiersz (RowClickPreview), dwuklik przełącza pole wyboru, drugi
          wraca (RowDoubleClickToggles); panel „Zarządzanie komputerem” - klik w znacznik uruchomienia otwiera dokładnie jedno nowe okno
          mmc.exe (RunIconRuns), dwuklik w niego też dokładnie jedno (RunIconDoubleClickOnce); okna mmc.exe sonda zamyka.
+         Panel leży na stronie „Naprawy i narzędzia” (jedna strona zamiast osobnych „Naprawy” i „Panele systemowe”).
       7. Wchodzi na „Prywatność i AI” i czyta N z „Zastosuj (N)” przy bezczynnej aplikacji, po 3 s stałej wartości (PrivacyApplyCountOnEntry;
          program nic nie zaznacza sam, więc ma być 0). Potem klika przycisk „Zaznacz sugerowane” (InvokePattern; brak albo nieaktywny =
          bez kliknięcia) i czyta N końcowe tą samą pętlą stabilności; nic nie stosuje. Host wymaga N przy wejściu = 0 oraz N końcowego
@@ -31,8 +33,8 @@ Opis działania:
       9. Po „Aplikacjach” wchodzi na „Przygotowanie” (Etap 4a partia 3) i czeka najwyżej 60 s, aż zniknie „Wczytywanie…” i będzie widać
          7 tytułów kroków; sprawdza przycisk „Otwórz Windows Update” (albo notatkę zastępczą, gdy PrepLinks.SettingsOpenable = false)
          i co najmniej jedną linię karty w kroku „Grafika” (PrepPage). Niczego nie klika – linki otwiera się ręcznie.
-     10. Potem (Etap 4b partia 1) wchodzi na „Naprawy” i czyta teksty listy „Pozycje” (także po przewinięciu do końca);
-         host sprawdza, że są wszystkie tytuły pozycji kategorii repair z katalogu (RepairPage, Get-GuiRepairTitle). Niczego nie
+     10. Potem (Etap 4b partia 1) wchodzi na „Naprawy i narzędzia” i czyta teksty listy „Pozycje” (także po przewinięciu do końca);
+         host sprawdza, że są wszystkie tytuły pozycji kategorii repair, tools i panels z katalogu (RepairPage, Get-GuiRepairTitle). Niczego nie
          zaznacza, nie klika ani nie uruchamia – żadna naprawa nie startuje.
      11. Potem (Etap 4c) wchodzi na „Instalacja”, czeka na koniec odczytu (najwyżej 180 s), wybiera po kolei każdą kategorię
          (nawigacja wzorcem SelectionItemPattern; kolejność: „Wszystkie”, „Zaznaczone”, kategorie z apps.json; na końcu wraca na „Wszystkie”)
@@ -66,9 +68,9 @@ $script:ProbeTextsPolish = [ordered]@{
     HistoryFilter = 'Filtr'                           # HistoryText.FilterLabel
     HistoryActive = 'Aktywna'                         # HistoryText.StateText(Active): stan w nazwie wiersza historii
     ProbeCategory = 'Eksplorator i wygoda'               # GuiText.CategoryName("ux"): kategoria pozycji ux.menu-delay
-    PanelsCategory = 'Panele systemowe'               # GuiText.CategoryName("panels")
+    ServicePage = 'Naprawy i narzędzia'               # GuiText.ServicePageName: jedna strona dla kategorii repair, tools i panels
+    ShowCombo = 'Pokaż'                               # GuiText.ShowLabel: nazwa UIA listy filtra stanu
     PrivacyCategory = 'Prywatność i AI'               # GuiText.CategoryName("privacy")
-    RepairCategory = 'Naprawy'                        # GuiText.CategoryName("repair")
     RefreshState = 'Odśwież stan'                     # MainWindow.xaml: przycisk aktywny, gdy aplikacja nie jest zajęta
     ApplyFormat = 'Zastosuj ({0})'                    # MainViewModel.ApplySelectedText
     RiskCombo = 'Ryzyko'                              # MainWindow.xaml: filtr ryzyka
@@ -114,6 +116,8 @@ $script:ProbeTextsPolish = [ordered]@{
 }
 # Opcje filtrów w kolejności listy (GuiText.RiskFilterName, HistoryText.FilterName).
 $script:RiskOptionsPolish = @('Wszystkie', 'Bez eksperymentalnych', 'Tylko bezpieczne')
+# Opcje listy „Pokaż” w kolejności listy (GuiText.ShowFilterName: ShowFilter.All, NotApplied, Applied, Selected).
+$script:ShowOptionsPolish = @('Wszystkie', 'Niezastosowane', 'Zastosowane', 'Zaznaczone')
 $script:HistoryOptionsPolish = @('Wszystkie wpisy', 'Aktywne', 'Czekające na restart', 'Cofnięte i przerwane')
 # Pozycje z katalogu, na których działa sonda (tytuły z JSON katalogu repo): ux.menu-delay (risk=safe, scope=user, bez restartu, bez okna
 # potwierdzenia) i panel „Zarządzanie komputerem” (mmc.exe).
@@ -196,6 +200,7 @@ function Get-GuiProbeTexts {
     $Texts['TweakTitle'] = & $Tr (Get-GuiCatalogTitle -Root $Root -Id $script:ProbeTweakId)
     $Texts['PanelTitle'] = & $Tr (Get-GuiCatalogTitle -Root $Root -Id $script:ProbePanelId)
     $Texts['RiskOptions'] = @($script:RiskOptionsPolish | ForEach-Object { & $Tr $_ })
+    $Texts['ShowOptions'] = @($script:ShowOptionsPolish | ForEach-Object { & $Tr $_ })
     $Texts['HistoryOptions'] = @($script:HistoryOptionsPolish | ForEach-Object { & $Tr $_ })
     $Texts['PrepTitles'] = @($script:PrepStepTitles | ForEach-Object { & $Tr $_ })
     $Categories = [ordered]@{}
@@ -248,13 +253,13 @@ function Get-GuiUiProbeScript {
     return @'
 param([Parameter(Mandatory)][string]$ResultFile, [Parameter(Mandatory)][string]$TextsFile)
 $ErrorActionPreference = 'Stop'
-$RequiredTexts = @('AppsNotRead', 'AppsPage', 'AppsReading', 'AppsRefresh', 'ApplyOne', 'ApplyPattern', 'AutostartGroups', 'AutostartNotRead', 'AutostartPage', 'AutostartReadFailed', 'AutostartReading', 'AutostartRefresh', 'DisablePattern', 'EnablePattern', 'HistoryFilter', 'HistoryOptions', 'HistoryPage', 'InstallAppList', 'InstallCategoryList', 'InstallPage', 'InstallPattern', 'InstallRefresh', 'InstallSourceProbePrefix', 'Items', 'Menu', 'Minimize', 'PanelTitle', 'PanelsCategory', 'PrepGraphicsTitle', 'PrepLoading', 'PrepOpenWindowsUpdate', 'PrepPage', 'PrepTitles', 'PrepWindowsUpdateNote', 'PrivacyCategory', 'ProbeCategory', 'RefreshState', 'RemovePattern', 'RepairCategory', 'RiskCombo', 'RiskOptions', 'SelectSuggested', 'TweakTitle')
+$RequiredTexts = @('AppsNotRead', 'AppsPage', 'AppsReading', 'AppsRefresh', 'ApplyOne', 'ApplyPattern', 'AutostartGroups', 'AutostartNotRead', 'AutostartPage', 'AutostartReadFailed', 'AutostartReading', 'AutostartRefresh', 'DisablePattern', 'EnablePattern', 'HistoryFilter', 'HistoryOptions', 'HistoryPage', 'InstallAppList', 'InstallCategoryList', 'InstallPage', 'InstallPattern', 'InstallRefresh', 'InstallSourceProbePrefix', 'Items', 'Menu', 'Minimize', 'PanelTitle', 'PrepGraphicsTitle', 'PrepLoading', 'PrepOpenWindowsUpdate', 'PrepPage', 'PrepTitles', 'PrepWindowsUpdateNote', 'PrivacyCategory', 'ProbeCategory', 'RefreshState', 'RemovePattern', 'RiskCombo', 'RiskOptions', 'SelectSuggested', 'ServicePage', 'ShowCombo', 'ShowOptions', 'TweakTitle')
 $Out = [ordered]@{
     Ok = $false; Error = $null; Steps = @(); Dpi = $null
     HistoryMenuFound = $false; ApplyInvoked = $false; ApplyBusySeen = $false; ApplySeconds = $null; ApplyError = $null
     HistoryPageOpened = $false; EntryNames = @(); HistoryError = $null
     HitTest = @(); HitTestError = $null
-    FilterRiskOpened = $false; FilterRiskSelected = $false; FilterHistoryOpened = $false; FilterHistorySelected = $false; FilterError = $null
+    FilterRiskOpened = $false; FilterRiskSelected = $false; FilterShowOpened = $false; FilterShowSelected = $false; FilterHistoryOpened = $false; FilterHistorySelected = $false; FilterError = $null
     RowClickPreview = $false; RowDoubleClickToggles = $false; RunIconRuns = $false; RunIconDoubleClickOnce = $false; RowError = $null
     PrivacyButtonFound = $false; PrivacyApplyCountOnEntry = $null; PrivacyApplyCount = $null; PrivacyApplyText = $null; PrivacyError = $null
     AppsListRead = $false; AppsButtonFound = $false; AppsRemoveCountOnEntry = $null; AppsRemoveCount = $null; AppsRemoveText = $null; AppsError = $null
@@ -550,6 +555,7 @@ public static class DsoUser32 {
     }
     # Oczekiwane nazwy opcji (GuiText.RiskFilterName, HistoryText.FilterName) z pliku tekstow, w kolejnosci listy.
     $RiskOptionNames = @($T.RiskOptions)
+    $ShowOptionNames = @($T.ShowOptions)
     $HistoryOptionNames = @($T.HistoryOptions)
     # Kazde pole osobno: blad jednego nie pomija drugiego, a opis bledu niesie nazwe pola (Ryzyko/Filtr - nazwy pol wyniku, nie okna).
     $FilterErrors = @()
@@ -559,6 +565,12 @@ public static class DsoUser32 {
     if ($R1.Note) { $FilterErrors += "Ryzyko: $($R1.Note)" }
     $Out.FilterRiskOpened = [bool]$R1.Opened
     $Out.FilterRiskSelected = [bool]$R1.Selected
+    $R3 = @{ Opened = $false; Selected = $false; Note = $null }
+    try { Test-FilterCombo $T.ProbeCategory $T.ShowCombo $ShowOptionNames $R3 }
+    catch { $FilterErrors += "$($T.ShowCombo): $($_.Exception.Message)"; Add-Step "filtr '$($T.ShowCombo)': BLAD $($_.Exception.Message)" }
+    if ($R3.Note) { $FilterErrors += "$($T.ShowCombo): $($R3.Note)" }
+    $Out.FilterShowOpened = [bool]$R3.Opened
+    $Out.FilterShowSelected = [bool]$R3.Selected
     $R2 = @{ Opened = $false; Selected = $false; Note = $null }
     try { Test-FilterCombo $T.HistoryPage $T.HistoryFilter $HistoryOptionNames $R2 }
     catch { $FilterErrors += "Filtr: $($_.Exception.Message)"; Add-Step "filtr '$($T.HistoryFilter)': BLAD $($_.Exception.Message)" }
@@ -568,13 +580,32 @@ public static class DsoUser32 {
     if ($FilterErrors.Count -gt 0) { $Out.FilterError = $FilterErrors -join '; ' }
     # 6. Wiersze listy klikane prawdziwa mysza (model klikniecia z Task 2): tweak - klik w tytul tylko pokazuje wiersz, dwuklik przelacza pole
     #    wyboru (drugi dwuklik wraca); panel - klik w znacznik uruchomienia (trojkat) uruchamia mmc.exe (nowe okno), dwuklik w niego dokladnie raz.
+    function Find-ListText($List, [string]$Title, [int]$FirstWait) {
+        # Tekst wiersza listy: najpierw zwykle czekanie ($FirstWait s), potem - gdy go nie ma w drzewie UIA (lista wirtualizowana, strona
+        # "Naprawy i narzedzia" ma ok. 28 wierszy) - przewijanie od 0 do 100 proc. co 10 proc. (11 krokow), po kazdym kroku krotkie czekanie.
+        # Koniec po znalezieniu albo po ostatnim kroku (wtedy $null).
+        $Type = [System.Windows.Automation.ControlType]::Text
+        $Found = Wait-Element $List $Title $Type $FirstWait
+        if ($null -ne $Found) { return $Found }
+        try { $Scroll = $List.GetCurrentPattern([System.Windows.Automation.ScrollPattern]::Pattern) }
+        catch { Add-Step "lista: brak ScrollPattern ($($_.Exception.Message))"; return $null }
+        for ($Percent = 0; $Percent -le 100; $Percent += 10) {
+            try { $Scroll.SetScrollPercent([System.Windows.Automation.ScrollPattern]::NoScroll, $Percent) }
+            catch { Add-Step "lista: przewijanie do $Percent proc. nieudane ($($_.Exception.Message))"; return $null }
+            Start-Sleep -Milliseconds 300
+            $Found = Wait-Element $List $Title $Type 2
+            if ($null -ne $Found) { Add-Step "lista: wiersz znaleziony po przewinieciu do $Percent proc."; return $Found }
+        }
+        Add-Step "lista: wiersza nie znaleziono po przewinieciu 0-100 proc."
+        return $null
+    }
     function Get-ListRow([string]$NavName, [string]$Title) {
         $Nav = Find-Element $Root $NavName $ListItem
         if ($null -eq $Nav) { throw "Brak pozycji menu '$NavName'." }
         $Nav.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
         $List = Wait-Element $Root $T.Items ([System.Windows.Automation.ControlType]::List) 15
         if ($null -eq $List) { throw "Brak listy '$($T.Items)'." }
-        $Text = Wait-Element $List $Title ([System.Windows.Automation.ControlType]::Text) 15
+        $Text = Find-ListText $List $Title 15
         if ($null -eq $Text) { throw "Brak tytulu wiersza '$Title' na liscie." }
         $Walker = [System.Windows.Automation.TreeWalker]::ControlViewWalker
         $Row = $Walker.GetParent($Text)
@@ -657,7 +688,7 @@ public static class DsoUser32 {
     }
     $BaseMmc = @(Get-MmcWindowId)
     try {
-        $Pn = Get-ListRow $T.PanelsCategory $T.PanelTitle
+        $Pn = Get-ListRow $T.ServicePage $T.PanelTitle
         [void][DsoUser32]::SetForegroundWindow($Hwnd)
         Start-Sleep -Milliseconds 300
         $Scale = $Out.Dpi / 96.0
@@ -844,19 +875,19 @@ public static class DsoUser32 {
         Add-Step "przygotowanie: tytuly $($Found.Count)/$($PrepTitleNames.Count), odczyt skonczony=$($Out.PrepLoaded), Windows Update: przycisk=$($Out.PrepWindowsUpdateButton) notatka=$($Out.PrepWindowsUpdateNote), grafika: $($Lines -join ' | ')"
     }
     catch { $Out.PrepError = $_.Exception.Message; Add-Step "przygotowanie: BLAD $($Out.PrepError)" }
-    # 10. Strona "Naprawy" (Etap 4b partia 1) - przed "Instalacja". Nic nie jest zaznaczane, klikane ani uruchamiane: wejscie wzorcem
+    # 10. Strona "Naprawy i narzedzia" (Etap 4b partia 1; od paczki UX jedna strona dla repair, tools i panels) - przed "Instalacja". Nic nie jest zaznaczane, klikane ani uruchamiane: wejscie wzorcem
     #     SelectionItemPattern na pozycje menu, lista pozycji ($T.Items) i nazwy jej tekstow (tytuly, opisy). Odczyt powtarzany co 0,5 s (najwyzej
     #     20 s), az dwa kolejne sa takie same i niepuste; potem lista przewijana wzorcem ScrollPattern do konca (wirtualizacja wierszy)
     #     i z powrotem. Host porownuje teksty z tytulami pozycji kategorii repair z katalogu.
     try {
-        $RepairNav = Find-Element $Root $T.RepairCategory $ListItem
+        $RepairNav = Find-Element $Root $T.ServicePage $ListItem
         $Out.RepairMenuFound = ($null -ne $RepairNav)
-        if ($null -eq $RepairNav) { throw "Brak pozycji menu '$($T.RepairCategory)'." }
+        if ($null -eq $RepairNav) { throw "Brak pozycji menu '$($T.ServicePage)'." }
         $RepairNav.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
         Start-Sleep -Milliseconds 1000
         $RepairList = Wait-Element $Root $T.Items ([System.Windows.Automation.ControlType]::List) 15
         $Out.RepairListFound = ($null -ne $RepairList)
-        if ($null -eq $RepairList) { throw "Brak listy '$($T.Items)' na stronie Naprawy." }
+        if ($null -eq $RepairList) { throw "Brak listy '$($T.Items)' na stronie '$($T.ServicePage)'." }
         $RepairByText = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Text)
         $RepairNames = New-Object System.Collections.Generic.List[string]
         $ReadRepairTexts = { @($RepairList.FindAll($Scope, $RepairByText) | ForEach-Object { [string]$_.Current.Name } | Where-Object { $_ }) }
@@ -1070,21 +1101,26 @@ function Get-GuiPrivacySuggestedId {
 }
 
 function Get-GuiRepairTitle {
-    # Tytuły pozycji kategorii „Naprawy” (category=repair) z plików katalogu (wbudowany katalog repo: src\DSOptimizer.Catalog\catalog),
-    # w kolejności plików i wpisów; apps-bloat.json, apps.json i autostart-known.json pomijane jawnie jak w Get-GuiPrivacySuggestedId. Pusty wynik = błąd.
+    # Tytuły pozycji strony „Naprawy i narzędzia”: kategorie repair, tools i panels (w tej kolejności, w obrębie kategorii kolejność
+    # plików i wpisów) z plików katalogu (wbudowany katalog repo: src\DSOptimizer.Catalog\catalog); apps-bloat.json, apps.json i autostart-known.json pomijane jawnie jak w Get-GuiPrivacySuggestedId. Pusty wynik = błąd.
     # -Language en: tytuły z tabel tłumaczeń repo (Get-DsoUiText; brak = wyjątek).
     [CmdletBinding()]
     [OutputType([string[]])]
     param([Parameter(Mandatory)][string]$CatalogDirectory, [ValidateSet('pl', 'en')][string]$Language = 'pl')
     $Titles = New-Object System.Collections.Generic.List[string]
     $Files = @(Get-ChildItem -LiteralPath $CatalogDirectory -Filter '*.json' -File | Where-Object { $_.Name -notin @('apps-bloat.json', 'apps.json', 'autostart-known.json') } | Sort-Object Name)
+    $Parsed = New-Object System.Collections.Generic.List[object]
     foreach ($File in $Files) {
-        $Items = [System.IO.File]::ReadAllText($File.FullName, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
-        foreach ($Item in @($Items)) {
-            if ([string]$Item.category -eq 'repair') { $Titles.Add((Get-DsoUiText -Polish ([string]$Item.title) -Language $Language)) }
+        $Parsed.Add(([System.IO.File]::ReadAllText($File.FullName, [System.Text.Encoding]::UTF8) | ConvertFrom-Json))
+    }
+    foreach ($Category in 'repair', 'tools', 'panels') {
+        foreach ($Items in $Parsed) {
+            foreach ($Item in @($Items | Where-Object { $null -ne $_ })) {
+                if ([string]$Item.category -eq $Category) { $Titles.Add((Get-DsoUiText -Polish ([string]$Item.title) -Language $Language)) }
+            }
         }
     }
-    if ($Titles.Count -eq 0) { throw "Brak pozycji kategorii repair w '$CatalogDirectory'." }
+    if ($Titles.Count -eq 0) { throw "Brak pozycji kategorii repair, tools i panels w '$CatalogDirectory'." }
     return $Titles.ToArray()
 }
 
@@ -1167,11 +1203,11 @@ function New-GuiUiCheck {
 }
 
 function Get-GuiUiCheck {
-    # Czysta agregacja wyniku sondy UI -> { Name, Passed, Detail }: HistoryMenu, HistoryEntryActive, CaptionHitTest, FilterRiskOpened, FilterRiskSelected, FilterHistoryOpened, FilterHistorySelected, RowClickPreview, RowDoubleClickToggles, RunIconRuns, RunIconDoubleClickOnce, PrivacySuggestedApply, AppsSuggestedRemove, PrepPage, RepairPage, InstallPage, AutostartPage. Sonda $null = niezaliczone.
+    # Czysta agregacja wyniku sondy UI -> { Name, Passed, Detail }: HistoryMenu, HistoryEntryActive, CaptionHitTest, FilterRiskOpened, FilterRiskSelected, FilterShowOpened, FilterShowSelected, FilterHistoryOpened, FilterHistorySelected, RowClickPreview, RowDoubleClickToggles, RunIconRuns, RunIconDoubleClickOnce, PrivacySuggestedApply, AppsSuggestedRemove, PrepPage, RepairPage, InstallPage, AutostartPage. Sonda $null = niezaliczone.
     # -PrivacyExpected: wynik Get-GuiPrivacyExpectedCount ({ Count, Detail }); brak albo Count = $null = PrivacySuggestedApply niezaliczone.
     # -AppsExpected: wynik Get-GuiAppsExpectedCount ({ Count, Detail }); brak albo Count = $null = AppsSuggestedRemove niezaliczone.
     # -SettingsOpenable: PrepLinks.SettingsOpenable (domyślnie stała modułu); true = krok 2 strony „Przygotowanie” ma przycisk, false = notatkę.
-    # -RepairTitles: wynik Get-GuiRepairTitle (tytuły kategorii repair z katalogu); brak albo pusta lista = RepairPage niezaliczone.
+    # -RepairTitles: wynik Get-GuiRepairTitle (tytuły kategorii repair, tools i panels z katalogu); brak albo pusta lista = RepairPage niezaliczone.
     # -InstallExpected: wynik Get-GuiInstallTitle ({ Titles, Categories } z apps.json); brak albo puste tytuły = InstallPage niezaliczone.
     # -AutostartExpected: wynik VmSmoke\Get-GuiAutostartExpectedCount ({ Enabled, Disabled, MissingFile, Detail } z CLI --list-autostart);
     #   brak albo liczba $null = AutostartPage niezaliczone.
@@ -1185,7 +1221,7 @@ function Get-GuiUiCheck {
         [AllowNull()]$AutostartExpectedAfter,
         [Parameter(Mandatory)][System.Collections.IDictionary]$Texts
     )
-    $Names = 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage', 'AutostartPage'
+    $Names = 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterShowOpened', 'FilterShowSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage', 'AutostartPage'
     if ($null -eq $Probe) { return , @($Names | ForEach-Object { New-GuiUiCheck -Name $_ -Passed $false -Detail 'brak odczytu sondy UI' }) }
     $Props = $Probe.PSObject.Properties
     $Get = { param($N, $Default) if ($null -ne $Props[$N] -and $null -ne $Props[$N].Value) { $Props[$N].Value } else { $Default } }
@@ -1246,6 +1282,8 @@ function Get-GuiUiCheck {
     $FilterSpecs = @(
         @{ Name = 'FilterRiskOpened'; Text = "pole 'Ryzyko' rozwija się po kliknięciu myszą" }
         @{ Name = 'FilterRiskSelected'; Text = "klik w drugą opcję listy 'Ryzyko' zmienia wartość, klik w pierwszą ją przywraca" }
+        @{ Name = 'FilterShowOpened'; Text = "pole 'Pokaż' rozwija się po kliknięciu myszą" }
+        @{ Name = 'FilterShowSelected'; Text = "klik w drugą opcję listy 'Pokaż' zmienia wartość, klik w pierwszą ją przywraca" }
         @{ Name = 'FilterHistoryOpened'; Text = "pole 'Filtr' w Historii zmian rozwija się po kliknięciu myszą" }
         @{ Name = 'FilterHistorySelected'; Text = "klik w drugą opcję listy 'Filtr' zmienia wartość, klik w pierwszą ją przywraca" }
     )
@@ -1322,7 +1360,7 @@ function Get-GuiUiCheck {
         $Checks += Get-GuiPrepPageCheck -Get $Get -SettingsOpenable $SettingsOpenable -Texts $Texts
     }
 
-    # „Naprawy” (krok 10 sondy): pozycja menu, lista „Pozycje” i każdy tytuł kategorii repair z katalogu wśród tekstów listy.
+    # „Naprawy i narzędzia” (krok 10 sondy): pozycja menu, lista „Pozycje” i każdy tytuł kategorii repair, tools i panels z katalogu wśród tekstów listy.
     # Brak pól kroku 10 (stara sonda) albo brak oczekiwanych tytułów = niezaliczone.
     if ($null -eq $Props['RepairMenuFound']) {
         $Checks += New-GuiUiCheck -Name 'RepairPage' -Passed $false -Detail 'brak pola RepairMenuFound w wyniku sondy'

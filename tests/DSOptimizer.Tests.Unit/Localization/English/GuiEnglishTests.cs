@@ -55,10 +55,30 @@ public class GuiEnglishTests
                 new[]
                 {
                     "Privacy and AI", "Performance", "Disk and file system", "Network and LAN", "Security and encryption",
-                    "Explorer and convenience", "System panels", "Repairs", "Tools",
+                    "Explorer and convenience", "Repairs", "Tools", "System panels",
                 },
                 GuiText.CategoryOrder.Select(GuiText.CategoryName));
             Assert.Equal("custom", GuiText.CategoryName("custom"));
+        }
+    }
+
+    [Fact]
+    public void GroupNames_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("Start, search and Widgets", GuiText.GroupName("privacy", "start"));
+            Assert.Equal("Ads and suggestions", GuiText.GroupName("privacy", "ads"));
+            Assert.Equal("Telemetry and diagnostics", GuiText.GroupName("privacy", "telemetry"));
+        }
+    }
+
+    [Fact]
+    public void ServicePageName_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("Repairs and tools", GuiText.ServicePageName);
         }
     }
 
@@ -437,8 +457,15 @@ public class GuiEnglishTests
             Assert.Equal("Applied items shown despite the filter: 2", GuiText.FilterNote(0, 2));
             Assert.Equal("Hidden by the filter: 3. Applied items shown despite the filter: 2", GuiText.FilterNote(3, 2));
             Assert.Equal("Nothing matches \"dns\".", GuiText.EmptySearchText(" dns ", 0));
-            Assert.Equal("The risk filter hid the matching items.", GuiText.EmptySearchText("dns", 2));
+            Assert.Equal("A filter hides the matching items.", GuiText.EmptySearchText("dns", 2));
             Assert.Equal("Search results", GuiText.SearchTitle);
+            Assert.Equal("Show", GuiText.ShowLabel);
+            Assert.Equal("Selected", GuiText.SelectedViewTitle);
+            Assert.Equal("Show selected", GuiText.ShowSelectedLink);
+            Assert.Equal("Nothing is selected.", GuiText.SelectedViewEmpty);
+            Assert.Equal(
+                new[] { "All", "Not applied", "Applied", "Selected" },
+                new[] { ShowFilter.All, ShowFilter.NotApplied, ShowFilter.Applied, ShowFilter.Selected }.Select(GuiText.ShowFilterName));
         }
     }
 

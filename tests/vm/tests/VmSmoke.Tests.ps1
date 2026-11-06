@@ -22,7 +22,7 @@ BeforeAll {
     $script:GoodUiProbe = [pscustomobject]@{
         Ok = $true; Error = $null; HistoryMenuFound = $true; HistoryPageOpened = $true; ApplyError = $null; HistoryError = $null
         EntryNames = @('Szybsze otwieranie podmenu, Eksplorator i wygoda, Aktywna, 20.10.2026 21:00'); HitTestError = $null
-        FilterRiskOpened = $true; FilterRiskSelected = $true; FilterHistoryOpened = $true; FilterHistorySelected = $true; FilterError = $null
+        FilterRiskOpened = $true; FilterRiskSelected = $true; FilterShowOpened = $true; FilterShowSelected = $true; FilterHistoryOpened = $true; FilterHistorySelected = $true; FilterError = $null
         RowClickPreview = $true; RowDoubleClickToggles = $true; RunIconRuns = $true; RunIconDoubleClickOnce = $true; RowError = $null
         PrivacyButtonFound = $true; PrivacyApplyCountOnEntry = 0; PrivacyApplyCount = 2; PrivacyApplyText = 'Zastosuj (2)'; PrivacyError = $null
         AppsListRead = $true; AppsButtonFound = $true; AppsRemoveCountOnEntry = 0; AppsRemoveCount = 1; AppsRemoveText = 'Usuń (1)'; AppsError = $null
@@ -633,9 +633,9 @@ Describe 'Okno wyboru języka w Invoke-DsoGuiSmoke (orkiestracja na mockach)' -S
         ($Result.errors -join ' ') | Should -BeLike '*odczyt settings.json: brak sesji*'
         ($Result.checks | Where-Object Name -eq 'LanguageChoice').Passed | Should -BeFalse
     }
-    It 'nadal 23 sprawdzenia' {
+    It 'razem 25 sprawdzeń (6 podstawowych + 19 z sondy UI)' {
         $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
-        @($Result.checks).Count | Should -Be 23
+        @($Result.checks).Count | Should -Be 25
     }
     It 'brak okna wyboru (Shown=false) = sprawdzenie czerwone i passed=false' {
         Mock -ModuleName VmSmoke Confirm-DsoLanguageChoice { [pscustomobject]@{ Shown = $false; Chosen = $false } }
@@ -805,7 +805,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         $Result.screenshotPath | Should -BeLike (Join-Path $script:Out '*.png')
         $Saved = Get-Content -LiteralPath $Result.resultPath -Raw -Encoding UTF8 | ConvertFrom-Json
         $Saved.vmName | Should -Be 'DSO-EN-Home'
-        @($Saved.checks.Name) | Should -Be @('ProcessAlive', 'Responding', 'NoCrashEvents', 'NoLogErrors', 'Screenshot', 'LanguageChoice', 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage', 'AutostartPage')
+        @($Saved.checks.Name) | Should -Be @('ProcessAlive', 'Responding', 'NoCrashEvents', 'NoLogErrors', 'Screenshot', 'LanguageChoice', 'HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterShowOpened', 'FilterShowSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage', 'AutostartPage')
         @($Saved.repairTitles) | Should -Be @('Wyczyść pamięć DNS', 'Ochrona systemu')
         @($Saved.installExpected.Titles) | Should -Be @('Mozilla Firefox', '7-Zip')
         @($Saved.privacyDetection.Id) | Should -Be @('privacy.a', 'privacy.b', 'privacy.c')
@@ -885,7 +885,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         ($Result.checks | Where-Object Name -eq 'AppsSuggestedRemove').Passed | Should -BeTrue
         Should -Invoke -ModuleName VmSmoke Get-DsoGuiUiProbe -Times 1 -Exactly
     }
-    It 'tytuły „Naprawy” z wbudowanego katalogu repo; brak tytułu na liście daje passed=false' {
+    It 'tytuły strony „Naprawy i narzędzia” z wbudowanego katalogu repo; brak tytułu na liście daje passed=false' {
         Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json' | Out-Null
         Should -Invoke -ModuleName VmSmoke Get-GuiRepairTitle -Times 1 -Exactly -ParameterFilter { $CatalogDirectory -like '*\src\DSOptimizer.Catalog\catalog' }
         Mock -ModuleName VmSmoke Get-DsoGuiUiProbe { $P = $script:GoodUiProbe | ConvertTo-Json -Depth 8 | ConvertFrom-Json; $P.RepairTexts = @('Wyczyść pamięć DNS'); $P }
@@ -894,7 +894,7 @@ Describe 'Invoke-DsoGuiSmoke (orkiestracja na mockach)' -Skip:(-not $script:HasH
         ($Result.checks | Where-Object Name -eq 'RepairPage').Passed | Should -BeFalse
         ($Result.checks | Where-Object Name -eq 'PrepPage').Passed | Should -BeTrue
     }
-    It 'błąd odczytu tytułów „Naprawy” nie gubi sondy UI, ale kończy się niepowodzeniem' {
+    It 'błąd odczytu tytułów strony „Naprawy i narzędzia” nie gubi sondy UI, ale kończy się niepowodzeniem' {
         Mock -ModuleName VmSmoke Get-GuiRepairTitle { throw 'brak repair.json' }
         $Result = Invoke-DsoGuiSmoke -VmName 'DSO-EN-Pro' -OutDirectory $script:Out -BuildDirectory $script:Build -CatalogPath 'C:\k.json'
         $Result.passed | Should -BeFalse

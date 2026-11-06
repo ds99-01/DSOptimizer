@@ -139,6 +139,50 @@ public class SeriesWindowViewModelInstallTests
     }
 
     [Fact]
+    public async Task Steps_RunningInstall_ExposeProgressState()
+    {
+        var harness = new Harness();
+        var vm = harness.Create();
+        var confirming = vm.PrimaryCommand.ExecuteAsync(null);
+
+        harness.Steps!.Report(Event(BatchStepPhase.Started));
+        harness.Steps.Report(Event(BatchStepPhase.Progress, "Pobieranie", 30));
+        await WaitFor(() => vm.Steps.Count > 0 && vm.Steps[0].StatusText == "Pobieranie 30%");
+
+        // Wariant B (pomiar F17): pasek nieokreślony także przy procencie z winget.
+        Assert.True(vm.Steps[0].ShowProgress);
+        Assert.True(vm.Steps[0].IsIndeterminate);
+        Assert.False(vm.Steps[1].ShowProgress);
+        Assert.False(vm.Steps[1].IsIndeterminate);
+
+        harness.Finish.SetResult(Report(new TweakResult { TweakId = "install.firefox", Outcome = TweakOutcome.Installed, Message = InstallText.Installed }));
+        await confirming;
+
+        Assert.False(vm.Steps[0].ShowProgress);
+        Assert.False(vm.Steps[0].IsIndeterminate);
+    }
+
+    [Fact]
+    public async Task Steps_SameInstancesAcrossProgress()
+    {
+        // Stałe wiersze: nowa lista po każdym zdarzeniu odtwarzałaby kontenery, a z nimi animację paska od początku.
+        var harness = new Harness();
+        var vm = harness.Create();
+        var confirming = vm.PrimaryCommand.ExecuteAsync(null);
+        var steps0 = vm.Steps;
+
+        harness.Steps!.Report(Event(BatchStepPhase.Started));
+        harness.Steps.Report(Event(BatchStepPhase.Progress, "Pobieranie", 45));
+        await WaitFor(() => vm.Steps[0].StatusText == "Pobieranie 45%");
+
+        Assert.Same(steps0, vm.Steps);
+        Assert.Same(steps0[0], vm.Steps[0]);
+
+        harness.Finish.SetResult(Report());
+        await confirming;
+    }
+
+    [Fact]
     public async Task Result_InstallStatuses_NotTweakTexts()
     {
         var harness = new Harness();

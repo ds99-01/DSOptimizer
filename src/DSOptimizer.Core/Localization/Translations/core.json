@@ -748,6 +748,10 @@
     {
       "pl": "Nie udało się sprawdzić nowej wersji: {0}",
       "en": "Couldn't check for a new version: {0}"
+    },
+    {
+      "pl": "Grupa '{0}' nie istnieje w kategorii '{1}'.",
+      "en": "Group '{0}' doesn't exist in category '{1}'."
     }
   ]
 }

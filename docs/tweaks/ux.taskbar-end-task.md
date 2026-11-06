@@ -22,7 +22,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: `TaskbarEndTask` **brak wa
 
 ## Ryzyka i ostrzeżenia
 - `risk=safe`, `suggested=false`.
-- Ostrzeżenia w katalogu: „Pozycja pojawi się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).” oraz „„Zakończ zadanie” kończy proces programu; niezapisane dane w tym programie mogą przepaść.”
+- Ostrzeżenia w katalogu: „Pozycja pojawi się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Naprawach i narzędziach”).” oraz „„Zakończ zadanie” kończy proces programu; niezapisane dane w tym programie mogą przepaść.”
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): DSOptimizer sam Eksploratora nie restartuje (restart to pozycja `tools.restart-explorer`); uwaga o utracie danych opisuje zakończenie procesu, nie pomiar.
 
 ## Test VM

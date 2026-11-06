@@ -482,14 +482,14 @@ public class InstallEnglishTests
                     + " (Administrator protection: the elevated program runs on hidden account ADMIN_dso).",
                 InstallText.OtherAccount("dso", "ADMIN_dso"));
             Assert.Equal(
-                "winget (App Installer) isn't registered for this account. Use \"Repairs → Repair winget\".",
+                "winget (App Installer) isn't registered for this account. Use \"Repairs and tools → Repair winget\".",
                 InstallText.NotRegistered);
             Assert.Equal("winget works (version v1.11.510).", InstallText.WingetReady("v1.11.510"));
             Assert.Equal(
-                "winget doesn't work (winget --version: code 0x80070005). Use \"Repairs → Repair winget\".",
+                "winget doesn't work (winget --version: code 0x80070005). Use \"Repairs and tools → Repair winget\".",
                 InstallText.WingetNotWorking(InstallText.VersionExitCode(unchecked((int)0x80070005))));
             Assert.Equal(
-                "winget doesn't work (winget --version didn't respond within 15 s). Use \"Repairs → Repair winget\".",
+                "winget doesn't work (winget --version didn't respond within 15 s). Use \"Repairs and tools → Repair winget\".",
                 InstallText.WingetNotWorking(InstallText.VersionTimedOut(TimeSpan.FromSeconds(15))));
             Assert.Equal("winget --version: code 0, but there's no version number in the output", InstallText.VersionWithoutNumber);
             Assert.Equal("couldn't start winget: access denied", InstallText.VersionStartFailed("access denied"));
@@ -512,7 +512,7 @@ public class InstallEnglishTests
 
             Assert.Equal(WingetState.NotWorking, status.State);
             Assert.Equal(
-                "winget doesn't work (winget --version: code 0, but there's no version number in the output). Use \"Repairs → Repair winget\".",
+                "winget doesn't work (winget --version: code 0, but there's no version number in the output). Use \"Repairs and tools → Repair winget\".",
                 status.Text);
         }
     }

@@ -705,7 +705,7 @@ public class BatchRunTests
     [InlineData("Pobieranie", 45, "Pobieranie 45%")]
     [InlineData("Pobieranie", null, "Pobieranie")]
     [InlineData("Instalowanie", null, "Instalowanie")]
-    [InlineData(null, 30, "W toku 30%")]
+    [InlineData(null, 30, "W toku")]
     [InlineData(null, null, "W toku")]
     public void Install_Progress_SetsStatusText(string? stage, int? percent, string expected)
     {
@@ -719,6 +719,111 @@ public class BatchRunTests
         Assert.Equal(BatchStepState.Running, run.Steps[0].State);
         Assert.Equal(expected, run.Steps[0].StatusText);
         Assert.Equal(1, changes);
+    }
+
+    [Fact]
+    public void Install_PercentWithoutStage_NoPercentInText()
+    {
+        // Pomiar F17: przy pierwszym winget w sesji procent pobierania indeksu źródła przychodzi bez etapu („W toku 100%” przed pobieraniem).
+        var run = Install();
+        run.OnStep(Started("id1", 0));
+
+        run.OnStep(Progress("id1", null, 100));
+
+        Assert.Equal("W toku", run.Steps[0].StatusText);
+        Assert.DoesNotContain("100%", run.Steps[0].StatusText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Install_Started_ShowsIndeterminateProgress()
+    {
+        var run = Install();
+
+        run.OnStep(Started("id1", 0));
+
+        Assert.True(run.Steps[0].ShowsProgress);
+        Assert.Null(run.Steps[0].ProgressPercent);
+        Assert.False(run.Steps[1].ShowsProgress);
+    }
+
+    [Fact]
+    public void Install_ProgressWithPercent_StaysIndeterminate()
+    {
+        // Wariant B (pomiar F17): procent winget przychodzi dopiero w ostatnich sekundach pobierania, więc pasek zostaje nieokreślony.
+        var run = Install();
+        run.OnStep(Started("id1", 0));
+
+        run.OnStep(Progress("id1", "Pobieranie", 45));
+
+        Assert.True(run.Steps[0].ShowsProgress);
+        Assert.Null(run.Steps[0].ProgressPercent);
+        Assert.Equal("Pobieranie 45%", run.Steps[0].StatusText);
+    }
+
+    [Fact]
+    public void Install_StageChangeWithoutPercent_Indeterminate()
+    {
+        var run = Install();
+        run.OnStep(Started("id1", 0));
+        run.OnStep(Progress("id1", "Pobieranie", 45));
+
+        run.OnStep(Progress("id1", "Instalowanie", null));
+
+        Assert.True(run.Steps[0].ShowsProgress);
+        Assert.Null(run.Steps[0].ProgressPercent);
+        Assert.Equal("Instalowanie", run.Steps[0].StatusText);
+    }
+
+    [Fact]
+    public void Install_Finished_HidesProgress()
+    {
+        var run = Install();
+        run.OnStep(Started("id1", 0));
+        run.OnStep(Progress("id1", "Instalowanie", null));
+
+        run.OnStep(new BatchStepEvent(0, 3, BatchStepKind.Item, "id1", BatchStepPhase.Finished, T0, Result("id1", TweakOutcome.Installed, InstallText.Installed)));
+
+        Assert.False(run.Steps[0].ShowsProgress);
+        Assert.Null(run.Steps[0].ProgressPercent);
+    }
+
+    [Fact]
+    public void NonInstallSeries_NeverShowsProgress()
+    {
+        var run = new BatchRun(Confirmation(GuiOperation.Apply, false));
+
+        run.OnStep(Started("id1", 0));
+        run.OnStep(Progress("id1", "Pobieranie", 45));
+
+        Assert.Equal(BatchStepState.Running, run.Steps[0].State);
+        Assert.False(run.Steps[0].ShowsProgress);
+        Assert.Null(run.Steps[0].ProgressPercent);
+    }
+
+    [Fact]
+    public void Complete_HidesProgressOnAllSteps()
+    {
+        // id1 z wynikiem, id2 w toku bez wyniku (pominięte w Complete).
+        var run = Install(2);
+        run.OnStep(Started("id1", 0, 2));
+        run.OnStep(new BatchStepEvent(0, 2, BatchStepKind.Item, "id1", BatchStepPhase.Finished, T0, Result("id1", TweakOutcome.Installed, InstallText.Installed)));
+        run.OnStep(Started("id2", 1, 2));
+
+        run.Complete(Report(new BatchResult { Results = new[] { Result("id1", TweakOutcome.Installed, InstallText.Installed) } }));
+
+        Assert.All(run.Steps, step => Assert.False(step.ShowsProgress));
+        Assert.Equal(BatchStepState.Skipped, run.Steps[1].State);
+    }
+
+    [Fact]
+    public void Fail_HidesProgress()
+    {
+        var run = Install(2);
+        run.OnStep(Started("id1", 0, 2));
+
+        run.Fail("Nieoczekiwany błąd.");
+
+        Assert.All(run.Steps, step => Assert.False(step.ShowsProgress));
     }
 
     [Fact]

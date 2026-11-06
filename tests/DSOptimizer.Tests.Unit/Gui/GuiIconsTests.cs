@@ -16,6 +16,9 @@ public class GuiIconsTests
     };
 
     [Fact]
+    public void ServicePage_UsesRepairIcon() => Assert.Equal(GuiIcons.Repair, GuiIcons.ForCategory(GuiNav.ServicePageId));
+
+    [Fact]
     public void ForCategory_EveryBuiltInCategoryHasOwnIcon()
     {
         var kinds = GuiText.CategoryOrder.Select(GuiIcons.ForCategory).ToList();

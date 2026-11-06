@@ -141,6 +141,9 @@ public sealed class SeriesWindowViewModel : ObservableObject
     /// <summary>Prośba o zamknięcie okna (zgoda bez serii, anulowanie, „Zamknij”, restart).</summary>
     public event EventHandler? CloseRequested;
 
+    /// <summary>Po każdej aktualizacji wierszy <see cref="Steps"/> (okno trzyma krok „W toku” w widoku).</summary>
+    public event EventHandler? StepsUpdated;
+
     /// <summary>Potwierdzenie ponownego uruchomienia: tytuł „Uruchom ponownie”, treść <see cref="GuiText.RestartConfirmText"/>.</summary>
     public static SeriesWindowViewModel ForRestart(IClock clock)
         => new(L.T("Uruchom ponownie"), string.Empty, GuiText.RestartConfirmText, Array.Empty<SeriesFact>(), Array.Empty<SeriesItemViewModel>(), L.T("Uruchom ponownie"), clock);
@@ -273,7 +276,10 @@ public sealed class SeriesWindowViewModel : ObservableObject
 
     public string PrimaryText { get; }
 
-    /// <summary>Kroki postępu i wyniku (podmieniane w całości po każdej zmianie <see cref="BatchRun"/>).</summary>
+    /// <summary>
+    /// Kroki postępu i wyniku: lista powstaje raz przy starcie serii, a wiersze są aktualizowane na miejscu po każdej zmianie
+    /// <see cref="BatchRun"/>. Nowa lista odtwarzałaby kontenery, a z nimi animację nieokreślonego paska instalacji od początku.
+    /// </summary>
     public IReadOnlyList<SeriesStepItem> Steps
     {
         get => _steps;
@@ -570,9 +576,17 @@ public sealed class SeriesWindowViewModel : ObservableObject
         // Szczegóły kroków w wyniku i przy pytaniu o punkt przywracania (powód, dla którego punkt nie powstał).
         var details = Phase == SeriesWindowPhase.Result || IsAsking;
         var steps = _batch.Steps;
-        Steps = steps
-            .Select((step, index) => new SeriesStepItem(step.Title, step.State, step.StatusText, step.Details, details && step.Details.Count > 0, index == steps.Count - 1))
-            .ToList();
+        if (_steps.Count != steps.Count)
+        {
+            Steps = steps.Select(step => new SeriesStepItem(step.Title)).ToList();
+        }
+
+        for (var i = 0; i < steps.Count; i++)
+        {
+            _steps[i].Update(steps[i], details, i == steps.Count - 1);
+        }
+
+        StepsUpdated?.Invoke(this, EventArgs.Empty);
         OnPropertyChanged(nameof(ProgressDone));
         OnPropertyChanged(nameof(ProgressRest));
         OnHeaderChanged();
@@ -681,11 +695,103 @@ public sealed class SeriesItemViewModel : ObservableObject
     public IRelayCommand ToggleCommand { get; }
 }
 
-/// <summary>Wiersz kroku w postępie i wyniku (migawka <see cref="BatchRunStep"/>); szczegóły tylko w wyniku.</summary>
-public sealed record SeriesStepItem(
-    string Title,
-    BatchStepState State,
-    string StatusText,
-    IReadOnlyList<string> Details,
-    bool ShowDetails,
-    bool IsLast);
+/// <summary>
+/// Wiersz kroku w postępie i wyniku (stan z <see cref="BatchRunStep"/>, aktualizowany na miejscu); szczegóły tylko w wyniku.
+/// Pasek postępu (3 px pod tytułem) tylko przy pozycji instalacji w toku: nieokreślony bez procentu, inaczej proporcje kolumn.
+/// </summary>
+public sealed class SeriesStepItem : ObservableObject
+{
+    private BatchStepState _state;
+    private string _statusText = string.Empty;
+    private IReadOnlyList<string> _details = Array.Empty<string>();
+    private bool _showDetails;
+    private bool _isLast;
+    private bool _showProgress;
+    private int? _percent;
+
+    public SeriesStepItem(string title)
+    {
+        Title = title ?? throw new ArgumentNullException(nameof(title));
+    }
+
+    public string Title { get; }
+
+    public BatchStepState State
+    {
+        get => _state;
+        private set => SetProperty(ref _state, value);
+    }
+
+    public string StatusText
+    {
+        get => _statusText;
+        private set => SetProperty(ref _statusText, value);
+    }
+
+    public IReadOnlyList<string> Details
+    {
+        get => _details;
+        private set => SetProperty(ref _details, value);
+    }
+
+    public bool ShowDetails
+    {
+        get => _showDetails;
+        private set => SetProperty(ref _showDetails, value);
+    }
+
+    public bool IsLast
+    {
+        get => _isLast;
+        private set => SetProperty(ref _isLast, value);
+    }
+
+    public bool ShowProgress
+    {
+        get => _showProgress;
+        private set
+        {
+            if (SetProperty(ref _showProgress, value))
+            {
+                OnPropertyChanged(nameof(IsIndeterminate));
+                OnPropertyChanged(nameof(IsDeterminate));
+            }
+        }
+    }
+
+    /// <summary>Procent paska z <see cref="BatchRunStep.ProgressPercent"/>; null = pasek nieokreślony.</summary>
+    public int? Percent
+    {
+        get => _percent;
+        private set
+        {
+            if (SetProperty(ref _percent, value))
+            {
+                OnPropertyChanged(nameof(IsIndeterminate));
+                OnPropertyChanged(nameof(IsDeterminate));
+                OnPropertyChanged(nameof(ProgressDone));
+                OnPropertyChanged(nameof(ProgressRest));
+            }
+        }
+    }
+
+    public bool IsIndeterminate => ShowProgress && Percent is null;
+
+    public bool IsDeterminate => ShowProgress && Percent is not null;
+
+    /// <summary>Pasek określony: procent jako proporcje kolumn (jak <see cref="SeriesWindowViewModel.ActionBarDone"/>).</summary>
+    public GridLength ProgressDone => new((Percent ?? 0) / 100.0, GridUnitType.Star);
+
+    public GridLength ProgressRest => new(1 - ((Percent ?? 0) / 100.0), GridUnitType.Star);
+
+    internal void Update(BatchRunStep step, bool details, bool isLast)
+    {
+        State = step.State;
+        StatusText = step.StatusText;
+        Details = step.Details;
+        ShowDetails = details && step.Details.Count > 0;
+        IsLast = isLast;
+        Percent = step.ShowsProgress ? step.ProgressPercent : null;
+        ShowProgress = step.ShowsProgress;
+    }
+}

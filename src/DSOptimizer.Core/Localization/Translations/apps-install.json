@@ -30,8 +30,8 @@
       "en": "Runtimes"
     },
     {
-      "pl": "winget (Instalator aplikacji) nie jest zarejestrowany dla tego konta. Użyj „Naprawy → Napraw winget”.",
-      "en": "winget (App Installer) isn't registered for this account. Use \"Repairs → Repair winget\"."
+      "pl": "winget (Instalator aplikacji) nie jest zarejestrowany dla tego konta. Użyj „Naprawy i narzędzia → Napraw winget”.",
+      "en": "winget (App Installer) isn't registered for this account. Use \"Repairs and tools → Repair winget\"."
     },
     {
       "pl": "Instalacja działa tylko na koncie zalogowanego użytkownika: uruchom DSOptimizer na koncie {0} (Administrator Protection: program podniesiony działa na ukrytym koncie {1}).",
@@ -46,8 +46,8 @@
       "en": "winget works (version {0})."
     },
     {
-      "pl": "winget nie działa ({0}). Użyj „Naprawy → Napraw winget”.",
-      "en": "winget doesn't work ({0}). Use \"Repairs → Repair winget\"."
+      "pl": "winget nie działa ({0}). Użyj „Naprawy i narzędzia → Napraw winget”.",
+      "en": "winget doesn't work ({0}). Use \"Repairs and tools → Repair winget\"."
     },
     {
       "pl": "winget --version: kod {0}",

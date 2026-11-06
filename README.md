@@ -26,10 +26,7 @@ DISM and SFC) is shown in the language of Windows.
 - **System settings** – the pages "Privacy and AI", "Performance", "Disk and file system", "Network and LAN",
   "Security and encryption" and "Explorer and convenience". For each item the program shows whether it is
   already set on this computer, what it changes and what you gain. Select what you want and click "Apply".
-- **"System panels"** – quick access to the Windows panels that usually take the longest to find.
-- **"Repairs"** – among others: Windows Update reset, checking and repairing system files, disk cleanup,
-  removing the previous Windows installation, network settings reset, winget and Microsoft Store repair.
-- **"Tools"** – e.g. restarting the taskbar and File Explorer, and launching WinUtil (Chris Titus).
+  The "Show" list narrows the view to items that are not applied, applied, or selected on all pages.
 - **"Specification"** – a summary of the computer's hardware, which you can save as a report.
 - **"Preparation"** – steps after installing Windows: updates, chipset and graphics drivers, the laptop
   manufacturer's support page, devices without a driver. The program only checks the state and gives
@@ -43,6 +40,10 @@ DISM and SFC) is shown in the language of Windows.
   items whose file no longer exists are suggested for disabling.
 - **"Install"** – installing popular programs through winget (Microsoft) and RustDesk from its
   authors' GitHub.
+- **"Repairs and tools"** – one page with three parts. Repairs, among others: Windows Update reset, checking
+  and repairing system files, disk cleanup, removing the previous Windows installation, network settings reset,
+  winget and Microsoft Store repair. Tools, e.g. restarting the taskbar and File Explorer, and launching
+  WinUtil (Chris Titus). System panels: quick access to the Windows panels that usually take the longest to find.
 - **"Change history"** – Settings changes, Startup apps changes, app removals and app installs, in one place. Settings and Startup apps changes can be undone here; app removals and installs have no "Undo".
 
 ## Requirements

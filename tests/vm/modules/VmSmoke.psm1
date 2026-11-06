@@ -24,7 +24,7 @@ Opis działania:
     zgodne z C# i tytuły z JSON katalogu, po angielsku wyłącznie z tabel tłumaczeń repo; brak tłumaczenia = błąd przed startem VM),
     zapisuje go do VM jako JSON UTF-8 (GuiSmoke-Ui-texts.json) i podaje sondzie w -TextsFile; tym samym słownikiem ocenia wynik.
     Potem sonda wchodzi na „Przygotowanie” (7 tytułów kroków po odczycie, przycisk „Otwórz Windows Update”, linia karty w kroku
-    „Grafika” – PrepPage; bez klikania linków), potem na „Naprawy” (lista ma wszystkie tytuły kategorii repair z katalogu –
+    „Grafika” – PrepPage; bez klikania linków), potem na „Naprawy i narzędzia” (lista ma wszystkie tytuły kategorii repair, tools i panels z katalogu –
     RepairPage, Get-GuiRepairTitle; niczego nie uruchamia), potem na „Instalacja” (Etap 4c: wszystkie kategorie i tytuły
     z apps.json, „Zainstaluj (0)” nieaktywne – InstallPage, Get-GuiInstallTitle; bez zaznaczania, instalowania i wyszukiwania),
     a jako ostatnie na „Autostart”: po odczycie listy (najwyżej 120 s) liczby w nazwach pozycji przełącznika grup („Włączone, N”,
@@ -615,7 +615,7 @@ function Get-GuiSmokeCheck {
 function Invoke-DsoGuiSmoke {
     # Jedna VM: revert -> start -> gotowość -> kopia builda -> start GUI w sesji dso -> czekanie -> zrzut -> detekcja CLI sugerowanych
     # pozycji „Prywatność i AI” (oczekiwane N) -> CLI --list-apps jako dso (oczekiwane N „Usuń (N)”) -> CLI --list-autostart jako dso (oczekiwane liczby grup)
-    # -> sonda UI (historia, WM_NCHITTEST, filtry, wiersze, „Prywatność i AI”, „Aplikacje”, „Przygotowanie”, „Naprawy”, „Instalacja”, na końcu „Autostart”) -> drugi zrzut -> sonda stanu (zdarzenia i log od startu, więc obejmują też sondę UI) -> (domyślnie) revert i VM Off.
+    # -> sonda UI (historia, WM_NCHITTEST, filtry, wiersze, „Prywatność i AI”, „Aplikacje”, „Przygotowanie”, „Naprawy i narzędzia”, „Instalacja”, na końcu „Autostart”) -> drugi zrzut -> sonda stanu (zdarzenia i log od startu, więc obejmują też sondę UI) -> (domyślnie) revert i VM Off.
     # Zwraca wynik (passed, checks, errors, screenshotPath, uiScreenshotPath, resultPath); zapisuje gui-smoke-<VM>.json w OutDirectory.
     [CmdletBinding()]
     param(
@@ -711,7 +711,7 @@ function Invoke-DsoGuiSmoke {
             $AutostartExpected = Get-GuiAutostartExpectedCount -Listing $AutostartListing
         }
         catch { $AutostartListError = "lista autostartu: $($_.Exception.Message)" }
-        # Oczekiwane tytuły strony „Naprawy” (krok 10 sondy UI): kategoria repair z wbudowanego katalogu repo.
+        # Oczekiwane tytuły strony „Naprawy i narzędzia” (krok 10 sondy UI): kategorie repair, tools i panels z wbudowanego katalogu repo.
         try { $RepairTitles = @(Get-GuiRepairTitle -CatalogDirectory (Join-Path (Get-DsoRepoRoot) 'src\DSOptimizer.Catalog\catalog') -Language $Language) }
         catch { $RepairTitlesError = "tytuły Napraw: $($_.Exception.Message)" }
         # Oczekiwania strony „Instalacja” (krok 11 sondy UI): tytuły i kategorie z apps.json repo.

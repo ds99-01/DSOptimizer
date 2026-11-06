@@ -14,7 +14,7 @@ internal static class TweakParser
 {
     private static readonly HashSet<string> TweakFields = new(StringComparer.Ordinal)
     {
-        "id", "aliases", "category", "kind", "title", "summary", "benefit", "description", "risk", "scope", "requiresReboot", "suggested", "editions",
+        "id", "aliases", "category", "group", "kind", "title", "summary", "benefit", "description", "risk", "scope", "requiresReboot", "suggested", "editions",
         "minBuild", "maxBuild", "timeoutSeconds", "reversible", "warnings", "conflicts", "registry", "services", "script", "launch", "handler",
     };
 
@@ -46,6 +46,7 @@ internal static class TweakParser
             Id = RequiredString(obj, "id", source),
             Aliases = StringList(obj, "aliases", source),
             Category = RequiredString(obj, "category", source),
+            Group = OptionalString(obj, "group", source),
             Kind = RequiredEnum<TweakKind>(obj, "kind", source),
             Title = RequiredString(obj, "title", source),
             Summary = OptionalString(obj, "summary", source) ?? string.Empty,

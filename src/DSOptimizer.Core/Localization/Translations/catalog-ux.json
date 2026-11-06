@@ -63,8 +63,8 @@
       "en": "Creates the key HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32 with an empty default value (REG_SZ), for the signed-in user. For this account the entry overrides the registration of the Windows 11 menu; after the change a right-click opens a Win32 menu window (class #32768). DSOptimizer doesn't restart File Explorer by itself. Undo removes the {86ca1aa0-34aa-4e8b-a509-50c905bae2a2} key together with the InprocServer32 subkey, and after File Explorer restarts the Windows 11 menu comes back."
     },
     {
-      "pl": "Menu zmieni się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).",
-      "en": "The menu changes after you sign in again (or after you restart File Explorer in \"Tools\")."
+      "pl": "Menu zmieni się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Naprawach i narzędziach”).",
+      "en": "The menu changes after you sign in again (or after you restart File Explorer in \"Repairs and tools\")."
     },
     {
       "pl": "Dodaj „Zakończ zadanie” do menu na pasku zadań",
@@ -83,8 +83,8 @@
       "en": "Turns on the \"End task\" toggle (System > Advanced): TaskbarEndTask = 1 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings, for the signed-in user. DSOptimizer doesn't restart File Explorer by itself. Undo removes the value and the key created by the change; after File Explorer restarts, the entry disappears from the menu."
     },
     {
-      "pl": "Pozycja pojawi się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).",
-      "en": "The \"End task\" entry appears after you sign in again (or after you restart File Explorer in \"Tools\")."
+      "pl": "Pozycja pojawi się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Naprawach i narzędziach”).",
+      "en": "The \"End task\" entry appears after you sign in again (or after you restart File Explorer in \"Repairs and tools\")."
     },
     {
       "pl": "„Zakończ zadanie” kończy proces programu; niezapisane dane w tym programie mogą przepaść.",

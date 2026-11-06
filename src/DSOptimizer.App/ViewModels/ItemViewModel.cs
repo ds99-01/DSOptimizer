@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Model;
@@ -51,8 +52,19 @@ public sealed class ItemViewModel : ObservableObject
 
     public bool HasBenefit => !string.IsNullOrWhiteSpace(Definition.Benefit);
 
-    /// <summary>Nagłówek grupy w wynikach wyszukiwania.</summary>
+    /// <summary>Nazwa kategorii pozycji (nagłówek sekcji strony „Naprawy i narzędzia”).</summary>
     public string CategoryName => GuiText.CategoryName(Definition.Category);
+
+    /// <summary>Nazwa grupy tematycznej z katalogu; null, gdy pozycja nie ma grupy albo grupa jest nieznana w jej kategorii.</summary>
+    public string? GroupName => Definition.Group is { } group && CatalogGroups.IsKnown(Definition.Category, group)
+        ? GuiText.GroupName(Definition.Category, group)
+        : null;
+
+    /// <summary>Nagłówek grupy w wynikach wyszukiwania: „Kategoria · grupa”, a bez grupy sama kategoria.</summary>
+    public string ResultsHeader => GroupName is { } group ? $"{CategoryName} · {group}" : CategoryName;
+
+    /// <summary>Grupa tematyczna w liście kategorii (ustawia <see cref="CategoryViewModel"/> przy <see cref="CategoryListGrouping.CatalogGroups"/>); inaczej null.</summary>
+    public ListGroupViewModel? ListGroup { get; internal set; }
 
     public IReadOnlyList<string> Warnings => Definition.Warnings;
 

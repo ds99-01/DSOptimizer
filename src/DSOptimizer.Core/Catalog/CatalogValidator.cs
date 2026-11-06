@@ -81,6 +81,11 @@ public static class CatalogValidator
             Add("required-field", L.T("Brak kategorii."));
         }
 
+        if (definition.Group is { } group && !CatalogGroups.IsKnown(definition.Category, group))
+        {
+            Add("group-unknown", L.F("Grupa '{0}' nie istnieje w kategorii '{1}'.", group, definition.Category));
+        }
+
         if (string.IsNullOrWhiteSpace(definition.Summary))
         {
             Add("summary", L.T("Brak krótkiego opisu (summary)."));

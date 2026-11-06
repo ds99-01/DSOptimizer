@@ -2,6 +2,10 @@
   "language": "en",
   "entries": [
     {
+      "pl": "Naprawy i narzędzia",
+      "en": "Repairs and tools"
+    },
+    {
       "pl": "Brak wyniku akcji.",
       "en": "The action returned no result."
     },
@@ -582,6 +586,14 @@
       "en": "Nothing matches \"{0}\"."
     },
     {
+      "pl": "Dwuklik albo „Uruchom” uruchamia pozycję.",
+      "en": "Double-click or Run starts an item."
+    },
+    {
+      "pl": "Ochronę systemu dodaje się do zmiany polem wyboru albo dwuklikiem.",
+      "en": "Add System Protection to a change with its checkbox or by double-clicking it."
+    },
+    {
       "pl": "Kliknij dwukrotnie wiersz albo pole wyboru, żeby dodać do zmiany.",
       "en": "Double-click a row or checkbox to add the item to the batch."
     },
@@ -686,8 +698,20 @@
       "en": "Batch canceled: {0} – {1} ({2})."
     },
     {
-      "pl": "Pasujące pozycje ukrył filtr ryzyka.",
-      "en": "The risk filter hid the matching items."
+      "pl": "Pasujące pozycje ukrył filtr.",
+      "en": "A filter hides the matching items."
+    },
+    {
+      "pl": "Pokaż",
+      "en": "Show"
+    },
+    {
+      "pl": "Pokaż zaznaczone",
+      "en": "Show selected"
+    },
+    {
+      "pl": "Nic nie jest zaznaczone.",
+      "en": "Nothing is selected."
     },
     {
       "pl": "Skopiowano adres: {0}",
@@ -1096,6 +1120,26 @@
     {
       "pl": "Schowek zgłosił błąd 0x{0:X8} ({1}), ale tekst jest w schowku – uznano za skopiowane.",
       "en": "The clipboard reported error 0x{0:X8} ({1}), but the text is on the clipboard – treated as copied."
+    },
+    {
+      "pl": "Start, wyszukiwanie i Widżety",
+      "en": "Start, search and Widgets"
+    },
+    {
+      "pl": "Reklamy i sugestie",
+      "en": "Ads and suggestions"
+    },
+    {
+      "pl": "Telemetria i diagnostyka",
+      "en": "Telemetry and diagnostics"
+    },
+    {
+      "pl": "Rozwiń dziennik",
+      "en": "Expand log"
+    },
+    {
+      "pl": "Zwiń dziennik",
+      "en": "Collapse log"
     }
   ]
 }

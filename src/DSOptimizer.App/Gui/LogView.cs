@@ -80,6 +80,9 @@ internal sealed class LogView
     /// <summary>„Kopiuj cały dziennik” / „Kopiuj wszystko”: wszystkie linie (godzina, poziom, tekst).</summary>
     public void CopyAll() => Copy(LogLineText.ForClipboard(_lines), L.T("Nie udało się skopiować dziennika do schowka."));
 
+    /// <summary>Przewija listę do ostatniej linii (po rozwinięciu dziennika, gdy pole tekstowe dopiero staje się widoczne).</summary>
+    public void ScrollToEnd() => _box.ScrollToEnd();
+
     /// <summary>Błąd „Otwórz lokalizację pliku” (wyjątek przy otwieraniu Eksploratora) w dzienniku.</summary>
     public static string OpenLocationFailedMessage => L.T("Nie udało się otworzyć lokalizacji pliku.");
 

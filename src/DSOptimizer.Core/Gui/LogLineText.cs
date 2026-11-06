@@ -32,6 +32,10 @@ public static class LogLineText
     /// <summary>Godzina linii w czasie lokalnym, <c>HH:mm:ss</c>.</summary>
     public static string Time(DateTimeOffset at) => at.LocalDateTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
+    /// <summary>Ostatnia linia na pasku zwiniętego dziennika: godzina i tekst w jednej linii (do <see cref="GuiText.MaxResultMessageLength"/> znaków); brak linii = pusty tekst.</summary>
+    public static string OneLineSummary(GuiLogLine? line)
+        => line is null ? string.Empty : Time(line.At) + " " + GuiText.OneLine(line.Text, GuiText.MaxResultMessageLength);
+
     /// <summary>Linia do schowka: godzina, poziom w nawiasach, tekst.</summary>
     public static string ForClipboard(GuiLogLine line)
     {

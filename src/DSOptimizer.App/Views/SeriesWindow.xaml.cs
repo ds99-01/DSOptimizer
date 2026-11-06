@@ -44,6 +44,7 @@ public partial class SeriesWindow
 
         viewModel.CloseRequested += (_, _) => Close();
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        viewModel.StepsUpdated += OnStepsUpdated;
         SizeChanged += OnSizeChanged;
     }
 
@@ -98,16 +99,19 @@ public partial class SeriesWindow
     }
 
     /// <summary>
-    /// W postępie krok „W toku” zawsze w widoku: przy długiej serii (dziesiątki kroków) treść się przewija. Po nowej liście
+    /// W postępie krok „W toku” zawsze w widoku: przy długiej serii (dziesiątki kroków) treść się przewija. Po aktualizacji
     /// kroków czeka na ułożenie (priorytet Loaded), potem BringIntoView kontenera kroku.
     /// </summary>
-    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void OnStepsUpdated(object? sender, EventArgs e)
     {
-        if (e.PropertyName == nameof(SeriesWindowViewModel.Steps) && _viewModel.IsRunning)
+        if (_viewModel.IsRunning)
         {
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(BringRunningStepIntoView));
         }
+    }
 
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
         // Pytanie o kontynuację bez punktu przywracania: fokus na domyślnym „Nie” (Enter = „Nie”), pytanie w widoku.
         if (e.PropertyName == nameof(SeriesWindowViewModel.IsAsking) && _viewModel.IsAsking)
         {

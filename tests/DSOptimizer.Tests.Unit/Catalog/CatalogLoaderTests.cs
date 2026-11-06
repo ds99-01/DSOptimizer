@@ -52,6 +52,14 @@ public class CatalogLoaderTests
     }
 
     [Fact]
+    public void Group_IsParsed()
+    {
+        Assert.Equal("ads", Assert.Single(LoadOne(Minimal.Replace("\"kind\"", "\"group\": \"ads\", \"kind\"")).Definitions).Group);
+        Assert.Null(Assert.Single(LoadOne(Minimal).Definitions).Group);
+        Assert.Throws<CatalogLoadException>(() => LoadOne(Minimal.Replace("\"kind\"", "\"group\": 5, \"kind\"")));
+    }
+
+    [Fact]
     public void Parse_Benefit_Read()
     {
         Assert.Equal("Menu otwiera się od razu.", Assert.Single(LoadOne(FullTweak).Definitions).Benefit);

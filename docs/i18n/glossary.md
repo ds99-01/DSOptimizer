@@ -30,7 +30,7 @@ How to read the tables:
 5. **Dashes and punctuation follow the Polish original.** Use the en dash with spaces " – " exactly where the
    Polish text has it, and nowhere else. Leading and trailing whitespace of the English text must match the Polish
    text character for character (the translation table check compares them). Keep "…" (one character) where Polish
-   has it. Keep the "›" path separator in "Settings › Windows Update" paths and "→" in "Repairs → Repair winget".
+   has it. Keep the "›" path separator in "Settings › Windows Update" paths and "→" in "Repairs and tools → Repair winget".
 6. **Quotation marks.** Polish „…” becomes straight double quotes "…" in English (same as the existing command-line
    texts).
 7. **Spelling: US English** (Minimize, color, optimize), matching Windows names and Microsoft documentation. Dates and
@@ -80,6 +80,10 @@ How to read the tables:
 | Panele systemowe | System panels | Category; English README |
 | Naprawy | Repairs | Category and log component; English README |
 | Narzędzia | Tools | Category; English README |
+| Naprawy i narzędzia | Repairs and tools | Page combining the Repairs, Tools and System panels categories as sections |
+| Start, wyszukiwanie i Widżety | Start, search and Widgets | Group in the Privacy and AI category |
+| Reklamy i sugestie | Ads and suggestions | Group in the Privacy and AI category |
+| Telemetria i diagnostyka | Telemetry and diagnostics | Group in the Privacy and AI category |
 | Specyfikacja | Specification | Page and log component; English README |
 | Przygotowanie | Preparation | Page and log component; English README. Not the same text as "Przygotowanie…" (see Concepts) |
 | Aplikacje | Apps | Page; English README |
@@ -129,6 +133,7 @@ How to read the tables:
 | Odśwież / Odśwież stan / Odśwież listę | Refresh / Refresh status / Refresh list | |
 | Odznacz wszystko | Clear selection | "Clear" per Style rule 12 |
 | Pokaż wszystkie / Pokaż które | Show all / Show which ones | "Show which ones" = restart banner link to Change history |
+| Pokaż / Pokaż zaznaczone | Show / Show selected | List filter label; link in the series bar |
 | Tak, kontynuuj | Yes, continue | |
 | Szukaj / Szukaj też w winget | Search / Also search winget | |
 | Przejdź do: {0} | Go to: {0} | E.g. "Go to: Apps", "Go to: Repair winget" |
@@ -204,6 +209,7 @@ How to read the tables:
 | Co zmienia | What it changes | Detail panel heading |
 | Szczegóły / Szczegóły techniczne / Ukryj szczegóły techniczne | Details / Technical details / Hide technical details | |
 | Dziennik | Log | On-screen log panel; see Key decisions |
+| Rozwiń dziennik / Zwiń dziennik | Expand log / Collapse log | Button name of the log bar (collapsed to one line / expanded) |
 | plik logu | log file | |
 | Wysokość dziennika | Log height | Settings |
 | Sugerowane / Sugerowane do usunięcia | Suggested / Suggested for removal | |

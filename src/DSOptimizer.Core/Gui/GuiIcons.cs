@@ -39,7 +39,7 @@ public static class GuiIcons
         "sec" => "Security",
         "ux" => "Explorer",
         "panels" => "Panels",
-        "repair" => "Repair",
+        "repair" or GuiNav.ServicePageId => "Repair",
         _ => "Tools",
     };
 }

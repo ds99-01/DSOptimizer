@@ -7,6 +7,36 @@ namespace DSOptimizer.Tests.Unit.Gui;
 public class GuiLayoutTests
 {
     [Fact]
+    public void NavMenuHeight_ThirteenPagesFourLines_FitsLaptop1366()
+    {
+        Assert.Equal(601, GuiLayout.NavMenuHeight(13, 4), 3);
+        Assert.True(GuiLayout.NavMenuHeight(13, 4) <= GuiLayout.InitialBounds(new LayoutRect(0, 0, 1366, 720)).Height);
+    }
+
+    [Fact]
+    public void NavMenuHeight_NegativeArguments_Throw()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => GuiLayout.NavMenuHeight(-1, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => GuiLayout.NavMenuHeight(0, -1));
+    }
+
+    [Fact]
+    public void NavRowHeight_Is34() => Assert.Equal(34, GuiLayout.NavRowHeight);
+
+    /// <summary>Wiersz szukania: listy „Pokaż” i „Ryzyko” schodzą pod wyszukiwarkę, gdy obok nich miałaby mniej niż 150 DIP.</summary>
+    [Theory]
+    [InlineData(600, 300, false)]
+    [InlineData(464, 300, false)]
+    [InlineData(463.9, 300, true)]
+    [InlineData(100, 300, true)]
+    public void SearchFiltersWrap_BelowMinimumSearchWidth(double rowWidth, double filtersWidth, bool expected)
+    {
+        Assert.Equal(150, GuiLayout.SearchMinWidth);
+        Assert.Equal(14, GuiLayout.SearchFiltersGap);
+        Assert.Equal(expected, GuiLayout.SearchFiltersWrap(rowWidth, filtersWidth));
+    }
+
+    [Fact]
     public void InitialBounds_Laptop1366()
     {
         var r = GuiLayout.InitialBounds(new LayoutRect(0, 0, 1366, 720));
@@ -188,4 +218,7 @@ public class GuiLayoutTests
     {
         Assert.Equal(expected, GuiLayout.MaxLogHeight(windowHeight), 2);
     }
+
+    [Fact]
+    public void LogCollapsedHeight_Is36() => Assert.Equal(36, GuiLayout.LogCollapsedHeight);
 }

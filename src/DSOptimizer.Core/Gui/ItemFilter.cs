@@ -4,10 +4,10 @@ using DSOptimizer.Core.Model;
 
 namespace DSOptimizer.Core.Gui;
 
-/// <summary>Widoczność pozycji listy: zapytanie wyszukiwarki i filtr ryzyka.</summary>
+/// <summary>Widoczność pozycji listy: zapytanie wyszukiwarki, filtr ryzyka i filtr „Pokaż” (stan). Pozycja musi przejść wszystkie.</summary>
 public static class ItemFilter
 {
-    /// <summary>Każde słowo zapytania (po <see cref="SearchText.Fold"/>) musi wystąpić w tytule, skrócie lub opisie. Puste zapytanie = wszystko.</summary>
+    /// <summary>Każde słowo zapytania (po <see cref="SearchText.Fold"/>) musi wystąpić w tytule, skrócie, opisie lub nazwie grupy. Puste zapytanie = wszystko.</summary>
     public static bool MatchesQuery(TweakDefinition item, string? query)
     {
         var words = SearchText.Fold(query);
@@ -16,7 +16,7 @@ public static class ItemFilter
             return true;
         }
 
-        var haystack = SearchText.Fold(item.Title + " " + item.Summary + " " + item.Description);
+        var haystack = SearchText.Fold(item.Title + " " + item.Summary + " " + item.Description + " " + GuiText.GroupName(item.Category, item.Group));
         foreach (var word in words.Split(' '))
         {
             if (haystack.IndexOf(word, StringComparison.Ordinal) < 0)
@@ -45,16 +45,30 @@ public static class ItemFilter
         };
     }
 
-    public static bool IsVisible(TweakDefinition item, DetectionState? state, string? query, RiskFilter filter)
-        => MatchesQuery(item, query) && PassesRisk(item, state, filter);
+    /// <summary>
+    /// Filtr „Pokaż”: „Zastosowane” = tweak w stanie <see cref="DetectionState.Applied"/>; „Niezastosowane” = tweak obsługiwany i nie zastosowany
+    /// (także częściowy, błąd odczytu i stan jeszcze nieodczytany – to pozycje do zrobienia). Akcje, panele i <see cref="DetectionState.NotSupported"/>
+    /// przechodzą tylko „Wszystkie” i „Zaznaczone” (ten drugi to widok zaznaczonych – zbiór pozycji wybiera model okna).
+    /// </summary>
+    public static bool PassesShow(TweakDefinition item, DetectionState? state, ShowFilter filter) => filter switch
+    {
+        ShowFilter.All or ShowFilter.Selected => true,
+        ShowFilter.Applied => item.Kind == TweakKind.Tweak && state == DetectionState.Applied,
+        ShowFilter.NotApplied => item.Kind == TweakKind.Tweak && state is not (DetectionState.Applied or DetectionState.NotSupported),
+        _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
+    };
 
-    /// <summary>Pozycje pasujące do zapytania, ale odrzucone przez filtr ryzyka.</summary>
-    public static int CountHidden(IEnumerable<KeyValuePair<TweakDefinition, DetectionState?>> items, string? query, RiskFilter filter)
+    public static bool IsVisible(TweakDefinition item, DetectionState? state, string? query, RiskFilter filter, ShowFilter show = ShowFilter.All)
+        => MatchesQuery(item, query) && PassesFilters(item, state, filter, show);
+
+    /// <summary>Pozycje pasujące do zapytania, ale odrzucone przez filtr ryzyka albo filtr „Pokaż”.</summary>
+    public static int CountHidden(
+        IEnumerable<KeyValuePair<TweakDefinition, DetectionState?>> items, string? query, RiskFilter filter, ShowFilter show = ShowFilter.All)
     {
         var count = 0;
         foreach (var pair in items)
         {
-            if (MatchesQuery(pair.Key, query) && !PassesRisk(pair.Key, pair.Value, filter))
+            if (MatchesQuery(pair.Key, query) && !PassesFilters(pair.Key, pair.Value, filter, show))
             {
                 count++;
             }
@@ -63,14 +77,17 @@ public static class ItemFilter
         return count;
     }
 
-    /// <summary>Pozycje pasujące do zapytania, które filtr ryzyka by ukrył, ale są pokazane tylko dzięki wyjątkowi „zastosowane”.</summary>
-    public static int CountShownDespiteFilter(IEnumerable<KeyValuePair<TweakDefinition, DetectionState?>> items, string? query, RiskFilter filter)
+    /// <summary>
+    /// Pozycje pasujące do zapytania i widoczne (oba filtry), które filtr ryzyka by ukrył, ale są pokazane tylko dzięki wyjątkowi „zastosowane”.
+    /// </summary>
+    public static int CountShownDespiteFilter(
+        IEnumerable<KeyValuePair<TweakDefinition, DetectionState?>> items, string? query, RiskFilter filter, ShowFilter show = ShowFilter.All)
     {
         var count = 0;
         foreach (var pair in items)
         {
             if (MatchesQuery(pair.Key, query)
-                && PassesRisk(pair.Key, pair.Value, filter)
+                && PassesFilters(pair.Key, pair.Value, filter, show)
                 && !PassesRisk(pair.Key, null, filter))
             {
                 count++;
@@ -79,4 +96,7 @@ public static class ItemFilter
 
         return count;
     }
+
+    private static bool PassesFilters(TweakDefinition item, DetectionState? state, RiskFilter filter, ShowFilter show)
+        => PassesRisk(item, state, filter) && PassesShow(item, state, show);
 }

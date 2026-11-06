@@ -85,8 +85,8 @@ public class NavMenuWidthTests
     }
 
     /// <summary>
-    /// Nazwy kategorii z katalogu wbudowanego i z kolejności menu oraz „Przygotowanie”, „Aplikacje”, „Autostart”, „Instalacja” i „Historia zmian” (pomiar z licznikiem
-    /// także dla stron bez licznika – zapas na przyszłość).
+    /// Nazwy kategorii z katalogu wbudowanego i z kolejności menu oraz „Przygotowanie”, „Aplikacje”, „Autostart”, „Instalacja”, „Historia zmian”
+    /// i „Naprawy i narzędzia” (pomiar z licznikiem także dla stron bez licznika – zapas na przyszłość).
     /// </summary>
     private static IEnumerable<string> MenuNames()
     {
@@ -100,6 +100,7 @@ public class NavMenuWidthTests
             .Append(AutostartText.PageTitle)
             .Append(InstallText.PageTitle)
             .Append(HistoryText.PageTitle)
+            .Append(GuiText.ServicePageName)
             .Distinct(StringComparer.Ordinal);
     }
 

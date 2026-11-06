@@ -2,9 +2,15 @@
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.Windows;
+using System.Windows.Automation.Peers;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Threading;
 using DSOptimizer.App.Gui;
 using DSOptimizer.App.ViewModels;
+using DSOptimizer.App.Views;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Apps;
@@ -73,20 +79,195 @@ public class MainViewModelTests
     }
 
     [Fact]
-    public void NavItems_AutostartBetweenAppsAndInstall()
+    public void NavItems_FiveGroupsSeparatedByLines()
     {
         RunOnSta(() =>
         {
             using var temp = new TempDirectory();
             var vm = Create(temp);
 
-            var apps = vm.NavItems.ToList().IndexOf(vm.Apps);
-            Assert.Same(vm.Autostart, vm.NavItems[apps + 1]);
-            Assert.Same(vm.Install, vm.NavItems[apps + 2]);
-            Assert.Same(vm.History, vm.NavItems[vm.NavItems.Count - 1]);
+            Assert.Equal(
+                "Specification,Prep,|,privacy,perf,disk,net,sec,ux,|,Apps,Autostart,Install,|,service,|,History",
+                string.Join(",", vm.NavItems.Select(Kind)));
             Assert.False(vm.IsAutostartSelected);
         });
     }
+
+    [Fact]
+    public void ServicePage_SectionsRepairToolsPanels_NoCounter()
+    {
+        RunOnSta(() =>
+        {
+            using var temp = new TempDirectory();
+            var vm = Create(temp);
+
+            var service = vm.Categories.Single(c => c.IsService);
+            Assert.Equal("Naprawy i narzędzia", service.Name);
+            Assert.Equal(
+                new[] { "Naprawy", "Narzędzia", "Panele systemowe" },
+                service.ItemsView.Groups.Cast<CollectionViewGroup>().Select(g => (string)g.Name));
+            Assert.Equal("repair.system-protection", service.Items[0].Id);
+            Assert.False(service.HasCounter);
+            Assert.Equal(GuiIcons.Repair, service.IconKind);
+        });
+    }
+
+    [Fact]
+    public void ServicePage_ZeroSelected_ShowsRunHint()
+    {
+        RunOnSta(() =>
+        {
+            using var temp = new TempDirectory();
+            var vm = Create(temp);
+
+            vm.SelectedPage = vm.Categories.Single(c => c.IsService);
+
+            Assert.Equal(GuiText.ServiceSelectionHint, vm.SelectionBarTitle);
+            Assert.Equal(GuiText.ServiceSelectionHintDetails, vm.SelectionBarDetails);
+        });
+    }
+
+    [Fact]
+    public void ServicePage_WithSelection_ShowsCount()
+    {
+        RunOnSta(() =>
+        {
+            using var temp = new TempDirectory();
+            var vm = Create(temp);
+            vm.SelectedPage = vm.Categories.Single(c => c.IsService);
+
+            vm.Categories.SelectMany(c => c.Items).Single(i => i.Id == "privacy.widgets").IsSelected = true;
+
+            Assert.Equal("Zaznaczono 1 pozycję", vm.SelectionBarTitle.Split(':')[0]);
+            Assert.NotEqual(GuiText.ServiceSelectionHintDetails, vm.SelectionBarDetails);
+        });
+    }
+
+    /// <summary>Wyniki wyszukiwania i widok „Zaznaczone” na stronie „Naprawy i narzędzia”: dwuklik dodaje tam do zmiany, więc pasek ma zwykłą podpowiedź.</summary>
+    [Fact]
+    public void ServicePage_SearchAndSelectedView_NoServiceHint()
+    {
+        RunOnSta(() =>
+        {
+            using var temp = new TempDirectory();
+            var vm = Create(temp);
+            vm.SelectedPage = vm.Categories.Single(c => c.IsService);
+            Assert.Equal(GuiText.ServiceSelectionHint, vm.SelectionBarTitle);
+
+            vm.SearchText = "dns";
+            Assert.Equal("Kliknij dwukrotnie wiersz albo pole wyboru, żeby dodać do zmiany.", vm.SelectionBarTitle);
+            Assert.Equal(string.Empty, vm.SelectionBarDetails);
+
+            vm.SearchText = string.Empty;
+            Assert.Equal(GuiText.ServiceSelectionHint, vm.SelectionBarTitle);
+
+            vm.ShowFilter = ShowFilter.Selected;
+            Assert.True(vm.IsSelectedView);
+            Assert.Equal("Kliknij dwukrotnie wiersz albo pole wyboru, żeby dodać do zmiany.", vm.SelectionBarTitle);
+            Assert.Equal(string.Empty, vm.SelectionBarDetails);
+
+            vm.EscapeCommand.Execute(null);
+            Assert.Equal(GuiText.ServiceSelectionHint, vm.SelectionBarTitle);
+            Assert.Equal(GuiText.ServiceSelectionHintDetails, vm.SelectionBarDetails);
+        });
+    }
+
+    [Fact]
+    public void OtherPage_ZeroSelected_KeepsDoubleClickHint()
+    {
+        RunOnSta(() =>
+        {
+            using var temp = new TempDirectory();
+            var vm = Create(temp);
+
+            vm.SelectedPage = vm.Categories.Single(c => c.Id == "ux");
+
+            Assert.Equal("Kliknij dwukrotnie wiersz albo pole wyboru, żeby dodać do zmiany.", vm.SelectionBarTitle);
+            Assert.Equal(string.Empty, vm.SelectionBarDetails);
+        });
+    }
+
+    [Fact]
+    public void SelectingSeparator_KeepsCurrentPage()
+    {
+        RunOnSta(() =>
+        {
+            using var temp = new TempDirectory();
+            var vm = Create(temp);
+            var privacy = vm.Categories.First(c => c.Id == "privacy");
+            vm.SelectedPage = privacy;
+            vm.SearchText = "diag";
+            var notified = 0;
+            vm.PropertyChanged += (_, e) => notified += e.PropertyName == nameof(MainViewModel.SelectedNavItem) ? 1 : 0;
+
+            vm.SelectedNavItem = vm.NavItems.OfType<NavSeparatorViewModel>().First();
+
+            Assert.Same(privacy, vm.SelectedPage);
+            Assert.Same(privacy, vm.SelectedNavItem);
+            Assert.Equal("diag", vm.SearchText);
+            Assert.True(notified > 0, "Odrzucenie linii ma przywrócić podświetlenie bieżącej strony (PropertyChanged SelectedNavItem).");
+        });
+    }
+
+    /// <summary>
+    /// Lista menu ze stylem z Themes/Tokens.xaml: czytnik ekranu widzi 13 stron („pozycja N z 13”), bez linii grup i bez nazw typów CLR.
+    /// Zaznaczenie linii przez listę (jak Select z automatyzacji UI) wraca do bieżącej strony.
+    /// </summary>
+    [Fact]
+    public void NavMenu_AutomationPeer_ListsPagesOnly_AndSeparatorSelectionReverts()
+    {
+        RunOnSta(() =>
+        {
+            using var temp = new TempDirectory();
+            var vm = Create(temp);
+            var tokens = (ResourceDictionary)Application.LoadComponent(new Uri("/DSOptimizer;component/Themes/Tokens.xaml", UriKind.Relative));
+            var list = new NavMenuListBox { Style = (Style)tokens["NavListBox"], DataContext = vm };
+            list.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(MainViewModel.NavItems)));
+            list.SetBinding(Selector.SelectedItemProperty, new Binding(nameof(MainViewModel.SelectedNavItem)) { Mode = BindingMode.TwoWay });
+            list.Measure(new Size(304, 2000));
+            list.Arrange(new Rect(0, 0, 304, 2000));
+
+            var children = UIElementAutomationPeer.CreatePeerForElement(list).GetChildren();
+
+            Assert.Equal(13, children.Count);
+            Assert.All(children, child =>
+            {
+                Assert.False(string.IsNullOrEmpty(child.GetName()));
+                Assert.DoesNotContain("ViewModel", child.GetName(), StringComparison.Ordinal);
+                Assert.Equal(13, child.GetSizeOfSet());
+            });
+            Assert.Equal(Enumerable.Range(1, 13), children.Select(child => child.GetPositionInSet()));
+
+            list.SelectedItem = vm.NavItems.OfType<NavSeparatorViewModel>().First();
+            Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+
+            Assert.Same(vm.Specification, vm.SelectedPage);
+            Assert.Same(vm.Specification, list.SelectedItem);
+        });
+    }
+
+    [Fact]
+    public void RepairWingetLink_OpensServicePageOnRepairWinget()
+    {
+        RunOnSta(() =>
+        {
+            using var temp = new TempDirectory();
+            var vm = Create(temp);
+
+            vm.Install.RepairWingetCommand.Execute(null);
+
+            Assert.True(((CategoryViewModel)vm.SelectedPage!).IsService);
+            Assert.Equal("repair.winget", vm.DetailItem?.Id);
+        });
+    }
+
+    /// <summary>Rodzaj pozycji menu: linia grupy = „|”, kategoria = jej id, inna strona = nazwa typu bez „ViewModel”.</summary>
+    private static string Kind(object item) => item switch
+    {
+        NavSeparatorViewModel => "|",
+        CategoryViewModel category => category.Id,
+        _ => item.GetType().Name.Replace("ViewModel", string.Empty),
+    };
 
     [Fact]
     public void EnteringAutostart_Refreshes()
@@ -130,7 +311,7 @@ public class MainViewModelTests
     /// stałe i pewne (<see cref="AutostartToggleTests.UserSid"/>), żeby seria nie zależała od sesji hosta. <paramref name="seriesDialogs"/> =
     /// atrapa okna serii (domyślnie prawdziwe, którego testy nie otwierają).
     /// </summary>
-    internal static MainViewModel Create(TempDirectory temp, FakeAutostartReader? autostartReader = null, ISeriesDialogs? seriesDialogs = null)
+    internal static MainViewModel Create(TempDirectory temp, FakeAutostartReader? autostartReader = null, ISeriesDialogs? seriesDialogs = null, Action<UiLogSink>? sinkReceiver = null)
     {
         var composition = AppComposition.Create(temp.AppRoot, null);
         var services = composition.Services;
@@ -138,6 +319,7 @@ public class MainViewModelTests
         var catalog = CatalogLoader.Load(BuiltInCatalog.Sources);
         var session = new GuiSession(new LoadedCatalog(catalog.Definitions, "sha256:test"), services);
         var sink = new UiLogSink(Dispatcher.CurrentDispatcher, services.Clock);
+        sinkReceiver?.Invoke(sink);
         var accountNames = new CachedAccountNames(new WindowsAccountNames());
         var sid = services.User.Sid;
         var reader = new InstalledAppsReader(services.Scripts);

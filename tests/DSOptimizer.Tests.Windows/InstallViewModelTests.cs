@@ -20,7 +20,7 @@ namespace DSOptimizer.Tests.Windows;
 [Trait("Category", "Windows")]
 public class InstallViewModelTests
 {
-    private const string NotWorkingText = "winget nie działa (winget --version: kod 0x00000001). Użyj „Naprawy → Napraw winget”.";
+    private const string NotWorkingText = "winget nie działa (winget --version: kod 0x00000001). Użyj „Naprawy i narzędzia → Napraw winget”.";
 
     private static readonly AppsInstallCatalog Catalog = AppsInstallCatalog.Load("""
         { "entries": [

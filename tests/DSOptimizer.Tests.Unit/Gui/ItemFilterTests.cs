@@ -26,6 +26,13 @@ public class ItemFilterTests
         Scope = TweakScope.Machine,
     };
 
+    [Fact]
+    public void MatchesQuery_SearchesGroupName()
+    {
+        Assert.True(ItemFilter.MatchesQuery(Item() with { Category = "privacy", Group = "telemetry" }, "diagnostyka"));
+        Assert.False(ItemFilter.MatchesQuery(Item() with { Category = "privacy" }, "diagnostyka"));
+    }
+
     [Theory]
     [InlineData("wylacz")]
     [InlineData("HIBERNACJE")]
@@ -100,6 +107,88 @@ public class ItemFilterTests
         Assert.True(ItemFilter.IsVisible(item, DetectionState.NotApplied, "wylacz", RiskFilter.All));
         Assert.False(ItemFilter.IsVisible(item, DetectionState.NotApplied, "wylacz", RiskFilter.SafeOnly));
         Assert.False(ItemFilter.IsVisible(item, DetectionState.NotApplied, "siec", RiskFilter.All));
+    }
+
+    [Theory] // (stan, NotApplied, Applied)
+    [InlineData(null, true, false)]
+    [InlineData(DetectionState.Applied, false, true)]
+    [InlineData(DetectionState.NotApplied, true, false)]
+    [InlineData(DetectionState.Partial, true, false)]
+    [InlineData(DetectionState.Unknown, true, false)]
+    [InlineData(DetectionState.NotSupported, false, false)]
+    public void PassesShow_TweakMatrix(DetectionState? state, bool notApplied, bool applied)
+    {
+        Assert.Equal(notApplied, ItemFilter.PassesShow(Item(), state, ShowFilter.NotApplied));
+        Assert.Equal(applied, ItemFilter.PassesShow(Item(), state, ShowFilter.Applied));
+        Assert.True(ItemFilter.PassesShow(Item(), state, ShowFilter.All));
+        Assert.True(ItemFilter.PassesShow(Item(), state, ShowFilter.Selected));
+    }
+
+    [Theory]
+    [InlineData(TweakKind.Action)]
+    [InlineData(TweakKind.Panel)]
+    public void PassesShow_ActionAndPanel_OnlyAllAndSelected(TweakKind kind)
+    {
+        foreach (var state in new DetectionState?[] { null, DetectionState.Applied, DetectionState.NotApplied })
+        {
+            Assert.False(ItemFilter.PassesShow(Item(kind: kind), state, ShowFilter.NotApplied));
+            Assert.False(ItemFilter.PassesShow(Item(kind: kind), state, ShowFilter.Applied));
+            Assert.True(ItemFilter.PassesShow(Item(kind: kind), state, ShowFilter.All));
+            Assert.True(ItemFilter.PassesShow(Item(kind: kind), state, ShowFilter.Selected));
+        }
+    }
+
+    /// <summary>Przed pierwszą detekcją (stan nieznany) tweak jest „do zrobienia”, więc „Niezastosowane” go pokazuje.</summary>
+    [Fact]
+    public void PassesShow_NullState_CountsAsNotApplied()
+    {
+        Assert.True(ItemFilter.PassesShow(Item(), null, ShowFilter.NotApplied));
+        Assert.True(ItemFilter.IsVisible(Item(), null, null, RiskFilter.All, ShowFilter.NotApplied));
+        Assert.Equal(0, ItemFilter.CountHidden(new[] { Pair(Item(), null) }, null, RiskFilter.All, ShowFilter.NotApplied));
+    }
+
+    [Fact]
+    public void PassesShow_UndefinedFilter_Throws()
+        => Assert.Throws<System.ArgumentOutOfRangeException>(() => ItemFilter.PassesShow(Item(), null, (ShowFilter)99));
+
+    [Fact]
+    public void IsVisible_RequiresRiskAndShow()
+    {
+        Assert.False(ItemFilter.IsVisible(Item(RiskLevel.Caution), DetectionState.NotApplied, null, RiskFilter.SafeOnly, ShowFilter.NotApplied));
+        Assert.True(ItemFilter.IsVisible(Item(RiskLevel.Caution), DetectionState.Applied, null, RiskFilter.SafeOnly, ShowFilter.Applied));
+        Assert.False(ItemFilter.IsVisible(Item(), DetectionState.Applied, null, RiskFilter.All, ShowFilter.NotApplied));
+        Assert.False(ItemFilter.IsVisible(Item(), DetectionState.NotApplied, "siec", RiskFilter.All, ShowFilter.NotApplied));
+    }
+
+    [Fact]
+    public void CountHidden_CountsBothFilters()
+    {
+        var items = new[]
+        {
+            Pair(Item(id: "a"), DetectionState.Applied),
+            Pair(Item(id: "b"), DetectionState.NotApplied),
+            Pair(Item(kind: TweakKind.Action, id: "c"), null),
+        };
+
+        Assert.Equal(2, ItemFilter.CountHidden(items, null, RiskFilter.All, ShowFilter.NotApplied));
+        Assert.Equal(2, ItemFilter.CountHidden(items, null, RiskFilter.All, ShowFilter.Applied));
+        Assert.Equal(0, ItemFilter.CountHidden(items, null, RiskFilter.All, ShowFilter.Selected));
+        Assert.Equal(0, ItemFilter.CountHidden(items, "zzz", RiskFilter.All, ShowFilter.NotApplied));
+    }
+
+    /// <summary>Wyjątek „zastosowane widoczne mimo filtra” liczy się tylko wtedy, gdy pozycja przechodzi też filtr „Pokaż”.</summary>
+    [Fact]
+    public void CountShownDespiteFilter_RespectsShow()
+    {
+        var items = new[]
+        {
+            Pair(Item(RiskLevel.Experimental, id: "a"), DetectionState.Applied),
+            Pair(Item(RiskLevel.Experimental, id: "b"), DetectionState.Partial),
+        };
+
+        Assert.Equal(2, ItemFilter.CountShownDespiteFilter(items, null, RiskFilter.SafeOnly, ShowFilter.All));
+        Assert.Equal(1, ItemFilter.CountShownDespiteFilter(items, null, RiskFilter.SafeOnly, ShowFilter.Applied));
+        Assert.Equal(1, ItemFilter.CountShownDespiteFilter(items, null, RiskFilter.SafeOnly, ShowFilter.NotApplied));
     }
 
     private static KeyValuePair<TweakDefinition, DetectionState?> Pair(TweakDefinition d, DetectionState? s)

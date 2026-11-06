@@ -8,6 +8,7 @@
                     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                     xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
                     xmlns:model="clr-namespace:DSOptimizer.Core.Model;assembly=DSOptimizer.Core"
+                    xmlns:gui="clr-namespace:DSOptimizer.Core.Gui;assembly=DSOptimizer.Core"
                     xmlns:views="clr-namespace:DSOptimizer.App.Views">
 
   <!-- Czcionka marki (SIL OFL 1.1, THIRD_PARTY_NOTICES.md) -->
@@ -311,6 +312,32 @@
     </Setter>
   </Style>
 
+  <!-- Przycisk rozwinięcia dziennika: strzałka Segoe Fluent Icons jak w TechnicalDetailsExpander (E70E w górę = rozwiń, E70D w dół = zwiń),
+       cel 28x28, kolory neutralne, fokus klawiatury = BrandFocusVisual. Nazwę UIA ustawia widok (Rozwiń dziennik / Zwiń dziennik). -->
+  <Style x:Key="LogToggleButton" TargetType="Button">
+    <Setter Property="FocusVisualStyle" Value="{StaticResource BrandFocusVisual}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="Root" Width="28" Height="28" CornerRadius="4" Background="Transparent">
+            <TextBlock x:Name="Glyph" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="{StaticResource CaptionIconFont}"
+                       FontSize="12" Text="&#xE70E;" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsLogExpanded}" Value="True">
+              <Setter TargetName="Glyph" Property="Text" Value="&#xE70D;" />
+            </DataTrigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Root" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+              <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
   <!-- Dziennik: tekst tylko do odczytu, bez ramki i tła pola tekstowego (sam ScrollViewer z dokumentem) -->
   <Style x:Key="LogTextBox" TargetType="RichTextBox">
     <Setter Property="FocusVisualStyle" Value="{StaticResource BrandFocusVisual}" />
@@ -474,7 +501,55 @@
     </DataTemplate.Triggers>
   </DataTemplate>
 
-  <!-- Lista kategorii (lewa kolumna): wiersz 38 px, zaznaczenie = tło + pasek 4 px NavMarkerBrush -->
+  <!-- Wiersz menu (lewa kolumna): GuiLayout.NavRowHeight, zaznaczenie = tło + pasek 4 px NavMarkerBrush -->
+  <Style x:Key="NavListBoxItem" TargetType="ListBoxItem">
+    <!-- Nazwa pozycji dla czytnika ekranu także w menu zwiniętym do ikon (VM pozycji menu mają właściwość Name) -->
+    <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource NavFocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Grid x:Name="Root" Height="{x:Static gui:GuiLayout.NavRowHeight}" Background="Transparent">
+            <Rectangle x:Name="Bar" Width="4" HorizontalAlignment="Left" Fill="{StaticResource NavMarkerBrush}"
+                       Visibility="Collapsed" />
+            <ContentPresenter />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Root" Property="Background" Value="{StaticResource SideHoverBrush}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter TargetName="Root" Property="Background" Value="{StaticResource SideSelectedBrush}" />
+              <Setter TargetName="Bar" Property="Visibility" Value="Visible" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Linia grupy w menu (NavSeparatorViewModel): GuiLayout.NavSeparatorHeight, bez fokusu i kliku (strzałki ją przeskakują),
+       bez najechania i tła zaznaczenia; samą linię rysuje szablon danych w MainWindow.xaml -->
+  <Style x:Key="NavSeparatorItem" TargetType="ListBoxItem">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="IsHitTestVisible" Value="False" />
+    <Setter Property="Height" Value="{x:Static gui:GuiLayout.NavSeparatorHeight}" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <ContentPresenter />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <views:NavContainerSelector x:Key="NavContainers" PageStyle="{StaticResource NavListBoxItem}" SeparatorStyle="{StaticResource NavSeparatorItem}" />
+
+  <!-- Lista menu (lewa kolumna): wiersz strony albo linia grupy wg typu pozycji. Selektor zamiast ItemContainerStyle,
+       bo ItemContainerStyle ma pierwszeństwo przed selektorem. -->
   <Style x:Key="NavListBox" TargetType="ListBox">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
@@ -488,35 +563,7 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Setter Property="ItemContainerStyle">
-      <Setter.Value>
-        <Style TargetType="ListBoxItem">
-          <!-- Nazwa pozycji dla czytnika ekranu także w menu zwiniętym do ikon (VM pozycji menu mają właściwość Name) -->
-          <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
-          <Setter Property="FocusVisualStyle" Value="{StaticResource NavFocusVisual}" />
-          <Setter Property="Template">
-            <Setter.Value>
-              <ControlTemplate TargetType="ListBoxItem">
-                <Grid x:Name="Root" Height="38" Background="Transparent">
-                  <Rectangle x:Name="Bar" Width="4" HorizontalAlignment="Left" Fill="{StaticResource NavMarkerBrush}"
-                             Visibility="Collapsed" />
-                  <ContentPresenter />
-                </Grid>
-                <ControlTemplate.Triggers>
-                  <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="Root" Property="Background" Value="{StaticResource SideHoverBrush}" />
-                  </Trigger>
-                  <Trigger Property="IsSelected" Value="True">
-                    <Setter TargetName="Root" Property="Background" Value="{StaticResource SideSelectedBrush}" />
-                    <Setter TargetName="Bar" Property="Visibility" Value="Visible" />
-                  </Trigger>
-                </ControlTemplate.Triggers>
-              </ControlTemplate>
-            </Setter.Value>
-          </Setter>
-        </Style>
-      </Setter.Value>
-    </Setter>
+    <Setter Property="ItemContainerStyleSelector" Value="{StaticResource NavContainers}" />
   </Style>
 
   <!-- Wiersz listy pozycji (kontener ItemListBox; strona „Instalacja” bierze go też wprost dla wierszy aplikacji) -->
@@ -697,6 +744,16 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
+              <!-- Pomiar najdłuższej opcji (views:ComboBoxSizing.FitWidestOption): wszystkie opcje w jednej komórce, niewidoczne; bez tej flagi zwinięte,
+                   więc pole ma szerokość wybranej opcji. Czytnik ekranu widzi opcje listy, nie elementy szablonu. -->
+              <ItemsControl x:Name="WidthProbe" Visibility="Collapsed" Focusable="False" IsTabStop="False" IsHitTestVisible="False"
+                            ItemsSource="{TemplateBinding ItemsSource}" ItemTemplate="{TemplateBinding ItemTemplate}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <Grid />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+              </ItemsControl>
               <ContentPresenter VerticalAlignment="Center" Content="{TemplateBinding SelectionBoxItem}"
                                 ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
               <TextBlock x:Name="Arrow" Grid.Column="1" Margin="12,1,0,0" FontFamily="{StaticResource CaptionIconFont}" FontSize="10"
@@ -725,6 +782,9 @@
             </Trigger>
             <Trigger Property="IsDropDownOpen" Value="True">
               <Setter TargetName="Arrow" Property="Text" Value="&#xE70E;" />
+            </Trigger>
+            <Trigger Property="views:ComboBoxSizing.FitWidestOption" Value="True">
+              <Setter TargetName="WidthProbe" Property="Visibility" Value="Hidden" />
             </Trigger>
             <!-- Nieaktywna lista (np. „Język” w Ustawieniach): krycie jak wyłączone przyciski -->
             <Trigger Property="IsEnabled" Value="False">

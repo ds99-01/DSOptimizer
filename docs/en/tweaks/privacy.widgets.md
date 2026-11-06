@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.widgets.md sha256: a405ef4bfae0b0dadda5c0ed1f9af0b869a7f704c9124629c213c07d3a7ff2b3 -->
+<!-- source: docs/tweaks/privacy.widgets.md sha256: a9b68b18c535133cf1b695e4f96c5d778de89c4962d257fc2e2e93725882fad5 -->
 
 # privacy.widgets – Turn off Widgets
 
@@ -23,7 +23,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `HKLM\SOFTWARE\
 
 ## Risks and warnings
 - `risk=safe`, `suggested=true`.
-- Warning in the catalog: "The button disappears after you sign in again (or after you restart File Explorer in "Tools")."
+- Warning in the catalog: "The button disappears after you sign in again (or after you restart File Explorer in "Repairs and tools")."
 - Beyond the notes in the program (in the technical details or only here): restarting File Explorer is the `tools.restart-explorer` item; after the change the "Widgets" toggle in Settings is grayed out (the policy locks it and this can't be avoided).
 
 ## VM test

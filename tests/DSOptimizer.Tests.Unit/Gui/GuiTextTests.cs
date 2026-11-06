@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Localization;
@@ -104,6 +105,32 @@ public class GuiTextTests
     public void CategoryName_KnownAndUnknown(string id, string expected)
         => Assert.Equal(expected, GuiText.CategoryName(id));
 
+    [Theory]
+    [InlineData("start", "Start, wyszukiwanie i Widżety")]
+    [InlineData("ads", "Reklamy i sugestie")]
+    [InlineData("telemetry", "Telemetria i diagnostyka")]
+    [InlineData("xyz", "xyz")]
+    public void GroupName_Privacy(string group, string expected)
+        => Assert.Equal(expected, GuiText.GroupName("privacy", group));
+
+    [Fact]
+    public void GroupName_NullGroup_IsEmpty()
+        => Assert.Equal(string.Empty, GuiText.GroupName("privacy", null));
+
+    /// <summary>Każda grupa z <see cref="CatalogGroups"/> ma nazwę w <see cref="GuiText.GroupName"/>: zapomniana nazwa nowej grupy = czerwony test, nie klucz w nagłówku.</summary>
+    [Fact]
+    public void GroupName_EveryCatalogGroupHasName()
+    {
+        var keys = GuiText.CategoryOrder.SelectMany(category => CatalogGroups.For(category).Select(group => (category, group))).ToList();
+        Assert.NotEmpty(keys);
+        Assert.All(keys, key =>
+        {
+            var name = GuiText.GroupName(key.category, key.group);
+            Assert.False(string.IsNullOrWhiteSpace(name), $"{key.category}/{key.group}: pusta nazwa");
+            Assert.NotEqual(key.group, name);
+        });
+    }
+
     [Fact]
     public void SuggestedTooltip_SaysNothingSelectsItself()
         => Assert.Equal(
@@ -111,8 +138,8 @@ public class GuiTextTests
             GuiText.SuggestedTooltip);
 
     [Fact]
-    public void CategoryOrder_IsRoadmapOrder()
-        => Assert.Equal(new[] { "privacy", "perf", "disk", "net", "sec", "ux", "panels", "repair", "tools" }, GuiText.CategoryOrder);
+    public void CategoryOrder_IsMenuOrder()
+        => Assert.Equal(new[] { "privacy", "perf", "disk", "net", "sec", "ux", "repair", "tools", "panels" }, GuiText.CategoryOrder);
 
     [Theory]
     [InlineData(0, 0, "0 błędów, 0 ostrzeżeń")]
@@ -253,6 +280,25 @@ public class GuiTextTests
     }
 
     [Fact]
+    public void ShowFilterName_CoversEveryValue()
+    {
+        Assert.Equal("Wszystkie", GuiText.ShowFilterName(ShowFilter.All));
+        Assert.Equal("Niezastosowane", GuiText.ShowFilterName(ShowFilter.NotApplied));
+        Assert.Equal("Zastosowane", GuiText.ShowFilterName(ShowFilter.Applied));
+        Assert.Equal("Zaznaczone", GuiText.ShowFilterName(ShowFilter.Selected));
+        Assert.Throws<ArgumentOutOfRangeException>(() => GuiText.ShowFilterName((ShowFilter)99));
+    }
+
+    [Fact]
+    public void ShowFilterTexts()
+    {
+        Assert.Equal("Pokaż", GuiText.ShowLabel);
+        Assert.Equal("Zaznaczone", GuiText.SelectedViewTitle);
+        Assert.Equal("Pokaż zaznaczone", GuiText.ShowSelectedLink);
+        Assert.Equal("Nic nie jest zaznaczone.", GuiText.SelectedViewEmpty);
+    }
+
+    [Fact]
     public void FilterNote_CoversFourCases()
     {
         Assert.Null(GuiText.FilterNote(0, 0));
@@ -267,6 +313,14 @@ public class GuiTextTests
         Assert.Equal("Nic nie pasuje do „xyz”.", GuiText.NoSearchResults(" xyz "));
         Assert.Equal("Wyniki wyszukiwania", GuiText.SearchTitle);
         Assert.Equal("Szukaj we wszystkich kategoriach", GuiText.SearchPlaceholder);
+    }
+
+    [Fact]
+    public void ServiceSelectionHint_NoGlyphsAndShort()
+    {
+        Assert.DoesNotContain("▶", GuiText.ServiceSelectionHint + GuiText.ServiceSelectionHintDetails);
+        Assert.True(GuiText.ServiceSelectionHint.Length <= 45);
+        Assert.Equal("Ochronę systemu dodaje się do zmiany polem wyboru albo dwuklikiem.", GuiText.ServiceSelectionHintDetails);
     }
 
     [Fact]
@@ -356,7 +410,7 @@ public class GuiTextTests
 
     [Theory]
     [InlineData(" xyz ", 0, "Nic nie pasuje do „xyz”.")]
-    [InlineData("xyz", 2, "Pasujące pozycje ukrył filtr ryzyka.")]
+    [InlineData("xyz", 2, "Pasujące pozycje ukrył filtr.")]
     public void EmptySearchText_Table(string query, int hiddenCount, string expected)
         => Assert.Equal(expected, GuiText.EmptySearchText(query, hiddenCount));
 

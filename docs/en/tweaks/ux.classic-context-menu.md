@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/ux.classic-context-menu.md sha256: 46761290b32a3c1158b8a334bb7fc441da8a1ed2d5ba5ae97f8b29bad6e4c3ef -->
+<!-- source: docs/tweaks/ux.classic-context-menu.md sha256: 73a26bb6f285eff7072145f5f1dc2813f08036d17ba4a9f83d90f40befd5f301 -->
 
 # ux.classic-context-menu – Bring back the classic right-click menu
 
@@ -23,7 +23,7 @@ Reading from the DSO-26H2-Home and DSO-26H2-Pro VMs, 2026-10-21: `HKU\<SID>\Soft
 
 ## Risks and warnings
 - `risk=caution`, `suggested=false`.
-- Warning in the catalog: "The menu changes after you sign in again (or after you restart File Explorer in "Tools")."
+- Warning in the catalog: "The menu changes after you sign in again (or after you restart File Explorer in "Repairs and tools")."
 - Beyond the notes in the program (in the technical details or only here): DSOptimizer doesn't restart File Explorer by itself (restarting is the `tools.restart-explorer` item); the entry in HKCU overrides the registration of the Windows 11 menu for this account, and undo restores the state from before the change.
 
 ## VM test

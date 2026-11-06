@@ -27,6 +27,24 @@ public static class GuiLayout
     /// <summary>Poniżej tej szerokości okna menu zwija się do ikon (okno startowe na ekranie 1024×768 ma ok. 922 px).</summary>
     public const double NavCompactBelow = 1100;
 
+    public const double NavRowHeight = 34;
+    public const double NavSeparatorHeight = 13;
+    public const double NavListTop = 10;
+    public const double NavPinnedHeight = 53;
+    public const double BrandBarHeight = 44;
+
+    /// <summary>Najmniejsza czytelna szerokość wyszukiwarki obok list „Pokaż” i „Ryzyko” (decyzja P1, wariant b).</summary>
+    public const double SearchMinWidth = 150;
+
+    /// <summary>Odstęp między wyszukiwarką a listami, gdy stoją w jednym wierszu.</summary>
+    public const double SearchFiltersGap = 14;
+
+    /// <summary>Odstęp nad listami, gdy zeszły do drugiego wiersza pod wyszukiwarką.</summary>
+    public const double SearchFiltersRowGap = 8;
+
+    /// <summary>Wysokość dziennika zwiniętego do jednego paska (Dziennik, ostatnia linia, licznik, kopiowanie, rozwinięcie).</summary>
+    public const double LogCollapsedHeight = 36;
+
     private const double DetailMin = 280;
     private const double DetailMax = 420;
     private const double DetailNarrowMin = 240;
@@ -74,6 +92,14 @@ public static class GuiLayout
     /// <summary>Szerokość kolumny menu przy danej szerokości okna: 56 (zwinięte) albo 304 (pełne).</summary>
     public static double NavWidth(double windowWidth) => IsNavCompact(windowWidth) ? NavCompactWidth : NavFullWidth;
 
+    /// <summary>
+    /// Czy listy „Pokaż” i „Ryzyko” (z etykietami, razem <paramref name="filtersWidth"/>) schodzą do drugiego wiersza pod wyszukiwarkę:
+    /// tak, gdy obok nich wyszukiwarka miałaby mniej niż <see cref="SearchMinWidth"/>. Liczone z szerokości list, nie z bieżącej szerokości
+    /// wyszukiwarki, więc układ nie przeskakuje tam i z powrotem.
+    /// </summary>
+    public static bool SearchFiltersWrap(double rowWidth, double filtersWidth)
+        => rowWidth - SearchFiltersGap - filtersWidth < SearchMinWidth;
+
     /// <summary>Startowa wysokość dziennika: 20% okna w granicach 146–240.</summary>
     public static double InitialLogHeight(double windowHeight) =>
         Math.Min(LogMax, Math.Max(LogMin, windowHeight * 0.2));
@@ -81,6 +107,22 @@ public static class GuiLayout
     /// <summary>Maksymalna wysokość dziennika: połowa okna, nie mniej niż 146.</summary>
     public static double MaxLogHeight(double windowHeight) =>
         Math.Max(LogMin, windowHeight / 2);
+
+    /// <summary>Wysokość pełnego menu: pasek marki, góra listy, wiersze stron, linie grup i przypięte „Ustawienia”.</summary>
+    public static double NavMenuHeight(int pages, int separators)
+    {
+        if (pages < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pages), "Liczba stron nie może być ujemna.");
+        }
+
+        if (separators < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(separators), "Liczba linii nie może być ujemna.");
+        }
+
+        return BrandBarHeight + NavListTop + (pages * NavRowHeight) + (separators * NavSeparatorHeight) + NavPinnedHeight;
+    }
 
     private static double Fit(double available, double min, double max) =>
         Math.Min(available, Math.Max(min, Math.Min(max, available * WorkAreaShare)));

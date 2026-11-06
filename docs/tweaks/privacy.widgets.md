@@ -21,7 +21,7 @@ Odczyt z VM DSO-26H2-Home i DSO-26H2-Pro, 2026-10-21: `HKLM\SOFTWARE\Policies\Mi
 
 ## Ryzyka i ostrzeżenia
 - `risk=safe`, `suggested=true`.
-- Ostrzeżenie w katalogu: „Przycisk zniknie po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).”
+- Ostrzeżenie w katalogu: „Przycisk zniknie po ponownym zalogowaniu (albo po restarcie Eksploratora w „Naprawach i narzędziach”).”
 - Poza uwagami w programie (w szczegółach technicznych albo tylko tutaj): restart Eksploratora to pozycja `tools.restart-explorer`; przełącznik „Widżety” w Ustawieniach jest po zmianie wyszarzony (polityka go blokuje i nie da się tego uniknąć).
 
 ## Test VM

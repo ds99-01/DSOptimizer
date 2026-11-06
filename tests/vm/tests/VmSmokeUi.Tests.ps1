@@ -31,7 +31,7 @@
         $Probe = [ordered]@{
             Ok = $true; Error = $null; HistoryMenuFound = $true; HistoryPageOpened = $true; ApplyError = $null; HistoryError = $null
             EntryNames = @('Szybsze otwieranie podmenu, Eksplorator i wygoda, Aktywna, 20.10.2026 21:00'); HitTestError = $null
-            FilterRiskOpened = $true; FilterRiskSelected = $true; FilterHistoryOpened = $true; FilterHistorySelected = $true; FilterError = $null
+            FilterRiskOpened = $true; FilterRiskSelected = $true; FilterShowOpened = $true; FilterShowSelected = $true; FilterHistoryOpened = $true; FilterHistorySelected = $true; FilterError = $null
             RowClickPreview = $true; RowDoubleClickToggles = $true; RunIconRuns = $true; RunIconDoubleClickOnce = $true; RowError = $null
             PrivacyButtonFound = $true; PrivacyApplyCountOnEntry = 0; PrivacyApplyCount = 2; PrivacyApplyText = 'Zastosuj (2)'; PrivacyError = $null
             AppsListRead = $true; AppsButtonFound = $true; AppsRemoveCountOnEntry = 0; AppsRemoveCount = 8; AppsRemoveText = 'Usuń (8)'; AppsError = $null
@@ -62,11 +62,16 @@
         [pscustomobject]$Probe
     }
     function script:Get-Check($Checks, [string]$Name) { $Checks | Where-Object Name -eq $Name }
+    # Tytuł pierwszej pozycji danej kategorii z pliku <kategoria>.json katalogu (do sprawdzenia kolejności tytułów Napraw i narzędzi).
+    function script:Get-CatalogTitleByCategory([string]$Dir, [string]$Category) {
+        $Items = [System.IO.File]::ReadAllText((Join-Path $Dir "$Category.json"), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+        return [string](@($Items) | Where-Object { [string]$_.category -eq $Category } | Select-Object -First 1).title
+    }
     # Oczekiwane N obu stron z kompletem zgodnym z New-UiProbe (2 sugerowane privacy, 8 sugerowanych aplikacji).
     $script:PrivacyOk = [pscustomobject]@{ Count = 2; Detail = 'det' }
     $script:PlTexts = Get-GuiProbeTexts -Language pl
     $script:AppsOk = [pscustomobject]@{ Count = 8; Detail = 'lista' }
-    # Oczekiwane tytuły strony „Naprawy” zgodne z New-UiProbe (RepairTexts).
+    # Oczekiwane tytuły strony „Naprawy i narzędzia” zgodne z New-UiProbe (RepairTexts).
     $script:RepairOk = @('Naprawa A', 'Naprawa B')
     # Oczekiwania strony „Instalacja” (Get-GuiInstallTitle) zgodne z New-UiProbe (InstallCategories, InstallTexts).
     $script:InstallOk = [pscustomobject]@{ Titles = @('Google Chrome', '7-Zip'); Categories = @('Wszystkie', 'Zaznaczone', 'Przeglądarki', 'Narzędzia') }
@@ -96,10 +101,11 @@ Describe 'VmSmokeUi (plik i skrypt sondy)' {
         $Text | Should -Match 'mouse_event\(0x0002'
         $Text | Should -Match 'mouse_event\(0x0004'
         $Text | Should -Match ([regex]::Escape('Test-FilterCombo $T.ProbeCategory $T.RiskCombo'))
+        $Text | Should -Match ([regex]::Escape('Test-FilterCombo $T.ProbeCategory $T.ShowCombo $ShowOptionNames $R3'))
         $Text | Should -Match ([regex]::Escape('Test-FilterCombo $T.HistoryPage $T.HistoryFilter'))
         $Text | Should -Match 'ExpandCollapseState'
         $Text | Should -Not -Match '\.Expand\(\)|SendInput'
-        foreach ($Field in 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'FilterError') { $Text | Should -Match $Field }
+        foreach ($Field in 'FilterRiskOpened', 'FilterRiskSelected', 'FilterShowOpened', 'FilterShowSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'FilterError') { $Text | Should -Match $Field }
     }
     It 'sonda klika wiersze listy prawdziwą myszą: klik, dwuklik, znacznik uruchomienia panelu, okna mmc.exe liczone przed i po' {
         $Text = Get-GuiUiProbeScript
@@ -107,7 +113,7 @@ Describe 'VmSmokeUi (plik i skrypt sondy)' {
         $Text | Should -Match 'public static void DoubleClick\(int x, int y\)'
         $Text | Should -Match ([regex]::Escape('[DsoUser32]::DoubleClick('))
         $Text | Should -Match ([regex]::Escape("Get-Process -Name 'mmc'"))
-        $Text | Should -Match ([regex]::Escape('Get-ListRow $T.PanelsCategory $T.PanelTitle'))
+        $Text | Should -Match ([regex]::Escape('Get-ListRow $T.ServicePage $T.PanelTitle'))
         $Text | Should -Match ([regex]::Escape('$Out.RunIconDoubleClickOnce = ($New.Count -eq 1)'))
         $Text | Should -Match ([regex]::Escape('$Out.RunIconRuns = ($New.Count -eq 1)'))
     }
@@ -120,7 +126,11 @@ Describe 'VmSmokeUi (plik i skrypt sondy)' {
     It 'każde pole filtra ma osobny try/catch, a błąd niesie nazwę pola' {
         $Text = Get-GuiUiProbeScript
         $Text | Should -Match ([regex]::Escape('try { Test-FilterCombo $T.ProbeCategory $T.RiskCombo $RiskOptionNames $R1 }'))
+        $Text | Should -Match ([regex]::Escape('try { Test-FilterCombo $T.ProbeCategory $T.ShowCombo $ShowOptionNames $R3 }'))
         $Text | Should -Match ([regex]::Escape('try { Test-FilterCombo $T.HistoryPage $T.HistoryFilter $HistoryOptionNames $R2 }'))
+        # Przedrostek błędu to nazwa pola okna z słownika (po polsku „Pokaż:”), więc skrypt zostaje czystym ASCII.
+        $Text | Should -Match ([regex]::Escape('$FilterErrors += "$($T.ShowCombo): $($_.Exception.Message)"'))
+        $Text | Should -Match ([regex]::Escape('$FilterErrors += "$($T.ShowCombo): $($R3.Note)"'))
         $Text | Should -Match ([regex]::Escape('$FilterErrors += "Ryzyko: $($_.Exception.Message)"'))
         $Text | Should -Match ([regex]::Escape('$FilterErrors += "Filtr: $($_.Exception.Message)"'))
         $Text | Should -Match ([regex]::Escape('$Out.FilterError = $FilterErrors -join ''; '''))
@@ -493,7 +503,7 @@ Describe 'Sonda: „Przygotowanie” (krok 9)' {
             return @(Get-CsLiteral (Read-CoreSource 'Prep\PrepText.cs') $Pattern)
         }
     }
-    It 'krok 9 jest po kroku 8 („Aplikacje”) i jego odczycie N, a przed krokiem 10 („Naprawy”)' {
+    It 'krok 9 jest po kroku 8 („Aplikacje”) i jego odczycie N, a przed krokiem 10 („Naprawy i narzędzia”)' {
         $script:ProbeText.IndexOf('# 9.') | Should -BeGreaterThan $script:ProbeText.IndexOf('$Out.AppsRemoveCount = [int]$Matches[1]')
         $script:Step9 | Should -Not -Match '# 10\.'
         $script:ProbeText.IndexOf('# 10.') | Should -BeGreaterThan $script:ProbeText.IndexOf('catch { $Out.PrepError = $_.Exception.Message')
@@ -589,7 +599,7 @@ Describe 'Get-GuiUiCheck: PrepPage' {
         $Check.Passed | Should -BeFalse
         $Check.Detail | Should -BeLike 'brak pola PrepMenuFound*'
     }
-    It 'brak pól kroku 9 nie pomija sprawdzenia kroku 10 („Naprawy”)' {
+    It 'brak pól kroku 9 nie pomija sprawdzenia kroku 10 („Naprawy i narzędzia”)' {
         $Probe = New-UiProbe @{}
         $Without = [pscustomobject]@{}
         foreach ($P in $Probe.PSObject.Properties | Where-Object { $_.Name -notlike 'Prep*' }) { $Without | Add-Member -NotePropertyName $P.Name -NotePropertyValue $P.Value }
@@ -598,7 +608,7 @@ Describe 'Get-GuiUiCheck: PrepPage' {
     }
 }
 
-Describe 'Sonda: „Naprawy” (krok 10)' {
+Describe 'Sonda: „Naprawy i narzędzia” (krok 10)' {
     BeforeAll {
         $script:ProbeText = Get-GuiUiProbeScript
         $script:Step10 = $script:ProbeText.Substring($script:ProbeText.IndexOf('# 10.'))
@@ -611,11 +621,10 @@ Describe 'Sonda: „Naprawy” (krok 10)' {
         $script:Step10 | Should -Not -Match '# 11\.'
         $script:ProbeText.IndexOf('# 11.') | Should -BeGreaterThan $script:ProbeText.IndexOf('catch { $Out.RepairError = $_.Exception.Message')
     }
-    It 'wchodzi na pozycję menu „Naprawy” (nazwa = GuiText dla kategorii repair) wzorcem SelectionItemPattern' {
-        $Repair = @(Get-CsLiteral (Read-CoreSource 'Gui\GuiText.cs') '"repair"\s*=>\s*(?:L\.T\(\s*)?')
-        $Repair | Should -Be @('Naprawy')
-        (Get-GuiProbeTexts -Language pl).RepairCategory | Should -Be 'Naprawy'
-        $script:Step10 | Should -Match ([regex]::Escape('Find-Element $Root $T.RepairCategory $ListItem'))
+    It 'wchodzi na pozycję menu „Naprawy i narzędzia” (nazwa = GuiText.ServicePageName) wzorcem SelectionItemPattern' {
+        (Get-CsText (Read-CoreSource 'Gui\GuiText.cs') 'ServicePageName') | Should -Be 'Naprawy i narzędzia'
+        (Get-GuiProbeTexts -Language pl).ServicePage | Should -Be 'Naprawy i narzędzia'
+        $script:Step10 | Should -Match ([regex]::Escape('Find-Element $Root $T.ServicePage $ListItem'))
         $script:Step10 | Should -Match ([regex]::Escape('[System.Windows.Automation.SelectionItemPattern]::Pattern).Select()'))
     }
     It 'czyta teksty listy „Pozycje” (z przewinięciem do końca) do pól RepairMenuFound, RepairListFound, RepairTexts' {
@@ -639,6 +648,69 @@ Describe 'Sonda: „Naprawy” (krok 10)' {
     }
 }
 
+Describe 'Sonda: przewijanie wirtualizowanej listy (Find-ListText)' {
+    BeforeAll {
+        Add-Type -AssemblyName UIAutomationClient
+        $Text = Get-GuiUiProbeScript
+        $Start = $Text.IndexOf('    function Find-ListText')
+        $End = $Text.IndexOf('    function Get-ListRow')
+        $script:FindListTextSource = $Text.Substring($Start, $End - $Start)
+        $script:ProbeScriptText = $Text
+        # Atrapa listy: wiersz "Wiersz" jest w drzewie dopiero od zadanego procentu przewiniecia.
+        function script:New-FakeList([int]$VisibleFrom, [bool]$Scrollable = $true) {
+            $List = [pscustomobject]@{ Percent = -1; VisibleFrom = $VisibleFrom; Calls = 0 }
+            $Pattern = [pscustomobject]@{ Owner = $List }
+            $Pattern | Add-Member -MemberType ScriptMethod -Name SetScrollPercent -Value { param($H, $V) $this.Owner.Calls++; $this.Owner.Percent = $V }
+            $List | Add-Member -MemberType ScriptMethod -Name GetCurrentPattern -Value { param($P) if (-not $Scrollable) { throw 'brak wzorca' }; $Pattern }.GetNewClosure()
+            return $List
+        }
+        function script:Invoke-FindListText($List, [int]$FirstWait = 0) {
+            $Script = [scriptblock]::Create(@"
+param(`$List, `$FirstWait)
+`$script:Steps = @()
+function Add-Step([string]`$T) { `$script:Steps += `$T }
+function Wait-Element(`$Parent, [string]`$Name, `$Type, [int]`$Seconds) { if (`$Parent.Percent -ge `$Parent.VisibleFrom -and `$Parent.VisibleFrom -ge 0) { return 'ELEMENT' } return `$null }
+$($script:FindListTextSource)
+`$Found = Find-ListText `$List 'Wiersz' `$FirstWait
+[pscustomobject]@{ Found = `$Found; Steps = `$script:Steps }
+"@)
+            & $Script $List $FirstWait
+        }
+    }
+    It 'wiersz widoczny od razu: bez przewijania' {
+        $List = New-FakeList 0
+        $List.Percent = 0
+        $R = Invoke-FindListText $List
+        $R.Found | Should -Be 'ELEMENT'
+        $List.Calls | Should -Be 0
+    }
+    It 'wiersz pojawia się dopiero przy 60 proc.: sonda przewija stopniami co 10 proc. i go znajduje' {
+        $List = New-FakeList 60
+        $R = Invoke-FindListText $List
+        $R.Found | Should -Be 'ELEMENT'
+        $List.Percent | Should -Be 60
+        $List.Calls | Should -Be 7
+        ($R.Steps -join ' ') | Should -BeLike '*60 proc.*'
+    }
+    It 'brak wiersza: kończy się po skończonej liczbie kroków (11) i zwraca $null z wpisem diagnostycznym' {
+        $List = New-FakeList -1
+        $R = Invoke-FindListText $List
+        $R.Found | Should -BeNullOrEmpty
+        $List.Calls | Should -Be 11
+        ($R.Steps -join ' ') | Should -BeLike '*nie znaleziono*'
+    }
+    It 'brak ScrollPattern: wpis diagnostyczny zamiast cichego catch' {
+        $List = New-FakeList -1 $false
+        $R = Invoke-FindListText $List
+        $R.Found | Should -BeNullOrEmpty
+        ($R.Steps -join ' ') | Should -BeLike '*brak ScrollPattern*'
+    }
+    It 'Get-ListRow szuka przez Find-ListText z pierwszym czekaniem 15 s, bez pustego catch przy przewijaniu' {
+        $script:ProbeScriptText | Should -Match ([regex]::Escape('$Text = Find-ListText $List $Title 15'))
+        $script:FindListTextSource | Should -Not -Match 'catch\s*\{\s*\}'
+    }
+}
+
 Describe 'Get-GuiRepairTitle' {
     It 'z katalogu bierze tytuły pozycji kategorii repair, w kolejności plików i wpisów, bez apps-bloat.json' {
         $Dir = Join-Path $TestDrive 'catalog-repair'
@@ -652,7 +724,9 @@ Describe 'Get-GuiRepairTitle' {
         [System.IO.File]::WriteAllText((Join-Path $Dir 'repair.json'), (ConvertTo-Json -InputObject $Items -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
         [System.IO.File]::WriteAllText((Join-Path $Dir 'tools.json'), (ConvertTo-Json -InputObject $Other -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
         [System.IO.File]::WriteAllText((Join-Path $Dir 'apps-bloat.json'), (ConvertTo-Json -InputObject $Apps -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
-        Get-GuiRepairTitle -CatalogDirectory $Dir | Should -Be @('Napraw A', 'Ochrona B')
+        $Panels = @([ordered]@{ id = 'panels.d'; category = 'panels'; kind = 'action'; title = 'Panel D' })
+        [System.IO.File]::WriteAllText((Join-Path $Dir 'panels.json'), (ConvertTo-Json -InputObject $Panels -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
+        Get-GuiRepairTitle -CatalogDirectory $Dir | Should -Be @('Napraw A', 'Ochrona B', 'Narzędzie C', 'Panel D')
     }
     It 'pomija apps.json po nazwie pliku' {
         $Dir = Join-Path $TestDrive 'catalog-repair-install'
@@ -672,23 +746,37 @@ Describe 'Get-GuiRepairTitle' {
         [System.IO.File]::WriteAllText((Join-Path $Dir 'autostart-known.json'), (ConvertTo-Json -InputObject $Known -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
         Get-GuiRepairTitle -CatalogDirectory $Dir | Should -Be @('Napraw A')
     }
-    It 'wbudowany katalog: 11 tytułów = tytuły z repair.json' {
+    It 'wbudowany katalog: tytuły kategorii repair, tools i panels (w tej kolejności) = tytuły z repair.json, tools.json i panels.json' {
         $Dir = Join-Path $PSScriptRoot '..\..\..\src\DSOptimizer.Catalog\catalog'
-        $Items = [System.IO.File]::ReadAllText((Join-Path $Dir 'repair.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
-        $Expected = @(@($Items) | ForEach-Object { [string]$_.title })
+        $ByFile = foreach ($Name in 'repair', 'tools', 'panels') {
+            $Items = [System.IO.File]::ReadAllText((Join-Path $Dir "$Name.json"), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+            , @(@($Items) | Where-Object { [string]$_.category -eq $Name } | ForEach-Object { [string]$_.title })
+        }
+        $Expected = @($ByFile | ForEach-Object { $_ })
         $Titles = @(Get-GuiRepairTitle -CatalogDirectory $Dir)
-        $Titles.Count | Should -Be 11
+        # Liczby z katalogu repo, nie stałe: 11 napraw, 2 narzędzia, 15 paneli = 28 (stan paczki UX).
+        $Titles.Count | Should -Be $Expected.Count
+        $Titles.Count | Should -Be ($ByFile[0].Count + $ByFile[1].Count + $ByFile[2].Count)
         $Titles | Should -Be $Expected
         $Titles | Should -Contain 'Ochrona systemu'
+        $Titles | Should -Contain (Get-CatalogTitleByCategory $Dir 'tools')
+        $Titles | Should -Contain (Get-CatalogTitleByCategory $Dir 'panels')
+        $Titles.IndexOf((Get-CatalogTitleByCategory $Dir 'tools')) | Should -BeGreaterThan ($ByFile[0].Count - 1)
+        $Titles.IndexOf((Get-CatalogTitleByCategory $Dir 'panels')) | Should -BeGreaterThan ($ByFile[0].Count + $ByFile[1].Count - 1)
     }
-    It '-Language en: te same pozycje, tytuły z tabel tłumaczeń (każdy inny niż polski)' {
+    It 'wbudowany katalog: 28 tytułów (11 napraw, 2 narzędzia, 15 paneli)' {
+        $Dir = Join-Path $PSScriptRoot '..\..\..\src\DSOptimizer.Catalog\catalog'
+        @(Get-GuiRepairTitle -CatalogDirectory $Dir).Count | Should -Be 28
+    }
+    It '-Language en: te same pozycje, tytuły z tabel tłumaczeń (każdy inny niż polski poza „Region”)' {
         $Dir = Join-Path $PSScriptRoot '..\..\..\src\DSOptimizer.Catalog\catalog'
         $Pl = @(Get-GuiRepairTitle -CatalogDirectory $Dir)
         $En = @(Get-GuiRepairTitle -CatalogDirectory $Dir -Language en)
         $En.Count | Should -Be $Pl.Count
         for ($I = 0; $I -lt $Pl.Count; $I++) {
             $En[$I] | Should -Be (Get-DsoUiText -Polish $Pl[$I] -Language en)
-            $En[$I] | Should -Not -Be $Pl[$I]
+            # „Region” (panel) brzmi tak samo w obu językach.
+            if ($Pl[$I] -cne 'Region') { $En[$I] | Should -Not -Be $Pl[$I] }
         }
     }
     It 'pusty wynik to błąd (sprawdzenie nie miałoby czego porównać)' {
@@ -743,7 +831,7 @@ Describe 'Sonda: „Instalacja” (krok 11)' {
         $script:Step11 = $script:ProbeText.Substring($script:ProbeText.IndexOf('# 11.'))
         $script:Step11 = $script:Step11.Substring(0, $script:Step11.IndexOf('# 12.'))
     }
-    It 'krok 11 jest po kroku 10 („Naprawy”) i jego obsłudze błędu, a przed krokiem 12 („Autostart”)' {
+    It 'krok 11 jest po kroku 10 („Naprawy i narzędzia”) i jego obsłudze błędu, a przed krokiem 12 („Autostart”)' {
         $script:ProbeText.IndexOf('# 11.') | Should -BeGreaterThan $script:ProbeText.IndexOf('catch { $Out.RepairError = $_.Exception.Message')
         $script:Step11 | Should -Match ([regex]::Escape('catch { $Out.InstallError = $_.Exception.Message'))
     }
@@ -945,7 +1033,7 @@ Describe 'Sonda: „Autostart” (krok 12)' {
         foreach ($Field in 'AutostartMenuFound', 'AutostartPageScoped', 'AutostartLoaded', 'AutostartReadFailed', 'AutostartGroupNames', 'AutostartDisableText', 'AutostartDisableEnabled', 'AutostartEnableText', 'AutostartEnableEnabled', 'AutostartError') { $Head | Should -Match $Field }
     }
     It 'strony wybiera po nazwie pozycji menu, nigdy po pozycji na liście (nowa pozycja „Autostart” przesunęła „Instalację” i dalsze)' {
-        foreach ($Key in 'HistoryPage', 'ProbeCategory', 'AppsPage', 'PrepPage', 'RepairCategory', 'InstallPage', 'AutostartPage') {
+        foreach ($Key in 'HistoryPage', 'ProbeCategory', 'AppsPage', 'PrepPage', 'ServicePage', 'InstallPage', 'AutostartPage') {
             $script:ProbeText | Should -Match ([regex]::Escape("Find-Element `$Root `$T.$Key `$ListItem")) -Because $Key
         }
         $script:ProbeText | Should -Match ([regex]::Escape('$PrivacyName = [string]$T.PrivacyCategory'))
@@ -1077,16 +1165,16 @@ Describe 'Get-GuiUiCheck: AutostartPage' {
 }
 
 Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
-    It 'komplet: siedemnaście zaliczonych sprawdzeń w stałej kolejności' {
+    It 'komplet: dziewiętnaście zaliczonych sprawdzeń w stałej kolejności' {
         $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe (New-UiProbe @{}) -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk -AutostartExpected $script:AutostartOk
-        @($Checks.Name) | Should -Be @('HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage', 'AutostartPage')
+        @($Checks.Name) | Should -Be @('HistoryMenu', 'HistoryEntryActive', 'CaptionHitTest', 'FilterRiskOpened', 'FilterRiskSelected', 'FilterShowOpened', 'FilterShowSelected', 'FilterHistoryOpened', 'FilterHistorySelected', 'RowClickPreview', 'RowDoubleClickToggles', 'RunIconRuns', 'RunIconDoubleClickOnce', 'PrivacySuggestedApply', 'AppsSuggestedRemove', 'PrepPage', 'RepairPage', 'InstallPage', 'AutostartPage')
         @($Checks | Where-Object { -not $_.Passed }).Count | Should -Be 0
         (Get-Check $Checks 'HistoryEntryActive').Detail | Should -Be 'wiersz: Szybsze otwieranie podmenu, Eksplorator i wygoda, Aktywna, 20.10.2026 21:00'
         (Get-Check $Checks 'CaptionHitTest').Detail | Should -BeLike '*przekrój x=8: 42..43: 2; 44..44: 1*'
     }
-    It 'brak sondy ($null): wszystkie siedemnaście niezaliczone' {
+    It 'brak sondy ($null): wszystkie dziewiętnaście niezaliczone' {
         $Checks = Get-GuiUiCheck -Texts $script:PlTexts -Probe $null -PrivacyExpected $script:PrivacyOk -AppsExpected $script:AppsOk -RepairTitles $script:RepairOk -InstallExpected $script:InstallOk -AutostartExpected $script:AutostartOk
-        @($Checks).Count | Should -Be 17
+        @($Checks).Count | Should -Be 19
         @($Checks | Where-Object Passed).Count | Should -Be 0
     }
     It '<Nazwa> nie przechodzi, gdy <Powod>' -ForEach @(
@@ -1169,6 +1257,8 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
     It '<Nazwa> nie przechodzi, gdy pole wyniku to false' -ForEach @(
         @{ Nazwa = 'FilterRiskOpened' }
         @{ Nazwa = 'FilterRiskSelected' }
+        @{ Nazwa = 'FilterShowOpened' }
+        @{ Nazwa = 'FilterShowSelected' }
         @{ Nazwa = 'FilterHistoryOpened' }
         @{ Nazwa = 'FilterHistorySelected' }
     ) {
@@ -1181,6 +1271,8 @@ Describe 'Get-GuiUiCheck (agregacja sondy UI)' {
     It '<Nazwa> nie przechodzi, gdy sonda nie ma pola wyniku (stara sonda)' -ForEach @(
         @{ Nazwa = 'FilterRiskOpened' }
         @{ Nazwa = 'FilterRiskSelected' }
+        @{ Nazwa = 'FilterShowOpened' }
+        @{ Nazwa = 'FilterShowSelected' }
         @{ Nazwa = 'FilterHistoryOpened' }
         @{ Nazwa = 'FilterHistorySelected' }
     ) {
@@ -1273,7 +1365,7 @@ Describe 'Get-GuiProbeTexts (słownik tekstów sondy)' {
     }
     It 'pl i en mają te same nazwy, tablice tej samej długości' {
         @($script:En.Keys) | Should -Be @($script:Pl.Keys)
-        foreach ($Key in 'RiskOptions', 'HistoryOptions', 'PrepTitles') { @($script:En[$Key]).Count | Should -Be @($script:Pl[$Key]).Count }
+        foreach ($Key in 'RiskOptions', 'ShowOptions', 'HistoryOptions', 'PrepTitles') { @($script:En[$Key]).Count | Should -Be @($script:Pl[$Key]).Count }
         @($script:En.InstallCategoryNames.Keys) | Should -Be @($script:Pl.InstallCategoryNames.Keys)
     }
     It 'en: każda nazwa ma niepusty tekst' {
@@ -1300,9 +1392,9 @@ Describe 'Get-GuiProbeTexts (słownik tekstów sondy)' {
         @{ Key = 'HistoryFilter'; File = 'src\DSOptimizer.Core\Gui\HistoryText.cs' }
         @{ Key = 'HistoryActive'; File = 'src\DSOptimizer.Core\Gui\HistoryText.cs' }
         @{ Key = 'ProbeCategory'; File = 'src\DSOptimizer.Core\Gui\GuiText.cs' }
-        @{ Key = 'PanelsCategory'; File = 'src\DSOptimizer.Core\Gui\GuiText.cs' }
+        @{ Key = 'ServicePage'; File = 'src\DSOptimizer.Core\Gui\GuiText.cs' }
+        @{ Key = 'ShowCombo'; File = 'src\DSOptimizer.Core\Gui\GuiText.cs' }
         @{ Key = 'PrivacyCategory'; File = 'src\DSOptimizer.Core\Gui\GuiText.cs' }
-        @{ Key = 'RepairCategory'; File = 'src\DSOptimizer.Core\Gui\GuiText.cs' }
         @{ Key = 'RefreshState'; File = 'src\DSOptimizer.App\MainWindow.xaml' }
         @{ Key = 'ApplyFormat'; File = 'src\DSOptimizer.App\ViewModels\MainViewModel.cs' }
         @{ Key = 'RiskCombo'; File = 'src\DSOptimizer.App\MainWindow.xaml' }
@@ -1351,6 +1443,24 @@ Describe 'Get-GuiProbeTexts (słownik tekstów sondy)' {
         $Wrapped = $Source.Contains('L.T("' + $Text + '")') -or $Source.Contains('L.F("' + $Text + '"') -or $Source.Contains("{l:T '" + $Text + "'}")
         # Cudzysłowy „ ” to w PowerShellu ograniczniki napisu – tylko w napisach w apostrofach.
         $Wrapped | Should -BeTrue -Because ('„' + $Text + '” ma być owinięte w L.T/L.F/{l:T} w ' + $File)
+    }
+    It 'strona serwisowa i lista „Pokaż”: en ma „Repairs and tools” i „Show”, każdy tekst inny niż polski; nazw starych stron brak' {
+        $script:Pl.ServicePage | Should -Be 'Naprawy i narzędzia'
+        $script:Pl.ShowCombo | Should -Be 'Pokaż'
+        $script:En.ServicePage | Should -Be 'Repairs and tools'
+        $script:En.ShowCombo | Should -Be 'Show'
+        $script:En.ServicePage | Should -Not -Be $script:Pl.ServicePage
+        $script:En.ShowCombo | Should -Not -Be $script:Pl.ShowCombo
+        foreach ($Dictionary in $script:Pl, $script:En) {
+            $Dictionary.Contains('PanelsCategory') | Should -BeFalse
+            $Dictionary.Contains('RepairCategory') | Should -BeFalse
+        }
+    }
+    It 'opcje „Pokaż” = GuiText.ShowFilterName w kolejności listy: Wszystkie, Niezastosowane, Zastosowane, Zaznaczone (en z tabel tłumaczeń)' {
+        @($script:Pl.ShowOptions) | Should -Be @('Wszystkie', 'Niezastosowane', 'Zastosowane', 'Zaznaczone')
+        @($script:Pl.ShowOptions) | Should -Be @(Get-CsLiteral (Read-CoreSource 'Gui\GuiText.cs') 'ShowFilter\.\w+\s*=>\s*(?:L\.T\(\s*)?')
+        @($script:En.ShowOptions).Count | Should -Be 4
+        for ($I = 0; $I -lt 4; $I++) { $script:En.ShowOptions[$I] | Should -Be (Get-DsoUiText -Polish $script:Pl.ShowOptions[$I] -Language en) }
     }
     It 'opcje filtrów: Ryzyko = GuiText.RiskFilterName, Filtr = HistoryText.FilterName (w kolejności listy)' {
         @($script:Pl.RiskOptions) | Should -Be @(Get-CsLiteral (Read-CoreSource 'Gui\GuiText.cs') 'RiskFilter\.\w+\s*=>\s*(?:L\.T\(\s*)?')
@@ -1426,6 +1536,20 @@ Describe 'Get-GuiProbeTexts (słownik tekstów sondy)' {
 
 Describe 'Sonda: teksty z pliku (-TextsFile)' {
     BeforeAll { $script:ProbeText = Get-GuiUiProbeScript }
+    It 'lista wymaganych tekstów ma ServicePage, ShowCombo, ShowOptions i nie ma nazw starych stron' {
+        $Line = [regex]::Match($script:ProbeText, '(?m)^\$RequiredTexts = (.+)$').Groups[1].Value
+        $Required = @([regex]::Matches($Line, "'(\w+)'") | ForEach-Object { $_.Groups[1].Value })
+        foreach ($Name in 'ServicePage', 'ShowCombo', 'ShowOptions') { $Required | Should -Contain $Name }
+        foreach ($Name in 'PanelsCategory', 'RepairCategory') { $Required | Should -Not -Contain $Name }
+        $script:ProbeText | Should -Not -Match 'PanelsCategory|RepairCategory'
+    }
+    It 'krok 5 sprawdza listę „Pokaż” na kategorii z widocznym polem (ProbeCategory), błąd ma przedrostek z nazwy pola' {
+        $script:ProbeText | Should -Match ([regex]::Escape('$ShowOptionNames = @($T.ShowOptions)'))
+        $script:ProbeText | Should -Match ([regex]::Escape('$Out.FilterShowOpened = [bool]$R3.Opened'))
+        $script:ProbeText | Should -Match ([regex]::Escape('$Out.FilterShowSelected = [bool]$R3.Selected'))
+        $Head = $script:ProbeText.Substring(0, $script:ProbeText.IndexOf('function Add-Step'))
+        foreach ($Field in 'FilterShowOpened', 'FilterShowSelected') { $Head | Should -Match $Field }
+    }
     It 'skrypt nie ma kodów znaków [char]0x ani polskich liter' {
         $script:ProbeText | Should -Not -Match '\[char\]0x'
         $script:ProbeText | Should -Not -Match '[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]'
@@ -1461,7 +1585,7 @@ Describe 'Sonda: teksty z pliku (-TextsFile)' {
 }
 
 Describe 'Get-GuiUiCheck po angielsku (-Texts en)' {
-    It 'angielska sonda z angielskimi tekstami: siedemnaście zaliczonych' {
+    It 'angielska sonda z angielskimi tekstami: dziewiętnaście zaliczonych' {
         $En = Get-GuiProbeTexts -Language en
         $Probe = New-UiProbe @{
             EntryNames = @("$($En.TweakTitle), $($En.ProbeCategory), $($En.HistoryActive), 10/20/2026 9:00 PM")

@@ -47,7 +47,7 @@
     "risk": "caution",
     "scope": "user",
     "warnings": [
-      "Menu zmieni się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”)."
+      "Menu zmieni się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Naprawach i narzędziach”)."
     ],
     "registry": [
       { "path": "HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32", "name": "", "type": "String", "value": "", "original": "<RemoveEntry>" }
@@ -64,7 +64,7 @@
     "risk": "safe",
     "scope": "user",
     "warnings": [
-      "Pozycja pojawi się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).",
+      "Pozycja pojawi się po ponownym zalogowaniu (albo po restarcie Eksploratora w „Naprawach i narzędziach”).",
       "„Zakończ zadanie” kończy proces programu; niezapisane dane w tym programie mogą przepaść."
     ],
     "registry": [

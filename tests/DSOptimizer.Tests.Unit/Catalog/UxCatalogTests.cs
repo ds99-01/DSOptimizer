@@ -138,7 +138,7 @@ public class UxCatalogTests
         // Spec opisów 2026-10-26: akcja wskazana nazwą kategorii, bez identyfikatora; „sam nie restartuje” w szczegółach technicznych.
         var def = Get(id);
         var text = string.Join(" ", def.Warnings);
-        Assert.Contains("restarcie Eksploratora w „Narzędziach”", text, StringComparison.Ordinal);
+        Assert.Contains("restarcie Eksploratora w „Naprawach i narzędziach”", text, StringComparison.Ordinal);
         Assert.Contains("nie restartuje", def.Description, StringComparison.OrdinalIgnoreCase);
     }
 

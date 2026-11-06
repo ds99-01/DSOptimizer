@@ -12,7 +12,9 @@ namespace DSOptimizer.Core.Gui;
 /// <summary>Teksty okna (polskie źródło, tłumaczenie przez <see cref="L"/>).</summary>
 public static class GuiText
 {
-    public static IReadOnlyList<string> CategoryOrder { get; } = new[] { "privacy", "perf", "disk", "net", "sec", "ux", "panels", "repair", "tools" };
+    public static IReadOnlyList<string> CategoryOrder { get; } = new[] { "privacy", "perf", "disk", "net", "sec", "ux", "repair", "tools", "panels" };
+
+    public static string ServicePageName => L.T("Naprawy i narzędzia");
 
     public static string CategoryName(string category) => category switch
     {
@@ -26,6 +28,16 @@ public static class GuiText
         "repair" => L.T("Naprawy"),
         "tools" => L.T("Narzędzia"),
         _ => category,
+    };
+
+    /// <summary>Nazwa grupy pozycji w kategorii; null = brak grupy (pusty tekst), nieznany klucz = sam klucz.</summary>
+    public static string GroupName(string category, string? group) => (category, group) switch
+    {
+        (_, null) => string.Empty,
+        ("privacy", "start") => L.T("Start, wyszukiwanie i Widżety"),
+        ("privacy", "ads") => L.T("Reklamy i sugestie"),
+        ("privacy", "telemetry") => L.T("Telemetria i diagnostyka"),
+        _ => group,
     };
 
     /// <summary>Podpowiedź przy żarówce na pozycji sugerowanej (wariant C, wybór autora 2026-10-21).</summary>
@@ -156,6 +168,28 @@ public static class GuiText
         _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
     };
 
+    /// <summary>Etykieta i nazwa dla czytnika ekranu listy „Pokaż” (filtr stanu) obok „Ryzyka”.</summary>
+    public static string ShowLabel => L.T("Pokaż");
+
+    /// <summary>Nazwa opcji listy „Pokaż”; „Zaznaczone” to widok zaznaczonych ze wszystkich kategorii.</summary>
+    public static string ShowFilterName(ShowFilter filter) => filter switch
+    {
+        ShowFilter.All => L.T("Wszystkie"),
+        ShowFilter.NotApplied => L.T("Niezastosowane"),
+        ShowFilter.Applied => L.T("Zastosowane"),
+        ShowFilter.Selected => L.T("Zaznaczone"),
+        _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
+    };
+
+    /// <summary>Tytuł strony w widoku „Zaznaczone”.</summary>
+    public static string SelectedViewTitle => L.T("Zaznaczone");
+
+    /// <summary>Link w pasku serii obok „Zaznaczono N pozycji”: widok zaznaczonych ze wszystkich kategorii.</summary>
+    public static string ShowSelectedLink => L.T("Pokaż zaznaczone");
+
+    /// <summary>Pusta lista w widoku „Zaznaczone”, gdy przy wejściu nic nie było zaznaczone.</summary>
+    public static string SelectedViewEmpty => L.T("Nic nie jest zaznaczone.");
+
     /// <summary>Licznik w menu: zastosowane/wszystkie tweaki, a w kategorii bez tweaków liczba pozycji.</summary>
     public static string CategoryCounter(int applied, int tweaks, int total)
         => tweaks > 0
@@ -252,6 +286,11 @@ public static class GuiText
             : L.F("{0}: {1} do zastosowania, {2} do cofnięcia", title, toApply, toUndo);
     }
 
+    /// <summary>Podpowiedź paska na stronie „Naprawy i narzędzia” przy 0 zaznaczonych: tam dwuklik uruchamia pozycję, nie dodaje jej do zmiany.</summary>
+    public static string ServiceSelectionHint => L.T("Dwuklik albo „Uruchom” uruchamia pozycję.");
+
+    public static string ServiceSelectionHintDetails => L.T("Ochronę systemu dodaje się do zmiany polem wyboru albo dwuklikiem.");
+
     /// <summary>Druga linia paska: restarty i punkt przywracania (ten dotyczy tylko „Zastosuj”, więc wymaga <paramref name="hasApplicable"/>).</summary>
     public static string SelectionBarDetails(int rebootCount, bool hasApplicable, bool restorePoint)
     {
@@ -335,9 +374,9 @@ public static class GuiText
         return L.F("Anulowano serię: {0} – {1} ({2}).", OperationName(operation), items, list);
     }
 
-    /// <summary>Pusta lista przy wyszukiwaniu: brak dopasowań albo dopasowania ukryte przez filtr ryzyka.</summary>
+    /// <summary>Pusta lista przy wyszukiwaniu: brak dopasowań albo dopasowania ukryte przez filtr ryzyka lub „Pokaż”.</summary>
     public static string EmptySearchText(string query, int hiddenCount)
-        => hiddenCount == 0 ? NoSearchResults(query) : L.T("Pasujące pozycje ukrył filtr ryzyka.");
+        => hiddenCount == 0 ? NoSearchResults(query) : L.T("Pasujące pozycje ukrył filtr.");
 
     /// <summary>Linia Info, gdy program tylko kopiuje adres strony repozytorium (wariant bez otwierania przeglądarki).</summary>
     public static string UrlCopied(string url)
@@ -355,6 +394,12 @@ public static class GuiText
             ? L.F("Nie udało się otworzyć strony: {0} Skopiowano adres: {1}", reason, ProductInfo.RepositoryUrl)
             : L.F("Nie udało się otworzyć strony: {0} Nie udało się też skopiować adresu.", reason);
     }
+
+    /// <summary>Nazwa (UIA i podpowiedź) przycisku rozwijającego zwinięty dziennik.</summary>
+    public static string LogExpandText => L.T("Rozwiń dziennik");
+
+    /// <summary>Nazwa (UIA i podpowiedź) przycisku zwijającego rozwinięty dziennik.</summary>
+    public static string LogCollapseText => L.T("Zwiń dziennik");
 
     public static string WindowErrorsMuted => L.T("Kolejne błędy okna trafiają tylko do pliku logu (więcej niż 5 w ciągu 10 s).");
 

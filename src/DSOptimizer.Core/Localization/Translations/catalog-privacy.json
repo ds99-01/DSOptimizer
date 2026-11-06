@@ -19,8 +19,8 @@
       "en": "Policy AllowNewsAndInterests = 0 in HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh, for all accounts. Win+W stops opening the board right away, and the \"Widgets\" toggle in Settings (Personalization > Taskbar) is grayed out until you undo the change. DSOptimizer doesn't restart File Explorer by itself. Undo removes the value, and also the Dsh key if the change created it."
     },
     {
-      "pl": "Przycisk zniknie po ponownym zalogowaniu (albo po restarcie Eksploratora w „Narzędziach”).",
-      "en": "The button disappears after you sign in again (or after you restart File Explorer in \"Tools\")."
+      "pl": "Przycisk zniknie po ponownym zalogowaniu (albo po restarcie Eksploratora w „Naprawach i narzędziach”).",
+      "en": "The button disappears after you sign in again (or after you restart File Explorer in \"Repairs and tools\")."
     },
     {
       "pl": "Wyłącz wyniki z internetu w wyszukiwaniu Windows",

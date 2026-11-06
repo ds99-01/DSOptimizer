@@ -41,6 +41,15 @@ public sealed class BatchRunStep
     public string StatusText { get; internal set; } = L.T("Czeka");
 
     public IReadOnlyList<string> Details { get; internal set; } = Array.Empty<string>();
+
+    /// <summary>Pasek postępu w wierszu kroku: tylko pozycja instalacji w toku (od <c>Started</c> do wyniku).</summary>
+    public bool ShowsProgress { get; internal set; }
+
+    /// <summary>
+    /// Procent paska; null = pasek nieokreślony. Wariant B pomiaru F17: winget 1.11 podaje procent pobierania dopiero w ostatnich
+    /// sekundach, więc w trakcie instalacji zawsze null (procent widać tylko w <see cref="StatusText"/>).
+    /// </summary>
+    public int? ProgressPercent { get; internal set; }
 }
 
 /// <summary>
@@ -163,6 +172,7 @@ public sealed class BatchRun
             if (_install && step.State == BatchStepState.Running)
             {
                 step.StatusText = InstallProgressText(e.Stage, e.Percent);
+                step.ProgressPercent = null;
                 RaiseChanged();
             }
 
@@ -174,6 +184,8 @@ public sealed class BatchRun
             _currentIndex = Math.Max(0, Math.Min(_steps.Count - 1, _steps.IndexOf(step)));
             step.State = BatchStepState.Running;
             step.StatusText = L.T("W toku");
+            step.ShowsProgress = _install && !ReferenceEquals(step, _restorePointStep);
+            step.ProgressPercent = null;
             if (ReferenceEquals(step, _restorePointStep))
             {
                 _restorePointStarted = e.At;
@@ -228,6 +240,7 @@ public sealed class BatchRun
                 step.State = BatchStepState.Skipped;
                 step.StatusText = L.T("Pominięte");
                 step.Details = Array.Empty<string>();
+                HideProgress(step);
             }
             else
             {
@@ -265,6 +278,7 @@ public sealed class BatchRun
                 : _autostartTarget is not null ? L.T("Nie wykonano")
                 : _remove ? AppsPageText.FailedStatus : L.T("Błąd");
             step.Details = new[] { message };
+            HideProgress(step);
         }
 
         Title = L.T("Zakończono z błędem");
@@ -318,11 +332,18 @@ public sealed class BatchRun
             : L.F("Aplikacja {0} z {1} · Dalej: {2}", index + 1, items.Count, next.Title);
     }
 
-    /// <summary>Status kroku w trakcie instalacji: „Pobieranie 45%”, „Pobieranie”, „Instalowanie”; bez etapu – „W toku”.</summary>
+    /// <summary>
+    /// Status kroku w trakcie instalacji: „Pobieranie 45%”, „Pobieranie”, „Instalowanie”; bez etapu – „W toku”, także z procentem
+    /// (pomiar F17: przy pierwszym winget w sesji procent pobierania indeksu źródła przychodzi bez etapu, przed pobieraniem aplikacji).
+    /// </summary>
     private static string InstallProgressText(string? stage, int? percent)
     {
-        var text = string.IsNullOrWhiteSpace(stage) ? L.T("W toku") : stage!;
-        return percent is { } value ? string.Format(CultureInfo.InvariantCulture, "{0} {1}%", text, value) : text;
+        if (string.IsNullOrWhiteSpace(stage))
+        {
+            return L.T("W toku");
+        }
+
+        return percent is { } value ? string.Format(CultureInfo.InvariantCulture, "{0} {1}%", stage, value) : stage!;
     }
 
     private string SucceededSubtitle(int succeeded)
@@ -551,6 +572,13 @@ public sealed class BatchRun
     {
         step.State = state;
         step.StatusText = text;
+        HideProgress(step);
+    }
+
+    private static void HideProgress(BatchRunStep step)
+    {
+        step.ShowsProgress = false;
+        step.ProgressPercent = null;
     }
 
     private static void AddMessage(List<string> details, TweakResult result)

@@ -30,7 +30,7 @@ public static class InstallText
     public static string UserUncertain => AppsText.UserUncertain;
 
     public static string NotRegistered
-        => L.T("winget (Instalator aplikacji) nie jest zarejestrowany dla tego konta. Użyj „Naprawy → Napraw winget”.");
+        => L.T("winget (Instalator aplikacji) nie jest zarejestrowany dla tego konta. Użyj „Naprawy i narzędzia → Napraw winget”.");
 
     /// <summary>Prefiks nazwy ukrytego konta, na którym działa podniesiony proces przy Administrator Protection (pomiar VM 4c: <c>ADMIN_dso</c>).</summary>
     private const string AdministratorProtectionPrefix = "ADMIN_";
@@ -51,7 +51,7 @@ public static class InstallText
 
     public static string WingetReady(string version) => L.F("winget działa (wersja {0}).", version);
 
-    public static string WingetNotWorking(string detail) => L.F("winget nie działa ({0}). Użyj „Naprawy → Napraw winget”.", detail);
+    public static string WingetNotWorking(string detail) => L.F("winget nie działa ({0}). Użyj „Naprawy i narzędzia → Napraw winget”.", detail);
 
     public static string VersionExitCode(int exitCode) => L.F("winget --version: kod {0}", WingetExitCodes.Hex(exitCode));
 
@@ -313,7 +313,7 @@ public static class InstallText
 
     public static string WingetProblemTitle => L.T("winget nie działa na tym komputerze");
 
-    /// <summary>Przycisk przy <see cref="WingetState.NotRegistered"/>/<see cref="WingetState.NotWorking"/> (spec 2): kategoria „Naprawy”, pozycja <c>repair.winget</c>.</summary>
+    /// <summary>Przycisk przy <see cref="WingetState.NotRegistered"/>/<see cref="WingetState.NotWorking"/> (spec 2): strona „Naprawy i narzędzia”, pozycja <c>repair.winget</c>.</summary>
     public static string RepairWingetButton => L.T("Przejdź do: Napraw winget");
 
     /// <summary>„Zatrzymaj” okna serii instalacji (spec 5.2): bieżąca instalacja zawsze się kończy.</summary>

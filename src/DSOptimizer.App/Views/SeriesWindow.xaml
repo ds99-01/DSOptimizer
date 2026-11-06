@@ -100,7 +100,10 @@
     <!--
       Krok postępu i wyniku: gotowy = znacznik ✓ (ścieżka z pola wyboru), w toku = kwadrat akcentu i pogrubienie,
       ostrzeżenie = trójkąt, błąd = prostokąt krytyczny 6 px i pogrubienie, czeka i pominięty = tekst trzeciorzędny.
-      Pierwsza linia ma 34 px (makieta); szczegóły (tylko w wyniku) pod tytułem.
+      Pierwsza linia ma 34 px (makieta); szczegóły (tylko w wyniku) pod tytułem. Pozycja instalacji w toku ma pod tytułem
+      pasek 3 px jak linia postępu serii (akcent na tle linii podziału): określony = proporcje kolumn, nieokreślony = segment
+      akcentu (30% szerokości) przesuwany w maskę przez Storyboard; bez animacji okien (ClientAreaAnimation) segment stoi
+      pośrodku. Wiersz bez paska ma dawną wysokość.
     -->
     <DataTemplate x:Key="StepTemplate" DataType="{x:Type vm:SeriesStepItem}">
       <Border x:Name="Row" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}">
@@ -112,6 +115,7 @@
           </Grid.ColumnDefinitions>
           <Grid.RowDefinitions>
             <RowDefinition Height="34" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
           <Path x:Name="DoneMark" Data="M4,9 L7.5,12.5 L14,5.5" Stroke="{DynamicResource TextFillColorPrimaryBrush}" StrokeThickness="2"
@@ -125,7 +129,32 @@
           <TextBlock x:Name="Title" Grid.Column="1" Style="{StaticResource StepTitle}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
                      VerticalAlignment="Center" Text="{Binding Title}" ToolTip="{Binding Title}" />
           <TextBlock x:Name="State" Grid.Column="2" Style="{StaticResource StepState}" VerticalAlignment="Center" Text="{Binding StatusText}" />
-          <ItemsControl Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" ItemsSource="{Binding Details}" Focusable="False" Margin="0,-6,0,9"
+          <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Height="3" Margin="0,-8,0,8" Background="{DynamicResource DividerStrokeColorDefaultBrush}"
+                ClipToBounds="True" Visibility="{Binding IsIndeterminate, Converter={StaticResource BoolToVisibility}}">
+            <!-- Maska: nieprzezroczysty tylko odcinek 0,35–0,65 pędzla; przesunięcie X w jednostkach szerokości paska -->
+            <Rectangle x:Name="IndeterminateSegment" Fill="{DynamicResource BrandAccentBrush}">
+              <Rectangle.OpacityMask>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                  <LinearGradientBrush.RelativeTransform>
+                    <TranslateTransform X="0" />
+                  </LinearGradientBrush.RelativeTransform>
+                  <GradientStop Color="Transparent" Offset="0.35" />
+                  <GradientStop Color="Black" Offset="0.35" />
+                  <GradientStop Color="Black" Offset="0.65" />
+                  <GradientStop Color="Transparent" Offset="0.65" />
+                </LinearGradientBrush>
+              </Rectangle.OpacityMask>
+            </Rectangle>
+          </Grid>
+          <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Height="3" Margin="0,-8,0,8" Background="{DynamicResource DividerStrokeColorDefaultBrush}"
+                Visibility="{Binding IsDeterminate, Converter={StaticResource BoolToVisibility}}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="{Binding ProgressDone}" />
+              <ColumnDefinition Width="{Binding ProgressRest}" />
+            </Grid.ColumnDefinitions>
+            <Rectangle Fill="{DynamicResource BrandAccentBrush}" />
+          </Grid>
+          <ItemsControl Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" ItemsSource="{Binding Details}" Focusable="False" Margin="0,-6,0,9"
                         Visibility="{Binding ShowDetails, Converter={StaticResource BoolToVisibility}}">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
@@ -139,6 +168,26 @@
         <DataTrigger Binding="{Binding IsLast}" Value="True">
           <Setter TargetName="Row" Property="BorderThickness" Value="0" />
         </DataTrigger>
+        <!-- Segment wjeżdża z lewej i wyjeżdża z prawej (-0,65 → 0,65), bez końca; wiersz jest stały, więc animacja nie startuje od nowa
+             przy kolejnych zdarzeniach winget -->
+        <MultiDataTrigger>
+          <MultiDataTrigger.Conditions>
+            <Condition Binding="{Binding IsIndeterminate}" Value="True" />
+            <Condition Binding="{Binding Source={x:Static SystemParameters.ClientAreaAnimation}}" Value="True" />
+          </MultiDataTrigger.Conditions>
+          <MultiDataTrigger.EnterActions>
+            <BeginStoryboard x:Name="IndeterminateMotion">
+              <Storyboard RepeatBehavior="Forever">
+                <DoubleAnimation Storyboard.TargetName="IndeterminateSegment"
+                                 Storyboard.TargetProperty="(UIElement.OpacityMask).(Brush.RelativeTransform).(TranslateTransform.X)"
+                                 From="-0.65" To="0.65" Duration="0:0:2" />
+              </Storyboard>
+            </BeginStoryboard>
+          </MultiDataTrigger.EnterActions>
+          <MultiDataTrigger.ExitActions>
+            <RemoveStoryboard BeginStoryboardName="IndeterminateMotion" />
+          </MultiDataTrigger.ExitActions>
+        </MultiDataTrigger>
         <DataTrigger Binding="{Binding State}" Value="{x:Static gui:BatchStepState.Waiting}">
           <Setter TargetName="Title" Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
           <Setter TargetName="State" Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />

@@ -37,8 +37,7 @@ public sealed class MainViewModel : ObservableObject
 
     public static string RestartingText => L.T("Uruchamianie ponownie komputera…");
 
-    /// <summary>Cel „Przejdź do: Napraw winget” (strona „Instalacja”): kategoria „Naprawy” i pozycja naprawy winget.</summary>
-    private const string RepairCategoryId = "repair";
+    /// <summary>Cel „Przejdź do: Napraw winget” (strona „Instalacja”): pozycja naprawy winget na stronie „Naprawy i narzędzia”.</summary>
     private const string RepairWingetId = "repair.winget";
 
     private readonly GuiSession _session;
@@ -59,6 +58,10 @@ public sealed class MainViewModel : ObservableObject
     private CategoryViewModel? _lastCategory;
     private string _searchText = string.Empty;
     private RiskFilter _riskFilter = RiskFilter.All;
+    private ShowFilter _showFilter = ShowFilter.All;
+
+    /// <summary>Id pozycji widoku „Zaznaczone” (zaznaczone przy wejściu i dodane w trakcie); null poza widokiem.</summary>
+    private HashSet<string>? _selectedViewIds;
     private bool _isBusy;
     private bool _isConfirming;
     private Task<DateTimeOffset?>? _lastBoot;
@@ -68,6 +71,10 @@ public sealed class MainViewModel : ObservableObject
     private string? _operationText;
     private DateTimeOffset? _lastCheck;
     private string _logSummary = GuiText.LogSummary(0, 0);
+    private bool _isLogExpanded;
+    private string _lastLogText = string.Empty;
+    private string _lastLogToolTip = string.Empty;
+    private GuiLogLevel _logSummaryLevel = GuiLogLevel.Info;
     private int _selectedCount;
     private int _applicableCount;
     private int _undoableCount;
@@ -125,14 +132,19 @@ public sealed class MainViewModel : ObservableObject
         RefreshCurrentPageCommand = new AsyncRelayCommand(RefreshCurrentPageAsync, () => !IsBusy);
         ApplySelectedCommand = new AsyncRelayCommand(() => RunBatchAsync(GuiOperation.Apply), () => !IsBusy && ApplicableCount > 0);
         UndoSelectedCommand = new AsyncRelayCommand(() => RunBatchAsync(GuiOperation.Undo), () => !IsBusy && UndoableCount > 0);
+        ToggleLogCommand = new RelayCommand(() => IsLogExpanded = !IsLogExpanded);
         ClearSelectionCommand = new RelayCommand(ClearSelection, () => !IsBusy && SelectedCount > 0);
         SelectSuggestedCommand = new RelayCommand(SelectSuggested, CanSelectSuggested);
-        ShowAllCommand = new RelayCommand(() => RiskFilter = RiskFilter.All);
+        ShowAllCommand = new RelayCommand(ShowAll);
         ClearSearchCommand = new RelayCommand(() => SearchText = string.Empty);
+        ShowSelectedCommand = new RelayCommand(() => ShowFilter = ShowFilter.Selected, () => SelectedCount > 0);
+        EscapeCommand = new RelayCommand(Escape, () => _searchText.Length > 0 || IsSelectedView);
+        ResetListViewCommand = new RelayCommand(ResetListView);
         RestartCommand = new AsyncRelayCommand(RestartFromBannerAsync, () => !IsBusy && !IsConfirming);
         ShowPendingCommand = new RelayCommand(ShowPendingReboot);
 
-        Categories = session.Categories.Select(category => new CategoryViewModel(category, this)).ToList();
+        // Strony kategorii w kolejności menu: kategorie ustawień, na końcu scalona strona „Naprawy i narzędzia”.
+        Categories = GuiNav.CategoryPages(session.Categories).Select(page => new CategoryViewModel(page, this)).ToList();
         _allItems = Categories.SelectMany(category => category.Items).ToList();
         foreach (var item in _allItems)
         {
@@ -144,12 +156,15 @@ public sealed class MainViewModel : ObservableObject
             category.PropertyChanged += OnCategoryChanged;
         }
 
-        // Wyniki wyszukiwania: wszystkie pozycje w kolejności kategorii (w kategorii najpierw tweaki), nagłówek = kategoria.
+        // Wyniki wyszukiwania: wszystkie pozycje w kolejności kategorii (w kategorii jak na jej liście), nagłówek = kategoria albo „Kategoria · grupa”.
         _searchView = new ListCollectionView(_allItems.ToList()) { Filter = item => item is ItemViewModel vm && IsVisible(vm) };
-        _searchView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ItemViewModel.CategoryName)));
+        _searchView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ItemViewModel.ResultsHeader)));
         _searchView.CurrentChanged += (_, _) => OnPropertyChanged(nameof(DetailItem));
         RiskFilterOptions = new[] { RiskFilter.All, RiskFilter.NoExperimental, RiskFilter.SafeOnly }
             .Select(filter => new RiskFilterOption(filter, GuiText.RiskFilterName(filter)))
+            .ToList();
+        ShowFilterOptions = new[] { ShowFilter.All, ShowFilter.NotApplied, ShowFilter.Applied, ShowFilter.Selected }
+            .Select(filter => new ShowFilterOption(filter, GuiText.ShowFilterName(filter)))
             .ToList();
 
         Specification = specification ?? throw new ArgumentNullException(nameof(specification));
@@ -170,9 +185,14 @@ public sealed class MainViewModel : ObservableObject
         Apps = new AppsViewModel(apps, accountNames, RemoveAppsAsync, () => _session.CreateRestorePoint, (level, text) => _sink.Add(level, text), _clock);
         // Autostart: własne zaznaczenie i „Wyłącz (N)”/„Włącz (M)” zawsze przez okno serii (ToggleAutostartAsync).
         Autostart = new AutostartViewModel(autostart, accountNames, ToggleAutostartAsync, WpfClipboardText.Instance, (level, text) => _sink.Add(level, text), _clock);
-        // Instalacja: własne zaznaczenie i „Zainstaluj (N)” zawsze przez okno serii (InstallAppsAsync); „Napraw winget” = Naprawy.
+        // Instalacja: własne zaznaczenie i „Zainstaluj (N)” zawsze przez okno serii (InstallAppsAsync); „Napraw winget” = strona „Naprawy i narzędzia”.
         Install = new InstallViewModel(install, InstallAppsAsync, ShowRepairWinget, (level, text) => _sink.Add(level, text), _clock);
-        NavItems = new object[] { specification, prep }.Concat(Categories).Concat(new object[] { Apps, Autostart, Install, History }).ToList();
+        NavItems = WithSeparators(
+            new object[] { specification, prep },
+            Categories.Where(category => !category.IsService).ToArray<object>(),
+            new object[] { Apps, Autostart, Install },
+            Categories.Where(category => category.IsService).ToArray<object>(),
+            new object[] { History });
         Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         PinnedNavItems = new object[] { settings };
         // Zmiana punktu przywracania od razu w drugiej linii paska serii (GuiText.SelectionBarDetails).
@@ -218,21 +238,22 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Strona „Przygotowanie” – tuż pod „Specyfikacją”, przed kategoriami.</summary>
     public PrepViewModel Prep { get; }
 
-    /// <summary>Strona „Aplikacje” – między kategoriami a „Instalacją”.</summary>
+    /// <summary>Strona „Aplikacje” – pierwsza w grupie za kategoriami ustawień (za linią).</summary>
     public AppsViewModel Apps { get; }
 
     /// <summary>Strona „Autostart” – tuż pod „Aplikacjami”, przed „Instalacją”.</summary>
     public AutostartViewModel Autostart { get; }
 
-    /// <summary>Strona „Instalacja” – tuż pod „Autostartem”, przed „Historią zmian”.</summary>
+    /// <summary>Strona „Instalacja” – tuż pod „Autostartem”, ostatnia w swojej grupie (za nią linia i „Naprawy i narzędzia”).</summary>
     public InstallViewModel Install { get; }
 
-    /// <summary>Strona „Historia zmian” – ostatnia pozycja górnej listy menu.</summary>
+    /// <summary>Strona „Historia zmian” – ostatnia pozycja górnej listy menu, sama w ostatniej grupie.</summary>
     public HistoryViewModel History { get; }
 
     /// <summary>
-    /// Menu w lewej kolumnie: Specyfikacja, Przygotowanie, kategorie w kolejności <see cref="GuiSession.Categories"/>, Aplikacje,
-    /// Autostart, Instalacja, na końcu Historia zmian.
+    /// Menu w lewej kolumnie, pięć grup rozdzielonych liniami (<see cref="NavSeparatorViewModel"/>): Specyfikacja i Przygotowanie |
+    /// kategorie ustawień w kolejności <see cref="GuiSession.Categories"/> | Aplikacje, Autostart, Instalacja | Naprawy i narzędzia |
+    /// Historia zmian. Pusta grupa (np. katalog bez napraw, narzędzi i paneli) nie dostaje linii.
     /// </summary>
     public IReadOnlyList<object> NavItems { get; }
 
@@ -243,7 +264,7 @@ public sealed class MainViewModel : ObservableObject
 
     /// <summary>
     /// Strona z lewej kolumny (start = Specyfikacja). Null (np. chwilowo z ListBoxa) jest ignorowany.
-    /// Wybór pozycji w menu czyści wyszukiwanie [decyzja projektowa]. Wejście na „Historię zmian” zaczyna od filtra „Wszystkie wpisy”
+    /// Wybór pozycji w menu czyści wyszukiwanie [decyzja projektowa] i wychodzi z widoku „Zaznaczone”. Wejście na „Historię zmian” zaczyna od filtra „Wszystkie wpisy”
     /// (filtr „Czekające na restart” ustawia tylko <see cref="ShowPendingCommand"/>).
     /// </summary>
     public object? SelectedPage
@@ -263,6 +284,14 @@ public sealed class MainViewModel : ObservableObject
             return;
         }
 
+        // Linia grupy menu nie jest stroną: wybór jej (np. Select z automatyzacji UI) niczego nie zmienia, ani strony, ani wyszukiwania;
+        // powiadomienie przywraca w liście podświetlenie bieżącej strony.
+        if (value is NavSeparatorViewModel)
+        {
+            OnPropertyChanged(nameof(SelectedNavItem));
+            return;
+        }
+
         if (value is CategoryViewModel category)
         {
             _lastCategory = category;
@@ -278,6 +307,7 @@ public sealed class MainViewModel : ObservableObject
             OnPropertyChanged(nameof(SelectedNavItem));
             OnPropertyChanged(nameof(SelectedPinnedItem));
             OnPropertyChanged(nameof(SelectedCategory));
+            OnPropertyChanged(nameof(IsListGrouped));
             OnPropertyChanged(nameof(IsCategorySelected));
             OnPropertyChanged(nameof(IsSpecificationSelected));
             OnPropertyChanged(nameof(IsPrepSelected));
@@ -286,9 +316,15 @@ public sealed class MainViewModel : ObservableObject
             OnPropertyChanged(nameof(IsAppsSelected));
             OnPropertyChanged(nameof(IsAutostartSelected));
             OnPropertyChanged(nameof(IsInstallSelected));
+            OnPropertyChanged(nameof(IsShowFilterVisible));
             OnPropertyChanged(nameof(PageTitle));
+            OnPropertyChanged(nameof(SelectionBarTitle));
+            OnPropertyChanged(nameof(SelectionBarDetails));
             OnPropertyChanged(nameof(DetailItem));
             OnHiddenChanged();
+
+            // Zmiana strony wychodzi z widoku „Zaznaczone”; „Niezastosowane”/„Zastosowane” zostają.
+            LeaveSelectedView();
 
             // Historia, Aplikacje, Autostart, Instalacja i Przygotowanie wczytują się przy każdym wejściu na stronę (RefreshAsync nigdy nie rzuca;
             // Instalacja w trakcie operacji odkłada odczyt na jej koniec).
@@ -347,7 +383,10 @@ public sealed class MainViewModel : ObservableObject
         {
             if (SetProperty(ref _searchText, value ?? string.Empty))
             {
+                EscapeCommand.NotifyCanExecuteChanged();
                 RefreshSearch();
+                OnPropertyChanged(nameof(SelectionBarTitle));
+                OnPropertyChanged(nameof(SelectionBarDetails));
             }
         }
     }
@@ -360,11 +399,7 @@ public sealed class MainViewModel : ObservableObject
         {
             if (SetProperty(ref _riskFilter, value))
             {
-                foreach (var category in Categories)
-                {
-                    category.ApplyFilter(value);
-                }
-
+                ApplyCategoryFilters();
                 RefreshSearch();
             }
         }
@@ -372,14 +407,77 @@ public sealed class MainViewModel : ObservableObject
 
     public IReadOnlyList<RiskFilterOption> RiskFilterOptions { get; }
 
+    /// <summary>
+    /// Filtr „Pokaż” (start „Wszystkie”, niezapamiętywany między uruchomieniami). „Niezastosowane”/„Zastosowane” działają jak filtr ryzyka
+    /// (globalnie, zostają po zmianie strony), a „Zaznaczone” to widok (<see cref="IsSelectedView"/>): wejście zapamiętuje zaznaczone pozycje
+    /// ze wszystkich kategorii, wyjście (inna opcja, klik w menu, zmiana strony, Esc) ten zbiór czyści.
+    /// </summary>
+    public ShowFilter ShowFilter
+    {
+        get => _showFilter;
+        set
+        {
+            if (!SetProperty(ref _showFilter, value))
+            {
+                return;
+            }
+
+            _selectedViewIds = value == ShowFilter.Selected
+                ? new HashSet<string>(_allItems.Where(item => item.IsSelected).Select(item => item.Id), StringComparer.Ordinal)
+                : null;
+            OnPropertyChanged(nameof(IsSelectedView));
+            OnPropertyChanged(nameof(UsesResultsView));
+            OnPropertyChanged(nameof(IsShowFilterVisible));
+            OnPropertyChanged(nameof(SelectionBarTitle));
+            OnPropertyChanged(nameof(SelectionBarDetails));
+            EscapeCommand.NotifyCanExecuteChanged();
+            ApplyCategoryFilters();
+            RefreshSearch();
+        }
+    }
+
+    public IReadOnlyList<ShowFilterOption> ShowFilterOptions { get; }
+
+    /// <summary>Widok „Zaznaczone”: zaznaczone ze wszystkich kategorii z nagłówkami „Kategoria · grupa”, na mechanizmie wyników wyszukiwania.</summary>
+    public bool IsSelectedView => _showFilter == ShowFilter.Selected;
+
+    /// <summary>Lista pokazuje wyniki (<see cref="SearchResultsView"/>), nie stronę kategorii: wyszukiwanie albo widok „Zaznaczone”.</summary>
+    public bool UsesResultsView => IsSearching || IsSelectedView;
+
+    /// <summary>
+    /// Lista „Pokaż” jest widoczna na stronie kategorii, poza stroną „Naprawy i narzędzia” (tam filtr stanu nie działa). W wynikach (wyszukiwanie,
+    /// „Zaznaczone”) jest widoczna zawsze, także na tej stronie, bo wyniki stosują oba filtry – nic nie znika bez kontrolki.
+    /// </summary>
+    public bool IsShowFilterVisible => SelectedCategory is { } category && (UsesResultsView || !category.IsService);
+
+    /// <summary>Link „Pokaż zaznaczone” w pasku serii: widok „Zaznaczone”; aktywny, gdy coś jest zaznaczone.</summary>
+    public IRelayCommand ShowSelectedCommand { get; }
+
+    /// <summary>Esc w wyszukiwarce i na liście: najpierw czyści tekst wyszukiwania, a bez tekstu wychodzi z widoku „Zaznaczone”.</summary>
+    public IRelayCommand EscapeCommand { get; }
+
+    /// <summary>Klik w pozycję menu: czyści wyszukiwanie i wychodzi z widoku „Zaznaczone” (także przy kliku w bieżącą stronę).</summary>
+    public IRelayCommand ResetListViewCommand { get; }
+
     /// <summary>Wyszukiwanie trwa, gdy zapytanie po normalizacji nie jest puste (same spacje = brak wyszukiwania).</summary>
     public bool IsSearching => TextFolding.Fold(_searchText).Length > 0;
 
-    /// <summary>Wyniki wyszukiwania pogrupowane nagłówkami kategorii, z filtrem zapytania i ryzyka.</summary>
+    /// <summary>
+    /// Lista nie dzieli się na „Ustawienia”/„Akcje”: wyniki wyszukiwania, kategoria z grupami tematycznymi albo strona „Naprawy i narzędzia”.
+    /// Stały wiersz nad listą nie pokazuje wtedy etykiety „Ustawienia”. Przy grupach tematycznych (poza wyszukiwaniem) stoi tam nagłówek
+    /// pierwszej widocznej grupy z licznikiem (<see cref="CategoryViewModel.FirstVisibleGroup"/>), a jego dubel w liście jest zwinięty;
+    /// w wynikach (wyszukiwanie, widok „Zaznaczone”) wiersz ma sam przycisk „Zaznacz sugerowane”, a pierwszy nagłówek „Kategoria · grupa” zostaje w liście.
+    /// </summary>
+    public bool IsListGrouped => UsesResultsView || SelectedCategory is { Grouping: not CategoryListGrouping.Sections };
+
+    /// <summary>
+    /// Wyniki wyszukiwania i widok „Zaznaczone”, pogrupowane nagłówkami „Kategoria · grupa” (bez grupy: kategoria), z filtrem zapytania,
+    /// ryzyka i „Pokaż”; w widoku „Zaznaczone” tylko pozycje jego zbioru.
+    /// </summary>
     public ICollectionView SearchResultsView => _searchView;
 
-    /// <summary>Pozycja panelu szczegółów: bieżący wynik wyszukiwania albo pozycja kategorii; null = panel zwinięty.</summary>
-    public ItemViewModel? DetailItem => IsSearching ? _searchView.CurrentItem as ItemViewModel : SelectedCategory?.SelectedItem;
+    /// <summary>Pozycja panelu szczegółów: bieżący wynik (wyszukiwanie, „Zaznaczone”) albo pozycja kategorii; null = panel zwinięty.</summary>
+    public ItemViewModel? DetailItem => UsesResultsView ? _searchView.CurrentItem as ItemViewModel : SelectedCategory?.SelectedItem;
 
     /// <summary>
     /// Rozwinięte „Szczegóły techniczne” w panelu szczegółów (spec opisów 2026-10-26): domyślnie zwinięte, wybór innej pozycji
@@ -391,14 +489,16 @@ public sealed class MainViewModel : ObservableObject
         set => SetProperty(ref _technicalDetailsExpanded, value);
     }
 
-    public string PageTitle => IsSearching ? GuiText.SearchTitle : SelectedCategory?.Name ?? string.Empty;
+    public string PageTitle => IsSelectedView
+        ? GuiText.SelectedViewTitle
+        : IsSearching ? GuiText.SearchTitle : SelectedCategory?.Name ?? string.Empty;
 
-    /// <summary>Pod tytułem: przy wyszukiwaniu liczba wyników (w trakcie operacji jej postęp), inaczej <see cref="StatusText"/>.</summary>
+    /// <summary>Pod tytułem: w wynikach (wyszukiwanie, „Zaznaczone”) ich liczba (w trakcie operacji jej postęp), inaczej <see cref="StatusText"/>.</summary>
     public string PageSubtitle
     {
         get
         {
-            if (!IsSearching || (IsBusy && _operationText is not null))
+            if (!UsesResultsView || (IsBusy && _operationText is not null))
             {
                 return StatusText;
             }
@@ -414,9 +514,24 @@ public sealed class MainViewModel : ObservableObject
 
     public bool HasFilterNote => FilterNoteText is not null;
 
-    /// <summary>Linia w miejscu pustej listy wyników; pusty tekst, gdy nie dotyczy (kategoria albo są wyniki).</summary>
-    public string EmptyText => IsSearching && _searchView.IsEmpty ? GuiText.EmptySearchText(_searchText, HiddenCount) : string.Empty;
+    /// <summary>
+    /// Linia w miejscu pustej listy wyników; pusty tekst, gdy nie dotyczy (kategoria albo są wyniki). Widok „Zaznaczone” bez zaznaczonych
+    /// pozycji mówi „Nic nie jest zaznaczone.”, a nie pokazuje pustej listy.
+    /// </summary>
+    public string EmptyText
+    {
+        get
+        {
+            if (!UsesResultsView || !_searchView.IsEmpty)
+            {
+                return string.Empty;
+            }
 
+            return _selectedViewIds is { Count: 0 } ? GuiText.SelectedViewEmpty : GuiText.EmptySearchText(_searchText, HiddenCount);
+        }
+    }
+
+    /// <summary>„Pokaż wszystkie” pod listą: filtr ryzyka i „Niezastosowane”/„Zastosowane” wracają do „Wszystkie”; widok „Zaznaczone” zostaje.</summary>
     public IRelayCommand ShowAllCommand { get; }
 
     public IRelayCommand ClearSearchCommand { get; }
@@ -425,12 +540,9 @@ public sealed class MainViewModel : ObservableObject
     {
         get
         {
-            if (IsSearching)
+            if (UsesResultsView)
             {
-                return ItemFilter.CountHidden(
-                    _allItems.Select(item => new KeyValuePair<TweakDefinition, DetectionState?>(item.Definition, item.KnownState)),
-                    _searchText,
-                    _riskFilter);
+                return ItemFilter.CountHidden(ResultsPool(), _searchText, _riskFilter, _showFilter);
             }
 
             return SelectedCategory?.HiddenCount ?? 0;
@@ -441,17 +553,20 @@ public sealed class MainViewModel : ObservableObject
     {
         get
         {
-            if (IsSearching)
+            if (UsesResultsView)
             {
-                return ItemFilter.CountShownDespiteFilter(
-                    _allItems.Select(item => new KeyValuePair<TweakDefinition, DetectionState?>(item.Definition, item.KnownState)),
-                    _searchText,
-                    _riskFilter);
+                return ItemFilter.CountShownDespiteFilter(ResultsPool(), _searchText, _riskFilter, _showFilter);
             }
 
             return SelectedCategory?.ShownDespiteFilterCount ?? 0;
         }
     }
+
+    /// <summary>Pozycje, z których wybierają wyniki: wszystkie, a w widoku „Zaznaczone” tylko jego zbiór (z ostatnim znanym stanem).</summary>
+    private IEnumerable<KeyValuePair<TweakDefinition, DetectionState?>> ResultsPool()
+        => _allItems
+            .Where(item => _selectedViewIds is null || _selectedViewIds.Contains(item.Id))
+            .Select(item => new KeyValuePair<TweakDefinition, DetectionState?>(item.Definition, item.KnownState));
 
     /// <summary>Zaznaczona kategoria; filtruje środek. Null, gdy otwarta jest Specyfikacja.</summary>
     public CategoryViewModel? SelectedCategory => SelectedPage as CategoryViewModel;
@@ -479,6 +594,48 @@ public sealed class MainViewModel : ObservableObject
     {
         get => _logSummary;
         private set => SetProperty(ref _logSummary, value);
+    }
+
+    /// <summary>
+    /// Dziennik rozwinięty (lista linii) albo zwinięty do jednego paska. Start zawsze zwinięty, stan nie jest zapamiętywany,
+    /// a nowa linia (także błąd) niczego nie rozwija – rozwija wyłącznie użytkownik.
+    /// </summary>
+    public bool IsLogExpanded
+    {
+        get => _isLogExpanded;
+        set
+        {
+            if (SetProperty(ref _isLogExpanded, value))
+            {
+                OnPropertyChanged(nameof(LogToggleText));
+            }
+        }
+    }
+
+    public IRelayCommand ToggleLogCommand { get; }
+
+    /// <summary>Nazwa przycisku rozwinięcia: „Rozwiń dziennik” albo „Zwiń dziennik”.</summary>
+    public string LogToggleText => IsLogExpanded ? GuiText.LogCollapseText : GuiText.LogExpandText;
+
+    /// <summary>Ostatnia linia dziennika w jednej linii (godzina i tekst) na pasku zwiniętego dziennika; pusta, gdy dziennik jest pusty.</summary>
+    public string LastLogText
+    {
+        get => _lastLogText;
+        private set => SetProperty(ref _lastLogText, value);
+    }
+
+    /// <summary>Pełny tekst ostatniej linii dziennika (podpowiedź paska).</summary>
+    public string LastLogToolTip
+    {
+        get => _lastLogToolTip;
+        private set => SetProperty(ref _lastLogToolTip, value);
+    }
+
+    /// <summary>Poziom licznika: Error przy błędach, inaczej Warning przy ostrzeżeniach, inaczej Info (kolor licznika na pasku).</summary>
+    public GuiLogLevel LogSummaryLevel
+    {
+        get => _logSummaryLevel;
+        private set => SetProperty(ref _logSummaryLevel, value);
     }
 
     public IAsyncRelayCommand RefreshCommand { get; }
@@ -661,10 +818,15 @@ public sealed class MainViewModel : ObservableObject
     public bool HasSelection => SelectedCount > 0;
 
     /// <summary>Tytuł stałego paska akcji (przy 0 zaznaczonych podpowiedź, jak zacząć).</summary>
-    public string SelectionBarTitle => GuiText.SelectionBarTitle(SelectedCount, ApplicableCount, UndoableCount);
+    public string SelectionBarTitle => ShowsServiceHint
+        ? GuiText.ServiceSelectionHint
+        : GuiText.SelectionBarTitle(SelectedCount, ApplicableCount, UndoableCount);
 
     /// <summary>Druga linia paska: restarty i punkt przywracania; pusta przy 0 zaznaczonych.</summary>
-    public string SelectionBarDetails => _selectionBarDetails;
+    public string SelectionBarDetails => ShowsServiceHint ? GuiText.ServiceSelectionHintDetails : _selectionBarDetails;
+
+    /// <summary>Strona „Naprawy i narzędzia” bez zaznaczenia i poza wynikami/„Zaznaczone”: dwuklik uruchamia pozycję, więc pasek mówi to zamiast „dodaj do zmiany”.</summary>
+    private bool ShowsServiceHint => SelectedCount == 0 && !UsesResultsView && _selectedPage is CategoryViewModel { IsService: true };
 
     public string ApplySelectedText => L.F("Zastosuj ({0})", ApplicableCount);
 
@@ -1106,10 +1268,27 @@ public sealed class MainViewModel : ObservableObject
         return false;
     }
 
-    /// <summary>Przelicza liczniki paska zaznaczenia (wołane przez pozycję przy zmianie zaznaczenia albo stanu).</summary>
+    /// <summary>
+    /// Przelicza liczniki paska zaznaczenia (wołane przez pozycję przy zmianie zaznaczenia albo stanu). W widoku „Zaznaczone” nowo zaznaczona
+    /// pozycja dochodzi do widoku, a odznaczona w nim zostaje (bez skakania listy) do wyjścia z widoku.
+    /// </summary>
     internal void RefreshSelection()
     {
         var selected = _items.Values.Where(item => item.IsSelected).ToList();
+        if (_selectedViewIds is not null)
+        {
+            var joined = false;
+            foreach (var item in selected)
+            {
+                joined |= _selectedViewIds.Add(item.Id);
+            }
+
+            if (joined)
+            {
+                RefreshSearch();
+            }
+        }
+
         SelectedCount = selected.Count;
         ApplicableCount = selected.Count(item => GuiRules.CanApply(item.Definition, item.State));
         UndoableCount = selected.Count(item => GuiRules.CanUndo(item.Definition, item.State, item.PendingReboot));
@@ -1124,6 +1303,7 @@ public sealed class MainViewModel : ObservableObject
         ApplySelectedCommand.NotifyCanExecuteChanged();
         UndoSelectedCommand.NotifyCanExecuteChanged();
         ClearSelectionCommand.NotifyCanExecuteChanged();
+        ShowSelectedCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>
@@ -1616,12 +1796,12 @@ public sealed class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// „Przejdź do: Napraw winget” ze strony „Instalacja”: kategoria „Naprawy” z pozycją <c>repair.winget</c> w panelu szczegółów
-    /// (filtr ryzyka wraca do „Wszystkie”, gdy ją chowa). Nic nie uruchamia – naprawę startuje użytkownik.
+    /// „Przejdź do: Napraw winget” ze strony „Instalacja”: strona „Naprawy i narzędzia” z pozycją <c>repair.winget</c> w panelu
+    /// szczegółów (filtr ryzyka wraca do „Wszystkie”, gdy ją chowa). Nic nie uruchamia – naprawę startuje użytkownik.
     /// </summary>
     private void ShowRepairWinget()
     {
-        var category = Categories.FirstOrDefault(candidate => string.Equals(candidate.Id, RepairCategoryId, StringComparison.Ordinal));
+        var category = Categories.FirstOrDefault(candidate => string.Equals(candidate.Id, GuiNav.ServicePageId, StringComparison.Ordinal));
         if (category is null)
         {
             return;
@@ -1637,6 +1817,23 @@ public sealed class MainViewModel : ObservableObject
 
             category.ItemsView.MoveCurrentTo(item);
         }
+    }
+
+    /// <summary>Grupy menu po kolei, z linią (<see cref="NavSeparatorViewModel"/>) między niepustymi grupami; pusta grupa znika bez linii.</summary>
+    private static List<object> WithSeparators(params IReadOnlyList<object>[] groups)
+    {
+        var items = new List<object>();
+        foreach (var group in groups.Where(group => group.Count > 0))
+        {
+            if (items.Count > 0)
+            {
+                items.Add(new NavSeparatorViewModel());
+            }
+
+            items.AddRange(group);
+        }
+
+        return items;
     }
 
     /// <summary>
@@ -1661,11 +1858,12 @@ public sealed class MainViewModel : ObservableObject
 
     /// <summary>
     /// Wołane przez pozycję po zmianie stanu (detekcja, operacja). Licznik i widok kategorii odświeża sama kategoria;
-    /// tu wyniki wyszukiwania i „Ukryte przez filtr” – stan zmienia widoczność tylko przy filtrze innym niż „Wszystkie”.
+    /// tu wyniki wyszukiwania i „Ukryte przez filtr” – stan zmienia widoczność tylko przy filtrze ryzyka innym niż „Wszystkie”
+    /// albo przy „Niezastosowane”/„Zastosowane”.
     /// </summary>
     internal void OnItemStateChanged()
     {
-        if (_riskFilter != RiskFilter.All)
+        if (_riskFilter != RiskFilter.All || _showFilter is ShowFilter.NotApplied or ShowFilter.Applied)
         {
             RefreshSearch();
         }
@@ -1673,7 +1871,67 @@ public sealed class MainViewModel : ObservableObject
         RefreshSelectSuggested();
     }
 
-    private bool IsVisible(ItemViewModel item) => ItemFilter.IsVisible(item.Definition, item.KnownState, _searchText, _riskFilter);
+    /// <summary>Widoczność w wynikach: zbiór widoku „Zaznaczone” (poza nim wszystkie pozycje), zapytanie, ryzyko i „Pokaż”.</summary>
+    private bool IsVisible(ItemViewModel item)
+        => (_selectedViewIds is null || _selectedViewIds.Contains(item.Id))
+            && ItemFilter.IsVisible(item.Definition, item.KnownState, _searchText, _riskFilter, _showFilter);
+
+    private void ApplyCategoryFilters()
+    {
+        foreach (var category in Categories)
+        {
+            category.ApplyFilter(_riskFilter, _showFilter);
+        }
+    }
+
+    /// <summary>
+    /// Oba filtry naraz, z jednym odświeżeniem list. Zmiana „Niezastosowane”/„Zastosowane” → „Wszystkie” nie dotyczy widoku „Zaznaczone”,
+    /// więc zbiór widoku, <see cref="IsSelectedView"/> i <see cref="UsesResultsView"/> się nie zmieniają.
+    /// </summary>
+    private void ShowAll()
+    {
+        var resetShow = _showFilter is ShowFilter.NotApplied or ShowFilter.Applied;
+        if (_riskFilter == RiskFilter.All && !resetShow)
+        {
+            return;
+        }
+
+        SetProperty(ref _riskFilter, RiskFilter.All, nameof(RiskFilter));
+        if (resetShow)
+        {
+            SetProperty(ref _showFilter, ShowFilter.All, nameof(ShowFilter));
+        }
+
+        ApplyCategoryFilters();
+        RefreshSearch();
+    }
+
+    private void Escape()
+    {
+        if (_searchText.Length > 0)
+        {
+            SearchText = string.Empty;
+        }
+        else
+        {
+            LeaveSelectedView();
+        }
+    }
+
+    private void ResetListView()
+    {
+        SearchText = string.Empty;
+        LeaveSelectedView();
+    }
+
+    /// <summary>Wyjście z widoku „Zaznaczone” („Pokaż” wraca do „Wszystkie”); poza widokiem nic nie robi.</summary>
+    private void LeaveSelectedView()
+    {
+        if (IsSelectedView)
+        {
+            ShowFilter = ShowFilter.All;
+        }
+    }
 
     /// <summary>Nowy filtr wyników; bieżący wynik, który wypadł z widoku, przechodzi na pierwszy widoczny.</summary>
     private void RefreshSearch()
@@ -1685,6 +1943,9 @@ public sealed class MainViewModel : ObservableObject
         }
 
         OnPropertyChanged(nameof(IsSearching));
+        OnPropertyChanged(nameof(UsesResultsView));
+        OnPropertyChanged(nameof(IsShowFilterVisible));
+        OnPropertyChanged(nameof(IsListGrouped));
         OnPropertyChanged(nameof(PageTitle));
         OnPropertyChanged(nameof(PageSubtitle));
         OnPropertyChanged(nameof(EmptyText));
@@ -1693,11 +1954,18 @@ public sealed class MainViewModel : ObservableObject
         RefreshSelectSuggested();
     }
 
-    /// <summary>Ustawienia widoczne teraz na liście: wyniki wyszukiwania albo bieżąca kategoria, po filtrze ryzyka i frazie.</summary>
+    /// <summary>Ustawienia widoczne teraz na liście: wyniki (wyszukiwanie, „Zaznaczone”) albo bieżąca kategoria, po jej filtrach.</summary>
     private IEnumerable<ItemViewModel> SuggestionViewItems()
     {
-        var source = IsSearching ? _allItems : SelectedCategory?.Items ?? (IEnumerable<ItemViewModel>)Array.Empty<ItemViewModel>();
-        return source.Where(item => item.IsTweak && IsVisible(item));
+        if (UsesResultsView)
+        {
+            return _allItems.Where(item => item.IsTweak && IsVisible(item));
+        }
+
+        var category = SelectedCategory;
+        return category is null
+            ? Array.Empty<ItemViewModel>()
+            : category.Items.Where(item => item.IsTweak && category.IsShown(item));
     }
 
     private List<ItemViewModel> SuggestedToSelect()
@@ -1740,7 +2008,7 @@ public sealed class MainViewModel : ObservableObject
 
     private void OnCategoryChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender != SelectedCategory || IsSearching)
+        if (sender != SelectedCategory || UsesResultsView)
         {
             return;
         }
@@ -1764,6 +2032,7 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>„Odznacz wszystko”; w widoku „Zaznaczone” wiersze zostają z pustym polem wyboru (zbiór widoku się nie zmienia).</summary>
     private void ClearSelection()
     {
         foreach (var item in _items.Values)
@@ -1789,6 +2058,10 @@ public sealed class MainViewModel : ObservableObject
         }
 
         LogSummary = GuiText.LogSummary(errors, warnings);
+        LogSummaryLevel = errors > 0 ? GuiLogLevel.Error : warnings > 0 ? GuiLogLevel.Warning : GuiLogLevel.Info;
+        var last = _sink.Lines.Count > 0 ? _sink.Lines[_sink.Lines.Count - 1] : null;
+        LastLogText = LogLineText.OneLineSummary(last);
+        LastLogToolTip = last?.Text ?? string.Empty;
     }
 
     private void ApplyStates(IReadOnlyDictionary<string, DetectionState> states)

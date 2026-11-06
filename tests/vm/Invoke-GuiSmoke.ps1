@@ -23,8 +23,8 @@ Opis działania:
     %ProgramData%\DSOptimizer\logs\*.log. Sonda UI (UI Automation w sesji 'dso', bez myszy): pozycja menu „Historia zmian” otwiera
     stronę (HistoryMenu); po zastosowaniu „Szybsze otwieranie podmenu” (ux.menu-delay, safe, „Zastosuj (1)” bez potwierdzenia) wiersz
     historii ma stan „Aktywna” (HistoryEntryActive); w stanie normalnym i po maksymalizacji okna WM_NCHITTEST daje HTCAPTION w środku paska marki i 2 px nad
-    jego dolną krawędzią, a HTCLIENT 2 px pod nim (CaptionHitTest); prawdziwa mysz rozwija filtry „Ryzyko” i „Filtr” i zmienia ich wartość
-    (FilterRiskOpened/Selected, FilterHistoryOpened/Selected); klik w tytuł wiersza tweaka tylko go wybiera, dwuklik przełącza pole wyboru i drugi wraca,
+    jego dolną krawędzią, a HTCLIENT 2 px pod nim (CaptionHitTest); prawdziwa mysz rozwija filtry „Ryzyko”, „Pokaż” i „Filtr” i zmienia ich wartość
+    (FilterRiskOpened/Selected, FilterShowOpened/Selected, FilterHistoryOpened/Selected); klik w tytuł wiersza tweaka tylko go wybiera, dwuklik przełącza pole wyboru i drugi wraca,
     klik i dwuklik w znacznik uruchomienia panelu „Zarządzanie komputerem” otwierają dokładnie jedno okno mmc.exe (RowClickPreview, RowDoubleClickToggles,
     RunIconRuns, RunIconDoubleClickOnce). Na końcu sonda wchodzi na „Prywatność i AI”, sprawdza że „Zastosuj (N)” przy wejściu ma N = 0 (program nic nie zaznacza sam;
     PrivacyApplyCountOnEntry), klika „Zaznacz sugerowane” i sprawdza „Zastosuj (N)”, gdzie N = sugerowane pozycje NotApplied/Partial z raportów
@@ -33,13 +33,13 @@ Opis działania:
     Suggested z Removability=Removable z CLI --list-apps tego przebiegu, uruchomionego przed sondą jako 'dso' - to samo konto co okno
     (AppsSuggestedRemove); niczego nie usuwa ani nie stosuje. Potem sonda wchodzi na „Przygotowanie”
     i po zakończonym odczycie (najwyżej 60 s, bez „Wczytywanie…”) sprawdza 7 tytułów kroków, przycisk „Otwórz Windows Update” (albo notatkę
-    zastępczą, gdy PrepLinks.SettingsOpenable = false) i linię karty w kroku „Grafika” (PrepPage); żadnego linku nie klika. Potem sonda wchodzi na „Naprawy”
-    (RepairPage) i „Instalacja” (kategorie i tytuły z apps.json, „Zainstaluj (0)” nieaktywne – InstallPage); niczego nie zaznacza ani nie instaluje.
+    zastępczą, gdy PrepLinks.SettingsOpenable = false) i linię karty w kroku „Grafika” (PrepPage); żadnego linku nie klika. Potem sonda wchodzi na „Naprawy i narzędzia”
+    (RepairPage: tytuły kategorii repair, tools i panels) i „Instalacja” (kategorie i tytuły z apps.json, „Zainstaluj (0)” nieaktywne – InstallPage); niczego nie zaznacza ani nie instaluje.
     Jako ostatnie sonda wchodzi przez menu na „Autostart” i po zakończonym odczycie listy (najwyżej 120 s, bez „Odczyt listy w toku”) sprawdza,
     że liczby w nazwach grup („Włączone, N”, „Wyłączone, N”, „Bez pliku, N”) są równe liczbom z CLI --list-autostart tego przebiegu,
     uruchomionego jako 'dso' przed sondą i drugi raz zaraz po niej („Bez pliku” wygrywa ze stanem; gdy lista zmieniła się między tymi
     odczytami, np. przy pierwszym logowaniu konta, okno ma być zgodne z jednym z nich), a „Wyłącz (0)” i „Włącz (0)” są nieaktywne (AutostartPage);
-    niczego nie zaznacza, nie wyłącza ani nie włącza. Razem 23 sprawdzenia.
+    niczego nie zaznacza, nie wyłącza ani nie włącza. Razem 25 sprawdzeń.
     Zrzuty ekranu (Msvm_VirtualSystemManagementService.
     GetVirtualSystemThumbnailImage) po starcie i po sondzie UI oraz wynik (gui-smoke-<VM>.json) trafiają do -OutDirectory.
     Jedyna operacja to ta jedna bezpieczna pozycja (VM i tak wraca do checkpointu). Błąd uwierzytelnienia PowerShell Direct przerywa

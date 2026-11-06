@@ -14,10 +14,7 @@ i sprawdzenie sterowników. Każda zmiana ustawień trafia do historii. Większo
 - **Ustawienia systemu** – strony „Prywatność i AI”, „Wydajność”, „Dysk i system plików”, „Sieć i LAN”,
   „Bezpieczeństwo i szyfrowanie” oraz „Eksplorator i wygoda”. Przy każdej pozycji program pokazuje, czy jest już
   ustawiona na tym komputerze, co zmienia i co na tym zyskasz. Zaznaczasz, co chcesz, i klikasz „Zastosuj”.
-- **Panele systemowe** – szybkie otwieranie paneli Windows, których szuka się zwykle najdłużej.
-- **Naprawy** – m.in. reset Windows Update, sprawdzenie i naprawa plików systemowych, czyszczenie dysku,
-  usunięcie poprzedniej instalacji Windows, reset ustawień sieci, naprawa winget i Microsoft Store.
-- **Narzędzia** – np. ponowne uruchomienie paska zadań i Eksploratora oraz uruchomienie WinUtil (Chris Titus).
+  Lista „Pokaż” zawęża widok do pozycji niezastosowanych, zastosowanych albo zaznaczonych ze wszystkich stron.
 - **Specyfikacja** – podsumowanie sprzętu komputera z możliwością zapisania raportu.
 - **Przygotowanie** – kroki po instalacji Windows: aktualizacje, sterowniki chipsetu i grafiki, strona wsparcia
   producenta laptopa, urządzenia bez sterownika. Program tylko sprawdza stan i podaje oficjalne linki.
@@ -29,6 +26,10 @@ i sprawdzenie sterowników. Każda zmiana ustawień trafia do historii. Większo
   ważne dla systemu są chronione; część znanych programów i pozycje, których plik już nie istnieje, są sugerowane
   do wyłączenia.
 - **Instalacja** – instalacja popularnych programów przez winget (Microsoft) oraz RustDesk z GitHuba jego autorów.
+- **Naprawy i narzędzia** – jedna strona z trzema częściami. Naprawy, m.in.: reset Windows Update, sprawdzenie
+  i naprawa plików systemowych, czyszczenie dysku, usunięcie poprzedniej instalacji Windows, reset ustawień sieci,
+  naprawa winget i Microsoft Store. Narzędzia, np. ponowne uruchomienie paska zadań i Eksploratora oraz uruchomienie
+  WinUtil (Chris Titus). Panele systemowe: szybkie otwieranie paneli Windows, których szuka się zwykle najdłużej.
 - **Historia zmian** – zmiany ustawień, zmiany w autostarcie, usunięcia i instalacje aplikacji w jednym miejscu. Zmiany ustawień i autostartu można tu cofnąć; usunięcia i instalacje aplikacji nie mają „Cofnij”.
 
 ## Wymagania
