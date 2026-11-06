@@ -116,6 +116,33 @@ public sealed class GuiSession
     }
 
     /// <summary>
+    /// Strażnik ustawień: pozycje zastosowane wcześniej, których świeża detekcja (<paramref name="states"/>) nie daje już Applied
+    /// (reguła w <see cref="SettingsDrift"/>). Bez detekcji i bez zapisu; ostrzeżenie journala pomija, bo zgłasza je
+    /// <see cref="PendingReboot"/> w tym samym przeliczeniu okna. Błąd odczytu nie rzuca: pusta lista i ostrzeżenie w logu.
+    /// </summary>
+    public IReadOnlyList<string> DriftedSettings(
+        IReadOnlyDictionary<string, DetectionState> states,
+        DateTimeOffset? lastBoot,
+        DateTimeOffset sessionStart)
+    {
+        try
+        {
+            Journal.JournalLoadResult loaded;
+            lock (_gate)
+            {
+                loaded = _services.Journal.Load();
+            }
+
+            return SettingsDrift.Compute(loaded.Document, _tweaks, states, _services.User.Sid, lastBoot ?? sessionStart);
+        }
+        catch (Exception ex)
+        {
+            _services.Log.Warn(Component, L.F("Nie udało się sprawdzić zastosowanych ustawień: {0}", ex.Message));
+            return Array.Empty<string>();
+        }
+    }
+
+    /// <summary>
     /// Historia zmian z journala (odczyt pod blokadą sesji, jak <see cref="PendingReboot"/>). <c>since</c> = ostatni start systemu
     /// albo start sesji, gdy nieznany. Błąd odczytu nie rzuca: puste wpisy i ostrzeżenie. Nazwy kont tłumaczy <paramref name="names"/>
     /// poza blokadą (może blokować na LSA).

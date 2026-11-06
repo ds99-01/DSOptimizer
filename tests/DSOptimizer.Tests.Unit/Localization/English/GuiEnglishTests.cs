@@ -268,6 +268,18 @@ public class GuiEnglishTests
     }
 
     [Fact]
+    public void DriftBanner_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("Applied settings have changed.", GuiText.DriftTitle);
+            Assert.Equal("1 item is no longer fully applied.", GuiText.DriftBannerText(1));
+            Assert.Equal("2 items are no longer fully applied.", GuiText.DriftBannerText(2));
+            Assert.Equal("5 items are no longer fully applied.", GuiText.DriftBannerText(5));
+        }
+    }
+
+    [Fact]
     public void BatchRun_InstallProgress_English()
     {
         using (L.Use(UiLanguage.English))

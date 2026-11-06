@@ -174,6 +174,10 @@
       "en": "Couldn't restore everything:"
     },
     {
+      "pl": "Nie udało się sprawdzić zastosowanych ustawień: {0}",
+      "en": "Couldn't check the applied settings: {0}"
+    },
+    {
       "pl": "Nie udało się sprawdzić, czy czeka restart: {0}",
       "en": "Couldn't check whether a restart is pending: {0}"
     },
@@ -748,6 +752,22 @@
     {
       "pl": "{0} zmian zadziała dopiero po ponownym uruchomieniu komputera.",
       "en": "{0} changes take effect only after the computer restarts."
+    },
+    {
+      "pl": "Zastosowane ustawienia się zmieniły.",
+      "en": "Applied settings have changed."
+    },
+    {
+      "pl": "{0} pozycja nie jest już w pełni zastosowana.",
+      "en": "{0} item is no longer fully applied."
+    },
+    {
+      "pl": "{0} pozycje nie są już w pełni zastosowane.",
+      "en": "{0} items are no longer fully applied."
+    },
+    {
+      "pl": "{0} pozycji nie jest już w pełni zastosowanych.",
+      "en": "{0} items are no longer fully applied."
     },
     {
       "pl": "w toku",

@@ -344,6 +344,7 @@ How to read the tables:
 | Twórz punkt przywracania przed zmianami | Create a restore point before changes | Settings checkbox |
 | Aktualizacje / Sprawdzaj przy starcie / Sprawdź aktualizacje | Updates / Check at startup / Check for updates | Settings section, checkbox and button; the program only reads the latest version number and never downloads or installs anything |
 | Dostępna jest nowa wersja: {0}. / Otwórz stronę wydań / Ukryj | A new version is available: {0}. / Open releases page / Hide | New-version banner; "Ukryj" hides it until the next start |
+| Zastosowane ustawienia się zmieniły. / {N} pozycji nie jest już w pełni zastosowanych. / Zaznacz i pokaż | Applied settings have changed. / {N} items are no longer fully applied. / Select and show | Banner at window start: items applied earlier whose current state differs; it never names a cause |
 | Masz najnowszą wersję / Dostępna wersja {0} / Nie udało się sprawdzić | You have the latest version / Version {0} is available / Couldn't check | Result lines of "Sprawdź aktualizacje" |
 | Autor / Licencja / Wersja {0} | Author / License / Version {0} | "About" column in Settings |
 | Otwórz github.com/… | Open github.com/… | Screen reader name of the repository link |

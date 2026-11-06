@@ -46,13 +46,13 @@ public class MainViewModelHistoryUndoTests
             var vm = Create(temp, dialogs, out _);
 
             vm.SelectedPage = vm.History;
-            PumpUntil(() => !vm.History.IsLoading && vm.History.Entries.Count == 1, "wczytanie historii");
+            MainViewModelTests.PumpUntil(() => !vm.History.IsLoading && vm.History.Entries.Count == 1, "wczytanie historii");
             var row = vm.History.SelectedEntry!;
             Assert.Equal(entryId, row.EntryId);
             Assert.True(vm.History.UndoCommand.CanExecute(null));
 
-            Wait(vm.History.UndoCommand.ExecuteAsync(null));
-            PumpUntil(() => !vm.IsBusy && vm.LogLines.Count > 0, "linie dziennika");
+            MainViewModelTests.Wait(vm.History.UndoCommand.ExecuteAsync(null));
+            MainViewModelTests.PumpUntil(() => !vm.IsBusy && vm.LogLines.Count > 0, "linie dziennika");
 
             var notFound = GuiText.ItemNotFound(GuiOperation.Undo, ItemId);
             Assert.DoesNotContain(vm.LogLines, line => line.Text == notFound);
@@ -76,8 +76,8 @@ public class MainViewModelHistoryUndoTests
             var vm = Create(temp, dialogs, out _);
             var entry = LoadEntry(vm, entryId);
 
-            Wait(vm.UndoFromHistoryAsync(entry));
-            PumpUntil(() => vm.LogLines.Any(line => line.Text.StartsWith(entry.Title + ":", StringComparison.Ordinal)), "linia wyniku");
+            MainViewModelTests.Wait(vm.UndoFromHistoryAsync(entry));
+            MainViewModelTests.PumpUntil(() => vm.LogLines.Any(line => line.Text.StartsWith(entry.Title + ":", StringComparison.Ordinal)), "linia wyniku");
 
             var confirmation = Assert.Single(dialogs.Series);
             Assert.Equal(AutostartText.UndoConfirmTitle, confirmation.Title);
@@ -111,9 +111,9 @@ public class MainViewModelHistoryUndoTests
                 Guid.NewGuid(), "tweak.spoza-katalogu", "tweak.spoza-katalogu", false, null, DateTimeOffset.UtcNow, HistoryText.UnknownAccount,
                 HistoryState.Active, Array.Empty<HistoryEvent>(), true, null);
 
-            Wait(vm.UndoFromHistoryAsync(entry));
+            MainViewModelTests.Wait(vm.UndoFromHistoryAsync(entry));
             var notFound = GuiText.ItemNotFound(GuiOperation.Undo, entry.TweakId);
-            PumpUntil(() => vm.LogLines.Count > 0, "linia dziennika");
+            MainViewModelTests.PumpUntil(() => vm.LogLines.Count > 0, "linia dziennika");
 
             var line = Assert.Single(vm.LogLines);
             Assert.Equal((GuiLogLevel.Warning, notFound), (line.Level, line.Text));
@@ -135,9 +135,9 @@ public class MainViewModelHistoryUndoTests
             var entry = LoadEntry(vm, entryId);
             var readsBefore = reader.Contexts.Count;
 
-            Wait(vm.UndoFromHistoryAsync(entry));
+            MainViewModelTests.Wait(vm.UndoFromHistoryAsync(entry));
             var cancelled = MainViewModel.CanceledText(GuiOperation.Undo, entry.Title);
-            PumpUntil(() => vm.LogLines.Count > 0, "linia anulowania");
+            MainViewModelTests.PumpUntil(() => vm.LogLines.Count > 0, "linia anulowania");
 
             Assert.Single(dialogs.Series);
             Assert.Empty(dialogs.Steps);
@@ -162,20 +162,20 @@ public class MainViewModelHistoryUndoTests
             var dialogs = new FakeSeriesDialogs(confirm: true);
             var vm = Create(temp, dialogs, out var reader);
             vm.SelectedPage = vm.History;
-            PumpUntil(() => !vm.History.IsLoading && vm.History.Entries.Count == 1, "wczytanie historii");
+            MainViewModelTests.PumpUntil(() => !vm.History.IsLoading && vm.History.Entries.Count == 1, "wczytanie historii");
             Assert.Equal(1, vm.History.ActiveCount);
             Assert.Equal(HistoryState.Active, vm.History.SelectedEntry!.State);
             var readsBefore = reader.Contexts.Count;
 
-            Wait(vm.UndoFromHistoryAsync(vm.History.SelectedEntry.Entry));
+            MainViewModelTests.Wait(vm.UndoFromHistoryAsync(vm.History.SelectedEntry.Entry));
 
-            PumpUntil(
+            MainViewModelTests.PumpUntil(
                 () => !vm.History.IsLoading && vm.History.SelectedEntry?.State == HistoryState.Undone,
                 "odświeżona historia");
             Assert.Equal(0, vm.History.ActiveCount);
             Assert.Equal(entryId, vm.History.SelectedEntry!.EntryId);
             Assert.False(vm.History.UndoCommand.CanExecute(null));
-            PumpUntil(() => reader.Contexts.Count > readsBefore && !vm.Autostart.IsLoading, "odczyt strony Autostart");
+            MainViewModelTests.PumpUntil(() => reader.Contexts.Count > readsBefore && !vm.Autostart.IsLoading, "odczyt strony Autostart");
         });
     }
 
@@ -183,7 +183,7 @@ public class MainViewModelHistoryUndoTests
     private static HistoryEntry LoadEntry(MainViewModel vm, Guid entryId)
     {
         _ = vm.History.RefreshAsync();
-        PumpUntil(() => !vm.History.IsLoading && vm.History.Entries.Count == 1, "wczytanie historii");
+        MainViewModelTests.PumpUntil(() => !vm.History.IsLoading && vm.History.Entries.Count == 1, "wczytanie historii");
         var entry = vm.History.Entries.Single().Entry;
         Assert.Equal(entryId, entry.EntryId);
         Assert.Equal(HistoryKind.Autostart, entry.Kind);
@@ -240,30 +240,6 @@ public class MainViewModelHistoryUndoTests
 
     private static JournalEntryStatus Status(TempDirectory temp, Guid entryId)
         => Journal(temp).Load().Document.Entries.Single(entry => entry.EntryId == entryId).Status;
-
-    private static void Wait(Task task)
-    {
-        PumpUntil(() => task.IsCompleted, "koniec operacji");
-        task.GetAwaiter().GetResult();
-    }
-
-    /// <summary>Kolejka dispatchera wątku testu aż do spełnienia warunku (najwyżej 30 s).</summary>
-    private static void PumpUntil(Func<bool> condition, string what)
-    {
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(30);
-        while (!condition())
-        {
-            if (DateTime.UtcNow > deadline)
-            {
-                throw new TimeoutException("Nie doczekano się: " + what);
-            }
-
-            var frame = new DispatcherFrame();
-            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => frame.Continue = false));
-            Dispatcher.PushFrame(frame);
-            Thread.Sleep(5);
-        }
-    }
 
     /// <summary>Okno serii bez okna: zapisuje treść potwierdzenia i potwierdza (seria biegnie od razu) albo anuluje.</summary>
     private sealed class FakeSeriesDialogs : ISeriesDialogs

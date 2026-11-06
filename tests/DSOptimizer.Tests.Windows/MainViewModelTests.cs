@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
@@ -414,5 +415,30 @@ public class MainViewModelTests
         thread.Start();
         thread.Join();
         failure?.Throw();
+    }
+
+    /// <summary>Czeka na koniec zadania, wykonując kolejkę dispatchera wątku testu (kontynuacje await na DispatcherSynchronizationContext).</summary>
+    internal static void Wait(Task task)
+    {
+        PumpUntil(() => task.IsCompleted, "koniec operacji");
+        task.GetAwaiter().GetResult();
+    }
+
+    /// <summary>Kolejka dispatchera wątku testu aż do spełnienia warunku (najwyżej 30 s).</summary>
+    internal static void PumpUntil(Func<bool> condition, string what)
+    {
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(30);
+        while (!condition())
+        {
+            if (DateTime.UtcNow > deadline)
+            {
+                throw new TimeoutException("Nie doczekano się: " + what);
+            }
+
+            var frame = new DispatcherFrame();
+            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => frame.Continue = false));
+            Dispatcher.PushFrame(frame);
+            Thread.Sleep(5);
+        }
     }
 }

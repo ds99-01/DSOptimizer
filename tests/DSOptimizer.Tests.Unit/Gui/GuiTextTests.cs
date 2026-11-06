@@ -454,4 +454,15 @@ public class GuiTextTests
         Assert.Equal("Działa w edycjach: Enterprise i Education.", GuiText.EditionsLine(new[] { EditionFamily.Business }));
         Assert.Equal("Działa w edycjach: Home, Pro, Enterprise i Education.", GuiText.EditionsLine(new[] { EditionFamily.Business, EditionFamily.Home, EditionFamily.Pro }));
     }
+
+    [Theory]
+    [InlineData(1, "1 pozycja nie jest już w pełni zastosowana.")]
+    [InlineData(2, "2 pozycje nie są już w pełni zastosowane.")]
+    [InlineData(5, "5 pozycji nie jest już w pełni zastosowanych.")]
+    [InlineData(12, "12 pozycji nie jest już w pełni zastosowanych.")]
+    [InlineData(22, "22 pozycje nie są już w pełni zastosowane.")]
+    public void DriftBannerText_Plural(int n, string expected) => Assert.Equal(expected, GuiText.DriftBannerText(n));
+
+    [Fact]
+    public void DriftTitle_Text() => Assert.Equal("Zastosowane ustawienia się zmieniły.", GuiText.DriftTitle);
 }

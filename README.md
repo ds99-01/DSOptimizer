@@ -113,7 +113,7 @@ The specification report contains disk serial numbers, so keep that in mind befo
 - **System settings** – you can undo most changes with the "Undo" button next to the item or on the
   "Change history" page. The program remembers the state before the change and returns to it.
   The few items that cannot be undone carry a clear warning about it (the Undo button is missing there). The program's settings also have an option
-  to create a Windows restore point before changes.
+  to create a Windows restore point before changes. When the window opens, the program checks whether the settings you applied are still applied; if some are not, a banner lets you select them and apply them again – nothing changes without your click.
 - **Removing apps** – the program does not restore a removed app. Before removing a desktop program (not a Store
   app), it creates a Windows restore point, and if that fails, it asks whether to continue without one.
 - **Repairs and actions** – they run once and have no Undo (e.g. cleaned-up files cannot be recovered).

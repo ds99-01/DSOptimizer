@@ -110,7 +110,7 @@ Raport ze specyfikacją zawiera numery seryjne dysków – pamiętaj o tym, zani
 - **Ustawienia systemu** – większość zmian cofniesz przyciskiem „Cofnij” przy pozycji albo na stronie
   „Historia zmian”. Program zapamiętuje stan sprzed zmiany i do niego wraca. Nieliczne pozycje, których
   nie da się cofnąć, mają o tym wyraźne ostrzeżenie (nie ma tam przycisku „Cofnij”). W Ustawieniach programu jest też opcja tworzenia punktu
-  przywracania Windows przed zmianami.
+  przywracania Windows przed zmianami. Przy otwarciu okna program sprawdza, czy zastosowane wcześniej ustawienia są nadal zastosowane; gdy któreś nie jest, baner pozwala je zaznaczyć i zastosować ponownie – nic nie zmienia się bez Twojego kliknięcia.
 - **Usuwanie aplikacji** – usuniętej aplikacji program nie przywraca. Przed usunięciem programu (nie aplikacji
   ze Sklepu) tworzy punkt przywracania Windows, a gdy to się nie uda, pyta, czy kontynuować bez niego.
 - **Naprawy i akcje** – działają jednorazowo i nie mają „Cofnij” (np. wyczyszczonych plików nie da się

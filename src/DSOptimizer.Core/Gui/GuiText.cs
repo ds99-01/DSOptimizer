@@ -431,6 +431,13 @@ public static class GuiText
     public static string RebootBannerText(int count)
         => L.P("{0} zmiana zadziała dopiero po ponownym uruchomieniu komputera.", "{0} zmiany zadziałają dopiero po ponownym uruchomieniu komputera.", "{0} zmian zadziała dopiero po ponownym uruchomieniu komputera.", count);
 
+    /// <summary>Baner strażnika ustawień: tytuł. Nie nazywa przyczyny zmiany.</summary>
+    public static string DriftTitle => L.T("Zastosowane ustawienia się zmieniły.");
+
+    /// <summary>Baner strażnika ustawień: ile wcześniej zastosowanych pozycji nie jest już w pełni zastosowanych.</summary>
+    public static string DriftBannerText(int count)
+        => L.P("{0} pozycja nie jest już w pełni zastosowana.", "{0} pozycje nie są już w pełni zastosowane.", "{0} pozycji nie jest już w pełni zastosowanych.", count);
+
     /// <summary>Okno postępu długiej naprawy: podtytuł paska w trakcie.</summary>
     public static string ActionRunningSubtitle => L.T("w toku");
 

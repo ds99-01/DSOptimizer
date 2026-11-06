@@ -66,6 +66,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _isConfirming;
     private Task<DateTimeOffset?>? _lastBoot;
     private int _rebootVersion;
+    private int _driftVersion;
     private bool _rebootWarningShown;
     private IReadOnlyList<string> _pendingRebootTitles = Array.Empty<string>();
     private string? _operationText;
@@ -142,6 +143,8 @@ public sealed class MainViewModel : ObservableObject
         ResetListViewCommand = new RelayCommand(ResetListView);
         RestartCommand = new AsyncRelayCommand(RestartFromBannerAsync, () => !IsBusy && !IsConfirming);
         ShowPendingCommand = new RelayCommand(ShowPendingReboot);
+        // Strażnik ustawień: „Zaznacz i pokaż” tylko zaznacza i otwiera widok „Zaznaczone”, nieaktywne w trakcie operacji.
+        DriftBanner = new DriftBannerViewModel(SelectAndShowDrifted, () => !IsBusy);
 
         // Strony kategorii w kolejności menu: kategorie ustawień, na końcu scalona strona „Naprawy i narzędzia”.
         Categories = GuiNav.CategoryPages(session.Categories).Select(page => new CategoryViewModel(page, this)).ToList();
@@ -678,6 +681,7 @@ public sealed class MainViewModel : ObservableObject
                 UndoSelectedCommand.NotifyCanExecuteChanged();
                 ClearSelectionCommand.NotifyCanExecuteChanged();
                 RestartCommand.NotifyCanExecuteChanged();
+                DriftBanner.RefreshCanSelect();
                 RefreshSelectSuggested();
                 Settings.IsEditable = !value;
                 History.IsBusy = value;
@@ -745,6 +749,12 @@ public sealed class MainViewModel : ObservableObject
 
     /// <summary>„Pokaż które” na banerze: strona „Historia zmian” z filtrem „Czekające na restart” i świeżym odczytem.</summary>
     public IRelayCommand ShowPendingCommand { get; }
+
+    /// <summary>
+    /// Baner strażnika ustawień: zastosowane wcześniej pozycje, których świeża detekcja nie daje już Applied (<see cref="RefreshDriftAsync"/>).
+    /// „Zaznacz i pokaż” = <see cref="SelectAndShowDrifted"/>; nic nie stosuje się samo.
+    /// </summary>
+    public DriftBannerViewModel DriftBanner { get; }
 
     /// <summary>
     /// Filtr ustawiany przy wejściu na stronę (<see cref="SelectPage"/>), bo samo wejście odświeża historię – jeden odczyt
@@ -890,6 +900,9 @@ public sealed class MainViewModel : ObservableObject
             // pod IsBusy: PendingReboot bierze blokadę sesji, a klik „Zastosuj” w tej chwili dostałby „Trwa inna operacja”.
             // RefreshRebootAsync nigdy nie rzuca.
             await RefreshRebootAsync().ConfigureAwait(true);
+            // Strażnik ustawień na stanach po detekcji, gdy ewentualny awans PendingReboot → Active jest już zapisany; też pod IsBusy
+            // (journal pod blokadą sesji). RefreshDriftAsync nigdy nie rzuca.
+            await RefreshDriftAsync().ConfigureAwait(true);
             _operationText = null;
             IsBusy = false;
         }
@@ -1135,8 +1148,8 @@ public sealed class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Linie raportu do dziennika, nowe stany pozycji, czas sprawdzenia, potem baner restartu z journala i odświeżenie historii
-    /// (licznik w menu, stan wpisów; bez czekania – <see cref="RefreshHistory"/>).
+    /// Linie raportu do dziennika, nowe stany pozycji, czas sprawdzenia, potem baner restartu z journala, baner strażnika ustawień
+    /// i odświeżenie historii (licznik w menu, stan wpisów; bez czekania – <see cref="RefreshHistory"/>).
     /// </summary>
     private async Task ApplyReportAsync(GuiOperationReport report)
     {
@@ -1152,6 +1165,7 @@ public sealed class MainViewModel : ObservableObject
         }
 
         await RefreshRebootAsync().ConfigureAwait(true);
+        await RefreshDriftAsync().ConfigureAwait(true);
         RefreshHistory();
     }
 
@@ -1195,6 +1209,75 @@ public sealed class MainViewModel : ObservableObject
         {
             ReportUnexpected(ex);
         }
+    }
+
+    /// <summary>
+    /// Przelicza baner strażnika ustawień z ostatnich stanów detekcji (tylko tweaki ze znanym stanem; słownik budowany na wątku UI)
+    /// i journala: <see cref="GuiSession.DriftedSettings"/> przez Task.Run (journal pod blokadą sesji), bez detekcji i bez zapisu.
+    /// Wynik starszego przeliczenia, które skończyło się później, jest pomijany. Nigdy nie rzuca.
+    /// Woła go tylko detekcja (<see cref="InitializeAsync"/>) i raport tweaków (<see cref="ApplyReportAsync"/>); raporty usuwania
+    /// i instalacji go nie wołają.
+    /// </summary>
+    internal async Task RefreshDriftAsync()
+    {
+        var version = ++_driftVersion;
+        try
+        {
+            var states = new Dictionary<string, DetectionState>(StringComparer.Ordinal);
+            foreach (var item in _items.Values)
+            {
+                if (item.IsTweak && item.State is { } state)
+                {
+                    states[item.Id] = state;
+                }
+            }
+
+            var lastBoot = await LastBootAsync().ConfigureAwait(true);
+            var ids = await Task.Run(() => _session.DriftedSettings(states, lastBoot, _sessionStart)).ConfigureAwait(true);
+            if (version == _driftVersion)
+            {
+                DriftBanner.Update(ids);
+            }
+        }
+        catch (Exception ex)
+        {
+            ReportUnexpected(ex);
+        }
+    }
+
+    /// <summary>
+    /// „Zaznacz i pokaż” na banerze strażnika: dokłada do zaznaczenia podane tweaki (niczego nie odznacza), poza stroną kategorii
+    /// przechodzi na ostatnią kategorię, czyści wyszukiwanie i otwiera widok „Zaznaczone”. Filtra ryzyka nie zmienia (ukryte pokazuje
+    /// linia „Ukryte przez filtr: N”) i niczego nie stosuje – dalej zwykłe „Zastosuj (N)”. W trakcie operacji nic nie robi.
+    /// </summary>
+    private void SelectAndShowDrifted(IReadOnlyList<string> ids)
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        foreach (var id in ids)
+        {
+            if (_items.TryGetValue(id, out var item) && item.IsTweak)
+            {
+                item.IsSelected = true;
+            }
+        }
+
+        if (SelectedPage is not CategoryViewModel)
+        {
+            var category = LastCategory;
+            if (category is null)
+            {
+                return;
+            }
+
+            SelectedPage = category;
+        }
+
+        SearchText = string.Empty;
+        ShowFilter = ShowFilter.Selected;
     }
 
     /// <summary>Czas startu systemu dla banera i historii: czytany raz na sesję, przez Task.Run (wołać z wątku UI).</summary>
@@ -1559,6 +1642,7 @@ public sealed class MainViewModel : ObservableObject
         }
 
         await RefreshRebootAsync().ConfigureAwait(true);
+        // Bez RefreshDriftAsync: tu nie ma detekcji tweaków, a journal zmieniają tylko wpisy z Kind.
         RefreshHistory();
         _ = Apps.RefreshAsync();
     }
@@ -1791,6 +1875,7 @@ public sealed class MainViewModel : ObservableObject
 
         Install.OnInstalled(report.SucceededIds);
         await RefreshRebootAsync().ConfigureAwait(true);
+        // Bez RefreshDriftAsync: tu nie ma detekcji tweaków, a journal zmieniają tylko wpisy z Kind.
         RefreshHistory();
         _ = Install.RefreshAsync();
     }
