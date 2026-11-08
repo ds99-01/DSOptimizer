@@ -8,7 +8,7 @@ public static class CatalogGroups
 {
     private static readonly IReadOnlyList<string> None = Array.Empty<string>();
 
-    private static readonly IReadOnlyList<string> Privacy = new[] { "start", "ads", "telemetry" };
+    private static readonly IReadOnlyList<string> Privacy = new[] { "start", "ads", "telemetry", "ai" };
 
     /// <summary>Klucze grup kategorii w kolejności wyświetlania; pusta lista = kategoria bez grup.</summary>
     public static IReadOnlyList<string> For(string category)

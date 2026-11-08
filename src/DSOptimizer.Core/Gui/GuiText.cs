@@ -37,6 +37,7 @@ public static class GuiText
         ("privacy", "start") => L.T("Start, wyszukiwanie i Widżety"),
         ("privacy", "ads") => L.T("Reklamy i sugestie"),
         ("privacy", "telemetry") => L.T("Telemetria i diagnostyka"),
+        ("privacy", "ai") => L.T("Funkcje AI"),
         _ => group,
     };
 

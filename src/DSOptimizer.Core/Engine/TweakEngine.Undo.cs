@@ -166,6 +166,13 @@ public sealed partial class TweakEngine
 
     private TweakResult UndoFromDefaults(TweakDefinition tweak, IReadOnlyList<IOperation> mutating, List<string> warnings, CancellationToken cancellationToken)
     {
+        // Bez wpisu w journalu program niczego tu nie zapisał: na systemie, którego pozycja nie dotyczy, domyślne z katalogu
+        // byłyby nowym zapisem, nie cofnięciem. Odmowa jak w Apply (ta sama reguła co detekcja).
+        if (!IsSupported(tweak))
+        {
+            return Finish(tweak, TweakOutcome.NotSupported, DetectionState.NotSupported, L.T("Tweak nie dotyczy tego systemu."), warnings);
+        }
+
         var defaults = mutating.Select(operation => (Operation: operation, Record: operation.DefaultsSnapshot())).ToList();
         if (defaults.Count == 0 || defaults.Any(pair => pair.Record is null))
         {

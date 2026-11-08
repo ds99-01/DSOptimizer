@@ -109,6 +109,7 @@ public class GuiTextTests
     [InlineData("start", "Start, wyszukiwanie i Widżety")]
     [InlineData("ads", "Reklamy i sugestie")]
     [InlineData("telemetry", "Telemetria i diagnostyka")]
+    [InlineData("ai", "Funkcje AI")]
     [InlineData("xyz", "xyz")]
     public void GroupName_Privacy(string group, string expected)
         => Assert.Equal(expected, GuiText.GroupName("privacy", group));

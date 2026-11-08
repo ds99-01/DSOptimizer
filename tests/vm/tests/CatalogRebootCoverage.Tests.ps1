@@ -12,7 +12,10 @@ BeforeAll {
     . (Join-Path $PSScriptRoot 'Support\NoLiveVm.ps1')
 
     $RepoRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
-    $script:Cases = @((Import-PowerShellDataFile -LiteralPath (Join-Path $RepoRoot 'tests\vm\cases.psd1')).Cases)
+    # Loader bez limitu rozmiaru Import-PowerShellDataFile w PowerShell 5.1 (cases.psd1 go przekracza).
+    Import-Module (Join-Path $RepoRoot 'tests\vm\modules\VmCommon.psm1') -Force
+    Import-Module (Join-Path $RepoRoot 'tests\vm\modules\VmRun.psm1') -Force
+    $script:Cases = @((Import-DsoVmCases -LiteralPath (Join-Path $RepoRoot 'tests\vm\cases.psd1')).Cases)
 
     function Test-RebootCovered {
         # Pokrycie daje wyłącznie przypadek Flow='Reboot' (Catalog='BuiltIn') dla tego TweakId: aktywny albo ze Skip z niepustym powodem.

@@ -241,6 +241,262 @@
     {
       "pl": "Nie gwarantuje, że Windows przestanie wysyłać dane diagnostyczne.",
       "en": "It doesn't guarantee that Windows stops sending diagnostic data."
+    },
+    {
+      "pl": "Wyłącz powiadomienia dostawcy synchronizacji",
+      "en": "Turn off sync provider notifications"
+    },
+    {
+      "pl": "Odznacza pole „Pokaż powiadomienia dostawcy synchronizacji” w Opcjach Eksploratora plików.",
+      "en": "Clears the \"Show sync provider notifications\" checkbox in File Explorer Options."
+    },
+    {
+      "pl": "Eksplorator plików przestaje pokazywać powiadomienia dostawcy synchronizacji.",
+      "en": "File Explorer stops showing sync provider notifications."
+    },
+    {
+      "pl": "ShowSyncProviderNotifications = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced, dla zalogowanego użytkownika. Pole „Pokaż powiadomienia dostawcy synchronizacji” w Opcjach Eksploratora plików jest potem odznaczone, bez restartu Eksploratora. Cofnięcie przywraca poprzedni stan pola.",
+      "en": "ShowSyncProviderNotifications = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced, for the signed-in user. The \"Show sync provider notifications\" checkbox in File Explorer Options is then cleared, without restarting File Explorer. Undo restores the previous state of the checkbox."
+    },
+    {
+      "pl": "Wyłącz Windows Spotlight na ekranie blokady",
+      "en": "Turn off Windows spotlight on the lock screen"
+    },
+    {
+      "pl": "Przełącza ekran blokady z Windows Spotlight na zwykły obraz.",
+      "en": "Switches the lock screen from Windows spotlight to a regular picture."
+    },
+    {
+      "pl": "W ustawieniach ekranu blokady zamiast Windows Spotlight jest wybrany zwykły obraz.",
+      "en": "In the lock screen settings, a regular picture is selected instead of Windows spotlight."
+    },
+    {
+      "pl": "SubscribedContent-338387Enabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager, dla zalogowanego użytkownika. Lista „Personalizuj ekran blokady” w Ustawieniach przechodzi od razu z „W centrum uwagi Windows” na zwykły obraz. Cofnięcie przywraca poprzedni stan; gdy wartości wcześniej nie było, lista wraca do „W centrum uwagi Windows”.",
+      "en": "SubscribedContent-338387Enabled = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager, for the signed-in user. The \"Personalize your lock screen\" list in Settings switches right away from \"Windows spotlight\" to \"Picture\". Undo restores the previous state; if the value didn't exist before, the list goes back to \"Windows spotlight\"."
+    },
+    {
+      "pl": "Wyłącza Spotlight na ekranie blokady – zamiast zdjęć dnia będzie zwykły obraz.",
+      "en": "Turns off Windows spotlight on the lock screen – instead of pictures of the day, you get a regular picture."
+    },
+    {
+      "pl": "Wyłącz powiadomienia o koncie w menu Start",
+      "en": "Turn off account notifications in the Start menu"
+    },
+    {
+      "pl": "Wyłącza przełącznik „Pokaż powiadomienia związane z kontem” w ustawieniach menu Start.",
+      "en": "Turns off the \"Show account-related notifications\" toggle in the Start menu settings."
+    },
+    {
+      "pl": "Menu Start przestaje pokazywać powiadomienia związane z kontem.",
+      "en": "The Start menu stops showing account-related notifications."
+    },
+    {
+      "pl": "Start_AccountNotifications = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced, dla zalogowanego użytkownika (Personalizacja > Start). To ta sama wartość, którą zapisuje przełącznik w Ustawieniach (wyłączony 0, włączony 1); Ustawienia pokazują nowy stan od razu, bez restartu Eksploratora. Cofnięcie przywraca poprzedni stan przełącznika.",
+      "en": "Start_AccountNotifications = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced, for the signed-in user (Personalization > Start). This is the same value that the toggle in Settings writes (off 0, on 1); Settings shows the new state right away, without restarting File Explorer. Undo restores the previous state of the toggle."
+    },
+    {
+      "pl": "Wyłącz systemowe powiadomienia z sugestiami",
+      "en": "Turn off system suggestion notifications"
+    },
+    {
+      "pl": "Wyłącza systemowego nadawcę powiadomień z sugestiami; w ustawieniach powiadomień widać go potem jako wyłączonego.",
+      "en": "Turns off the system sender of suggestion notifications; the notification settings then show it as off."
+    },
+    {
+      "pl": "Windows przestaje wyświetlać powiadomienia z sugestiami od tego systemowego nadawcy.",
+      "en": "Windows stops showing suggestion notifications from this system sender."
+    },
+    {
+      "pl": "Enabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings\\Windows.SystemToast.Suggested, dla zalogowanego użytkownika. Na liście nadawców w System > Powiadomienia pojawia się wtedy ten nadawca z wyłączonym przełącznikiem; bez tej wartości nie ma go na liście. Działa od razu, bez restartu. Cofnięcie przywraca poprzedni stan; gdy wartości nie było, usuwa ją razem z kluczem Windows.SystemToast.Suggested, jeśli powstał przy zmianie.",
+      "en": "Enabled = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings\\Windows.SystemToast.Suggested, for the signed-in user. The \"Suggested\" sender then appears in the sender list in System > Notifications with its toggle off; without this value it isn't in the list. It takes effect right away, without a restart. Undo restores the previous state; if the value didn't exist, it removes it together with the Windows.SystemToast.Suggested key if the change created that key."
+    },
+    {
+      "pl": "Wyłącz systemowe przypomnienia o kopii zapasowej",
+      "en": "Turn off system backup reminders"
+    },
+    {
+      "pl": "Wyłącza systemowego nadawcę powiadomień z przypomnieniami o kopii zapasowej; w ustawieniach powiadomień widać go potem jako wyłączonego.",
+      "en": "Turns off the system sender of backup reminder notifications; the notification settings then show it as off."
+    },
+    {
+      "pl": "Windows przestaje wyświetlać przypomnienia o kopii zapasowej od tego systemowego nadawcy.",
+      "en": "Windows stops showing backup reminders from this system sender."
+    },
+    {
+      "pl": "Enabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings\\Windows.SystemToast.BackupReminder, dla zalogowanego użytkownika. Na liście nadawców w System > Powiadomienia pojawia się wtedy ten nadawca z wyłączonym przełącznikiem; bez tej wartości nie ma go na liście. Działa od razu, bez restartu. Powiadomienie OneDrive o kopii zapasowej ma innego nadawcę. Pozycja nie jest sugerowana, bo wyłącza przypomnienia o kopii. Cofnięcie przywraca poprzedni stan; gdy wartości nie było, usuwa ją razem z kluczem Windows.SystemToast.BackupReminder, jeśli powstał przy zmianie.",
+      "en": "Enabled = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings\\Windows.SystemToast.BackupReminder, for the signed-in user. The \"Backup settings\" sender then appears in the sender list in System > Notifications with its toggle off; without this value it isn't in the list. It takes effect right away, without a restart. The OneDrive backup notification has a different sender. The item isn't suggested, because it turns off backup reminders. Undo restores the previous state; if the value didn't exist, it removes it together with the Windows.SystemToast.BackupReminder key if the change created that key."
+    },
+    {
+      "pl": "Przypomnienia o kopii zapasowej przestaną się pojawiać – zostaw je, jeśli nie robisz kopii w inny sposób.",
+      "en": "Backup reminders will stop appearing – keep them if you don't back up in another way."
+    },
+    {
+      "pl": "Wyłącz zakupy i rekomendacje w Edge",
+      "en": "Turn off shopping and recommendations in Edge"
+    },
+    {
+      "pl": "Wyłącza w Edge funkcje zakupowe, takie jak porównywanie cen i kupony, oraz rekomendacje i powiadomienia od przeglądarki.",
+      "en": "Turns off Edge shopping features, such as price comparison and coupons, and the browser's own recommendations and notifications."
+    },
+    {
+      "pl": "Edge nie szuka już sam kuponów ani porównań cen na stronach sklepów i nie podsuwa własnych rekomendacji ani powiadomień.",
+      "en": "Edge no longer looks for coupons or price comparisons on store pages by itself and doesn't push its own recommendations or notifications."
+    },
+    {
+      "pl": "Trzy polityki Edge ustawione na 0 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge, dla wszystkich kont: EdgeShoppingAssistantEnabled (funkcje zakupowe), ShowRecommendationsEnabled (rekomendacje i powiadomienia Edge) i SpotlightExperiencesAndRecommendationsEnabled (treści i rekomendacje Spotlight w Edge). Ustawienie zakupów w ustawieniach Edge jest potem wyłączone i zablokowane, z informacją, że zarządza nim organizacja. Dla dwóch pozostałych polityk osobnego skutku nie zaobserwowano; ich działanie opisuje Microsoft. Zmianę widać w Edge uruchomionym po niej; otwarte okno Edge może jej nie pokazać do ponownego uruchomienia przeglądarki. Pozycja nie jest sugerowana ze względu na tę informację o organizacji w Edge. Cofnięcie usuwa wartości, a także klucz Edge, jeśli powstał przy zmianie; wartości innych pozycji Edge w tym kluczu zostają.",
+      "en": "Three Edge policies set to 0 in HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge, for all accounts: EdgeShoppingAssistantEnabled (shopping features), ShowRecommendationsEnabled (Edge recommendations and notifications) and SpotlightExperiencesAndRecommendationsEnabled (spotlight experiences and recommendations in Edge). The \"Save time and money with Shopping in Microsoft Edge\" setting in Edge settings is then off and locked, with \"This setting is managed by your organization.\" next to it. No separate effect was observed for the other two policies; Microsoft describes what they do. The change shows in Edge started after it; an open Edge window may not show it until the browser restarts. The item isn't suggested because of this organization notice in Edge. Undo removes the values, and also the Edge key if the change created it; values of other Edge items in this key stay."
+    },
+    {
+      "pl": "Edge pokaże przy ustawieniu zakupów informację, że zarządza nim organizacja, i nie pozwoli go zmienić do czasu cofnięcia.",
+      "en": "Edge will show the shopping setting as managed by your organization and won't let you change it until you undo this."
+    },
+    {
+      "pl": "Ukryj treści MSN i domyślne kafelki na nowej karcie Edge",
+      "en": "Hide MSN content and default tiles on the Edge new tab page"
+    },
+    {
+      "pl": "Nowa karta w Edge przestaje pokazywać kanał MSN z artykułami i reklamami oraz domyślnie podsunięte kafelki witryn.",
+      "en": "The Edge new tab page stops showing the MSN feed with articles and ads and the default site tiles."
+    },
+    {
+      "pl": "Po otwarciu nowej karty w Edge nie widać już artykułów i reklam produktów z MSN ani podsuniętych kafelków sklepów i serwisów.",
+      "en": "When you open a new tab in Edge, you no longer see MSN articles and product ads or default tiles for stores and services."
+    },
+    {
+      "pl": "Dwie polityki Edge w HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge, dla wszystkich kont: NewTabPageContentEnabled ustawiona na 0 (bez treści Microsoftu na nowej karcie) i NewTabPageHideDefaultTopSites ustawiona na 1 (bez domyślnych kafelków witryn). Każda z nich osobno dała widoczny skutek: z nowej karty znika kanał MSN z artykułami i reklamami, a z domyślnych kafelków zostaje tylko Microsoft 365. Zmianę widać w Edge uruchomionym po niej. Edge traktuje te ustawienia jako obowiązkowe polityki urządzenia, czyli zarządzane przez organizację, dlatego pozycja nie jest sugerowana. Cofnięcie usuwa obie wartości, a także klucz Edge, jeśli powstał przy zmianie; wartości innych pozycji Edge w tym kluczu zostają.",
+      "en": "Two Edge policies in HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge, for all accounts: NewTabPageContentEnabled set to 0 (no Microsoft content on the new tab page) and NewTabPageHideDefaultTopSites set to 1 (no default top site tiles). Each of them showed a visible effect on its own: the MSN feed with articles and ads disappears from the new tab page, and of the default tiles only Microsoft 365 remains. The change shows in Edge started after it. Edge treats these settings as mandatory device policies, that is, managed by your organization, so the item isn't suggested. Undo removes both values, and also the Edge key if the change created it; values of other Edge items in this key stay."
+    },
+    {
+      "pl": "Edge będzie traktować te ustawienia nowej karty jako narzucone przez organizację, aż cofniesz tę pozycję.",
+      "en": "Edge will treat these new tab settings as managed by your organization until you undo this item."
+    },
+    {
+      "pl": "Wyłącz poprawianie wyników Start i wyszukiwania",
+      "en": "Turn off improving Start and search results"
+    },
+    {
+      "pl": "Wyłącza przełącznik „Popraw wyniki uruchamiania i wyszukiwania” w ustawieniach prywatności.",
+      "en": "Turns off the \"Improve Start and search results\" toggle in the privacy settings."
+    },
+    {
+      "pl": "Windows przestaje dopasowywać wyniki w menu Start i w wyszukiwaniu do tego, jakich aplikacji używasz.",
+      "en": "Windows stops tailoring results in the Start menu and in search to the apps you use."
+    },
+    {
+      "pl": "Start_TrackProgs = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced, dla zalogowanego użytkownika. To ta sama wartość, którą zapisuje przełącznik „Popraw wyniki uruchamiania i wyszukiwania” w Ustawieniach (wyłączony 0, włączony 1); Ustawienia pokazują nowy stan od razu, bez restartu. Pole „Pokaż najczęściej używane aplikacje” w Personalizacja > Start jest potem nieaktywne. Cofnięcie przywraca poprzedni stan przełącznika.",
+      "en": "Start_TrackProgs = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced, for the signed-in user. This is the same value that the \"Improve Start and search results\" toggle in Settings writes (off 0, on 1); Settings shows the new state right away, without a restart. The \"Show most used apps\" setting in Personalization > Start is then inactive. Undo restores the previous state of the toggle."
+    },
+    {
+      "pl": "Pole „Pokaż najczęściej używane aplikacje” w ustawieniach menu Start będzie nieaktywne – tej listy nie da się wtedy włączyć.",
+      "en": "The \"Show most used apps\" setting in the Start menu settings will be inactive – you won't be able to turn that list on."
+    },
+    {
+      "pl": "Wyłącz rozpoznawanie mowy online",
+      "en": "Turn off online speech recognition"
+    },
+    {
+      "pl": "Wyłącza rozpoznawanie mowy online, czyli używanie głosu w aplikacjach korzystających z technologii rozpoznawania mowy online firmy Microsoft.",
+      "en": "Turns off online speech recognition, that is, using your voice for apps using Microsoft's online speech recognition technology."
+    },
+    {
+      "pl": "Rozpoznawanie mowy online zostaje wyłączone, także jeśli ktoś wcześniej je włączył. Na nowym Windows jest już wyłączone.",
+      "en": "Online speech recognition is turned off, even if someone turned it on earlier. On a new Windows installation it's already off."
+    },
+    {
+      "pl": "HasAccepted = 0 w HKCU\\Software\\Microsoft\\Speech_OneCore\\Settings\\OnlineSpeechPrivacy, dla zalogowanego użytkownika. To ta sama wartość, którą zapisuje przełącznik rozpoznawania mowy online w Ustawieniach (wyłączony 0, włączony 1); Ustawienia pokazują nowy stan od razu, bez restartu. Na nowym Windows przełącznik jest już wyłączony, a tej wartości i jej klucza nie ma, więc DSOptimizer pokazuje pozycję jako niezastosowaną, a zastosowanie niczego nie zmienia na ekranie. Pozycja ma sens, gdy rozpoznawanie mowy online zostało wcześniej włączone; nie jest sugerowana. Cofnięcie przywraca poprzedni stan; gdy wartości nie było, usuwa ją razem z kluczami Settings i OnlineSpeechPrivacy, jeśli powstały przy zmianie.",
+      "en": "HasAccepted = 0 in HKCU\\Software\\Microsoft\\Speech_OneCore\\Settings\\OnlineSpeechPrivacy, for the signed-in user. This is the same value that the \"Online speech recognition\" toggle in Settings writes (off 0, on 1); Settings shows the new state right away, without a restart. On a new Windows installation the toggle is already off, and this value and its key don't exist, so DSOptimizer shows the item as not applied, and applying it changes nothing on screen. The item makes sense when online speech recognition was turned on earlier; it isn't suggested. Undo restores the previous state; when the value didn't exist, it removes it together with the Settings and OnlineSpeechPrivacy keys if the change created them."
+    },
+    {
+      "pl": "Nie będzie można korzystać z aplikacji używających rozpoznawania mowy online firmy Microsoft (tak opisuje to Windows przy przełączniku).",
+      "en": "You won't be able to use apps that use Microsoft's online speech recognition technology (as Windows describes it next to the toggle)."
+    },
+    {
+      "pl": "Wyłącz słownik niestandardowy pisania i pisma odręcznego",
+      "en": "Turn off the custom inking and typing dictionary"
+    },
+    {
+      "pl": "Wyłącza przełącznik „Niestandardowe pisanie odręczne i słownik pisania” w ustawieniach prywatności.",
+      "en": "Turns off the \"Custom inking and typing dictionary\" toggle in the privacy settings."
+    },
+    {
+      "pl": "Windows przestaje tworzyć słownik niestandardowy z informacji o tym, co piszesz na klawiaturze i odręcznie.",
+      "en": "Windows stops creating a custom dictionary from your typing and handwriting info."
+    },
+    {
+      "pl": "Cztery wartości, które zapisuje przełącznik „Niestandardowe pisanie odręczne i słownik pisania” w Ustawieniach, dla zalogowanego użytkownika: RestrictImplicitInkCollection = 1 i RestrictImplicitTextCollection = 1 w HKCU\\Software\\Microsoft\\InputPersonalization, HarvestContacts = 0 w HKCU\\Software\\Microsoft\\InputPersonalization\\TrainedDataStore oraz AcceptedPrivacyPolicy = 0 w HKCU\\Software\\Microsoft\\Personalization\\Settings. Przełącznik jest potem wyłączony tak samo jak po ręcznym wyłączeniu; Ustawienia pokazują nowy stan od razu, bez restartu. Inne wartości, które przełącznik zapisuje przy okazji (m.in. ustawienia edytorów IME), zostają bez zmian. Cofnięcie przywraca poprzednie wartości.",
+      "en": "Four values that the \"Custom inking and typing dictionary\" toggle in Settings writes, for the signed-in user: RestrictImplicitInkCollection = 1 and RestrictImplicitTextCollection = 1 in HKCU\\Software\\Microsoft\\InputPersonalization, HarvestContacts = 0 in HKCU\\Software\\Microsoft\\InputPersonalization\\TrainedDataStore and AcceptedPrivacyPolicy = 0 in HKCU\\Software\\Microsoft\\Personalization\\Settings. The toggle is then off, the same as after turning it off by hand; Settings shows the new state right away, without a restart. Other values that the toggle writes along the way (including IME settings) stay unchanged. Undo restores the previous values."
+    },
+    {
+      "pl": "Według opisu Windows wyłączenie czyści słownik niestandardowy pisania i pisma odręcznego; cofnięcie może go nie przywrócić.",
+      "en": "According to Windows, turning this off clears the custom typing and handwriting dictionary; undo may not bring it back."
+    },
+    {
+      "pl": "Wyłącz dane diagnostyczne i opinie w Edge",
+      "en": "Turn off diagnostic data and feedback in Edge"
+    },
+    {
+      "pl": "Wyłącza w Edge zbieranie danych diagnostycznych, także wymaganych, oraz możliwość wysyłania opinii o przeglądarce.",
+      "en": "Turns off Edge diagnostic data collection, including required data, and the option to send feedback about the browser."
+    },
+    {
+      "pl": "Edge nie zbiera danych diagnostycznych dla Microsoftu, ani opcjonalnych, ani wymaganych, i nie pozwala wysyłać opinii o przeglądarce.",
+      "en": "Edge doesn't collect diagnostic data for Microsoft, neither optional nor required, and doesn't let you send feedback about the browser."
+    },
+    {
+      "pl": "Trzy polityki Edge ustawione na 0 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge, dla wszystkich kont: DiagnosticData (dane diagnostyczne; 0 wyłącza także dane wymagane, czego Microsoft nie zaleca), PersonalizationReportingEnabled (wysyłanie do Microsoftu historii i innych danych przeglądania na potrzeby personalizacji reklam, wyszukiwania i wiadomości) i UserFeedbackAllowed (wysyłanie opinii z Edge). Ustawienia danych diagnostycznych i opinii w ustawieniach Edge są potem wyłączone i zablokowane, z informacją, że zarządza nimi organizacja. Dla PersonalizationReportingEnabled osobnego skutku nie zaobserwowano; jej działanie opisuje Microsoft. Zmianę widać w Edge uruchomionym po niej; otwarte okno Edge może jej nie pokazać do ponownego uruchomienia przeglądarki. Pozycja nie jest sugerowana. Cofnięcie usuwa wartości, a także klucz Edge, jeśli powstał przy zmianie; wartości innych pozycji Edge w tym kluczu zostają.",
+      "en": "Three Edge policies set to 0 in HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge, for all accounts: DiagnosticData (diagnostic data; 0 also turns off required data, which Microsoft doesn't recommend), PersonalizationReportingEnabled (sending browsing history and other browsing data to Microsoft to personalize ads, search and news) and UserFeedbackAllowed (sending feedback from Edge). The \"Required diagnostic data\" and \"Feedback\" settings in Edge settings are then off and locked, with \"This setting is managed by your organization\" next to them. No separate effect was observed for PersonalizationReportingEnabled; Microsoft describes what it does. The change shows in Edge started after it; an open Edge window may not show it until the browser restarts. The item isn't suggested. Undo removes the values, and also the Edge key if the change created it; values of other Edge items in this key stay."
+    },
+    {
+      "pl": "Wyłącza też wymagane dane diagnostyczne Edge, czego Microsoft nie zaleca.",
+      "en": "It also turns off Edge's required diagnostic data, which Microsoft doesn't recommend."
+    },
+    {
+      "pl": "Edge pokaże przy ustawieniach danych diagnostycznych i opinii informację, że zarządza nimi organizacja, i nie pozwoli ich zmienić.",
+      "en": "Edge will show the diagnostic data and feedback settings as managed by your organization and won't let you change them."
+    },
+    {
+      "pl": "Ukryj przycisk Copilota w Edge",
+      "en": "Hide the Copilot button in Edge"
+    },
+    {
+      "pl": "Ustawia polityki Edge dotyczące Copilota i funkcji AI przeglądarki; z paska narzędzi Edge znika przycisk „Czat”.",
+      "en": "Sets Edge policies for Copilot and the browser's AI features; the \"Chat\" button disappears from the Edge toolbar."
+    },
+    {
+      "pl": "Na pasku narzędzi Edge nie ma już przycisku „Czat”, czyli stale widocznego wejścia do Copilota przy każdej otwartej stronie.",
+      "en": "The Edge toolbar no longer has the \"Chat\" button, the always-visible way into Copilot on every open page."
+    },
+    {
+      "pl": "Sześć polityk Edge ustawionych na 0 w HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge, dla wszystkich kont: Microsoft365CopilotChatIconEnabled (według Microsoftu po wyłączeniu Copilot nie pojawia się na pasku narzędzi), CopilotPageContext, EdgeEntraCopilotPageContext, NewTabPageBingChatEnabled, EdgeHistoryAISearchEnabled (wyszukiwanie w historii tylko dosłowne) i ComposeInlineEnabled. Z paska narzędzi Edge znika potem przycisk „Czat” (Copilot); skutek dotyczy całego zestawu, polityk nie sprawdzano pojedynczo. Według Microsoftu część z nich działa tylko w profilach Edge zalogowanych kontem Microsoft Entra. Pozycja nie wyłącza paska bocznego Edge. Zmianę widać w Edge uruchomionym po niej. Edge traktuje te ustawienia jako obowiązkowe polityki urządzenia, czyli zarządzane przez organizację, dlatego pozycja nie jest sugerowana. Cofnięcie usuwa wartości, a także klucz Edge, jeśli powstał przy zmianie; wartości innych pozycji Edge w tym kluczu zostają.",
+      "en": "Six Edge policies set to 0 in HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge, for all accounts: Microsoft365CopilotChatIconEnabled (according to Microsoft, when it's disabled Copilot doesn't appear in the toolbar), CopilotPageContext, EdgeEntraCopilotPageContext, NewTabPageBingChatEnabled, EdgeHistoryAISearchEnabled (history search by exact match only) and ComposeInlineEnabled. The \"Chat\" (Copilot) button then disappears from the Edge toolbar; the effect applies to the whole set, the policies weren't checked one by one. According to Microsoft, some of them work only in Edge profiles signed in with a Microsoft Entra account. The item doesn't turn off the Edge sidebar. The change shows in Edge started after it. Edge treats these settings as mandatory device policies, that is, managed by your organization, so the item isn't suggested. Undo removes the values, and also the Edge key if the change created it; values of other Edge items in this key stay."
+    },
+    {
+      "pl": "Przycisku „Czat” (Copilot) nie będzie na pasku narzędzi Edge, aż cofniesz tę pozycję.",
+      "en": "The \"Chat\" (Copilot) button won't be on the Edge toolbar until you undo this item."
+    },
+    {
+      "pl": "Edge będzie traktować te ustawienia Copilota jako narzucone przez organizację, aż cofniesz tę pozycję.",
+      "en": "Edge will treat these Copilot settings as managed by your organization until you undo this item."
+    },
+    {
+      "pl": "Wyłącz funkcje AI w Notatniku",
+      "en": "Turn off AI features in Notepad"
+    },
+    {
+      "pl": "Wyłącza funkcje AI w Notatniku; z Notatnika znika przycisk „Narzędzia do pisania”.",
+      "en": "Turns off AI features in Notepad; the \"Writing tools\" button disappears from Notepad."
+    },
+    {
+      "pl": "W Notatniku nie ma już przycisku „Narzędzia do pisania” z funkcjami AI; według Microsoftu ta wartość wyłącza funkcje AI Notatnika.",
+      "en": "Notepad no longer has the \"Writing tools\" button with AI features; according to Microsoft, this value turns off Notepad's AI features."
+    },
+    {
+      "pl": "DisableAIFeatures ustawiona na 1 w HKLM\\SOFTWARE\\Policies\\WindowsNotepad, dla wszystkich kont. To wartość, którą Microsoft opisuje do wyłączania funkcji AI w Notatniku. W Notatniku uruchomionym po zmianie nie ma przycisku „Narzędzia do pisania”, a sam Notatnik uruchamia się i działa. Cofnięcie przywraca poprzedni stan; gdy wartości wcześniej nie było, usuwa ją, a także klucz WindowsNotepad, jeśli powstał przy zmianie.",
+      "en": "DisableAIFeatures set to 1 in HKLM\\SOFTWARE\\Policies\\WindowsNotepad, for all accounts. Microsoft describes this value for turning off AI features in Notepad. In Notepad started after the change there's no \"Writing tools\" button, and Notepad itself starts and works. Undo restores the previous state; if the value wasn't there before, it removes it, and also the WindowsNotepad key if the change created it."
+    },
+    {
+      "pl": "Funkcje AI Notatnika (przycisk „Narzędzia do pisania”) będą niedostępne, aż cofniesz tę pozycję.",
+      "en": "Notepad's AI features (the \"Writing tools\" button) won't be available until you undo this item."
     }
   ]
 }

@@ -365,6 +365,318 @@
             Hypothesis = 'Odczyt VM 26H2 (2026-10-21): DiagTrack = Automatic, Running (Home i Pro). Setup ustawia ten stan jawnie. Snapshot (Start i usługa: StartMode, State) sprzed apply musi być identyczny po undo, więc typ startu wraca ze snapshotu, a usługa, która działała, znowu działa. Detekcja opiera się na typie startu (Review Focus 5; przypadek StartPending pokrywa test jednostkowy na fake''ach). Stan po restarcie i wyszukiwanie Windows Update obserwowano w eksploracji, nie w tym przypadku.'
         }
         @{
+            Name = 'privacy-explorer-sync-provider-notifications'; TweakId = 'privacy.explorer-sync-provider-notifications'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @("Remove-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'ShowSyncProviderNotifications' -ErrorAction SilentlyContinue")
+            Snapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name = 'ShowSyncProviderNotifications' }); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                UserSid = '{UserSid}'; UserIsCertain = $true
+                NotWrittenTo = @(@{ Path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name = 'ShowSyncProviderNotifications' })
+                AfterApplySnapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name = 'ShowSyncProviderNotifications'; Exists = $true; Kind = 'DWord'; Data = '0' }) }
+                KeyPresentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07): klucz Explorer\Advanced istnieje, ShowSyncProviderNotifications brak (pole w Opcjach Eksploratora plików zaznaczone). Setup zapewnia brak wartości. Undo przywraca brak wartości ze snapshotu, klucz zostaje. Skutek (pole odznaczone, także po restarcie Eksploratora; Home i Pro) obserwowano w eksploracji, ten przypadek sprawdza zapis, detekcję i czysty undo.'
+        }
+        @{
+            Name = 'privacy-lockscreen-spotlight'; TweakId = 'privacy.lockscreen-spotlight'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @("Remove-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'SubscribedContent-338387Enabled' -ErrorAction SilentlyContinue")
+            Snapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'; Name = 'SubscribedContent-338387Enabled' }); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                UserSid = '{UserSid}'; UserIsCertain = $true
+                NotWrittenTo = @(@{ Path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'; Name = 'SubscribedContent-338387Enabled' })
+                AfterApplySnapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'; Name = 'SubscribedContent-338387Enabled'; Exists = $true; Kind = 'DWord'; Data = '0' }) }
+                KeyPresentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07): klucz ContentDeliveryManager istnieje, SubscribedContent-338387Enabled brak (lista ekranu blokady = Windows spotlight). Setup zapewnia brak wartości. Pozycja zapisuje tylko SubscribedContent-338387Enabled (RotatingLockScreenOverlayEnabled ze źródeł bez skutku, poza pozycją). Undo przywraca brak wartości ze snapshotu, klucz zostaje. Skutek (Windows spotlight -> Picture na Home i Pro, po cofnięciu znowu Windows spotlight) obserwowano w eksploracji.'
+        }
+        @{
+            Name = 'privacy-start-account-notifications'; TweakId = 'privacy.start-account-notifications'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @("Remove-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'Start_AccountNotifications' -ErrorAction SilentlyContinue")
+            Snapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name = 'Start_AccountNotifications' }); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                UserSid = '{UserSid}'; UserIsCertain = $true
+                NotWrittenTo = @(@{ Path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name = 'Start_AccountNotifications' })
+                AfterApplySnapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name = 'Start_AccountNotifications'; Exists = $true; Kind = 'DWord'; Data = '0' }) }
+                KeyPresentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07): klucz Explorer\Advanced istnieje, Start_AccountNotifications brak (przełącznik włączony). Setup zapewnia brak wartości. Undo przywraca brak wartości ze snapshotu, klucz zostaje. Dowód skutku: stan przełącznika w Ustawieniach (Home i Pro, także po restarcie Eksploratora), treści w menu Start nie obserwowano.'
+        }
+        @{
+            Name = 'privacy-toast-suggested'; TweakId = 'privacy.toast-suggested'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @(
+                "if (-not (Test-Path -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings')) { New-Item -Path 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings' | Out-Null }",
+                "if (Test-Path -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.Suggested') { Remove-Item -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.Suggested' -Recurse }"
+            )
+            Snapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.Suggested'; Name = 'Enabled' }); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                UserSid = '{UserSid}'; UserIsCertain = $true
+                NotWrittenTo = @(@{ Path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.Suggested'; Name = 'Enabled' })
+                AfterApplySnapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.Suggested'; Name = 'Enabled'; Exists = $true; Kind = 'DWord'; Data = '0' }) }
+                KeyAbsentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.Suggested')
+                KeyPresentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07): klucza Windows.SystemToast.Suggested i wartości Enabled brak (nadawcy Suggested nie ma na liście). Klucza Notifications\Settings na świeżej VM zaraz po zalogowaniu nie było, Windows utworzył go po kilku minutach (w eksploracji razem z pierwszym powiadomieniem systemowym), więc Setup go zapewnia, żeby przypadek był deterministyczny i odpowiadał komputerowi w użyciu. Setup zapewnia też brak klucza nadawcy. Undo usuwa wartość i klucz nadawcy utworzony przez apply, a klucz Notifications\Settings zostaje. Dowód skutku: stan przełącznika nadawcy w Ustawieniach (Home i Pro), samego powiadomienia nie obserwowano.'
+        }
+        @{
+            Name = 'privacy-toast-backup-reminder'; TweakId = 'privacy.toast-backup-reminder'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @(
+                "if (-not (Test-Path -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings')) { New-Item -Path 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings' | Out-Null }",
+                "if (Test-Path -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.BackupReminder') { Remove-Item -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.BackupReminder' -Recurse }"
+            )
+            Snapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.BackupReminder'; Name = 'Enabled' }); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                UserSid = '{UserSid}'; UserIsCertain = $true
+                NotWrittenTo = @(@{ Path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.BackupReminder'; Name = 'Enabled' })
+                AfterApplySnapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.BackupReminder'; Name = 'Enabled'; Exists = $true; Kind = 'DWord'; Data = '0' }) }
+                KeyAbsentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.BackupReminder')
+                KeyPresentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07): klucza Windows.SystemToast.BackupReminder i wartości Enabled brak (nadawcy Backup settings nie ma na liście). Klucza Notifications\Settings na świeżej VM zaraz po zalogowaniu nie było, Windows utworzył go po kilku minutach (w eksploracji razem z pierwszym powiadomieniem systemowym), więc Setup go zapewnia, żeby przypadek był deterministyczny i odpowiadał komputerowi w użyciu. Setup zapewnia też brak klucza nadawcy. Undo usuwa wartość i klucz nadawcy utworzony przez apply, a klucz Notifications\Settings zostaje. Dowód skutku: stan przełącznika nadawcy w Ustawieniach (Home i Pro), samego przypomnienia nie obserwowano.'
+        }
+        @{
+            Name = 'privacy-edge-shopping-recommendations'; TweakId = 'privacy.edge-shopping-recommendations'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @(
+                "if (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge') { Remove-Item -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge' -Recurse }"
+            )
+            Snapshot = @{ Registry = @(
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'EdgeShoppingAssistantEnabled' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'ShowRecommendationsEnabled' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'SpotlightExperiencesAndRecommendationsEnabled' }
+                ); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                AfterApplySnapshot = @{ Registry = @(
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'EdgeShoppingAssistantEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'ShowRecommendationsEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'SpotlightExperiencesAndRecommendationsEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                    ) }
+                KeyAbsentAfterUndo = @('HKLM\SOFTWARE\Policies\Microsoft\Edge')
+                KeyPresentAfterUndo = @('HKLM\SOFTWARE\Policies\Microsoft')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07): klucz Policies\Microsoft istnieje, klucza Policies\Microsoft\Edge i trzech wartości brak. Setup zapewnia brak klucza Edge. Undo ma usunąć trzy wartości i klucz Edge utworzony przez apply, a klucz Policies\Microsoft zostaje. Dowód skutku: ustawienie zakupów w edge://settings wyłączone i zablokowane z informacją o organizacji (EdgeShoppingAssistantEnabled, Home i Pro); dwie pozostałe polityki tylko ze statusem OK w edge://policy, bez osobnej obserwacji.'
+        }
+        @{
+            Name = 'privacy-edge-newtab-content'; TweakId = 'privacy.edge-newtab-content'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @(
+                "if (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge') { Remove-Item -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge' -Recurse }"
+            )
+            Snapshot = @{ Registry = @(
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'NewTabPageContentEnabled' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'NewTabPageHideDefaultTopSites' }
+                ); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                AfterApplySnapshot = @{ Registry = @(
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'NewTabPageContentEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'NewTabPageHideDefaultTopSites'; Exists = $true; Kind = 'DWord'; Data = '1' }
+                    ) }
+                KeyAbsentAfterUndo = @('HKLM\SOFTWARE\Policies\Microsoft\Edge')
+                KeyPresentAfterUndo = @('HKLM\SOFTWARE\Policies\Microsoft')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07): klucz Policies\Microsoft istnieje, klucza Policies\Microsoft\Edge i obu wartości brak. Setup zapewnia brak klucza Edge. Undo ma usunąć obie wartości i klucz Edge utworzony przez apply, a klucz Policies\Microsoft zostaje. Dowód skutku: edge://newtab bez kanału MSN (NewTabPageContentEnabled) i z jednym kafelkiem Microsoft 365 zamiast sześciu (NewTabPageHideDefaultTopSites), każda wartość obserwowana osobno (Home i Pro).'
+        }
+        @{
+            Name = 'privacy-edge-shared-key'; TweakId = 'privacy.edge-newtab-content'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @(
+                "if (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge') { Remove-Item -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge' -Recurse }"
+                "New-Item -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge' | Out-Null"
+                "Set-ItemProperty -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge' -Name 'EdgeShoppingAssistantEnabled' -Value 0 -Type DWord"
+            )
+            Snapshot = @{ Registry = @(
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'EdgeShoppingAssistantEnabled' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'ShowRecommendationsEnabled' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'SpotlightExperiencesAndRecommendationsEnabled' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'NewTabPageContentEnabled' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'NewTabPageHideDefaultTopSites' }
+                ); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                AfterApplySnapshot = @{ Registry = @(
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'EdgeShoppingAssistantEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'NewTabPageContentEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'NewTabPageHideDefaultTopSites'; Exists = $true; Kind = 'DWord'; Data = '1' }
+                    ) }
+                KeyPresentAfterUndo = @('HKLM\SOFTWARE\Policies\Microsoft\Edge')
+            }
+            Hypothesis = 'Klucz Policies\Microsoft\Edge jest wspólny dla pozycji Edge. Setup tworzy go z jedną wartością pozycji privacy.edge-shopping-recommendations (EdgeShoppingAssistantEnabled = 0, wartość z jej karty z 2026-11-07), jak po jej wcześniejszym zastosowaniu. Apply privacy.edge-newtab-content dopisuje swoje dwie wartości; undo ma je usunąć, a klucz Edge (istniał przed apply) i EdgeShoppingAssistantEnabled zostawić (KeyPresentAfterUndo, SnapshotDiff pusty). Stan klucza zostaje w VM do przywrócenia checkpointu.'
+        }
+        @{
+            Name = 'privacy-start-track-progs'; TweakId = 'privacy.start-track-progs'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @("Remove-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'Start_TrackProgs' -ErrorAction SilentlyContinue")
+            Snapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name = 'Start_TrackProgs' }); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                UserSid = '{UserSid}'; UserIsCertain = $true
+                NotWrittenTo = @(@{ Path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name = 'Start_TrackProgs' })
+                AfterApplySnapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name = 'Start_TrackProgs'; Exists = $true; Kind = 'DWord'; Data = '0' }) }
+                KeyPresentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07): klucz Explorer\Advanced istnieje, Start_TrackProgs brak (przełącznik Improve Start and search results włączony). Setup zapewnia brak wartości. Undo przywraca brak wartości ze snapshotu, klucz zostaje. Dowód skutku: stan przełącznika w Ustawieniach i nieaktywne pole Show most used apps (Home i Pro), samych wyników w Start i wyszukiwaniu nie obserwowano.'
+        }
+        @{
+            Name = 'privacy-online-speech'; TweakId = 'privacy.online-speech'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @("if (Test-Path -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Speech_OneCore\Settings') { Remove-Item -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Speech_OneCore\Settings' -Recurse }")
+            Snapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy'; Name = 'HasAccepted' }); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                UserSid = '{UserSid}'; UserIsCertain = $true
+                NotWrittenTo = @(@{ Path = 'HKCU\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy'; Name = 'HasAccepted' })
+                AfterApplySnapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy'; Name = 'HasAccepted'; Exists = $true; Kind = 'DWord'; Data = '0' }) }
+                KeyAbsentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\Speech_OneCore\Settings')
+                KeyPresentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\Speech_OneCore')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07): klucz Speech_OneCore istnieje, kluczy Settings i Settings\OnlineSpeechPrivacy oraz HasAccepted brak (przełącznik Online speech recognition wyłączony). Setup zapewnia brak klucza Settings. Undo ma usunąć wartość i klucz Settings (z OnlineSpeechPrivacy) utworzony przez apply, a klucz Speech_OneCore zostaje. Dowód skutku odwrotny: zapis HasAccepted = 1 włącza przełącznik, powrót do 0 go wyłącza (Home i Pro); zapis 0 na czystej VM nie zmienia ekranu, dyktowania nie sprawdzano.'
+        }
+        @{
+            Name = 'privacy-inking-typing-improve'; TweakId = 'privacy.inking-typing-improve'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @(
+                "Set-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\InputPersonalization' -Name 'RestrictImplicitInkCollection' -Value 0 -Type DWord"
+                "Set-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\InputPersonalization' -Name 'RestrictImplicitTextCollection' -Value 0 -Type DWord"
+                "Set-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\InputPersonalization\TrainedDataStore' -Name 'HarvestContacts' -Value 1 -Type DWord"
+                "Set-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Personalization\Settings' -Name 'AcceptedPrivacyPolicy' -Value 1 -Type DWord"
+            )
+            Snapshot = @{ Registry = @(
+                    @{ Path = 'HKU\{UserSid}\Software\Microsoft\InputPersonalization'; Name = 'RestrictImplicitInkCollection' }
+                    @{ Path = 'HKU\{UserSid}\Software\Microsoft\InputPersonalization'; Name = 'RestrictImplicitTextCollection' }
+                    @{ Path = 'HKU\{UserSid}\Software\Microsoft\InputPersonalization\TrainedDataStore'; Name = 'HarvestContacts' }
+                    @{ Path = 'HKU\{UserSid}\Software\Microsoft\Personalization\Settings'; Name = 'AcceptedPrivacyPolicy' }
+                ); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                UserSid = '{UserSid}'; UserIsCertain = $true
+                NotWrittenTo = @(
+                    @{ Path = 'HKCU\Software\Microsoft\InputPersonalization'; Name = 'RestrictImplicitInkCollection' }
+                    @{ Path = 'HKCU\Software\Microsoft\InputPersonalization'; Name = 'RestrictImplicitTextCollection' }
+                    @{ Path = 'HKCU\Software\Microsoft\InputPersonalization\TrainedDataStore'; Name = 'HarvestContacts' }
+                    @{ Path = 'HKCU\Software\Microsoft\Personalization\Settings'; Name = 'AcceptedPrivacyPolicy' }
+                )
+                AfterApplySnapshot = @{ Registry = @(
+                        @{ Path = 'HKU\{UserSid}\Software\Microsoft\InputPersonalization'; Name = 'RestrictImplicitInkCollection'; Exists = $true; Kind = 'DWord'; Data = '1' }
+                        @{ Path = 'HKU\{UserSid}\Software\Microsoft\InputPersonalization'; Name = 'RestrictImplicitTextCollection'; Exists = $true; Kind = 'DWord'; Data = '1' }
+                        @{ Path = 'HKU\{UserSid}\Software\Microsoft\InputPersonalization\TrainedDataStore'; Name = 'HarvestContacts'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKU\{UserSid}\Software\Microsoft\Personalization\Settings'; Name = 'AcceptedPrivacyPolicy'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                    ) }
+                KeyPresentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\InputPersonalization', 'HKU\{UserSid}\Software\Microsoft\InputPersonalization\TrainedDataStore', 'HKU\{UserSid}\Software\Microsoft\Personalization\Settings')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07, przed jakimkolwiek kliknięciem): klucze InputPersonalization, InputPersonalization\TrainedDataStore i Personalization\Settings istnieją; RestrictImplicitInkCollection = 0, RestrictImplicitTextCollection = 0, HarvestContacts = 1, AcceptedPrivacyPolicy = 1 (przełącznik Custom inking and typing dictionary włączony). Setup zapisuje te wartości. Undo przywraca je ze snapshotu, klucze zostają. Dowód skutku: stan przełącznika w Ustawieniach (Home i Pro), słownika nie obserwowano. TIPC\Enabled poza pozycją (przełącznik go nie zapisuje).'
+        }
+        @{
+            Name = 'privacy-inking-typing-improve-prev-value'; TweakId = 'privacy.inking-typing-improve'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @(
+                "Remove-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\InputPersonalization' -Name 'RestrictImplicitInkCollection' -ErrorAction SilentlyContinue"
+                "Remove-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\InputPersonalization' -Name 'RestrictImplicitTextCollection' -ErrorAction SilentlyContinue"
+                "Remove-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\InputPersonalization\TrainedDataStore' -Name 'HarvestContacts' -ErrorAction SilentlyContinue"
+                "Remove-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Personalization\Settings' -Name 'AcceptedPrivacyPolicy' -ErrorAction SilentlyContinue"
+            )
+            Snapshot = @{ Registry = @(
+                    @{ Path = 'HKU\{UserSid}\Software\Microsoft\InputPersonalization'; Name = 'RestrictImplicitInkCollection' }
+                    @{ Path = 'HKU\{UserSid}\Software\Microsoft\InputPersonalization'; Name = 'RestrictImplicitTextCollection' }
+                    @{ Path = 'HKU\{UserSid}\Software\Microsoft\InputPersonalization\TrainedDataStore'; Name = 'HarvestContacts' }
+                    @{ Path = 'HKU\{UserSid}\Software\Microsoft\Personalization\Settings'; Name = 'AcceptedPrivacyPolicy' }
+                ); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                UserSid = '{UserSid}'; UserIsCertain = $true
+                NotWrittenTo = @(
+                    @{ Path = 'HKCU\Software\Microsoft\InputPersonalization'; Name = 'RestrictImplicitInkCollection' }
+                    @{ Path = 'HKCU\Software\Microsoft\InputPersonalization'; Name = 'RestrictImplicitTextCollection' }
+                    @{ Path = 'HKCU\Software\Microsoft\InputPersonalization\TrainedDataStore'; Name = 'HarvestContacts' }
+                    @{ Path = 'HKCU\Software\Microsoft\Personalization\Settings'; Name = 'AcceptedPrivacyPolicy' }
+                )
+                AfterApplySnapshot = @{ Registry = @(
+                        @{ Path = 'HKU\{UserSid}\Software\Microsoft\InputPersonalization'; Name = 'RestrictImplicitInkCollection'; Exists = $true; Kind = 'DWord'; Data = '1' }
+                        @{ Path = 'HKU\{UserSid}\Software\Microsoft\InputPersonalization'; Name = 'RestrictImplicitTextCollection'; Exists = $true; Kind = 'DWord'; Data = '1' }
+                        @{ Path = 'HKU\{UserSid}\Software\Microsoft\InputPersonalization\TrainedDataStore'; Name = 'HarvestContacts'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKU\{UserSid}\Software\Microsoft\Personalization\Settings'; Name = 'AcceptedPrivacyPolicy'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                    ) }
+                KeyPresentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\InputPersonalization', 'HKU\{UserSid}\Software\Microsoft\InputPersonalization\TrainedDataStore', 'HKU\{UserSid}\Software\Microsoft\Personalization\Settings')
+            }
+            Hypothesis = 'Stan sprzed apply różny od original z katalogu (0, 0, 1, 1): wartości to przełączniki 0/1, a jedyna inna wartość to ta zapisywana przez pozycję (stan Applied), więc Setup usuwa wszystkie cztery wartości (klucze zostają). Undo ma przywrócić brak wartości ze snapshotu (SnapshotDiff pusty), a nie wpisać original, i zostawić klucze. Uruchamiany po przypadku z wartościami z czystej VM; brak wartości zostaje w VM do przywrócenia checkpointu.'
+        }
+        @{
+            Name = 'privacy-edge-diagnostic-data'; TweakId = 'privacy.edge-diagnostic-data'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @(
+                "if (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge') { Remove-Item -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge' -Recurse }"
+            )
+            Snapshot = @{ Registry = @(
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'DiagnosticData' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'PersonalizationReportingEnabled' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'UserFeedbackAllowed' }
+                ); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                AfterApplySnapshot = @{ Registry = @(
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'DiagnosticData'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'PersonalizationReportingEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'UserFeedbackAllowed'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                    ) }
+                KeyAbsentAfterUndo = @('HKLM\SOFTWARE\Policies\Microsoft\Edge')
+                KeyPresentAfterUndo = @('HKLM\SOFTWARE\Policies\Microsoft')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07): klucz Policies\Microsoft istnieje, klucza Policies\Microsoft\Edge i trzech wartości brak. Setup zapewnia brak klucza Edge. Undo ma usunąć trzy wartości i klucz Edge utworzony przez apply, a klucz Policies\Microsoft zostaje. Dowód skutku: w edge://settings ustawienie Required diagnostic data wyłączone i zablokowane (DiagnosticData) oraz Feedback zablokowane (UserFeedbackAllowed, osobno), z informacją o organizacji (Home i Pro); PersonalizationReportingEnabled tylko ze statusem OK w edge://policy, bez osobnej obserwacji.'
+        }
+        @{
+            Name = 'privacy-edge-copilot'; TweakId = 'privacy.edge-copilot'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @(
+                "if (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge') { Remove-Item -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge' -Recurse }"
+            )
+            Snapshot = @{ Registry = @(
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'CopilotPageContext' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'EdgeEntraCopilotPageContext' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'Microsoft365CopilotChatIconEnabled' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'NewTabPageBingChatEnabled' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'EdgeHistoryAISearchEnabled' }
+                    @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'ComposeInlineEnabled' }
+                ); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                AfterApplySnapshot = @{ Registry = @(
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'CopilotPageContext'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'EdgeEntraCopilotPageContext'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'Microsoft365CopilotChatIconEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'NewTabPageBingChatEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'EdgeHistoryAISearchEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                        @{ Path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'; Name = 'ComposeInlineEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                    ) }
+                KeyAbsentAfterUndo = @('HKLM\SOFTWARE\Policies\Microsoft\Edge')
+                KeyPresentAfterUndo = @('HKLM\SOFTWARE\Policies\Microsoft')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07): klucz Policies\Microsoft istnieje, klucza Policies\Microsoft\Edge i sześciu wartości brak. Setup zapewnia brak klucza Edge. Undo ma usunąć sześć wartości i klucz Edge utworzony przez apply, a klucz Policies\Microsoft zostaje. Dowód skutku: z paska narzędzi Edge znika przycisk Chat (Copilot) dla zestawu sześciu polityk bez HubsSidebarEnabled (Home i Pro, Edge 157.0.4341.42); polityki zapisane razem, każda ze statusem OK w edge://policy.'
+        }
+        @{
+            Name = 'privacy-notepad-ai'; TweakId = 'privacy.notepad-ai'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
+            Setup = @(
+                "if (Test-Path -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\WindowsNotepad') { Remove-Item -LiteralPath 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\WindowsNotepad' -Recurse }"
+            )
+            Snapshot = @{ Registry = @(@{ Path = 'HKLM\SOFTWARE\Policies\WindowsNotepad'; Name = 'DisableAIFeatures' }); Services = @() }
+            Expect = @{
+                Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
+                UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
+                AfterApplySnapshot = @{ Registry = @(@{ Path = 'HKLM\SOFTWARE\Policies\WindowsNotepad'; Name = 'DisableAIFeatures'; Exists = $true; Kind = 'DWord'; Data = '1' }) }
+                KeyAbsentAfterUndo = @('HKLM\SOFTWARE\Policies\WindowsNotepad')
+                KeyPresentAfterUndo = @('HKLM\SOFTWARE\Policies')
+            }
+            Hypothesis = 'Odczyt VM 26H2 (2026-11-07): klucz Policies istnieje, klucza Policies\WindowsNotepad i DisableAIFeatures brak (Home i Pro). Setup zapewnia brak klucza WindowsNotepad. Undo ma usunąć wartość i klucz WindowsNotepad utworzony przez apply, a klucz Policies zostaje. Dowód skutku: w Notatniku 11.2605.34.0 uruchomionym od nowa przycisk Writing tools znika po zapisie i wraca po cofnięciu, Notatnik uruchamia się w każdej fazie (Home i Pro).'
+        }
+        @{
             Name = 'ux-classic-context-menu'; TweakId = 'ux.classic-context-menu'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
             Setup = @("if (Test-Path -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}') { Remove-Item -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}' -Recurse }")
             Snapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32'; Name = '' }); Services = @() }

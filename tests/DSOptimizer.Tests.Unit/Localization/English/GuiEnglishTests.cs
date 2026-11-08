@@ -70,6 +70,7 @@ public class GuiEnglishTests
             Assert.Equal("Start, search and Widgets", GuiText.GroupName("privacy", "start"));
             Assert.Equal("Ads and suggestions", GuiText.GroupName("privacy", "ads"));
             Assert.Equal("Telemetry and diagnostics", GuiText.GroupName("privacy", "telemetry"));
+            Assert.Equal("AI features", GuiText.GroupName("privacy", "ai"));
         }
     }
 

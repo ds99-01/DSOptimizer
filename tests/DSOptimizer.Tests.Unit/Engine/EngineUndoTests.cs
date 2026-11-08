@@ -321,6 +321,68 @@ public class EngineUndoTests
         Assert.Equal(JournalEntryStatus.Active, entry.Status);
     }
 
+    private static TweakDefinition ProOnly() => TestTweaks.TwoValues() with { Editions = new[] { EditionFamily.Pro } };
+
+    [Fact]
+    public void UndoWithoutJournal_EditionOutsideList_IsNotSupportedAndWritesNothing()
+    {
+        // Bez wpisu w journalu DSO niczego tu nie zapisało: domyślne z katalogu byłyby zapisem na edycji, której pozycja nie dotyczy.
+        var f = new EngineFixture();
+        f.SystemInfo.Edition = "Core";
+        f.Registry.Set(TestTweaks.Path, "A", RegValue.FromDWord(1));
+        f.Registry.Set(TestTweaks.Path, "B", RegValue.FromDWord(1));
+
+        var result = f.CreateEngine().Undo(ProOnly());
+
+        Assert.Equal(TweakOutcome.NotSupported, result.Outcome);
+        Assert.Equal(DetectionState.NotSupported, result.FinalState);
+        Assert.Equal("Tweak nie dotyczy tego systemu.", result.Message);
+        Assert.Empty(f.Registry.WriteLog);
+        Assert.Empty(f.Registry.DeletedKeys);
+        Assert.Equal(RegValue.FromDWord(1), f.Registry.Get(TestTweaks.Path, "A"));
+        Assert.Equal(RegValue.FromDWord(1), f.Registry.Get(TestTweaks.Path, "B"));
+        Assert.Empty(f.Journal.Current.Entries);
+        Assert.Contains(f.Log.Lines, line => line.Contains("NotSupported"));
+    }
+
+    [Fact]
+    public void UndoWithJournal_EditionOutsideList_StillRestoresSnapshot()
+    {
+        // Wpis w journalu = DSO zapisało tu wcześniej, więc snapshot użytkownika wraca także na edycji spoza listy.
+        var f = new EngineFixture();
+        f.SystemInfo.Edition = "Professional";
+        f.Registry.Set(TestTweaks.Path, "A", RegValue.FromDWord(0));
+        var engine = f.CreateEngine();
+        Assert.Equal(TweakOutcome.Applied, engine.Apply(ProOnly()).Outcome);
+        f.SystemInfo.Edition = "Core";
+        var writesBefore = f.Registry.WriteLog.Count;
+
+        var result = engine.Undo(ProOnly());
+
+        Assert.Equal(TweakOutcome.Undone, result.Outcome);
+        Assert.True(f.Registry.WriteLog.Count > writesBefore);
+        Assert.Equal(RegValue.FromDWord(0), f.Registry.Get(TestTweaks.Path, "A"));
+        Assert.Equal(RegValue.Absent, f.Registry.Get(TestTweaks.Path, "B"));
+        Assert.Equal(JournalEntryStatus.Undone, Assert.Single(f.Journal.Current.Entries).Status);
+    }
+
+    [Theory]
+    [InlineData("Professional")]
+    [InlineData("unknown")]
+    public void UndoWithoutJournal_EditionInListOrUnknown_RestoresCatalogDefaults(string edition)
+    {
+        var f = new EngineFixture();
+        f.SystemInfo.Edition = edition;
+        f.Registry.Set(TestTweaks.Path, "A", RegValue.FromDWord(1));
+        f.Registry.Set(TestTweaks.Path, "B", RegValue.FromDWord(1));
+
+        var result = f.CreateEngine().Undo(ProOnly());
+
+        Assert.Equal(TweakOutcome.UndoneFromDefaults, result.Outcome);
+        Assert.Equal(RegValue.FromDWord(0), f.Registry.Get(TestTweaks.Path, "A"));
+        Assert.Equal(RegValue.Absent, f.Registry.Get(TestTweaks.Path, "B"));
+    }
+
     private static TweakDefinition RegistryAndService() => new()
     {
         Id = "test.reg-and-service",

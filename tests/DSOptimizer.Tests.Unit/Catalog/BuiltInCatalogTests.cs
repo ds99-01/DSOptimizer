@@ -80,7 +80,7 @@ public class BuiltInCatalogTests
         var definitions = CatalogLoader.Load(BuiltInCatalog.Sources).Definitions;
         var withBenefit = definitions.Where(d => d.Kind != TweakKind.Panel).ToList();
 
-        Assert.Equal(46, withBenefit.Count);
+        Assert.Equal(59, withBenefit.Count);
         Assert.All(withBenefit, d => Assert.False(string.IsNullOrWhiteSpace(d.Benefit), $"{d.Id}: brak benefit"));
         Assert.All(withBenefit, d => Assert.True(d.Benefit!.Length <= CatalogValidator.BenefitMaxLength, $"{d.Id}: benefit ma {d.Benefit.Length} znaków"));
         Assert.All(definitions.Where(d => d.Kind == TweakKind.Panel), d => Assert.Null(d.Benefit));

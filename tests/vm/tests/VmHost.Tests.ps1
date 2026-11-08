@@ -335,7 +335,7 @@ Describe 'Scenariusze VM: brak fałszywej zieleni (przez Invoke-DsoVmRun, kontek
         $Result.passed | Should -BeGreaterThan 8
     }
     It 'RealCases: każdy przypadek z cases.psd1 zapisał rekord' {
-        $Expected = @((Import-PowerShellDataFile (Join-Path $script:VmRoot 'cases.psd1')).Cases).Count
+        $Expected = @((Import-DsoVmCases -LiteralPath (Join-Path $script:VmRoot 'cases.psd1')).Cases).Count
         $Expected | Should -BeGreaterThan 0
         (Invoke-DryRun -Variant 'RealCases').cases | Should -Be $Expected
     }

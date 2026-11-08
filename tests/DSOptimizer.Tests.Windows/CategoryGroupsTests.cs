@@ -9,14 +9,14 @@ using Xunit;
 namespace DSOptimizer.Tests.Windows;
 
 /// <summary>
-/// Grupy tematyczne w listach: „Prywatność i AI” ma trzy grupy z licznikami w kolejności katalogu, inne kategorie zostają przy sekcjach
+/// Grupy tematyczne w listach: „Prywatność i AI” ma cztery grupy z licznikami w kolejności katalogu, inne kategorie zostają przy sekcjach
 /// „Ustawienia”/„Akcje”, a wyniki wyszukiwania mają nagłówki „Kategoria · grupa”. Pozycja bez grupy cofa kategorię do sekcji.
 /// </summary>
 [Trait("Category", "Windows")]
 public class CategoryGroupsTests
 {
     [Fact]
-    public void Privacy_ThreeGroupsInDefinedOrder()
+    public void Privacy_FourGroupsInDefinedOrder()
     {
         MainViewModelTests.RunOnSta(() =>
         {
@@ -26,7 +26,7 @@ public class CategoryGroupsTests
 
             Assert.Equal(CategoryListGrouping.CatalogGroups, privacy.Grouping);
             Assert.Equal(
-                new[] { "Start, wyszukiwanie i Widżety", "Reklamy i sugestie", "Telemetria i diagnostyka" },
+                new[] { "Start, wyszukiwanie i Widżety", "Reklamy i sugestie", "Telemetria i diagnostyka", "Funkcje AI" },
                 privacy.Groups.Select(group => group.Title));
             Assert.Equal(
                 new[] { "privacy.widgets", "privacy.search-web-results", "privacy.start-recommendations", "privacy.start-recommended-section" },

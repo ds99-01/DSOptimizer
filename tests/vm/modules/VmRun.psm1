@@ -3,6 +3,8 @@ Instrukcja uruchomienia:
     Import-Module .\tests\vm\modules\VmRun.psm1 -Force
     (używane przez runner VM; testy: Invoke-Pester -Path tests/vm/tests/VmRun.Tests.ps1)
 Opis działania:
+    Plik przypadków wczytuje Import-DsoVmCases: reguły pliku danych jak Import-PowerShellDataFile, ale bez jego limitu
+    rozmiaru w PowerShell 5.1.
     Wczytuje i waliduje przypadki testowe (cases.psd1) względem katalogu VM, wywołuje CLI DSOptimizer.exe
     w VM przez PowerShell Direct, robi snapshoty rejestru i usług przed i po oraz niezależnie od aplikacji
     odczytuje stan po apply. Cykl: detect -> apply -> detect -> undo -> detect, a stan sprzed apply jest
@@ -399,6 +401,55 @@ function Assert-VmCaseTexts {
     }
 }
 
+function Import-DsoVmCases {
+    <#
+    Wczytuje plik danych przypadków (np. cases.psd1) jak Import-PowerShellDataFile, ale bez jego limitu rozmiaru w PowerShell 5.1
+    (SafeGetValue odrzuca duże pliki komunikatem o „dynamic expressions”). Bezpieczeństwo jak w pliku danych: bez using
+    (module/assembly/namespace) i #requires, bez bloków param/begin/process/dynamicparam, dokładnie jedna instrukcja będąca
+    literałem hashtable, potem CheckRestrictedLanguage bez komend, zmiennych i zmiennych środowiskowych (dozwolone tylko $true,
+    $false i $null), dopiero wtedy wykonanie. using i #requires sprawdzamy osobno, bo nie są w EndBlock i CheckRestrictedLanguage
+    ich nie widzi, a InvokeReturnAsIs wykonałby kod modułu. Każdy błąd = throw z nazwą pliku.
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param([Parameter(Mandatory)][string]$LiteralPath)
+    $ParseErrors = $null
+    $Ast = [System.Management.Automation.Language.Parser]::ParseFile($LiteralPath, [ref]$null, [ref]$ParseErrors)
+    if (@($ParseErrors).Count -gt 0) {
+        $First = @($ParseErrors)[0]
+        throw "Plik '$LiteralPath': błąd składni w linii $($First.Extent.StartLineNumber): $($First.Message)"
+    }
+    if (@($Ast.UsingStatements).Count -gt 0) {
+        throw "Plik '$LiteralPath': instrukcja using jest niedozwolona w pliku danych."
+    }
+    if ($null -ne $Ast.ScriptRequirements) {
+        throw "Plik '$LiteralPath': #requires jest niedozwolone w pliku danych."
+    }
+    $Statements = @(if ($null -ne $Ast.EndBlock) { $Ast.EndBlock.Statements })
+    $Expression = $null
+    if ($null -eq $Ast.ParamBlock -and $null -eq $Ast.BeginBlock -and $null -eq $Ast.ProcessBlock -and $null -eq $Ast.DynamicParamBlock -and
+        $Statements.Count -eq 1 -and $Statements[0] -is [System.Management.Automation.Language.PipelineAst] -and
+        @($Statements[0].PipelineElements).Count -eq 1 -and
+        $Statements[0].PipelineElements[0] -is [System.Management.Automation.Language.CommandExpressionAst] -and
+        @($Statements[0].PipelineElements[0].Redirections).Count -eq 0) {
+        $Expression = $Statements[0].PipelineElements[0].Expression
+    }
+    if ($Expression -isnot [System.Management.Automation.Language.HashtableAst]) {
+        throw "Plik '$LiteralPath': oczekiwano dokładnie jednej instrukcji – literału hashtable @{ … }."
+    }
+    $ScriptBlock = $Ast.GetScriptBlock()
+    try {
+        $ScriptBlock.CheckRestrictedLanguage([string[]]@(), [string[]]@(), $false)
+    }
+    catch {
+        $Reason = if ($null -ne $_.Exception.InnerException) { $_.Exception.InnerException.Message } else { $_.Exception.Message }
+        throw "Plik '$LiteralPath': plik danych łamie tryb języka danych (restricted language): $Reason"
+    }
+    $Data = $ScriptBlock.InvokeReturnAsIs()
+    if ($Data -isnot [hashtable]) { throw "Plik '$LiteralPath': wynik nie jest hashtable." }
+    return $Data
+}
+
 function Import-VmCases {
     [CmdletBinding()]
     [OutputType([hashtable[]])]
@@ -408,7 +459,7 @@ function Import-VmCases {
     )
     $Catalog = Get-Content -LiteralPath $CatalogPath -Raw -Encoding UTF8 | ConvertFrom-Json
     $CatalogIds = @($Catalog | ForEach-Object { $_.id })
-    $Data = Import-PowerShellDataFile -LiteralPath $CasesPath
+    $Data = Import-DsoVmCases -LiteralPath $CasesPath
     if (-not $Data.ContainsKey('Cases')) { throw "Plik '$CasesPath' nie zawiera klucza 'Cases'." }
 
     $Names = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -1988,4 +2039,4 @@ function Invoke-VmCase {
     }
 }
 
-Export-ModuleMember -Function Import-VmCases, Split-VmCaseRuns, Expand-VmCasePlaceholders, ConvertTo-DsoCliArguments, Resolve-VmCaseLanguage, Resolve-VmCaseTexts, Invoke-DsoCli, Get-DsoStateSnapshot, Get-VmStateSnapshot, Compare-VmSnapshot, Test-VmSnapshotMatches, Invoke-VmSetup, Get-VmRestorePointCount, Invoke-VmCase, Restart-VmAndReconnect, New-VmRestartMarker, Test-VmRestartMarker, Get-VmAutostartExpectedStart, Wait-VmAutostartStart, Confirm-VmAutostartStart, Wait-VmStartupInfo
+Export-ModuleMember -Function Import-DsoVmCases, Import-VmCases, Split-VmCaseRuns, Expand-VmCasePlaceholders, ConvertTo-DsoCliArguments, Resolve-VmCaseLanguage, Resolve-VmCaseTexts, Invoke-DsoCli, Get-DsoStateSnapshot, Get-VmStateSnapshot, Compare-VmSnapshot, Test-VmSnapshotMatches, Invoke-VmSetup, Get-VmRestorePointCount, Invoke-VmCase, Restart-VmAndReconnect, New-VmRestartMarker, Test-VmRestartMarker, Get-VmAutostartExpectedStart, Wait-VmAutostartStart, Confirm-VmAutostartStart, Wait-VmStartupInfo

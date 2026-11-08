@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using DSOptimizer.Catalog;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Model;
@@ -28,7 +29,36 @@ public class PrivacyCatalogTests
 
     private const string DataCollection = @"HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection";
 
+    /// <summary>Edycje pozycji ograniczonych do części edycji Windows (id, lista). Pusty, dopóki żadna pozycja nie ma editions.</summary>
+    public static readonly Dictionary<string, EditionFamily[]> ExpectedEditions = new();
+
+    /// <summary>Data obserwacji w dokumencie pozycji, gdy inna niż domyślna (id, yyyy-MM-dd).</summary>
+    public static readonly Dictionary<string, string> ObservedOn = new()
+    {
+        ["privacy.explorer-sync-provider-notifications"] = "2026-11-07",
+        ["privacy.lockscreen-spotlight"] = "2026-11-07",
+        ["privacy.start-account-notifications"] = "2026-11-07",
+        ["privacy.toast-suggested"] = "2026-11-07",
+        ["privacy.toast-backup-reminder"] = "2026-11-07",
+        ["privacy.edge-shopping-recommendations"] = "2026-11-07",
+        ["privacy.edge-newtab-content"] = "2026-11-07",
+        ["privacy.start-track-progs"] = "2026-11-07",
+        ["privacy.online-speech"] = "2026-11-07",
+        ["privacy.inking-typing-improve"] = "2026-11-07",
+        ["privacy.edge-diagnostic-data"] = "2026-11-07",
+        ["privacy.edge-copilot"] = "2026-11-07",
+        ["privacy.notepad-ai"] = "2026-11-07",
+    };
+
+    private const string DefaultObservedOn = "2026-10-21";
+
     private const string Cdm = @"HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager";
+
+    private const string ExplorerAdvanced = @"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced";
+
+    private const string NotificationSettings = @"HKCU\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings";
+
+    private const string EdgePolicies = @"HKLM\SOFTWARE\Policies\Microsoft\Edge";
 
     /// <summary>Pozycje, które weszły do katalogu (jeden wiersz = jedna pozycja).</summary>
     public static readonly Item[] Expected =
@@ -61,6 +91,45 @@ public class PrivacyCatalogTests
         new("privacy.feedback-notifications", true, TweakScope.Machine, RiskLevel.Safe, false,
             new ExpectedEntry(DataCollection, "DoNotShowFeedbackNotifications", RegValue.FromDWord(1), RegValue.Absent)),
         new("privacy.diagtrack", true, TweakScope.Machine, RiskLevel.Caution, false),
+        new("privacy.explorer-sync-provider-notifications", true, TweakScope.User, RiskLevel.Safe, false,
+            new ExpectedEntry(ExplorerAdvanced, "ShowSyncProviderNotifications", RegValue.FromDWord(0), RegValue.Absent)),
+        new("privacy.lockscreen-spotlight", false, TweakScope.User, RiskLevel.Caution, false,
+            new ExpectedEntry(Cdm, "SubscribedContent-338387Enabled", RegValue.FromDWord(0), RegValue.Absent)),
+        new("privacy.start-account-notifications", true, TweakScope.User, RiskLevel.Safe, false,
+            new ExpectedEntry(ExplorerAdvanced, "Start_AccountNotifications", RegValue.FromDWord(0), RegValue.Absent)),
+        new("privacy.toast-suggested", true, TweakScope.User, RiskLevel.Safe, false,
+            new ExpectedEntry(NotificationSettings + @"\Windows.SystemToast.Suggested", "Enabled", RegValue.FromDWord(0), RegValue.Absent)),
+        new("privacy.toast-backup-reminder", false, TweakScope.User, RiskLevel.Safe, false,
+            new ExpectedEntry(NotificationSettings + @"\Windows.SystemToast.BackupReminder", "Enabled", RegValue.FromDWord(0), RegValue.Absent)),
+        new("privacy.edge-shopping-recommendations", false, TweakScope.Machine, RiskLevel.Safe, false,
+            new ExpectedEntry(EdgePolicies, "EdgeShoppingAssistantEnabled", RegValue.FromDWord(0), RegValue.Absent),
+            new ExpectedEntry(EdgePolicies, "ShowRecommendationsEnabled", RegValue.FromDWord(0), RegValue.Absent),
+            new ExpectedEntry(EdgePolicies, "SpotlightExperiencesAndRecommendationsEnabled", RegValue.FromDWord(0), RegValue.Absent)),
+        new("privacy.edge-newtab-content", false, TweakScope.Machine, RiskLevel.Safe, false,
+            new ExpectedEntry(EdgePolicies, "NewTabPageContentEnabled", RegValue.FromDWord(0), RegValue.Absent),
+            new ExpectedEntry(EdgePolicies, "NewTabPageHideDefaultTopSites", RegValue.FromDWord(1), RegValue.Absent)),
+        new("privacy.start-track-progs", true, TweakScope.User, RiskLevel.Caution, false,
+            new ExpectedEntry(ExplorerAdvanced, "Start_TrackProgs", RegValue.FromDWord(0), RegValue.Absent)),
+        new("privacy.online-speech", false, TweakScope.User, RiskLevel.Caution, false,
+            new ExpectedEntry(@"HKCU\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy", "HasAccepted", RegValue.FromDWord(0), RegValue.Absent)),
+        new("privacy.inking-typing-improve", false, TweakScope.User, RiskLevel.Caution, false,
+            new ExpectedEntry(@"HKCU\Software\Microsoft\InputPersonalization", "RestrictImplicitInkCollection", RegValue.FromDWord(1), RegValue.FromDWord(0)),
+            new ExpectedEntry(@"HKCU\Software\Microsoft\InputPersonalization", "RestrictImplicitTextCollection", RegValue.FromDWord(1), RegValue.FromDWord(0)),
+            new ExpectedEntry(@"HKCU\Software\Microsoft\InputPersonalization\TrainedDataStore", "HarvestContacts", RegValue.FromDWord(0), RegValue.FromDWord(1)),
+            new ExpectedEntry(@"HKCU\Software\Microsoft\Personalization\Settings", "AcceptedPrivacyPolicy", RegValue.FromDWord(0), RegValue.FromDWord(1))),
+        new("privacy.edge-diagnostic-data", false, TweakScope.Machine, RiskLevel.Caution, false,
+            new ExpectedEntry(EdgePolicies, "DiagnosticData", RegValue.FromDWord(0), RegValue.Absent),
+            new ExpectedEntry(EdgePolicies, "PersonalizationReportingEnabled", RegValue.FromDWord(0), RegValue.Absent),
+            new ExpectedEntry(EdgePolicies, "UserFeedbackAllowed", RegValue.FromDWord(0), RegValue.Absent)),
+        new("privacy.edge-copilot", false, TweakScope.Machine, RiskLevel.Caution, false,
+            new ExpectedEntry(EdgePolicies, "CopilotPageContext", RegValue.FromDWord(0), RegValue.Absent),
+            new ExpectedEntry(EdgePolicies, "EdgeEntraCopilotPageContext", RegValue.FromDWord(0), RegValue.Absent),
+            new ExpectedEntry(EdgePolicies, "Microsoft365CopilotChatIconEnabled", RegValue.FromDWord(0), RegValue.Absent),
+            new ExpectedEntry(EdgePolicies, "NewTabPageBingChatEnabled", RegValue.FromDWord(0), RegValue.Absent),
+            new ExpectedEntry(EdgePolicies, "EdgeHistoryAISearchEnabled", RegValue.FromDWord(0), RegValue.Absent),
+            new ExpectedEntry(EdgePolicies, "ComposeInlineEnabled", RegValue.FromDWord(0), RegValue.Absent)),
+        new("privacy.notepad-ai", false, TweakScope.Machine, RiskLevel.Caution, false,
+            new ExpectedEntry(@"HKLM\SOFTWARE\Policies\WindowsNotepad", "DisableAIFeatures", RegValue.FromDWord(1), RegValue.Absent)),
     };
 
     /// <summary>Usługi pozycji (id -> oczekiwane wpisy <c>services[]</c>); pozycje spoza tabeli nie mają usług.</summary>
@@ -87,6 +156,12 @@ public class PrivacyCatalogTests
         ("privacy.recommended-personalized-sites", "HideRecommendedPersonalizedSites"),
         ("privacy.limit-diagnostic-log-collection", "LimitDiagnosticLogCollection"),
         ("privacy.limit-dump-collection", "LimitDumpCollection"),
+        ("privacy.settings-365-ads", "DisableConsumerAccountStateContent"),
+        ("privacy.edge-prompts-default-browser", "DefaultBrowserSettingEnabled"),
+        ("privacy.activity-history", "EnableActivityFeed"),
+        ("privacy.paint-ai", "DisableCocreator"),
+        ("privacy.copilot-taskbar-button", "ShowCopilotButton"),
+        ("privacy.ai-service-fabric", "WSAIFabricSvc"),
     };
 
     public static IEnumerable<object[]> ExpectedIds() => Expected.Select(e => new object[] { e.Id });
@@ -125,9 +200,22 @@ public class PrivacyCatalogTests
             ["privacy.diagnostic-data-required"] = "telemetry",
             ["privacy.feedback-notifications"] = "telemetry",
             ["privacy.diagtrack"] = "telemetry",
+            ["privacy.explorer-sync-provider-notifications"] = "ads",
+            ["privacy.lockscreen-spotlight"] = "ads",
+            ["privacy.start-account-notifications"] = "ads",
+            ["privacy.toast-suggested"] = "ads",
+            ["privacy.toast-backup-reminder"] = "ads",
+            ["privacy.edge-shopping-recommendations"] = "ads",
+            ["privacy.edge-newtab-content"] = "ads",
+            ["privacy.start-track-progs"] = "telemetry",
+            ["privacy.online-speech"] = "telemetry",
+            ["privacy.inking-typing-improve"] = "telemetry",
+            ["privacy.edge-diagnostic-data"] = "telemetry",
+            ["privacy.edge-copilot"] = "ai",
+            ["privacy.notepad-ai"] = "ai",
         };
 
-        Assert.Equal(13, expected.Count);
+        Assert.Equal(Expected.Length, expected.Count);
         Assert.Equal(
             expected.OrderBy(p => p.Key, StringComparer.Ordinal),
             Privacy().ToDictionary(d => d.Id, d => d.Group!).OrderBy(p => p.Key, StringComparer.Ordinal));
@@ -144,7 +232,15 @@ public class PrivacyCatalogTests
         Assert.Equal(expected.Scope, def.Scope);
         Assert.Equal(expected.Risk, def.Risk);
         Assert.Equal(expected.RequiresReboot, def.RequiresReboot);
-        Assert.Null(def.Editions);
+        if (ExpectedEditions.TryGetValue(id, out var editions))
+        {
+            Assert.Equal(editions, def.Editions);
+        }
+        else
+        {
+            Assert.Null(def.Editions);
+        }
+
         Assert.Null(def.Script);
         var expectedServices = ExpectedServices.TryGetValue(id, out var services) ? services : Array.Empty<ExpectedService>();
         Assert.Equal(
@@ -173,7 +269,7 @@ public class PrivacyCatalogTests
     {
         var doc = Doc(id);
         Assert.Contains("## Obserwacja skutku", doc, StringComparison.Ordinal);
-        Assert.Contains("2026-10-21", doc, StringComparison.Ordinal);
+        Assert.Contains(ObservedOn.TryGetValue(id, out var observed) ? observed : DefaultObservedOn, doc, StringComparison.Ordinal);
         Assert.Contains("**Home**", doc, StringComparison.Ordinal);
         Assert.Contains("**Pro**", doc, StringComparison.Ordinal);
     }
@@ -185,6 +281,16 @@ public class PrivacyCatalogTests
         foreach (var def in Privacy())
         {
             Assert.Contains("## Obserwacja skutku", Doc(def.Id), StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void PrivacyBenefits_PromiseNoSpeedOrResources()
+    {
+        var forbidden = new Regex(@"(?i)szybc|przyspiesz|lżej|lżejsz|\bRAM\b|pamię|wydajn");
+        foreach (var def in Privacy())
+        {
+            Assert.False(forbidden.IsMatch(def.Benefit ?? string.Empty), $"{def.Id}: benefit obiecuje szybkość lub zasoby");
         }
     }
 
@@ -228,10 +334,13 @@ public class PrivacyCatalogTests
     {
         var definitions = CatalogLoader.Load(BuiltInCatalog.Sources).Definitions;
         var registryNames = definitions.SelectMany(d => d.Registry).Select(e => e.Name).ToList();
-        foreach (var name in new[] { "TurnOffWindowsCopilot", "AllowRecallEnablement", "DisableAIDataAnalysis", "DisableClickToDo", "TaskbarDa", "ConnectedSearchUseWeb", "DisableWebSearch", "EnableDynamicContentInWSB", "DisableWindowsConsumerFeatures","DisableWindowsSpotlightOnSettings", "DisableThirdPartySuggestions", "DisableSoftLanding", "HideRecommendedPersonalizedSites", "DisabledByGroupPolicy", "DisableTailoredExperiencesWithDiagnosticData", "LimitDiagnosticLogCollection", "LimitDumpCollection" })
+        foreach (var name in new[] { "TurnOffWindowsCopilot", "AllowRecallEnablement", "DisableAIDataAnalysis", "DisableClickToDo", "TaskbarDa", "ConnectedSearchUseWeb", "DisableWebSearch", "EnableDynamicContentInWSB", "DisableWindowsConsumerFeatures","DisableWindowsSpotlightOnSettings", "DisableThirdPartySuggestions", "DisableSoftLanding", "HideRecommendedPersonalizedSites", "DisabledByGroupPolicy", "DisableTailoredExperiencesWithDiagnosticData", "LimitDiagnosticLogCollection", "LimitDumpCollection", "DisableConsumerAccountStateContent", "DefaultBrowserSettingEnabled", "DefaultBrowserSettingsCampaignEnabled", "EnableActivityFeed", "PublishUserActivities", "UploadUserActivities", "DisableCocreator", "DisableGenerativeFill", "DisableImageCreator", "ShowCopilotButton" })
         {
             Assert.DoesNotContain(name, registryNames);
         }
+
+        // Usługa WSAIFabricSvc (C9) nie wchodzi: żadna pozycja nie zmienia jej typu uruchomienia.
+        Assert.DoesNotContain(definitions.SelectMany(d => d.Services), s => string.Equals(s.Name, "WSAIFabricSvc", StringComparison.OrdinalIgnoreCase));
 
         var ids = definitions.Select(d => d.Id).ToList();
         foreach (var (docId, phrase) in Dropped)
@@ -283,6 +392,12 @@ public class PrivacyCatalogTests
     [InlineData("privacy.start-recommendations")]
     [InlineData("privacy.advertising-id")]
     [InlineData("privacy.tailored-experiences")]
+    [InlineData("privacy.start-account-notifications")]
+    [InlineData("privacy.toast-suggested")]
+    [InlineData("privacy.toast-backup-reminder")]
+    [InlineData("privacy.start-track-progs")]
+    [InlineData("privacy.online-speech")]
+    [InlineData("privacy.inking-typing-improve")]
     public void SettingsToggleOnlyEvidence_IsStatedInObservation(string id)
     {
         Assert.Contains("dowód: stan przełącznika w Ustawieniach, treści nie obserwowano", Doc(id), StringComparison.Ordinal);
@@ -317,6 +432,135 @@ public class PrivacyCatalogTests
         var doc = Doc(def.Id);
         Assert.Contains("niesugerowan", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("po cofnięciu tło zostaje „Obraz”", doc, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LockscreenSpotlight_WarnsAboutLockScreen_DocExplainsDroppedValueAndDesktopItem()
+    {
+        // Pozycja zmienia tylko Spotlight na ekranie blokady (jedna wartość); druga wartość ze źródeł nie dała skutku.
+        var def = Get("privacy.lockscreen-spotlight");
+        Assert.False(def.Suggested);
+        Assert.Contains("ekranie blokady", string.Join(" ", def.Warnings), StringComparison.Ordinal);
+        Assert.DoesNotContain(def.Registry, e => e.Name == "RotatingLockScreenOverlayEnabled");
+        var doc = Doc(def.Id);
+        Assert.Contains("RotatingLockScreenOverlayEnabled", doc, StringComparison.Ordinal);
+        Assert.Contains("privacy.spotlight", doc, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ToastBackupReminder_IsNotSuggestedAndWarnsThatRemindersStop()
+    {
+        // Przypomnienie o kopii zapasowej to coś użytecznego, co przestaje działać: pozycja niesugerowana z uwagą.
+        var def = Get("privacy.toast-backup-reminder");
+        Assert.False(def.Suggested);
+        Assert.Contains("kopii zapasowej", string.Join(" ", def.Warnings), StringComparison.Ordinal);
+        Assert.Contains("OneDrive", def.Description, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void StartTrackProgs_WarnsThatMostUsedAppsFieldBecomesInactive()
+    {
+        // Po zapisie pole „Pokaż najczęściej używane aplikacje” w ustawieniach Start jest nieaktywne: uwaga, ryzyko caution.
+        var def = Get("privacy.start-track-progs");
+        Assert.Contains("Pokaż najczęściej używane aplikacje", string.Join(" ", def.Warnings), StringComparison.Ordinal);
+        Assert.Contains("Show most used apps", Doc(def.Id), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void OnlineSpeech_DictationEffectIsStated()
+    {
+        // Utraty dyktowania (Win+H) nie obserwowano: docs mówią o tym wprost, a uwagi tego nie obiecują.
+        var def = Get("privacy.online-speech");
+        var doc = Doc(def.Id);
+        // Zdanie o dyktowaniu (Win+H) samo mówi „nie sprawdzono”, a nie dowolne inne miejsce w pliku.
+        Assert.Contains(
+            doc.Split('\n'),
+            line => line.Contains("Win+H")
+                && line.IndexOf("dyktowa", StringComparison.OrdinalIgnoreCase) >= 0
+                && line.IndexOf("nie sprawdzono", StringComparison.OrdinalIgnoreCase) >= 0);
+        Assert.DoesNotContain("Win+H", string.Join(" ", def.Warnings), StringComparison.Ordinal);
+        // Dowód odwrotny: na świeżym Windows przełącznik jest już wyłączony, więc detekcja daje NotApplied, a zastosowanie nic nie zmienia na ekranie.
+        Assert.False(def.Suggested);
+        Assert.Contains("dowód odwrotny", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("NotApplied", doc, StringComparison.Ordinal);
+        Assert.Contains("już wyłączony", def.Description, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void InkingTypingImprove_WarnsAboutDictionary_DocExplainsDroppedTipcValue()
+    {
+        // Windows pisze pod przełącznikiem, że wyłączenie czyści słownik niestandardowy: uwaga, ryzyko caution.
+        // Wpis TIPC\Enabled ze źródeł nie wchodzi (przełącznik go nie zapisuje); docs to wyjaśniają.
+        // Słownik może zniknąć, a jego powrotu po cofnięciu nie sprawdzono: pozycja niesugerowana.
+        var def = Get("privacy.inking-typing-improve");
+        Assert.False(def.Suggested);
+        Assert.Contains("słownik", string.Join(" ", def.Warnings), StringComparison.Ordinal);
+        Assert.DoesNotContain(def.Registry, e => e.Path.EndsWith(@"\TIPC", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(@"TIPC\Enabled", Doc(def.Id), StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("privacy.edge-shopping-recommendations")]
+    [InlineData("privacy.edge-newtab-content")]
+    [InlineData("privacy.edge-diagnostic-data")]
+    [InlineData("privacy.edge-copilot")]
+    public void EdgeItems_ManagedWarning_NotSuggested_DocCitesPolicyPages(string id)
+    {
+        // Polityki Edge: przeglądarka pokazuje ustawienia jako zarządzane przez organizację, więc pozycja jest niesugerowana z uwagą,
+        // a dokument cytuje stronę Microsoftu każdej polityki i stan z edge://policy.
+        var def = Get(id);
+        Assert.False(def.Suggested);
+        var warnings = string.Join(" ", def.Warnings);
+        Assert.Contains("Edge", warnings, StringComparison.Ordinal);
+        Assert.Contains("organizacj", warnings, StringComparison.Ordinal);
+        // Klucz Edge jest wspólny: cofnięcie zostawia wartości innych pozycji Edge (i wtedy sam klucz).
+        Assert.Contains("wartości innych pozycji Edge w tym kluczu zostają", def.Description, StringComparison.Ordinal);
+        var doc = Doc(id);
+        Assert.Contains("edge://policy", doc, StringComparison.Ordinal);
+        foreach (var entry in def.Registry)
+        {
+            Assert.Contains(entry.Name, doc, StringComparison.Ordinal);
+            Assert.Contains("learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/" + entry.Name.ToLowerInvariant(), doc, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void EdgeDiagnosticData_WarnsThatRequiredDataIsOffAndNotRecommended()
+    {
+        // DiagnosticData = 0 wyłącza też wymagane dane diagnostyczne Edge, czego Microsoft nie zaleca: uwaga i opis mówią to wprost.
+        var def = Get("privacy.edge-diagnostic-data");
+        var warnings = string.Join(" ", def.Warnings);
+        Assert.Contains("wymagane", warnings, StringComparison.Ordinal);
+        Assert.Contains("Microsoft nie zaleca", warnings, StringComparison.Ordinal);
+        Assert.Contains("wymagane", def.Description, StringComparison.Ordinal);
+        Assert.Contains("Not recommended", Doc(def.Id), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void EdgeCopilot_SidebarWarningMatchesRegistry()
+    {
+        // HubsSidebarEnabled chowa cały pasek boczny Edge. Z nim w rejestrze uwaga ma to mówić; bez niego docs wyjaśniają, czemu go nie ma.
+        var def = Get("privacy.edge-copilot");
+        if (def.Registry.Any(e => e.Name == "HubsSidebarEnabled"))
+        {
+            Assert.Contains("pasek boczny", string.Join(" ", def.Warnings), StringComparison.Ordinal);
+        }
+        else
+        {
+            Assert.Contains("HubsSidebarEnabled", Doc(def.Id), StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void NotepadAi_DocConfirmsNotepadStarts()
+    {
+        // Wartość wyłącza funkcje AI Notatnika: docs potwierdzają, że Notatnik po zmianie startuje, i wskazują źródło (dokument MS albo test).
+        var doc = Doc("privacy.notepad-ai");
+        Assert.Contains("po zmianie Notatnik się uruchamia", doc, StringComparison.Ordinal);
+        Assert.True(
+            doc.Contains("https://learn.microsoft.com/en-us/windows/client-management/manage-notepad")
+                || doc.Contains("brak dokumentacji MS, dowód: test na VM"),
+            "privacy.notepad-ai: docs bez adresu dokumentu MS i bez zdania o braku dokumentacji");
     }
 
     [Fact]

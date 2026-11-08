@@ -23,6 +23,10 @@ namespace DSOptimizer.Tests.Windows;
 [Trait("Category", "Windows")]
 public class SelectSuggestedTests
 {
+    /// <summary>Liczba pozycji privacy z sugestią oraz tych z nich o ryzyku Safe; jedyne miejsce z tymi liczbami.</summary>
+    private const int SuggestedPrivacy = 15;
+    private const int SuggestedPrivacySafe = 12;
+
     private const string UserSid = "S-1-5-21-1000";
     private const string MicrosoftDn = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US";
 
@@ -82,7 +86,7 @@ public class SelectSuggestedTests
         });
 
     [Fact]
-    public void SelectSuggested_SelectsElevenPrivacyItems_AndChangesNoState()
+    public void SelectSuggested_SelectsAllSuggestedPrivacyItems_AndChangesNoState()
         => Run(vm =>
         {
             var privacy = Category(vm, "privacy");
@@ -92,7 +96,7 @@ public class SelectSuggestedTests
             Assert.True(vm.SelectSuggestedCommand.CanExecute(null));
             vm.SelectSuggestedCommand.Execute(null);
 
-            Assert.Equal(11, vm.SelectedCount);
+            Assert.Equal(SuggestedPrivacy, vm.SelectedCount);
             Assert.All(privacy.Items.Where(item => item.IsSelected), item => Assert.True(item.IsSuggested));
             Assert.All(privacy.Items.Where(item => item.IsTweak), item => Assert.Equal(DetectionState.NotApplied, item.State));
             Assert.False(vm.IsBusy);
@@ -111,7 +115,7 @@ public class SelectSuggestedTests
 
             Assert.False(privacy.Items.First(item => item.Id == "privacy.diagtrack").IsSelected);
             Assert.True(privacy.Items.First(item => item.Id == "privacy.widgets").IsSelected);
-            Assert.Equal(9, vm.SelectedCount);
+            Assert.Equal(SuggestedPrivacySafe, vm.SelectedCount);
         });
 
     [Fact]
@@ -128,7 +132,7 @@ public class SelectSuggestedTests
 
             Assert.True(privacy.Items.First(item => item.Id == "privacy.diagtrack").IsSelected);
             Assert.False(privacy.Items.First(item => item.Id == "privacy.widgets").IsSelected);
-            Assert.True(vm.SelectedCount < 11);
+            Assert.True(vm.SelectedCount < SuggestedPrivacy);
         });
 
     [Fact]
@@ -145,7 +149,7 @@ public class SelectSuggestedTests
             vm.SelectSuggestedCommand.Execute(null);
 
             Assert.True(manual.IsSelected);
-            Assert.Equal(12, vm.SelectedCount);
+            Assert.Equal(SuggestedPrivacy + 1, vm.SelectedCount);
         });
 
     [Fact]

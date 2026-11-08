@@ -84,6 +84,7 @@ How to read the tables:
 | Start, wyszukiwanie i Widżety | Start, search and Widgets | Group in the Privacy and AI category |
 | Reklamy i sugestie | Ads and suggestions | Group in the Privacy and AI category |
 | Telemetria i diagnostyka | Telemetry and diagnostics | Group in the Privacy and AI category |
+| Funkcje AI | AI features | Group in the Privacy and AI category |
 | Specyfikacja | Specification | Page and log component; English README |
 | Przygotowanie | Preparation | Page and log component; English README. Not the same text as "Przygotowanie…" (see Concepts) |
 | Aplikacje | Apps | Page; English README |
@@ -454,6 +455,38 @@ separator of the Polish text (">"), and use the English page names exactly.
 | ponowne zalogowanie | sign in again | Style rule 11: "after you sign in again" |
 | od następnego logowania | at the next sign-in | Style rule 11; Startup apps results: "takes effect at the next sign-in" |
 | Wymaga restartu komputera. | Requires a computer restart. | Restart warning of items with "Restart required" |
+| Opcje Eksploratora plików | File Explorer Options | Control Panel window, canonical name Microsoft.FolderOptions. unverified – labels read from Windows 11 26H2 in English and Polish (UI Automation, 2026-11-07). |
+| Pokaż powiadomienia dostawcy synchronizacji / powiadomienia dostawcy synchronizacji | Show sync provider notifications / sync provider notifications | Checkbox in File Explorer Options. unverified – same source as "File Explorer Options". |
+| ekran blokady | lock screen | Windows term; [Windows spotlight](https://learn.microsoft.com/en-us/windows/configuration/windows-spotlight/) describes spotlight on the lock screen |
+| Personalizuj ekran blokady | Personalize your lock screen | List on the lock screen page in Settings ("Windows spotlight" / "Picture"). unverified – labels read from Windows 11 26H2 in English and Polish (UI Automation, 2026-11-07); the Polish label of "Picture" on this list wasn't read. |
+| Pokaż powiadomienia związane z kontem | Show account-related notifications | Toggle on Personalization > Start. unverified – labels read from Windows 11 26H2 in English and Polish (UI Automation, 2026-11-07). |
+| System > Powiadomienia | System > Notifications | Settings page with the notification sender list; [Notifications and Do Not Disturb in Windows](https://support.microsoft.com/help/4014934) |
+| nadawca powiadomień (systemowy) / przełącznik nadawcy | notification sender / the sender's toggle | Entry in the sender list on System > Notifications |
+| nadawca powiadomień z sugestiami | "Suggested" sender / suggestion notifications | System sender Windows.SystemToast.Suggested. unverified – English label read from Windows 11 26H2 (UI Automation, 2026-11-07); the Polish label wasn't read, so the Polish text describes the sender without quoting a name. |
+| przypomnienia o kopii zapasowej (nadawca systemowy) | backup reminders ("Backup settings" sender) | System sender Windows.SystemToast.BackupReminder. unverified – English label read from Windows 11 26H2 (UI Automation, 2026-11-07); the Polish label wasn't read, so the Polish text describes the sender without quoting a name. |
+| zwykły obraz (ekran blokady) | regular picture | Program's own description of the "Picture" option of the lock screen; the Polish text doesn't quote the option name. |
+| polityki Edge | Edge policies | [Microsoft Edge - Policies](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies) |
+| ustawienie zakupów (Edge) / funkcje zakupowe | the shopping setting ("Save time and money with Shopping in Microsoft Edge") / shopping features | Edge settings; [EdgeShoppingAssistantEnabled](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/edgeshoppingassistantenabled) ("shopping features such as price comparison, coupons…"). unverified – English label read from Edge (UI Automation, 2026-11-07); the Polish label wasn't read, so the Polish text describes the setting without quoting a name. |
+| informacja, że ustawieniem zarządza organizacja (Edge) | "This setting is managed by your organization." | Notice next to an Edge setting controlled by a policy. unverified – English text read from Edge (UI Automation, 2026-11-07); the Polish text wasn't read, so the program paraphrases it. |
+| rekomendacje i powiadomienia Edge | Edge recommendations and notifications | [ShowRecommendationsEnabled](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/showrecommendationsenabled) ("recommendations or notifications from Microsoft Edge") |
+| nowa karta (Edge) | new tab page / new tab | [NewTabPageContentEnabled](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/newtabpagecontentenabled) ("the new tab page") |
+| kanał MSN / treści Microsoftu na nowej karcie | MSN feed / Microsoft content on the new tab page | Same source ("Microsoft content on the new tab page"); "MSN feed" is the program's own name for that content |
+| domyślne kafelki witryn | default site tiles / default top site tiles | [NewTabPageHideDefaultTopSites](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/newtabpagehidedefaulttopsites) ("the default top site tiles") |
+| ustawienia narzucone przez organizację (Edge) | settings managed by your organization | Program's paraphrase for settings set by a mandatory Edge device policy (edge://policy: Platform, Device, Mandatory) |
+| Popraw wyniki uruchamiania i wyszukiwania | Improve Start and search results | Toggle in the privacy settings (ms-settings:privacy-general). unverified – labels read from Windows 11 26H2 in English and Polish (UI Automation, 2026-11-07). |
+| Pokaż najczęściej używane aplikacje | Show most used apps | Setting on Personalization > Start. unverified – labels read from Windows 11 26H2 in English and Polish (UI Automation, 2026-11-07). |
+| rozpoznawanie mowy online | online speech recognition / "Online speech recognition" | Toggle on the speech privacy page (ms-settings:privacy-speech). unverified – English heading and the Polish and English descriptions read from Windows 11 26H2 (UI Automation, 2026-11-07); the Polish heading wasn't read as a separate element, so the Polish text describes the toggle without quoting a name. |
+| Niestandardowe pisanie odręczne i słownik pisania | Custom inking and typing dictionary | Toggle on the inking and typing privacy page (ms-settings:privacy-speechtyping). unverified – labels read from Windows 11 26H2 in English and Polish (UI Automation, 2026-11-07). |
+| słownik niestandardowy (pisania i pisma odręcznego) | custom dictionary (typing and handwriting) | Windows description under the "Custom inking and typing dictionary" toggle ("słownik niestandardowy" / "custom dictionary"). unverified – same source. |
+| ustawienia danych diagnostycznych (Edge) | diagnostic data settings ("Required diagnostic data", "Send optional diagnostic data to improve Microsoft products") | Edge settings; [DiagnosticData](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/diagnosticdata) ("required and optional diagnostic data collection"). unverified – English labels read from Edge (UI Automation, 2026-11-07); the Polish labels weren't read, so the Polish text describes the settings without quoting names. |
+| opinie (Edge) / wysyłanie opinii z Edge | feedback ("Feedback") / sending feedback from Edge | Edge settings; [UserFeedbackAllowed](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/userfeedbackallowed) ("Edge Feedback"). unverified – English label read from Edge (UI Automation, 2026-11-07); the Polish label wasn't read. |
+| przycisk „Czat” (Copilot w Edge) | the "Chat" button (Copilot in Edge) | Edge toolbar button; [Microsoft365CopilotChatIconEnabled](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/microsoft365copilotchaticonenabled) ("Copilot doesn't appear in the toolbar"). unverified – labels read from Edge in English and Polish (UI Automation, 2026-11-07). |
+| pasek narzędzi (Edge) | toolbar | Same source ("the toolbar") |
+| pasek boczny (Edge) | sidebar | [HubsSidebarEnabled](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/hubssidebarenabled) ("the Sidebar"); `privacy.edge-copilot` doesn't set this policy |
+| wyszukiwanie w historii tylko dosłowne | history search by exact match only | [EdgeHistoryAISearchEnabled](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/edgehistoryaisearchenabled) ("exact match (verbatim) searches in their history") |
+| profil Edge zalogowany kontem Microsoft Entra | Edge profile signed in with a Microsoft Entra account | [CopilotPageContext](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/copilotpagecontext) ("Microsoft Entra ID profiles in Microsoft Edge") |
+| funkcje AI Notatnika | Notepad's AI features / AI features in Notepad | [Manage AI features in Notepad](https://learn.microsoft.com/en-us/windows/client-management/manage-notepad) ("To disable AI features in Notepad") |
+| przycisk „Narzędzia do pisania” (Notatnik) | the "Writing tools" button (Notepad) | Notepad button with AI tools. unverified – labels read from Notepad 11.2605.34.0 in English and Polish (UI Automation, 2026-11-07). |
 
 ### Catalog – app lists
 

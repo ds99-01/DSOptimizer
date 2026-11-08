@@ -15,10 +15,113 @@
     $script:ValidExpectFull = "Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'; UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'"
 }
 
+Describe 'Import-DsoVmCases (cases.psd1 bez limitu rozmiaru Import-PowerShellDataFile w PowerShell 5.1)' {
+    BeforeAll {
+        function script:Write-DataFile {
+            param([string]$Path, [string]$Content)
+            [System.IO.File]::WriteAllText($Path, $Content, (New-Object System.Text.UTF8Encoding($true)))
+        }
+        # Nazwy przypadków wprost z drzewa składni (niezależnie od obu loaderów): elementy tablicy Cases będące literałami hashtable.
+        function script:Get-AstCaseName {
+            param([string]$Path)
+            $Ast = [System.Management.Automation.Language.Parser]::ParseFile($Path, [ref]$null, [ref]$null)
+            $Root = $Ast.EndBlock.Statements[0].PipelineElements[0].Expression
+            $CasesValue = ($Root.KeyValuePairs | Where-Object { $_.Item1.Value -eq 'Cases' }).Item2
+            $Tables = $CasesValue.Find({ param($a) $a -is [System.Management.Automation.Language.ArrayExpressionAst] }, $true).SubExpression.Statements |
+                ForEach-Object { $_.PipelineElements[0].Expression } |
+                ForEach-Object { if ($_ -is [System.Management.Automation.Language.ArrayLiteralAst]) { $_.Elements } else { $_ } }
+            @($Tables | ForEach-Object { ($_.KeyValuePairs | Where-Object { $_.Item1.Value -eq 'Name' }).Item2.PipelineElements[0].Expression.Value })
+        }
+    }
+    It 'prawdziwe cases.psd1: te same przypadki co w drzewie składni, a dopóki Import-PowerShellDataFile działa – te same co on' {
+        $Path = Join-Path $script:VmRoot 'cases.psd1'
+        $Names = @(@((Import-DsoVmCases -LiteralPath $Path).Cases) | ForEach-Object { [string]$_.Name })
+        $Names.Count | Should -BeGreaterThan 100
+        $Names | Should -Be @(Get-AstCaseName -Path $Path)
+        $Builtin = $null
+        try { $Builtin = Import-PowerShellDataFile -LiteralPath $Path } catch { $Builtin = $null }
+        if ($null -ne $Builtin) {
+            $Names | Should -Be @(@($Builtin.Cases) | ForEach-Object { [string]$_.Name })
+        }
+    }
+    It 'plik ponad limitem Import-PowerShellDataFile: Import-DsoVmCases go wczytuje, a Import-PowerShellDataFile pada' {
+        function New-CasesText([int]$Count) {
+            $Body = (1..$Count | ForEach-Object { "        @{ Name = 'c$_'; Flow = 'Full'; Expect = @{ Before = 'NotApplied'; ApplyExit = 0 }; Setup = @('a', 'b') }" }) -join "`r`n"
+            "@{`r`n    Cases = @(`r`n$Body`r`n    )`r`n}`r`n"
+        }
+        # Próbka kontrolna: ten sam kształt, 10 przypadków – Import-PowerShellDataFile go wczytuje, więc niżej pada przez rozmiar.
+        $Small = Join-Path $TestDrive 'maly.psd1'
+        Write-DataFile -Path $Small -Content (New-CasesText -Count 10)
+        @((Import-PowerShellDataFile -LiteralPath $Small).Cases).Count | Should -Be 10
+        $Path = Join-Path $TestDrive 'duzy.psd1'
+        Write-DataFile -Path $Path -Content (New-CasesText -Count 1500)
+        { Import-PowerShellDataFile -LiteralPath $Path } | Should -Throw
+        $Data = Import-DsoVmCases -LiteralPath $Path
+        $Data | Should -BeOfType [hashtable]
+        @($Data.Cases).Count | Should -Be 1500
+        $Data.Cases[1499].Name | Should -Be 'c1500'
+        $Data.Cases[0].Expect.ApplyExit | Should -Be 0
+        @($Data.Cases[0].Setup) | Should -Be @('a', 'b')
+    }
+    It 'odrzuca <Opis>' -ForEach @(
+        @{ Opis = 'wywołanie komendy'; Tresc = '@{ A = (Get-Date) }' }
+        @{ Opis = 'zmienną'; Tresc = '@{ A = $x }' }
+        @{ Opis = 'zmienną środowiskową'; Tresc = '@{ A = $env:PATH }' }
+        @{ Opis = 'zmienną w podwójnym cudzysłowie'; Tresc = '@{ A = "a$x" }' }
+    ) {
+        $Path = Join-Path $TestDrive 'zly-jezyk.psd1'
+        Write-DataFile -Path $Path -Content $Tresc
+        { Import-DsoVmCases -LiteralPath $Path } | Should -Throw -ExpectedMessage '*zly-jezyk.psd1*'
+    }
+    It 'odrzuca <Opis>' -ForEach @(
+        @{ Opis = 'dwie instrukcje'; Tresc = "@{ A = 1 }`r`n@{ B = 2 }" }
+        @{ Opis = 'tablicę zamiast hashtable'; Tresc = "@(1, 2)" }
+        @{ Opis = 'sam tekst'; Tresc = "'abc'" }
+        @{ Opis = 'pusty plik'; Tresc = '' }
+        @{ Opis = 'błąd składni'; Tresc = '@{ A = ' }
+    ) {
+        $Path = Join-Path $TestDrive 'zly-ksztalt.psd1'
+        Write-DataFile -Path $Path -Content $Tresc
+        { Import-DsoVmCases -LiteralPath $Path } | Should -Throw -ExpectedMessage '*zly-ksztalt.psd1*'
+    }
+    It 'odrzuca <Opis> i niczego nie wykonuje (plik znacznika nie powstaje)' -ForEach @(
+        @{ Opis = 'using module z kodem modułu'; Rodzaj = 'using-module' }
+        @{ Opis = 'using assembly'; Rodzaj = 'using-assembly' }
+        @{ Opis = '#requires'; Rodzaj = 'requires' }
+        @{ Opis = 'wywołanie metody z efektem ubocznym'; Rodzaj = 'method' }
+        @{ Opis = 'podwyrażenie $() z wywołaniem metody'; Rodzaj = 'subexpression' }
+    ) {
+        $Dir = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $null = New-Item -ItemType Directory -Path $Dir
+        $Marker = Join-Path $Dir 'znacznik.txt'
+        $Write = "[System.IO.File]::WriteAllText('$Marker', 'x')"
+        $Module = Join-Path $Dir 'x.psm1'
+        Write-DataFile -Path $Module -Content $Write
+        $Tresc = switch ($Rodzaj) {
+            'using-module' { "using module '$Module'`r`n@{ A = 1 }" }
+            'using-assembly' { "using assembly System.Xml`r`n@{ A = 1 }" }
+            'requires' { "#requires -Modules '$Module'`r`n@{ A = 1 }" }
+            'method' { "@{ A = $Write }" }
+            'subexpression' { "@{ A = `$($Write) }" }
+        }
+        $Path = Join-Path $Dir 'zly-kod.psd1'
+        Write-DataFile -Path $Path -Content $Tresc
+        { Import-DsoVmCases -LiteralPath $Path } | Should -Throw -ExpectedMessage '*zly-kod.psd1*'
+        Test-Path -LiteralPath $Marker | Should -BeFalse
+    }
+    It 'komunikat odrzucenia mówi o trybie języka danych i podaje przyczynę bez „Exception calling”' {
+        $Path = Join-Path $TestDrive 'zmienna.psd1'
+        Write-DataFile -Path $Path -Content '@{ A = $x }'
+        $Message = try { Import-DsoVmCases -LiteralPath $Path; '' } catch { $_.Exception.Message }
+        $Message | Should -BeLike '*tryb języka danych (restricted language)*'
+        $Message | Should -Not -BeLike '*Exception calling*'
+    }
+}
+
 Describe 'Import-VmCases' {
     It 'wczytuje prawdziwe cases.psd1 zgodne z katalogiem' {
         $Cases = Import-VmCases -CasesPath "$script:VmRoot\cases.psd1" -CatalogPath $script:CatalogPath
-        $Expected = @((Import-PowerShellDataFile "$script:VmRoot\cases.psd1").Cases).Count
+        $Expected = @((Import-DsoVmCases -LiteralPath "$script:VmRoot\cases.psd1").Cases).Count
         $Expected | Should -BeGreaterThan 0
         $Cases.Count | Should -Be $Expected
         ($Cases.Name | Select-Object -Unique).Count | Should -Be $Expected

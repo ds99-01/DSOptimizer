@@ -83,7 +83,7 @@ Describe 'Nazwy VM w kodzie zgodne ze źródłem (Get-DsoVmDefinitions)' {
         foreach ($Old in 'DSO-26H2-Pro', 'DSO-26H2-Home', 'DSO-EN-Brak', 'DSO-DE-Pro', 'DSO-EN-Pro-x') { $Old -cmatch $Pattern | Should -BeFalse -Because $Old }
     }
 
-    It 'każdy bezpiecznik w VM zna dokładnie cztery nazwy komputerów (17 list)' {
+    It 'każdy bezpiecznik w VM zna dokładnie cztery nazwy komputerów (18 list)' {
         $Expected = @((Get-DsoVmDefinitions).ComputerName | Sort-Object)
         $Lists = 0
         foreach ($Path in $script:CodeFiles) {
@@ -94,7 +94,7 @@ Describe 'Nazwy VM w kodzie zgodne ze źródłem (Get-DsoVmDefinitions)' {
                 $Names | Should -Be $Expected -Because "$Path :: $($Match.Value)"
             }
         }
-        $Lists | Should -Be 17
+        $Lists | Should -Be 18
     }
 
     It 'domyślne -VmName skryptów = role ze źródła' {
@@ -105,6 +105,7 @@ Describe 'Nazwy VM w kodzie zgodne ze źródłem (Get-DsoVmDefinitions)' {
         Get-ScriptDefault -Path (Join-Path $Explore 'Invoke-InstallerExploration.ps1') | Should -Be @('DSO-EN-Pro')
         Get-ScriptDefault -Path (Join-Path $Explore 'Invoke-E4CExploration.ps1') | Should -Be @('DSO-EN-Pro', 'DSO-EN-Home')
         Get-ScriptDefault -Path (Join-Path $Explore 'Invoke-E5Exploration.ps1') | Should -Be @('DSO-EN-Pro', 'DSO-EN-Home')
+        Get-ScriptDefault -Path (Join-Path $Explore 'Invoke-B5Exploration.ps1') | Should -Be @('DSO-EN-Home', 'DSO-EN-Pro')
         foreach ($Name in $script:HistoricNames) {
             Get-ScriptDefault -Path (Join-Path $Explore $Name) | Should -Be @('DSO-PL-Home', 'DSO-PL-Pro') -Because $Name
         }
