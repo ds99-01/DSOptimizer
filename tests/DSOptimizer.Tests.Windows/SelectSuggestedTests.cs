@@ -24,7 +24,7 @@ namespace DSOptimizer.Tests.Windows;
 public class SelectSuggestedTests
 {
     /// <summary>Liczba pozycji privacy z sugestią oraz tych z nich o ryzyku Safe; jedyne miejsce z tymi liczbami.</summary>
-    private const int SuggestedPrivacy = 15;
+    private const int SuggestedPrivacy = 14;
     private const int SuggestedPrivacySafe = 12;
 
     private const string UserSid = "S-1-5-21-1000";

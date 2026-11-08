@@ -1,4 +1,4 @@
-<!-- source: docs/tweaks/privacy.start-track-progs.md sha256: caedab6fe683a9ed82a4c91a87e9153c44acff010623771a2b3cbd30ddf15f06 -->
+<!-- source: docs/tweaks/privacy.start-track-progs.md sha256: d433f08e8f10681ddd1c1c3cc01210d179c6eff531dcfc431d93e993066ec818 -->
 
 # privacy.start-track-progs – Turn off improving Start and search results
 
@@ -27,7 +27,7 @@ Reading from the `DSO-EN-Home` and `DSO-EN-Pro` VMs, 2026-11-07: the `Explorer\A
 - The `Explorer\Advanced` key existed before apply and stays (`KeyPresentAfterUndo`).
 
 ## Risks and warnings
-- `risk=caution`, `suggested=true`: after the write the "Show most used apps" setting is inactive (UI Automation reading `Enabled` = false on Home and Pro), so the list of most used apps in Start is no longer available; after undo the setting is active again.
+- `risk=caution`, `suggested=false`: the item isn't suggested, because it turns off the "Show most used apps" feature; anyone who wants to turn off improving the results selects it themselves. After the write the "Show most used apps" setting is inactive (UI Automation reading `Enabled` = false on Home and Pro), so the list of most used apps in Start is no longer available; after undo the setting is active again.
 - Warning in the catalog: "The "Show most used apps" setting in the Start menu settings will be inactive – you won't be able to turn that list on."
 
 ## VM test

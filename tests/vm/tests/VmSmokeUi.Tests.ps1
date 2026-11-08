@@ -273,15 +273,16 @@ Describe 'Get-GuiPrivacySuggestedId' {
         [System.IO.File]::WriteAllText((Join-Path $Dir 'autostart-known.json'), (ConvertTo-Json -InputObject $Known -Depth 4), (New-Object System.Text.UTF8Encoding($true)))
         Get-GuiPrivacySuggestedId -CatalogDirectory $Dir | Should -Be @('privacy.a')
     }
-    It 'wbudowany katalog: 15 sugerowanych pozycji privacy, bez „Proponowane” w Start' {
+    It 'wbudowany katalog: 14 sugerowanych pozycji privacy, bez „Proponowane” w Start' {
         $Dir = Join-Path $PSScriptRoot '..\..\..\src\DSOptimizer.Catalog\catalog'
         $Ids = @(Get-GuiPrivacySuggestedId -CatalogDirectory $Dir)
-        $Ids.Count | Should -Be 15
+        $Ids.Count | Should -Be 14
         $Ids | Should -Contain 'privacy.advertising-id'
         $Ids | Should -Contain 'privacy.tailored-experiences'
         $Ids | Should -Contain 'privacy.diagtrack'
         $Ids | Should -Not -Contain 'privacy.start-recommended-section'
         $Ids | Should -Not -Contain 'privacy.inking-typing-improve'
+        $Ids | Should -Not -Contain 'privacy.start-track-progs'
     }
     It 'pusty wynik to błąd (sprawdzenie nie miałoby czego liczyć)' {
         $Dir = Join-Path $TestDrive 'pusty'

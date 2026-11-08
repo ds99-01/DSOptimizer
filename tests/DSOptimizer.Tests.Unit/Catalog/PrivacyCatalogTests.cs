@@ -108,7 +108,7 @@ public class PrivacyCatalogTests
         new("privacy.edge-newtab-content", false, TweakScope.Machine, RiskLevel.Safe, false,
             new ExpectedEntry(EdgePolicies, "NewTabPageContentEnabled", RegValue.FromDWord(0), RegValue.Absent),
             new ExpectedEntry(EdgePolicies, "NewTabPageHideDefaultTopSites", RegValue.FromDWord(1), RegValue.Absent)),
-        new("privacy.start-track-progs", true, TweakScope.User, RiskLevel.Caution, false,
+        new("privacy.start-track-progs", false, TweakScope.User, RiskLevel.Caution, false,
             new ExpectedEntry(ExplorerAdvanced, "Start_TrackProgs", RegValue.FromDWord(0), RegValue.Absent)),
         new("privacy.online-speech", false, TweakScope.User, RiskLevel.Caution, false,
             new ExpectedEntry(@"HKCU\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy", "HasAccepted", RegValue.FromDWord(0), RegValue.Absent)),
@@ -458,10 +458,13 @@ public class PrivacyCatalogTests
     }
 
     [Fact]
-    public void StartTrackProgs_WarnsThatMostUsedAppsFieldBecomesInactive()
+    public void StartTrackProgs_IsNotSuggestedAndWarnsThatMostUsedAppsFieldBecomesInactive()
     {
         // Po zapisie pole „Pokaż najczęściej używane aplikacje” w ustawieniach Start jest nieaktywne: uwaga, ryzyko caution.
+        // Decyzja autora 2026-11-08: pozycja niesugerowana, bo wyłącza tę funkcję; kto jej potrzebuje, zaznacza ją sam.
         var def = Get("privacy.start-track-progs");
+        Assert.False(def.Suggested);
+        Assert.Contains("suggested=false", Doc(def.Id), StringComparison.Ordinal);
         Assert.Contains("Pokaż najczęściej używane aplikacje", string.Join(" ", def.Warnings), StringComparison.Ordinal);
         Assert.Contains("Show most used apps", Doc(def.Id), StringComparison.Ordinal);
     }

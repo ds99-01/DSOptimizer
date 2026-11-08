@@ -25,7 +25,7 @@ Odczyt z VM `DSO-EN-Home` i `DSO-EN-Pro`, 2026-11-07: klucz `Explorer\Advanced` 
 - Klucz `Explorer\Advanced` istniał przed apply i zostaje (`KeyPresentAfterUndo`).
 
 ## Ryzyka i ostrzeżenia
-- `risk=caution`, `suggested=true`: po zapisie pole „Pokaż najczęściej używane aplikacje” jest nieaktywne (w odczycie UI Automation `Enabled` = false na Home i Pro), czyli lista najczęściej używanych aplikacji w Start przestaje być dostępna; po cofnięciu pole znowu jest aktywne.
+- `risk=caution`, `suggested=false`: pozycja nie jest sugerowana, bo wyłącza funkcję „Pokaż najczęściej używane aplikacje”; kto chce wyłączyć poprawianie wyników, zaznacza ją sam. Po zapisie pole „Pokaż najczęściej używane aplikacje” jest nieaktywne (w odczycie UI Automation `Enabled` = false na Home i Pro), czyli lista najczęściej używanych aplikacji w Start przestaje być dostępna; po cofnięciu pole znowu jest aktywne.
 - Ostrzeżenie w katalogu: „Pole „Pokaż najczęściej używane aplikacje” w ustawieniach menu Start będzie nieaktywne – tej listy nie da się wtedy włączyć.”
 
 ## Test VM

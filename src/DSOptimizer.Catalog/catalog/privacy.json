@@ -375,7 +375,7 @@
     "description": "Start_TrackProgs = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced, dla zalogowanego użytkownika. To ta sama wartość, którą zapisuje przełącznik „Popraw wyniki uruchamiania i wyszukiwania” w Ustawieniach (wyłączony 0, włączony 1); Ustawienia pokazują nowy stan od razu, bez restartu. Pole „Pokaż najczęściej używane aplikacje” w Personalizacja > Start jest potem nieaktywne. Cofnięcie przywraca poprzedni stan przełącznika.",
     "risk": "caution",
     "scope": "user",
-    "suggested": true,
+    "suggested": false,
     "warnings": [
       "Pole „Pokaż najczęściej używane aplikacje” w ustawieniach menu Start będzie nieaktywne – tej listy nie da się wtedy włączyć."
     ],

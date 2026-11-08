@@ -51,7 +51,7 @@ Stan: 2026-11-07, build 26300.9457, Home = `DSO-EN-Home`, Pro = `DSO-EN-Pro`.
 | 7 | `privacy.edge-shopping-recommendations` | skutek | skutek | Portować: pole zakupów w ustawieniach Edge Off i zablokowane | nie | brak | safe |
 | 8 | `privacy.edge-newtab-content` | skutek | skutek | Portować: kanał MSN i domyślne kafelki znikają z nowej karty | nie | brak | safe |
 | 9 | `privacy.edge-prompts-default-browser` | nieobserwowalne | nieobserwowalne | nie wchodzi: nieobserwowalne na VM (brak monitu o przeglądarkę domyślną) | – | – | – |
-| 10 | `privacy.start-track-progs` | skutek | skutek | Portować: przełącznik „Improve Start and search results” przechodzi na Off | tak | brak | caution |
+| 10 | `privacy.start-track-progs` | skutek | skutek | Portować: przełącznik „Improve Start and search results” przechodzi na Off | nie | brak | caution |
 | 11 | `privacy.online-speech` | skutek (dowód odwrotny) | skutek (dowód odwrotny) | Portować: wartość steruje przełącznikiem rozpoznawania mowy online | nie | brak | caution |
 | 12 | `privacy.activity-history` | nieobserwowalne | nieobserwowalne | nie wchodzi: nieobserwowalne na VM (brak strony Historii aktywności) | – | – | – |
 | 13 | `privacy.inking-typing-improve` | skutek | skutek | Portować: przełącznik słownika pisma odręcznego i pisania przechodzi na Off (4 wpisy) | nie | brak | caution |
@@ -301,7 +301,7 @@ Stan: 2026-11-07, build 26300.9457.
 | Pole | Wartość |
 |---|---|
 | `scope` / `group` | `user` / `telemetry` |
-| `suggested` | tak |
+| `suggested` | nie: decyzja autora (2026-11-08), bo zmiana wyłącza funkcję „Pokaż najczęściej używane aplikacje” |
 | `risk` | `caution`: pole „Show most used apps” / „Pokaż najczęściej używane aplikacje” w Personalizacja > Start robi się nieaktywne (w fazie „po” `Enabled` = false na Home i Pro), więc listy najczęściej używanych aplikacji nie da się włączyć |
 | `editions` | brak |
 | Restart | brak: skutek w świeżym oknie Ustawień |
