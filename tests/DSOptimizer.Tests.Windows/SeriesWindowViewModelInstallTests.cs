@@ -71,6 +71,17 @@ public class SeriesWindowViewModelInstallTests
     /// Czeka bez blokowania wątku: zdarzenia <see cref="Progress{T}"/> idą przez kontekst synchronizacji xUnit (ograniczona pula
     /// wątków testów), więc blokujące czekanie przy obciążonej puli mogło przekroczyć limit (niestabilność przy równoległych testach).
     /// </summary>
+    /// <summary>
+    /// Zgłasza start pierwszej pozycji i czeka, aż zostanie obsłużony. <see cref="Progress{T}"/> bez kontekstu synchronizacji
+    /// obsługuje zdarzenia na puli wątków bez gwarancji kolejności, a postęp pozycji jest brany pod uwagę dopiero w stanie
+    /// „W toku” – postęp, który wyprzedził start, przepadał i test czekał w nieskończoność (niestabilność w CI).
+    /// </summary>
+    private static async Task StartFirstItem(Harness harness, SeriesWindowViewModel vm)
+    {
+        harness.Steps!.Report(Event(BatchStepPhase.Started));
+        await WaitFor(() => vm.Steps.Count > 0 && vm.Steps[0].State == BatchStepState.Running);
+    }
+
     private static async Task WaitFor(Func<bool> condition)
     {
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(10);
@@ -120,9 +131,9 @@ public class SeriesWindowViewModelInstallTests
         var vm = harness.Create();
         var confirming = vm.PrimaryCommand.ExecuteAsync(null);
 
-        harness.Steps!.Report(Event(BatchStepPhase.Started));
-        harness.Steps.Report(Event(BatchStepPhase.Progress, "Pobieranie", 45));
-        await WaitFor(() => vm.Steps.Count > 0 && vm.Steps[0].StatusText == "Pobieranie 45%");
+        await StartFirstItem(harness, vm);
+        harness.Steps!.Report(Event(BatchStepPhase.Progress, "Pobieranie", 45));
+        await WaitFor(() => vm.Steps[0].StatusText == "Pobieranie 45%");
 
         Assert.Equal(BatchStepState.Running, vm.Steps[0].State);
         Assert.Equal("Aplikacja 1 z 2 · Dalej: VLC", vm.HeaderSubtitle);
@@ -145,9 +156,9 @@ public class SeriesWindowViewModelInstallTests
         var vm = harness.Create();
         var confirming = vm.PrimaryCommand.ExecuteAsync(null);
 
-        harness.Steps!.Report(Event(BatchStepPhase.Started));
-        harness.Steps.Report(Event(BatchStepPhase.Progress, "Pobieranie", 30));
-        await WaitFor(() => vm.Steps.Count > 0 && vm.Steps[0].StatusText == "Pobieranie 30%");
+        await StartFirstItem(harness, vm);
+        harness.Steps!.Report(Event(BatchStepPhase.Progress, "Pobieranie", 30));
+        await WaitFor(() => vm.Steps[0].StatusText == "Pobieranie 30%");
 
         // Wariant B (pomiar F17): pasek nieokreślony także przy procencie z winget.
         Assert.True(vm.Steps[0].ShowProgress);
@@ -171,8 +182,8 @@ public class SeriesWindowViewModelInstallTests
         var confirming = vm.PrimaryCommand.ExecuteAsync(null);
         var steps0 = vm.Steps;
 
-        harness.Steps!.Report(Event(BatchStepPhase.Started));
-        harness.Steps.Report(Event(BatchStepPhase.Progress, "Pobieranie", 45));
+        await StartFirstItem(harness, vm);
+        harness.Steps!.Report(Event(BatchStepPhase.Progress, "Pobieranie", 45));
         await WaitFor(() => vm.Steps[0].StatusText == "Pobieranie 45%");
 
         Assert.Same(steps0, vm.Steps);
