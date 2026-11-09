@@ -7,6 +7,7 @@ using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Catalog;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Storage;
 using DSOptimizer.Core.Tools;
 using DSOptimizer.Tests.Windows.Support;
 using DSOptimizer.Windows;
@@ -119,9 +120,55 @@ public class AppCompositionTests
 
         var aside = Assert.Single(Directory.GetDirectories(temp.Root, "app.untrusted-*"));
         Assert.True(File.Exists(Path.Combine(aside, @"logs\stary.log")));
-        Assert.Contains(composition.StartupWarnings, w => w.Contains(aside));
+        Assert.Equal(new[] { SetAsideText.Root(temp.AppRoot.FullPath, aside, false) }, composition.StartupWarnings);
         Assert.True(SecureDirectory.IsTrustedDirectory(temp.Sub("app")));
         Assert.NotEmpty(Directory.GetFiles(temp.Sub(@"app\logs"), "dsoptimizer-*.log"));
+    }
+
+    [Fact]
+    public void Create_UntrustedRootWithHistory_SingleWarningNamesAsideOnce()
+    {
+        using var temp = new TempDirectory();
+        new JsonFileJournalStore(temp.AppRoot, "PC-01", new FixedClock()).Save(new JournalDocument { Machine = "PC-01" });
+        ForeignAcl.Apply(temp.Sub("app"));
+
+        var composition = AppComposition.Create(temp.AppRoot, null);
+
+        var aside = Assert.Single(Directory.GetDirectories(temp.Root, "app.untrusted-*"));
+        Assert.Equal(new[] { SetAsideText.Root(temp.AppRoot.FullPath, aside, true) }, composition.StartupWarnings);
+        var warning = Assert.Single(composition.StartupWarnings);
+        Assert.Equal(warning.IndexOf(aside, StringComparison.Ordinal), warning.LastIndexOf(aside, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Create_UntrustedRootWithoutHistory_WarningWithoutHistoryClause()
+    {
+        using var temp = new TempDirectory();
+        Directory.CreateDirectory(temp.Sub(@"app\logs"));
+        File.WriteAllText(temp.Sub(@"app\logs\stary.log"), "x");
+        ForeignAcl.Apply(temp.Sub("app"));
+
+        var composition = AppComposition.Create(temp.AppRoot, null);
+
+        var aside = Assert.Single(Directory.GetDirectories(temp.Root, "app.untrusted-*"));
+        Assert.Equal(new[] { SetAsideText.Root(temp.AppRoot.FullPath, aside, false) }, composition.StartupWarnings);
+        var warning = Assert.Single(composition.StartupWarnings);
+        Assert.Equal(warning.IndexOf(aside, StringComparison.Ordinal), warning.LastIndexOf(aside, StringComparison.Ordinal));
+        Assert.DoesNotContain("historia zmian", warning, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Create_SecondStartAfterRootAside_OnlyHistoryWarning()
+    {
+        using var temp = new TempDirectory();
+        new JsonFileJournalStore(temp.AppRoot, "PC-01", new FixedClock()).Save(new JournalDocument { Machine = "PC-01" });
+        ForeignAcl.Apply(temp.Sub("app"));
+        AppComposition.Create(temp.AppRoot, null);
+        var aside = Assert.Single(Directory.GetDirectories(temp.Root, "app.untrusted-*"));
+
+        var second = AppComposition.Create(temp.AppRoot, null);
+
+        Assert.Equal(new[] { SetAsideText.History(Path.Combine(aside, "journal", "journal.json")) }, second.StartupWarnings);
     }
 
     [Fact]
@@ -133,7 +180,8 @@ public class AppCompositionTests
 
         var composition = AppComposition.Create(temp.AppRoot, null);
 
-        Assert.Contains(composition.StartupWarnings, w => w.Contains("journal.untrusted-"));
+        var aside = Assert.Single(Directory.GetDirectories(temp.Sub("app"), "journal.untrusted-*"));
+        Assert.Equal(new[] { SetAsideText.History(Path.Combine(aside, "journal.json")) }, composition.StartupWarnings);
     }
 
     [Fact]

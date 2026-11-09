@@ -1,5 +1,6 @@
 using System;
 using DSOptimizer.Core.Gui;
+using DSOptimizer.Core.Localization;
 using Xunit;
 
 namespace DSOptimizer.Tests.Unit.Gui;
@@ -110,14 +111,37 @@ public class LogLineTextTests
     }
 
     [Fact]
-    public void PathMode_InsideProtectedRoot_CopyOnlyWithoutCheckingFile()
+    public void PathMode_InsideProtectedRootExistingFile_SaveCopy()
+        => Assert.Equal(LogPathMode.SaveCopy, LogLineText.PathMode(@"C:\ProgramData\DSOptimizer\logs\winget\a.log", Root, _ => true));
+
+    [Fact]
+    public void PathMode_InsideProtectedRootMissingOrFolder_TextOnly()
+        => Assert.Equal(LogPathMode.TextOnly, LogLineText.PathMode(@"C:\ProgramData\DSOptimizer\logs", Root, _ => false));
+
+    [Theory]
+    [InlineData(LogPathMode.Reveal, true)]
+    [InlineData(LogPathMode.RevealMissing, true)]
+    [InlineData(LogPathMode.CopyOnly, true)]
+    [InlineData(LogPathMode.SaveCopy, false)]
+    [InlineData(LogPathMode.TextOnly, false)]
+    [InlineData(LogPathMode.None, false)]
+    public void OffersCopyPath_NeverForProgramFolder(LogPathMode mode, bool expected)
+        => Assert.Equal(expected, LogLineText.OffersCopyPath(mode));
+
+    [Fact]
+    public void SaveCopyTexts_Pinned()
     {
-        var checkedFile = false;
-
-        var mode = LogLineText.PathMode(@"C:\ProgramData\DSOptimizer\reports\r.txt", Root, _ => checkedFile = true);
-
-        Assert.Equal(LogPathMode.CopyOnly, mode);
-        Assert.False(checkedFile);
+        Assert.Equal("Zapisz kopię…", LogLineText.SaveCopyLabel);
+        Assert.Equal(@"Zapisano kopię: E:\a.log", LogLineText.CopySaved(@"E:\a.log"));
+        Assert.Equal(@"Nie zapisano kopii w E:\a.log: brak miejsca", LogLineText.CopyNotSaved(@"E:\a.log", "brak miejsca"));
+        Assert.Equal("Nie zapisano kopii: brak miejsca", LogLineText.CopyFailed("brak miejsca"));
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("Save a copy…", LogLineText.SaveCopyLabel);
+            Assert.Equal(@"Copy saved: E:\a.log", LogLineText.CopySaved(@"E:\a.log"));
+            Assert.Equal(@"Couldn't save the copy to E:\a.log: no space", LogLineText.CopyNotSaved(@"E:\a.log", "no space"));
+            Assert.Equal("Couldn't save the copy: no space", LogLineText.CopyFailed("no space"));
+        }
     }
 
     [Fact]

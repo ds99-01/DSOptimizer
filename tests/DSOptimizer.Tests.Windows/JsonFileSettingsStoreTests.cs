@@ -5,6 +5,7 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Settings;
+using DSOptimizer.Core.Storage;
 using DSOptimizer.Tests.Windows.Support;
 using DSOptimizer.Windows;
 using Xunit;
@@ -91,9 +92,7 @@ public class JsonFileSettingsStoreTests
         Assert.Equal(AppSettings.Default, result.Settings);
         Assert.False(File.Exists(store.FilePath));
         var aside = Assert.Single(Directory.GetFiles(temp.Sub("app"), "settings.json.untrusted-*"));
-        Assert.Equal(
-            $"Plik ustawień miał niezaufanego właściciela lub uprawnienia i został odłożony: {aside}. Używam ustawień domyślnych.",
-            result.Warning);
+        Assert.Equal(SetAsideText.Settings(aside), result.Warning);
     }
 
     [Fact]

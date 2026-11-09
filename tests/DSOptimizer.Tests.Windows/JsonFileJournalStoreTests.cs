@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using DSOptimizer.Core.Journal;
+using DSOptimizer.Core.Storage;
 using DSOptimizer.Tests.Windows.Support;
 using DSOptimizer.Windows;
 using Xunit;
@@ -54,7 +55,7 @@ public class JsonFileJournalStoreTests
         Assert.Empty(result.Document.Entries);
         Assert.NotNull(result.Warning);
         var aside = Assert.Single(Directory.GetDirectories(temp.Sub("app"), "journal.untrusted-*"));
-        Assert.Contains(Path.Combine(aside, "journal.json"), result.Warning, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(SetAsideText.History(Path.Combine(aside, "journal.json")), result.Warning);
     }
 
     [Fact]
@@ -70,7 +71,7 @@ public class JsonFileJournalStoreTests
         Assert.Empty(result.Document.Entries);
         var aside = Assert.Single(Directory.GetDirectories(temp.Root, "app.untrusted-*"));
         Assert.NotNull(result.Warning);
-        Assert.Contains(Path.Combine(aside, "journal", "journal.json"), result.Warning, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(SetAsideText.History(Path.Combine(aside, "journal", "journal.json")), result.Warning);
     }
 
     [Fact]
@@ -198,9 +199,9 @@ public class JsonFileJournalStoreTests
         var result = store.Load();
 
         Assert.Empty(result.Document.Entries);
-        Assert.Contains("niezaufanego właściciela", result.Warning, StringComparison.Ordinal);
         Assert.False(File.Exists(store.FilePath));
-        Assert.Single(Directory.GetFiles(temp.Sub(@"app\journal"), "journal.json.untrusted-*"));
+        var aside = Assert.Single(Directory.GetFiles(temp.Sub(@"app\journal"), "journal.json.untrusted-*"));
+        Assert.Equal(SetAsideText.History(aside), result.Warning);
     }
 
     [Fact]
@@ -233,9 +234,9 @@ public class JsonFileJournalStoreTests
 
         var result = store.Load();
 
-        Assert.Contains("niezaufanego", result.Warning, StringComparison.Ordinal);
         Assert.False(File.Exists(store.FilePath));
-        Assert.Single(Directory.GetFiles(temp.Sub(@"app\journal"), "journal.json.untrusted-*"));
+        var aside = Assert.Single(Directory.GetFiles(temp.Sub(@"app\journal"), "journal.json.untrusted-*"));
+        Assert.Equal(SetAsideText.History(aside), result.Warning);
     }
 
     [Fact]

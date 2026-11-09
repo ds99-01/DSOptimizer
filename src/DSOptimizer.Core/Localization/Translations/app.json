@@ -360,6 +360,14 @@
     {
       "pl": "{0}, użytkownik {1}",
       "en": "{0}, user {1}"
+    },
+    {
+      "pl": "Pliki logu (*.log)|*.log",
+      "en": "Log files (*.log)|*.log"
+    },
+    {
+      "pl": "Pliki tekstowe (*.txt)|*.txt",
+      "en": "Text files (*.txt)|*.txt"
     }
   ]
 }

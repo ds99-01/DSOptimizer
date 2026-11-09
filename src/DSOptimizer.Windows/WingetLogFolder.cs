@@ -4,6 +4,7 @@ using System.IO;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Install;
 using DSOptimizer.Core.Localization;
+using DSOptimizer.Core.Storage;
 
 namespace DSOptimizer.Windows;
 
@@ -57,5 +58,5 @@ public sealed class WingetLogFolder : IWingetLogs
     }
 
     private void Warn(string aside)
-        => _log.Warn(L.T("Instalacja"), L.F("Katalog {0} miał niezaufanego właściciela lub uprawnienia i został odłożony. Utworzono nowy.", aside));
+        => _log.Warn(L.T("Instalacja"), SetAsideText.Folder(aside));
 }

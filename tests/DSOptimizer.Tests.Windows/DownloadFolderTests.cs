@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Storage;
 using DSOptimizer.Tests.Windows.Support;
 using DSOptimizer.Windows;
 using Xunit;
@@ -81,7 +82,7 @@ public class DownloadFolderTests
 
         var aside = Assert.Single(Directory.GetDirectories(root.FullPath, "downloads.untrusted-*"));
         Assert.True(File.Exists(Path.Combine(aside, "stary.msi")));
-        Assert.Contains(log.Warnings, w => w.Contains(aside));
+        Assert.Contains(SetAsideText.Folder(aside), log.Warnings);
         Assert.True(SecureDirectory.IsTrustedDirectory(root.DownloadsDirectory));
         Assert.Equal(root.DownloadsDirectory, Path.GetDirectoryName(path));
     }

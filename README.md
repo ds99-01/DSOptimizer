@@ -104,8 +104,12 @@ ask it to: it downloads WinUtil and RustDesk from their authors' GitHub, and ins
 through winget from the Microsoft source. The "Preparation" page opens manufacturers' pages and
 Google in your browser, but sends nothing by itself. The measurement of the program's connections is in the [network report for version 4.0.6](docs/zrodla/2026-11-08-v4-0-6-pomiar-sieci.md) (in Polish).
 
-Change history, logs and reports stay on the computer, in the `%ProgramData%\DSOptimizer` folder. When you run the
-program from a USB drive, a copy of the log and reports is also saved next to `DSOptimizer.exe`.
+Change history and logs stay on the computer, in the `%ProgramData%\DSOptimizer` folder, which only administrators can
+open. Don't open it in File Explorer with "Continue": Windows then permanently gives your account access to the folder,
+and on the next start the program sets the whole folder aside, change history included, and starts from scratch. A file
+from this folder shown in the log panel (for example a winget log) can be saved elsewhere with "Save a copy…". The
+specification report is saved where you choose in the "Save As" window. When you run the program from a USB drive, a
+copy of the log and the report is also saved next to `DSOptimizer.exe`.
 The specification report contains disk serial numbers, so keep that in mind before sharing the drive or the report.
 
 ## What can and cannot be undone

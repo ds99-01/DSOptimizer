@@ -18,7 +18,7 @@ namespace DSOptimizer.Windows;
 /// </summary>
 public sealed class ShellFileRevealer : IFileRevealer
 {
-    private static string RefusalInsideProgramDirectory => L.T("Ten plik leży w katalogu programu – skopiuj ścieżkę zamiast otwierać.");
+    private static string RefusalInsideProgramDirectory => L.T("Tej ścieżki program nie pokazuje w Eksploratorze.");
 
     private readonly Func<ProcessStartInfo, Process?> _start;
     private readonly IExplorerProcessQuery _explorers;
@@ -65,7 +65,7 @@ public sealed class ShellFileRevealer : IFileRevealer
         // wskazujących na katalog chroniony; tych przypadków nie rozstrzygamy, bo to druga linia obrony, a pierwszą jest ukrycie linku w UI.
         if (!LogPathPolicy.CanReveal(path, _protectedRoot) || IsUncToOwnMachine(path))
         {
-            throw new OperationException(OperationErrorKind.Unexpected, RefusalInsideProgramDirectory);
+            throw new OperationException(OperationErrorKind.AccessDenied, RefusalInsideProgramDirectory);
         }
 
         // Sprawdzamy i uruchamiamy dokładnie tę samą, znormalizowaną ścieżkę.

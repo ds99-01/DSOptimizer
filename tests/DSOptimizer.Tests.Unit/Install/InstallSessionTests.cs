@@ -506,6 +506,26 @@ public class InstallSessionTests
     }
 
     [Fact]
+    public void Install_FailedWithWingetLog_LineCarriesLogPath()
+    {
+        var f = new Fixture();
+        f.InstallResult = args => IdOf(args) switch
+        {
+            "VideoLAN.VLC" => FakeWingetRunner.Exit(0x8A150011u),
+            _ => f.AddsProgram(args),
+        };
+
+        var report = f.Session.Install(new[] { Entry("install.vlc"), Entry("install.firefox") }, null, null);
+
+        var vlc = report.Lines.Single(line => line.Text.StartsWith("VLC:", StringComparison.Ordinal));
+        Assert.False(string.IsNullOrEmpty(vlc.Path));
+        Assert.StartsWith(@"C:\dso-logs\winget\VideoLAN.VLC-", vlc.Path, StringComparison.Ordinal);
+        Assert.Contains(vlc.Path!, vlc.Text, StringComparison.Ordinal);
+        var firefox = report.Lines.Single(line => line.Text.StartsWith("Firefox:", StringComparison.Ordinal));
+        Assert.Null(firefox.Path);
+    }
+
+    [Fact]
     public void Install_ReaderWarningsAndItemWarnings_InLines()
     {
         var f = new Fixture();

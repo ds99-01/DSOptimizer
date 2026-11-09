@@ -44,11 +44,12 @@ public partial class MainWindow
     private const string RunIconName = "RunIcon";
 
     /// <summary>
-    /// <paramref name="shell"/> pokazuje plik z linku w dzienniku (poza wątkiem UI); ścieżki w <paramref name="protectedRoot"/>
-    /// (katalog programu, <c>%ProgramData%\DSOptimizer</c>) dziennik tylko kopiuje, nie otwiera. <paramref name="theme"/> po
+    /// <paramref name="shell"/> pokazuje plik z linku w dzienniku (poza wątkiem UI); ścieżek w <paramref name="protectedRoot"/>
+    /// (katalog programu, <c>%ProgramData%\DSOptimizer</c>) dziennik nie otwiera ani nie podsuwa do skopiowania, a istniejący plik
+    /// zapisuje w innym miejscu przez <paramref name="saveCopy"/> („Zapisz kopię…”). <paramref name="theme"/> po
     /// <c>Loaded</c> zaczyna śledzić motyw Windows (gdy ustawienie to „Systemowy”).
     /// </summary>
-    public MainWindow(MainViewModel viewModel, ILog log, ShellActions shell, ThemeController theme, string protectedRoot)
+    public MainWindow(MainViewModel viewModel, ILog log, ShellActions shell, ThemeController theme, string protectedRoot, LogCopySaver saveCopy)
     {
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         _log = log ?? throw new ArgumentNullException(nameof(log));
@@ -56,7 +57,7 @@ public partial class MainWindow
         DataContext = viewModel;
         InitializeComponent();
         Title = $"{ProductInfo.Name} {ProductInfo.Version}";
-        _logView = new LogView(LogBox, viewModel.LogLines, shell, protectedRoot, log);
+        _logView = new LogView(LogBox, viewModel.LogLines, shell, protectedRoot, log, saveCopy);
         // Fokus klawiatury zostaje na wierszu po Refresh widoku (detekcja, „Odśwież stan” przy filtrze albo wyszukiwaniu)
         // i wraca na wiersz, gdy „Uruchom” robi się nieaktywne w trakcie operacji.
         _itemFocus = new ListFocusKeeper(ItemList, item => item is ItemViewModel row ? row.Id : null);

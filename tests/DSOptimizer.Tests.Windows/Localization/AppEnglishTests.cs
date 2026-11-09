@@ -239,6 +239,16 @@ public class AppEnglishTests
         }
     }
 
+    [Fact]
+    public void SaveDialogFilters_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal("Text files (*.txt)|*.txt", WpfSaveFileDialog.FilterFor("a.txt"));
+            Assert.Equal("Log files (*.log)|*.log", WpfSaveFileDialog.FilterFor("b.LOG"));
+        }
+    }
+
     /// <summary>Plik repozytorium: katalog z <c>DSOptimizer.sln</c> nad katalogiem wyjściowym testów.</summary>
     private static string RepoFile(params string[] parts)
     {

@@ -276,6 +276,7 @@ public sealed class InstallSession : IInstallPageSession
         {
             var result = batch.Results[i];
             var title = i < install.Items.Count ? install.Items[i].Title : result.TweakId;
+            var logPath = i < install.Items.Count ? install.Items[i].LogPath : null;
             if (result.Outcome == TweakOutcome.Skipped && string.Equals(result.Message, TweakEngine.StoppedMessage, StringComparison.Ordinal))
             {
                 // Jedno zdanie zamiast „Nie wykonano – ” + „Pominięte – zatrzymano.” (po angielsku status powtórzyłby się dwa razy).
@@ -290,7 +291,10 @@ public sealed class InstallSession : IInstallPageSession
                 text += " – " + GuiText.OneLine(detail, GuiText.MaxResultMessageLength);
             }
 
-            lines.Add(Line(LevelOf(result.Outcome), text));
+            // Log winget/MSI leży w katalogu programu, więc ścieżka w Path daje w dzienniku „Zapisz kopię…”. Tylko gdy jest w tekście
+            // (GuiText.OneLine mogło ją uciąć); inaczej dziennik dopisałby ją po tekście.
+            var path = logPath is not null && text.IndexOf(logPath, StringComparison.Ordinal) >= 0 ? logPath : null;
+            lines.Add(Line(LevelOf(result.Outcome), text, path));
             lines.AddRange(result.Warnings.Select(warning => Line(GuiLogLevel.Warning, warning)));
         }
 
@@ -344,6 +348,8 @@ public sealed class InstallSession : IInstallPageSession
         Lines = new[] { Line(GuiLogLevel.Warning, text) },
     };
 
-    private GuiLogLine Line(GuiLogLevel level, string text) => new(_clock.UtcNow, level, text);
+    private GuiLogLine Line(GuiLogLevel level, string text) => Line(level, text, null);
+
+    private GuiLogLine Line(GuiLogLevel level, string text, string? path) => new(_clock.UtcNow, level, text, path);
 }
 

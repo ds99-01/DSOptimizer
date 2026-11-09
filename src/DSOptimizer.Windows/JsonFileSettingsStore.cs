@@ -7,6 +7,7 @@ using System.Text;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Settings;
+using DSOptimizer.Core.Storage;
 using Newtonsoft.Json;
 
 namespace DSOptimizer.Windows;
@@ -49,7 +50,7 @@ public sealed class JsonFileSettingsStore : ISettingsStore
             {
                 var untrustedPath = Path.Combine(_root.FullPath, $"{FileName}.untrusted-{Stamp()}");
                 File.Move(FilePath, untrustedPath);
-                return Defaults(L.F("Plik ustawień miał niezaufanego właściciela lub uprawnienia i został odłożony: {0}. Używam ustawień domyślnych.", untrustedPath));
+                return Defaults(SetAsideText.Settings(untrustedPath));
             }
 
             var length = new FileInfo(FilePath).Length;

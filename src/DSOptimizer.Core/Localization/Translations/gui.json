@@ -1138,6 +1138,22 @@
       "en": "Couldn't save the report to {0}: {1}"
     },
     {
+      "pl": "Zapisz kopię…",
+      "en": "Save a copy…"
+    },
+    {
+      "pl": "Zapisano kopię: {0}",
+      "en": "Copy saved: {0}"
+    },
+    {
+      "pl": "Nie zapisano kopii w {0}: {1}",
+      "en": "Couldn't save the copy to {0}: {1}"
+    },
+    {
+      "pl": "Nie zapisano kopii: {0}",
+      "en": "Couldn't save the copy: {0}"
+    },
+    {
       "pl": "Schowek zgłosił błąd 0x{0:X8} ({1}), ale tekst jest w schowku – uznano za skopiowane.",
       "en": "The clipboard reported error 0x{0:X8} ({1}), but the text is on the clipboard – treated as copied."
     },

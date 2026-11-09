@@ -74,8 +74,9 @@ public class MirrorPathGuardTests
         Directory.CreateDirectory(exe);
         Junction.Create(Path.Combine(exe, "logs"), target);
         var writer = new ReportFileWriter(temp.AppRoot, Path.Combine(exe, "logs", "PC"));
+        Directory.CreateDirectory(temp.Sub("pulpit"));
 
-        var results = writer.Save("r.txt", "tekst");
+        var results = writer.Save(temp.Sub(@"pulpit\r.txt"), "tekst");
 
         Assert.True(results[0].Saved);
         Assert.False(results[1].Saved);

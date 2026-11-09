@@ -14,6 +14,7 @@ using DSOptimizer.Core.Journal;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Scripts;
 using DSOptimizer.Core.Settings;
+using DSOptimizer.Core.Storage;
 using DSOptimizer.Tests.Windows.Support;
 using DSOptimizer.Windows;
 using DSOptimizer.Windows.Apps;
@@ -107,7 +108,26 @@ public class WindowsEnglishTests
         }
 
         var aside = Assert.Single(Directory.GetFiles(temp.Sub(@"app\journal"), "journal.json.untrusted-*"));
-        Assert.Equal($"The journal had an untrusted owner or permissions and was set aside: {aside}. A new one was created.", result.Warning);
+        Assert.Equal($"The change history had its permissions changed, so the program set it aside and keeps a new one; this usually happens after clicking \"Continue\" in File Explorer. Previous history: {aside}. For changes made before it was set aside, \"Undo\" restores the Windows default values, not the state before the change. Don't open the program folder in File Explorer.", result.Warning);
+    }
+
+    [Fact]
+    public void AppComposition_UntrustedRoot_English()
+    {
+        using var temp = new TempDirectory();
+        Directory.CreateDirectory(temp.Sub("app"));
+        ForeignAcl.Apply(temp.Sub("app"));
+
+        AppComposition composition;
+        using (L.Use(UiLanguage.English))
+        {
+            composition = AppComposition.Create(temp.AppRoot, null);
+        }
+
+        var aside = Assert.Single(Directory.GetDirectories(temp.Root, "app.untrusted-*"));
+        Assert.Equal(
+            new[] { $"The program folder {temp.AppRoot.FullPath} had its permissions changed, so the program set it aside and created a new one. This usually happens after clicking \"Continue\" in File Explorer for this folder. The previous files are in {aside}. The program starts with default settings. Don't open the program folder in File Explorer, and save the report with the \"Save report\" button." },
+            composition.StartupWarnings);
     }
 
     [Fact]
@@ -147,7 +167,7 @@ public class WindowsEnglishTests
         }
 
         var aside = Assert.Single(Directory.GetFiles(temp.Sub("app"), "settings.json.untrusted-*"));
-        Assert.Equal($"The settings file had an untrusted owner or permissions and was set aside: {aside}. Using default settings.", result.Warning);
+        Assert.Equal($"The settings file had its permissions changed, so the program set it aside and uses default settings; this usually happens after clicking \"Continue\" in File Explorer. Previous file: {aside}. Don't open the program folder in File Explorer.", result.Warning);
     }
 
     [Fact]
@@ -390,6 +410,20 @@ public class WindowsEnglishTests
         }
 
         Assert.Equal("The AppX read script ended with code 3.", ex.Message);
+    }
+
+    [Fact]
+    public void ReportRefusals_English()
+    {
+        using (L.Use(UiLanguage.English))
+        {
+            Assert.Equal(
+                "the program doesn't save files in this location (the program folder is only available with administrator permissions) – choose another location, such as the Desktop",
+                ReportFileWriter.ProtectedLocationReason);
+            Assert.Equal(
+                @"the path leads through a link (junction or symbolic link): C:\x\j – choose another location",
+                ReportFileWriter.LinkReason(@"C:\x\j"));
+        }
     }
 
     /// <summary>Błąd formatu <c>--apps-catalog</c>: komunikat po angielsku, fabryka usług (winget) nigdy nie jest wołana.</summary>

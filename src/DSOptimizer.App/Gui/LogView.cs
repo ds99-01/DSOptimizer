@@ -19,9 +19,11 @@ namespace DSOptimizer.App.Gui;
 /// <summary>
 /// Dziennik okna w <see cref="RichTextBox"/> tylko do odczytu: jeden akapit na linię <see cref="UiLogSink.Lines"/> (źródło prawdy;
 /// widok dopisuje akapit, usuwa pierwszy przy limicie i przebudowuje się przy innej zmianie). Tekst można zaznaczyć myszą i skopiować.
-/// Ścieżka linii (<see cref="GuiLogLine.Path"/>) poza katalogiem programu jest linkiem „Otwórz w Eksploratorze”, w katalogu
-/// programu zwykłym tekstem z ikoną „Kopiuj ścieżkę” (<see cref="LogLineText.PathMode"/>). Każde kopiowanie idzie przez
-/// <see cref="ClipboardCopy"/> (schowek pod RustDesk bywa zajęty).
+/// Ścieżka linii (<see cref="GuiLogLine.Path"/>) poza katalogiem programu jest linkiem „Otwórz w Eksploratorze”, ścieżka
+/// niebezwzględna zwykłym tekstem z ikoną „Kopiuj ścieżkę” (<see cref="LogLineText.PathMode"/>). Ścieżki w katalogu programu
+/// dziennik nigdy nie podsuwa do skopiowania (ani przyciskiem, ani w menu): wklejona w Eksploratorze bez uprawnień administratora
+/// kończy się „Kontynuuj”, które dopisuje konto do DACL folderu. Istniejący plik ma tam „Zapisz kopię…” (<see cref="LogCopySaver"/>),
+/// reszta to sam tekst. Każde kopiowanie idzie przez <see cref="ClipboardCopy"/> (schowek pod RustDesk bywa zajęty).
 /// </summary>
 internal sealed class LogView
 {
@@ -41,13 +43,14 @@ internal sealed class LogView
     private readonly ShellActions _shell;
     private readonly string _protectedRoot;
     private readonly ILog _log;
+    private readonly LogCopySaver _saveCopy;
     private readonly MenuItem _copyPathItem;
     private readonly MenuItem _revealItem;
 
     private string? _menuPath;
     private Hyperlink? _menuLink;
 
-    public LogView(RichTextBox box, ObservableCollection<GuiLogLine> lines, ShellActions shell, string protectedRoot, ILog log)
+    public LogView(RichTextBox box, ObservableCollection<GuiLogLine> lines, ShellActions shell, string protectedRoot, ILog log, LogCopySaver saveCopy)
     {
         _box = box ?? throw new ArgumentNullException(nameof(box));
         _lines = lines ?? throw new ArgumentNullException(nameof(lines));
@@ -56,6 +59,7 @@ internal sealed class LogView
             ? throw new ArgumentException("Katalog chroniony nie może być pusty.", nameof(protectedRoot))
             : protectedRoot;
         _log = log ?? throw new ArgumentNullException(nameof(log));
+        _saveCopy = saveCopy ?? throw new ArgumentNullException(nameof(saveCopy));
 
         var document = new FlowDocument { PagePadding = new Thickness(0) };
         _box.Document = document;
@@ -126,7 +130,9 @@ internal sealed class LogView
 
         _menuPath = (near?.Paragraph?.Tag as GuiLogLine)?.Path;
         _menuLink = FindLink(exact);
-        _copyPathItem.Visibility = string.IsNullOrEmpty(_menuPath) ? Visibility.Collapsed : Visibility.Visible;
+        // „Kopiuj ścieżkę” nigdy dla katalogu programu (ta sama reguła co przycisk w linii).
+        var offersCopy = !string.IsNullOrEmpty(_menuPath) && LogLineText.OffersCopyPath(LogLineText.PathMode(_menuPath, _protectedRoot, File.Exists));
+        _copyPathItem.Visibility = offersCopy ? Visibility.Visible : Visibility.Collapsed;
         _revealItem.Visibility = _menuLink is null ? Visibility.Collapsed : Visibility.Visible;
         _revealItem.IsEnabled = _menuLink?.IsEnabled == true;
     }
@@ -270,6 +276,13 @@ internal sealed class LogView
                 inlines.Add(new Run(parts.Before + parts.Path));
                 inlines.Add(new InlineUIContainer(CreateCopyButton(parts.Path!)) { BaselineAlignment = BaselineAlignment.Center });
                 break;
+            case LogPathMode.SaveCopy:
+                inlines.Add(new Run(parts.Before + parts.Path));
+                inlines.Add(new InlineUIContainer(CreateSaveCopyButton(parts.Path!)) { BaselineAlignment = BaselineAlignment.Center });
+                break;
+            case LogPathMode.TextOnly:
+                inlines.Add(new Run(parts.Before + parts.Path));
+                break;
             default:
                 inlines.Add(new Run(parts.Before));
                 break;
@@ -310,6 +323,30 @@ internal sealed class LogView
         AutomationProperties.SetName(button, copyPath);
         button.Click += (_, _) => CopyPath(path);
         return button;
+    }
+
+    /// <summary>„Zapisz kopię…” przy pliku z katalogu programu: styl linku tekstowego z ikoną zapisu (<c>Tag</c>), bez nowego wyglądu.</summary>
+    private Button CreateSaveCopyButton(string path)
+    {
+        var label = LogLineText.SaveCopyLabel;
+        var button = new Button { Content = label, Tag = "SaveReport", Margin = new Thickness(6, 0, 0, 0) };
+        button.SetResourceReference(FrameworkElement.StyleProperty, "TextLinkButton");
+        AutomationProperties.SetName(button, label);
+        button.Click += (_, _) => SaveCopy(path);
+        return button;
+    }
+
+    /// <summary>async void tylko dla zdarzenia kliknięcia: wyjątek nie może wyjść na wątek UI, więc idzie do dziennika.</summary>
+    private async void SaveCopy(string path)
+    {
+        try
+        {
+            await _saveCopy.SaveAsync(path).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            _log.Fail(Component, LogLineText.CopyFailed(ex.Message), ex);
+        }
     }
 
     /// <summary>

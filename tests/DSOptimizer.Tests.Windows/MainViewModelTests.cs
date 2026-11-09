@@ -364,6 +364,7 @@ public class MainViewModelTests
         var specification = new SpecificationViewModel(
             new SpecificationLoader(new WindowsHardwareReader(), log, SpecificationLoader.DefaultTimeout),
             new ReportFileWriter(temp.AppRoot, null),
+            new FakeSaveFileDialog(null),
             log,
             services.Clock,
             "TEST",

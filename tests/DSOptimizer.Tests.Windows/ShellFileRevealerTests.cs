@@ -91,7 +91,8 @@ public class ShellFileRevealerTests
     {
         var ex = Assert.Throws<OperationException>(() => Revealer().Reveal(path));
 
-        Assert.Equal("Ten plik leży w katalogu programu – skopiuj ścieżkę zamiast otwierać.", ex.Message);
+        Assert.Equal(OperationErrorKind.AccessDenied, ex.Kind);
+        Assert.Equal("Tej ścieżki program nie pokazuje w Eksploratorze.", ex.Message);
         Assert.Empty(_started);
         Assert.Equal(0, _explorers.Calls);
     }

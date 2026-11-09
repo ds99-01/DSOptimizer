@@ -38,15 +38,6 @@ public class SecureRootTests
         => Assert.Empty(typeof(SecureRoot).GetConstructors());
 
     [Fact]
-    public void ReportsDirectory_IsDirectChildOfRoot()
-    {
-        using var temp = new TempDirectory();
-        var root = temp.AppRoot;
-        Assert.Equal("reports", SecureRoot.ReportsLeafName);
-        Assert.Equal(Path.Combine(root.FullPath, "reports"), root.ReportsDirectory);
-    }
-
-    [Fact]
     public void LeafDirectories_AreDirectChildrenOfRoot()
     {
         using var temp = new TempDirectory();

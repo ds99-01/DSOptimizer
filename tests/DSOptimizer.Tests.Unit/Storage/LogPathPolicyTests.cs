@@ -52,4 +52,18 @@ public sealed class LogPathPolicyTests
     [InlineData(@"C:\ProgramData\DSOptimizer", false)]
     public void CanReveal_RootWithTrailingSlash_SameResult(string path, bool expected)
         => Assert.Equal(expected, LogPathPolicy.CanReveal(path, Root + @"\"));
+
+    [Theory]
+    [InlineData(@"C:\ProgramData\DSOptimizer", true)]
+    [InlineData(@"c:\programdata\dsoptimizer\logs\winget\a.log", true)]
+    [InlineData("C:/ProgramData/DSOptimizer/x.txt", true)]
+    [InlineData(@"C:\ProgramData\DSOptimizer.untrusted-1\a", false)]
+    [InlineData(@"E:\logs\r.txt", false)]
+    [InlineData(@"logs\r.txt", false)]
+    [InlineData(@"\\?\C:\ProgramData\DSOptimizer\a", false)]
+    [InlineData(@"\\localhost\C$\ProgramData\DSOptimizer\a", false)]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    public void IsInside_Classifies(string? path, bool expected)
+        => Assert.Equal(expected, LogPathPolicy.IsInside(path, Root));
 }

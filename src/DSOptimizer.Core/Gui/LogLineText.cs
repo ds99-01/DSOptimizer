@@ -19,8 +19,14 @@ public enum LogPathMode
     /// <summary>Link nieaktywny: ścieżkę wolno pokazać, ale pliku już nie ma.</summary>
     RevealMissing,
 
-    /// <summary>Zwykły tekst z „Kopiuj ścieżkę” (katalog programu albo ścieżka niebezwzględna).</summary>
+    /// <summary>Zwykły tekst z „Kopiuj ścieżkę”: ścieżka niebezwzględna albo inna, której nie wolno pokazać (poza katalogiem programu).</summary>
     CopyOnly,
+
+    /// <summary>Istniejący plik w katalogu programu: zwykły tekst z „Zapisz kopię…”, bez „Kopiuj ścieżkę”.</summary>
+    SaveCopy,
+
+    /// <summary>Katalog programu, pliku nie ma albo to folder: sam tekst, bez przycisków i bez „Kopiuj ścieżkę”.</summary>
+    TextOnly,
 }
 
 /// <summary>Tekst linii dziennika podzielony wokół ścieżki: <see cref="Before"/> + <see cref="Path"/> + <see cref="After"/>.</summary>
@@ -82,8 +88,8 @@ public static class LogLineText
     }
 
     /// <summary>
-    /// Link tylko dla ścieżki, którą <see cref="LogPathPolicy.CanReveal"/> pozwala pokazać w Eksploratorze; istnienie pliku
-    /// sprawdzane tylko wtedy. Reszta = samo kopiowanie.
+    /// Ścieżka w katalogu programu (<see cref="LogPathPolicy.IsInside"/>): istniejący plik = „Zapisz kopię…”, inaczej sam tekst.
+    /// Link tylko dla ścieżki, którą <see cref="LogPathPolicy.CanReveal"/> pozwala pokazać w Eksploratorze. Reszta = samo kopiowanie.
     /// </summary>
     public static LogPathMode PathMode(string? path, string protectedRoot, Func<string, bool> fileExists)
     {
@@ -97,6 +103,11 @@ public static class LogLineText
             return LogPathMode.None;
         }
 
+        if (LogPathPolicy.IsInside(path, protectedRoot))
+        {
+            return fileExists(path!) ? LogPathMode.SaveCopy : LogPathMode.TextOnly;
+        }
+
         if (!LogPathPolicy.CanReveal(path, protectedRoot))
         {
             return LogPathMode.CopyOnly;
@@ -104,6 +115,25 @@ public static class LogLineText
 
         return fileExists(path!) ? LogPathMode.Reveal : LogPathMode.RevealMissing;
     }
+
+    /// <summary>
+    /// Czy dziennik podsuwa „Kopiuj ścieżkę” (przycisk albo menu). Nigdy dla katalogu programu: wklejona w Eksploratorze bez
+    /// uprawnień administratora kończy się „Kontynuuj”, a ono dopisuje konto do DACL folderu.
+    /// </summary>
+    public static bool OffersCopyPath(LogPathMode mode)
+        => mode is LogPathMode.Reveal or LogPathMode.RevealMissing or LogPathMode.CopyOnly;
+
+    /// <summary>Przycisk przy pliku z katalogu programu; otwiera okno „Zapisz jako”.</summary>
+    public static string SaveCopyLabel => L.T("Zapisz kopię…");
+
+    /// <summary>Linia dziennika po zapisaniu kopii (ścieżka kopii = link).</summary>
+    public static string CopySaved(string path) => L.F("Zapisano kopię: {0}", path);
+
+    /// <summary>Wpis w logu po odmowie albo nieudanym zapisie kopii w <paramref name="path"/>.</summary>
+    public static string CopyNotSaved(string path, string reason) => L.F("Nie zapisano kopii w {0}: {1}", path, reason);
+
+    /// <summary>Wpis w logu po nieoczekiwanym błędzie (okno zapisu, wyjątek).</summary>
+    public static string CopyFailed(string detail) => L.F("Nie zapisano kopii: {0}", detail);
 
     /// <summary>Linia ostrzeżenia po odmowie Eksploratora: komunikat i (gdy ścieżka trafiła do schowka) „Skopiowano ścieżkę.”.</summary>
     public static string RevealFailed(string message, bool copied)

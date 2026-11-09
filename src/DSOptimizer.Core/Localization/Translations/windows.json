@@ -2,14 +2,6 @@
   "language": "en",
   "entries": [
     {
-      "pl": "Katalog roboczy {0} miał niezaufanego właściciela lub uprawnienia i został odłożony: {1}. Utworzono nowy.",
-      "en": "The working folder {0} had an untrusted owner or permissions and was set aside: {1}. A new one was created."
-    },
-    {
-      "pl": "Katalog {0} miał niezaufanego właściciela lub uprawnienia i został odłożony. Utworzono nowy.",
-      "en": "The folder {0} had an untrusted owner or permissions and was set aside. A new one was created."
-    },
-    {
       "pl": "Skrypt odczytu AppX zakończył się kodem {0}.",
       "en": "The AppX read script ended with code {0}."
     },
@@ -102,10 +94,6 @@
       "en": "explorer.exe wasn't found in the console session – HKCU changes will go to the account of the current process."
     },
     {
-      "pl": "Journal miał niezaufanego właściciela lub uprawnienia i został odłożony: {0}. Utworzono nowy.",
-      "en": "The journal had an untrusted owner or permissions and was set aside: {0}. A new one was created."
-    },
-    {
       "pl": "Journal był uszkodzony ({0}). Przeniesiono go do {1} i utworzono nowy.",
       "en": "The journal was corrupted ({0}). It was moved to {1} and a new one was created."
     },
@@ -160,14 +148,6 @@
     {
       "pl": "Nie można zserializować journala {0}: {1}",
       "en": "Can't serialize the journal {0}: {1}"
-    },
-    {
-      "pl": "Katalog journala miał niezaufanego właściciela lub uprawnienia i został odłożony – poprzedni journal nie jest używany: {0}. Utworzono nowy.",
-      "en": "The journal folder had an untrusted owner or permissions and was set aside – the previous journal isn't used: {0}. A new one was created."
-    },
-    {
-      "pl": "Plik ustawień miał niezaufanego właściciela lub uprawnienia i został odłożony: {0}. Używam ustawień domyślnych.",
-      "en": "The settings file had an untrusted owner or permissions and was set aside: {0}. Using default settings."
     },
     {
       "pl": "Plik ustawień {0} jest za duży ({1} B, limit {2} B). Używam ustawień domyślnych.",
@@ -318,8 +298,8 @@
       "en": "The folder {0} has an untrusted owner/permissions and couldn't be set aside: {1}"
     },
     {
-      "pl": "Ten plik leży w katalogu programu – skopiuj ścieżkę zamiast otwierać.",
-      "en": "This file is in the program folder – copy the path instead of opening it."
+      "pl": "Tej ścieżki program nie pokazuje w Eksploratorze.",
+      "en": "The program doesn't show this path in File Explorer."
     },
     {
       "pl": "Nieprawidłowa ścieżka pliku: {0}",
@@ -612,6 +592,14 @@
     {
       "pl": "Plik pomiaru Windows {0} jest większy niż {1} B – pominięto.",
       "en": "Windows measurement file {0} is larger than {1} B – skipped."
+    },
+    {
+      "pl": "w tym miejscu program nie zapisuje plików (folder programu jest dostępny tylko z uprawnieniami administratora) – wybierz inne miejsce, np. Pulpit",
+      "en": "the program doesn't save files in this location (the program folder is only available with administrator permissions) – choose another location, such as the Desktop"
+    },
+    {
+      "pl": "ścieżka prowadzi przez link (junction albo dowiązanie symboliczne): {0} – wybierz inne miejsce",
+      "en": "the path leads through a link (junction or symbolic link): {0} – choose another location"
     }
   ]
 }

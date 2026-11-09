@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using DSOptimizer.Core;
 using DSOptimizer.Core.Abstractions;
+using DSOptimizer.Core.Errors;
 using DSOptimizer.Core.Gui;
 using DSOptimizer.Core.Localization;
 
@@ -31,7 +32,7 @@ public sealed class ShellActions
         _log = log ?? throw new ArgumentNullException(nameof(log));
     }
 
-    /// <summary>Eksplorator z zaznaczonym plikiem; odmowa = ostrzeżenie w dzienniku i ścieżka w schowku.</summary>
+    /// <summary>Eksplorator z zaznaczonym plikiem; odmowa = ostrzeżenie w dzienniku i ścieżka w schowku (poza odmową AccessDenied dla ścieżki z katalogu programu – tej nie kopiujemy).</summary>
     public async Task RevealAsync(string path)
     {
         if (path is null)
@@ -47,11 +48,13 @@ public sealed class ShellActions
         _busy = true;
         try
         {
-            var refusal = await RunAsync(() => _revealer.Reveal(path)).ConfigureAwait(true);
-            if (refusal is not null)
+            var failure = await RunAsync(() => _revealer.Reveal(path)).ConfigureAwait(true);
+            if (failure is not null)
             {
-                var copied = Copy(path, L.T("Nie udało się skopiować ścieżki do schowka."));
-                _log.Warn(Component, LogLineText.RevealFailed(refusal, copied));
+                // Odmowa dla ścieżki z katalogu programu (AccessDenied): nie kopiujemy jej, bo wklejona do Eksploratora psuje ACL folderu.
+                var refusedPath = failure is OperationException { Kind: OperationErrorKind.AccessDenied };
+                var copied = !refusedPath && Copy(path, L.T("Nie udało się skopiować ścieżki do schowka."));
+                _log.Warn(Component, LogLineText.RevealFailed(failure.Message, copied));
             }
         }
         finally
@@ -98,7 +101,7 @@ public sealed class ShellActions
             if (refusal is not null)
             {
                 var copied = Copy(url, L.T("Nie udało się skopiować adresu do schowka."));
-                _log.Warn(Component, GuiText.OpenUrlFailed(refusal, copied));
+                _log.Warn(Component, GuiText.OpenUrlFailed(refusal.Message, copied));
             }
         }
         finally
@@ -107,8 +110,8 @@ public sealed class ShellActions
         }
     }
 
-    /// <summary>Akcja poza wątkiem UI; zwraca powód odmowy albo null, gdy się udała.</summary>
-    private static async Task<string?> RunAsync(Action action)
+    /// <summary>Akcja poza wątkiem UI; zwraca wyjątek odmowy albo null, gdy się udała.</summary>
+    private static async Task<Exception?> RunAsync(Action action)
     {
         try
         {
@@ -117,7 +120,7 @@ public sealed class ShellActions
         }
         catch (Exception ex)
         {
-            return ex.Message;
+            return ex;
         }
     }
 

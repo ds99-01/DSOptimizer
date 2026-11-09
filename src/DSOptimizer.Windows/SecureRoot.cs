@@ -6,7 +6,7 @@ namespace DSOptimizer.Windows;
 
 /// <summary>
 /// Jedyny zaufany korzeń katalogów aplikacji (allowlista, nie denylista): <c>%ProgramData%\DSOptimizer</c>.
-/// Podkatalogi (<c>logs</c>, <c>journal</c>, <c>run</c>, <c>reports</c>, <c>backups</c>, <c>downloads</c>) powstają wyłącznie bezpośrednio pod korzeniem.
+/// Podkatalogi (<c>logs</c>, <c>journal</c>, <c>run</c>, <c>backups</c>, <c>downloads</c>) powstają wyłącznie bezpośrednio pod korzeniem.
 /// Konstruktor jest wewnętrzny (tylko <see cref="ProgramData"/> i testy), więc kod spoza zestawu nie poda własnej ścieżki.
 /// </summary>
 public sealed class SecureRoot
@@ -14,7 +14,6 @@ public sealed class SecureRoot
     public const string LogsLeafName = "logs";
     public const string JournalLeafName = "journal";
     public const string RunLeafName = "run";
-    public const string ReportsLeafName = "reports";
     public const string BackupsLeafName = "backups";
     public const string DownloadsLeafName = "downloads";
 
@@ -75,8 +74,6 @@ public sealed class SecureRoot
     public string JournalDirectory => Path.Combine(FullPath, JournalLeafName);
 
     public string RunDirectory => Path.Combine(FullPath, RunLeafName);
-
-    public string ReportsDirectory => Path.Combine(FullPath, ReportsLeafName);
 
     /// <summary>Kopie napraw (polityki i typy startu usług WU); tworzony dopiero przy pierwszym zapisie kopii.</summary>
     public string BackupsDirectory => Path.Combine(FullPath, BackupsLeafName);

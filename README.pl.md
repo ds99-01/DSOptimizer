@@ -101,8 +101,12 @@ w Ustawieniach; tryb wiersza poleceń nigdy tego nie sprawdza. Poza tym łączy 
 i RustDesk pobiera z GitHuba ich autorów, a instalacja i wyszukiwanie aplikacji idą przez winget ze źródła
 Microsoftu. Strona „Przygotowanie” otwiera w przeglądarce strony producentów i Google, ale sama niczego nie wysyła. Pomiar połączeń programu jest w [raporcie sieciowym wersji 4.0.6](docs/zrodla/2026-11-08-v4-0-6-pomiar-sieci.md).
 
-Historia zmian, logi i raporty zostają na komputerze, w folderze `%ProgramData%\DSOptimizer`. Gdy program
-uruchomisz z pendrive'a, kopia logu i raportów trafia też obok `DSOptimizer.exe`.
+Historia zmian i logi zostają na komputerze, w folderze `%ProgramData%\DSOptimizer`, który otworzą tylko
+administratorzy. Nie otwieraj go w Eksploratorze przez „Kontynuuj”: Windows daje wtedy Twojemu kontu stały dostęp do
+folderu, a program przy następnym starcie odkłada cały folder, razem z historią zmian, i zaczyna od nowa. Plik z tego
+folderu pokazany w dzienniku (np. log winget) zapiszesz w innym miejscu przyciskiem „Zapisz kopię…”. Raport ze
+specyfikacją zapisuje się tam, gdzie wskażesz w oknie „Zapisz jako”. Gdy program uruchomisz z pendrive'a, kopia logu
+i raportu trafia też obok `DSOptimizer.exe`.
 Raport ze specyfikacją zawiera numery seryjne dysków – pamiętaj o tym, zanim udostępnisz pendrive'a albo raport.
 
 ## Co da się cofnąć, a co nie

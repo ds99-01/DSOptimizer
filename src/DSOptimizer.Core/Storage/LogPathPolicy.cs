@@ -4,29 +4,62 @@ using System.IO;
 namespace DSOptimizer.Core.Storage;
 
 /// <summary>
-/// Reguła „link czy kopiowanie” dla ścieżki w dzienniku: lokalizację w Eksploratorze można pokazać tylko dla ścieżki
-/// bezwzględnej poza katalogiem programu (<c>%ProgramData%\DSOptimizer</c> ma chroniony DACL), tam zostaje samo „Kopiuj ścieżkę”.
-/// Reguła jest leksykalna: dowiązania symboliczne, junctions i nazwy 8.3 nie są rozwiązywane; drugą linią obrony jest ShellFileRevealer.
+/// Reguła „link czy nie” dla ścieżki w dzienniku: lokalizację w Eksploratorze można pokazać tylko dla ścieżki bezwzględnej poza
+/// katalogiem programu (<c>%ProgramData%\DSOptimizer</c> ma chroniony DACL). Ścieżki w katalogu programu (<see cref="IsInside"/>)
+/// dziennik ani nie otwiera, ani nie podsuwa do skopiowania: wklejona w Eksploratorze bez uprawnień administratora kończy się
+/// „Kontynuuj”, które dopisuje konto do DACL folderu. Reguła jest leksykalna: dowiązania symboliczne, junctions i nazwy 8.3 nie są
+/// rozwiązywane; drugą linią obrony jest ShellFileRevealer.
 /// </summary>
 public static class LogPathPolicy
 {
+    private enum Location
+    {
+        Unknown,
+        Inside,
+        Outside,
+    }
+
     /// <summary>True tylko dla ścieżki bezwzględnej (litera dysku albo UNC) leżącej poza <paramref name="protectedRoot"/>.</summary>
     public static bool CanReveal(string? path, string protectedRoot)
+    {
+        RequireRoot(protectedRoot);
+        if (string.IsNullOrWhiteSpace(path) || IsLocalOrAdministrativeUnc(path!.Replace('/', '\\')))
+        {
+            return false;
+        }
+
+        return Classify(path, protectedRoot) == Location.Outside;
+    }
+
+    /// <summary>
+    /// True dla ścieżki bezwzględnej (litera dysku albo UNC, nie ścieżka urządzenia) równej <paramref name="protectedRoot"/> albo
+    /// leżącej pod nim. Leksykalnie, bez dotykania dysku; ścieżka niebezwzględna albo niepoprawna = false.
+    /// </summary>
+    public static bool IsInside(string? path, string protectedRoot)
+    {
+        RequireRoot(protectedRoot);
+        return Classify(path, protectedRoot) == Location.Inside;
+    }
+
+    private static void RequireRoot(string protectedRoot)
     {
         if (string.IsNullOrWhiteSpace(protectedRoot))
         {
             throw new ArgumentException("Katalog chroniony nie może być pusty.", nameof(protectedRoot));
         }
+    }
 
+    private static Location Classify(string? path, string protectedRoot)
+    {
         if (string.IsNullOrWhiteSpace(path))
         {
-            return false;
+            return Location.Unknown;
         }
 
         path = path!.Replace('/', '\\');
-        if (!IsAbsolute(path) || IsDevicePath(path) || IsLocalOrAdministrativeUnc(path))
+        if (!IsAbsolute(path) || IsDevicePath(path))
         {
-            return false;
+            return Location.Unknown;
         }
 
         try
@@ -34,12 +67,12 @@ public static class LogPathPolicy
             var full = Normalize(path);
             var root = Normalize(protectedRoot);
             var inside = string.Equals(full, root, StringComparison.OrdinalIgnoreCase)
-                || full.StartsWith(root.TrimEnd('\\') +"\\", StringComparison.OrdinalIgnoreCase);
-            return !inside;
+                || full.StartsWith(root.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase);
+            return inside ? Location.Inside : Location.Outside;
         }
         catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
         {
-            return false;
+            return Location.Unknown;
         }
     }
 

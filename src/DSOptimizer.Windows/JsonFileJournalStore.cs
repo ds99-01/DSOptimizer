@@ -8,6 +8,7 @@ using System.Text;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Journal;
 using DSOptimizer.Core.Localization;
+using DSOptimizer.Core.Storage;
 using Newtonsoft.Json;
 
 namespace DSOptimizer.Windows;
@@ -53,7 +54,7 @@ public sealed class JsonFileJournalStore : IJournalStore
                 File.Move(FilePath, untrustedPath);
                 return new JournalLoadResult(
                     NewDocument(),
-                    L.F("Journal miał niezaufanego właściciela lub uprawnienia i został odłożony: {0}. Utworzono nowy.", untrustedPath));
+                    SetAsideText.History(untrustedPath));
             }
 
             var json = File.ReadAllText(FilePath, Utf8NoBom);
@@ -164,8 +165,8 @@ public sealed class JsonFileJournalStore : IJournalStore
 
     /// <summary>
     /// Brak journal.json może oznaczać, że <see cref="SecureRoot.EnsureLeaf"/> (tu albo w innym komponencie, np. FileLog)
-    /// odłożył niezaufany katalog journala lub jego rodzica jako <c>.untrusted-*</c>. Wtedy zwraca ostrzeżenie ze ścieżkami
-    /// odłożonych journali, żeby undo z wartości domyślnych nie przeszło bez słowa. Brak odłożonych kopii → null.
+    /// odłożył niezaufany katalog journala lub jego rodzica jako <c>.untrusted-*</c>. Wtedy zwraca ostrzeżenie (<see cref="SetAsideText.History"/>)
+    /// ze ścieżkami odłożonych journali, żeby undo z wartości domyślnych nie przeszło bez słowa. Brak odłożonych kopii → null.
     /// </summary>
     private string? DescribeSetAsideJournals()
     {
@@ -190,7 +191,7 @@ public sealed class JsonFileJournalStore : IJournalStore
         var found = candidates.Where(File.Exists).ToList();
         return found.Count == 0
             ? null
-            : L.F("Katalog journala miał niezaufanego właściciela lub uprawnienia i został odłożony – poprzedni journal nie jest używany: {0}. Utworzono nowy.", string.Join(", ", found));
+            : SetAsideText.History(string.Join(", ", found));
     }
 
     private string Stamp() => _clock.UtcNow.ToLocalTime().ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);

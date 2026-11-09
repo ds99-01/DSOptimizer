@@ -128,9 +128,11 @@ How to read the tables:
 | Minimalizuj | Minimize | US spelling (Style rule 7) |
 | Maksymalizuj / Przywróć | Maximize / Restore down | Window caption buttons (tooltip and screen reader name). [Window Management – Title bar controls](https://learn.microsoft.com/en-us/windows/win32/uxguide/win-window-mgt) ("Maximize/Restore down"); sentence case per Style rule 2. |
 | Kopiuj ścieżkę / Kopiuj cały dziennik / Otwórz lokalizację pliku | Copy path / Copy entire log / Open file location | Log panel context menu and link buttons |
+| Zapisz kopię… | Save a copy… | Log panel button next to a file in the program folder; opens the "Save As" window |
 | Wyczyść (Esc) / Wyczyść wyszukiwanie | Clear (Esc) / Clear search | Search box clear button (tooltip / screen reader name) |
 | Kopiuj / Kopiuj wszystko / Kopiuj wynik | Copy / Copy all / Copy result | |
 | Zapisz raport | Save report | Specification page |
+| Zapisz jako (okno Windows) | Save As | Windows file dialog title, set by Windows. unverified – title of the common Save dialog in English Windows 11 |
 | Odśwież / Odśwież stan / Odśwież listę | Refresh / Refresh status / Refresh list | |
 | Odznacz wszystko | Clear selection | "Clear" per Style rule 12 |
 | Pokaż wszystkie / Pokaż które | Show all / Show which ones | "Show which ones" = restart banner link to Change history |
@@ -299,7 +301,8 @@ How to read the tables:
 | Szukaj sterownika / Szukaj strony wsparcia / Szukaj w Google | Search for a driver / Search for a support page / Search Google | Preparation links |
 | Urządzenia z problemem / brak sterownika / wyłączone / problem, kod {0} | Devices with a problem / no driver / disabled / problem, code {0} | Device Manager error codes 28 and 22, and any other code |
 | katalog (pozycji) / katalog (na dysku) | catalog / folder | Same Polish word, two meanings: the item catalog (`--catalog`, "external catalog") vs a folder on disk ("working folder", "journal folder") |
-| niezaufany właściciel lub uprawnienia / odłożony | untrusted owner or permissions / set aside | Program folders and files with a foreign owner or ACL are renamed (`.untrusted-*`) and replaced: "… was set aside. A new one was created." |
+| zmienione uprawnienia / odłożony na bok | permissions changed / set aside | Program folders and files with a foreign owner or ACL are renamed (`.untrusted-*`) and replaced: "… had its permissions changed, so the program set it aside and created a new one." |
+| folder programu | program folder | `%ProgramData%\DSOptimizer` in startup and log messages |
 | Nie można … / Brak dostępu do … / Brak uprawnień do … | Can't … / Access denied to … / No permission to … | Windows layer errors; "Błąd zapisu / odczytu / usuwania" = "Error writing / reading / deleting" |
 | klucz / podklucz / drzewo kluczy | key / subkey / key tree | Registry |
 | nazwy wartości | value names | Registry; "Error reading the value names of {0}: {1}" |
@@ -730,6 +733,7 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | klucz odzyskiwania | recovery key | [Find your BitLocker recovery key](https://support.microsoft.com/en-us/windows/security/encryption/find-your-bitlocker-recovery-key) |
 | Szyfrowanie urządzenia | Device encryption | [Device Encryption in Windows](https://support.microsoft.com/en-us/windows/security/encryption/device-encryption-in-windows) |
 | Eksplorator | File Explorer | [File Explorer in Windows](https://support.microsoft.com/en-us/windows/experience/fileexplorer/file-explorer-in-windows) |
+| Kontynuuj (Eksplorator plików, folder bez dostępu) | Continue | Button in File Explorer's prompt for a folder the account can't open; it permanently adds the account to the folder's permissions. unverified – Polish label seen on Windows 11 („Kontynuuj”), English label not checked |
 | pasek zadań | taskbar | Lower case. [Microsoft Style Guide – taskbar](https://learn.microsoft.com/en-us/style-guide/a-z-word-list-term-collections/t/taskbar) ("One word."). |
 | Programy i funkcje | Programs and Features | [Uninstall or remove apps and programs in Windows](https://support.microsoft.com/en-us/windows/uninstall-or-remove-apps-and-programs-in-windows-4b55f974-2cc6-2d2b-d092-5905080eaf98) |
 | Zainstalowane aplikacje | Installed apps | Settings › Apps › Installed apps; same source |

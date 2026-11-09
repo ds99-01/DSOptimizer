@@ -180,11 +180,15 @@ internal static class Program
 
         var machine = MachineSummary.Format(composition.Services.SystemInfo);
         var user = composition.Services.User;
-        // Link w dzienniku: Eksplorator za strażnikiem powłoki; ścieżek z katalogu programu nie otwiera (tylko kopiowanie).
+        // Link w dzienniku: Eksplorator za strażnikiem powłoki. Ścieżek z katalogu programu dziennik nie otwiera ani nie podsuwa
+        // do skopiowania; istniejący plik zapisuje w innym miejscu („Zapisz kopię…”, to samo okno zapisu co raport).
         var protectedRoot = SecureRoot.ProgramData.FullPath;
         var revealer = new ShellFileRevealer(new WindowsExplorerProcessQuery(), protectedRoot);
         var shell = new ShellActions(revealer, new ShellUrlOpener(new WindowsExplorerProcessQuery()), log);
-        var specification = CreateSpecification(composition, sink, shell);
+        // Raport: okno „Zapisz jako”; korzeń programu tylko do odmowy zapisu w nim.
+        var saveDialog = new WpfSaveFileDialog();
+        var reportWriter = new ReportFileWriter(SecureRoot.ProgramData, FileLog.DefaultMirrorDirectory);
+        var specification = CreateSpecification(composition, sink, shell, reportWriter, saveDialog);
         var prep = CreatePrep(composition, sink, shell);
         // Sprawdzanie wersji tylko na ścieżce okna; tryb wiersza poleceń niczego nie sprawdza.
         // Własny downloader z połączeniem bezpośrednim: bez proxy systemowego i poświadczeń Windows (start na obcym komputerze nie pyta WPAD ani proxy).
@@ -223,7 +227,8 @@ internal static class Program
             specification,
             prep,
             settingsPage);
-        var exitCode = app.Run(new MainWindow(viewModel, log, shell, theme, protectedRoot));
+        var copySaver = new LogCopySaver(saveDialog, reportWriter, log, sink.Add);
+        var exitCode = app.Run(new MainWindow(viewModel, log, shell, theme, protectedRoot, copySaver));
         GC.KeepAlive(instance);
         return exitCode;
     }
@@ -346,16 +351,16 @@ internal static class Program
     }
 
     /// <summary>
-    /// Strona „Specyfikacja”: czytnik sprzętu (tylko odczyt), loader z limitem na część, zapis raportu na komputerze
-    /// (<see cref="SecureRoot.ReportsDirectory"/>) i obok exe tylko poza dyskiem systemowym. Składana po
-    /// <see cref="AppComposition.Create"/> (korzeń już zabezpieczony); konstruktory niczego nie tworzą na dysku.
+    /// Strona „Specyfikacja”: czytnik sprzętu (tylko odczyt), loader z limitem na część, zapis raportu w miejscu wybranym
+    /// w oknie „Zapisz jako” (nigdy w folderze programu ani przez link) i kopia obok exe tylko poza dyskiem systemowym.
+    /// Konstruktory niczego nie tworzą na dysku.
     /// </summary>
-    private static SpecificationViewModel CreateSpecification(AppComposition composition, UiLogSink sink, ShellActions shell)
+    private static SpecificationViewModel CreateSpecification(
+        AppComposition composition, UiLogSink sink, ShellActions shell, ReportFileWriter writer, ISaveFileDialog saveDialog)
     {
         var services = composition.Services;
         var loader = new SpecificationLoader(new WindowsHardwareReader(), composition.Log, SpecificationLoader.DefaultTimeout);
-        var writer = new ReportFileWriter(SecureRoot.ProgramData, FileLog.DefaultMirrorDirectory);
-        return new SpecificationViewModel(loader, writer, composition.Log, services.Clock, services.SystemInfo.MachineName, sink.Add, shell);
+        return new SpecificationViewModel(loader, writer, saveDialog, composition.Log, services.Clock, services.SystemInfo.MachineName, sink.Add, shell);
     }
 
     /// <summary>

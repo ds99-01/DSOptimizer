@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Install;
@@ -7,6 +8,7 @@ using DSOptimizer.Core.Journal;
 using DSOptimizer.Core.Localization;
 using DSOptimizer.Core.Repair;
 using DSOptimizer.Core.RestorePoints;
+using DSOptimizer.Core.Storage;
 using DSOptimizer.Core.Tools;
 
 namespace DSOptimizer.Windows;
@@ -83,13 +85,16 @@ public sealed class AppComposition
         var warnings = new List<string>();
         foreach (var aside in setAside)
         {
-            warnings.Add(L.F("Katalog roboczy {0} miał niezaufanego właściciela lub uprawnienia i został odłożony: {1}. Utworzono nowy.", root.FullPath, aside));
+            var hadHistory = File.Exists(Path.Combine(aside, SecureRoot.JournalLeafName, JsonFileJournalStore.FileName));
+            warnings.Add(SetAsideText.Root(root.FullPath, aside, hadHistory));
         }
 
         try
         {
+            // Gdy przy tym starcie odłożono korzeń, jego tekst już mówi o historii zmian; ostrzeżenie z journala
+            // powtórzyłoby tę samą ścieżkę.
             var warning = journal.Load().Warning;
-            if (warning is not null)
+            if (warning is not null && setAside.Count == 0)
             {
                 warnings.Add(warning);
             }
@@ -177,7 +182,7 @@ public sealed class AppComposition
     {
         foreach (var aside in root.EnsureLeaf(root.BackupsDirectory))
         {
-            log.Warn(L.T("Naprawy"), L.F("Katalog {0} miał niezaufanego właściciela lub uprawnienia i został odłożony. Utworzono nowy.", aside));
+            log.Warn(L.T("Naprawy"), SetAsideText.Folder(aside));
         }
 
         return root.BackupsDirectory;

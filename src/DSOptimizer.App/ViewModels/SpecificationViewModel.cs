@@ -26,6 +26,7 @@ public sealed class SpecificationViewModel : ObservableObject
 
     private readonly SpecificationLoader _loader;
     private readonly ReportFileWriter _writer;
+    private readonly ISaveFileDialog _dialog;
     private readonly ILog _log;
     private readonly IClock _clock;
     private readonly Action<GuiLogLevel, string, string?> _panel;
@@ -34,10 +35,19 @@ public sealed class SpecificationViewModel : ObservableObject
     private readonly SpecificationPage _page = new();
     private IReadOnlyList<SpecGroup> _groups;
 
-    public SpecificationViewModel(SpecificationLoader loader, ReportFileWriter writer, ILog log, IClock clock, string machineName, Action<GuiLogLevel, string, string?> panel, ShellActions shell)
+    public SpecificationViewModel(
+        SpecificationLoader loader,
+        ReportFileWriter writer,
+        ISaveFileDialog dialog,
+        ILog log,
+        IClock clock,
+        string machineName,
+        Action<GuiLogLevel, string, string?> panel,
+        ShellActions shell)
     {
         _loader = loader ?? throw new ArgumentNullException(nameof(loader));
         _writer = writer ?? throw new ArgumentNullException(nameof(writer));
+        _dialog = dialog ?? throw new ArgumentNullException(nameof(dialog));
         _log = log ?? throw new ArgumentNullException(nameof(log));
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
         _panel = panel ?? throw new ArgumentNullException(nameof(panel));
@@ -126,15 +136,24 @@ public sealed class SpecificationViewModel : ObservableObject
         CopyCommand.NotifyCanExecuteChanged();
     }
 
-    /// <summary>„Zapisz raport”: zapis poza wątkiem UI, każda kopia (komputer, pendrive) osobną linią dziennika.</summary>
+    /// <summary>
+    /// „Zapisz raport”: miejsce z okna „Zapisz jako” (wątek UI; anulowanie = bez linii), zapis poza wątkiem UI, każda kopia
+    /// (wybrane miejsce, pendrive) osobną linią dziennika.
+    /// </summary>
     private async Task SaveReportAsync()
     {
         var snapshot = _page.Snapshot;
         var now = _clock.UtcNow.ToLocalTime().DateTime;
         try
         {
+            var target = _dialog.AskPath(SpecificationFormatter.FileName(now));
+            if (target is null)
+            {
+                return;
+            }
+
             var results = await Task.Run(() => _writer.Save(
-                SpecificationFormatter.FileName(now),
+                target,
                 SpecificationFormatter.Report(snapshot, _machineName, now))).ConfigureAwait(true);
             foreach (var result in results)
             {
@@ -143,12 +162,12 @@ public sealed class SpecificationViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            // Writer zwraca błędy zapisu jako wyniki; tu zostaje np. odmowa zabezpieczenia katalogu – okno działa dalej.
+            // Writer zwraca błędy zapisu i odmowy jako wyniki; tu zostaje np. wyjątek okna zapisu – okno programu działa dalej.
             _log.Warn(SpecificationText.Component, ReportNotSavedText(ex.Message));
         }
     }
 
-    /// <summary>Linia dziennika, gdy zapis raportu rzucił (np. odmowa zabezpieczenia katalogu).</summary>
+    /// <summary>Linia dziennika, gdy zapis raportu rzucił (np. wyjątek okna zapisu).</summary>
     internal static string ReportNotSavedText(string detail) => L.F("Nie zapisano raportu: {0}", detail);
 
     /// <summary>„Kopiuj”: ten sam tekst co plik raportu.</summary>

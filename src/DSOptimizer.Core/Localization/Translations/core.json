@@ -752,6 +752,26 @@
     {
       "pl": "Grupa '{0}' nie istnieje w kategorii '{1}'.",
       "en": "Group '{0}' doesn't exist in category '{1}'."
+    },
+    {
+      "pl": "Folder programu {0} miał zmienione uprawnienia, więc program odłożył go na bok i utworzył nowy. Najczęściej to skutek kliknięcia „Kontynuuj” w Eksploratorze plików przy tym folderze. Poprzednie pliki, w tym historia zmian, są w {1}. Program zaczyna z ustawieniami domyślnymi i pustą historią zmian; przy zmianach sprzed odłożenia „Cofnij” przywróci wartości domyślne Windows, a nie stan sprzed zmiany. Nie otwieraj folderu programu w Eksploratorze, a raport zapisuj przyciskiem „Zapisz raport”.",
+      "en": "The program folder {0} had its permissions changed, so the program set it aside and created a new one. This usually happens after clicking \"Continue\" in File Explorer for this folder. The previous files, including the change history, are in {1}. The program starts with default settings and an empty change history; for changes made before the folder was set aside, \"Undo\" restores the Windows default values, not the state before the change. Don't open the program folder in File Explorer, and save the report with the \"Save report\" button."
+    },
+    {
+      "pl": "Folder programu {0} miał zmienione uprawnienia, więc program odłożył go na bok i utworzył nowy. Najczęściej to skutek kliknięcia „Kontynuuj” w Eksploratorze plików przy tym folderze. Poprzednie pliki są w {1}. Program zaczyna z ustawieniami domyślnymi. Nie otwieraj folderu programu w Eksploratorze, a raport zapisuj przyciskiem „Zapisz raport”.",
+      "en": "The program folder {0} had its permissions changed, so the program set it aside and created a new one. This usually happens after clicking \"Continue\" in File Explorer for this folder. The previous files are in {1}. The program starts with default settings. Don't open the program folder in File Explorer, and save the report with the \"Save report\" button."
+    },
+    {
+      "pl": "Podfolder programu miał zmienione uprawnienia, więc program odłożył go na bok i utworzył nowy; najczęściej to skutek kliknięcia „Kontynuuj” w Eksploratorze plików. Poprzednie pliki są w {0}. Nie otwieraj folderu programu w Eksploratorze.",
+      "en": "A program folder had its permissions changed, so the program set it aside and created a new one; this usually happens after clicking \"Continue\" in File Explorer. The previous files are in {0}. Don't open the program folder in File Explorer."
+    },
+    {
+      "pl": "Plik ustawień miał zmienione uprawnienia, więc program odłożył go na bok i używa ustawień domyślnych; najczęściej to skutek kliknięcia „Kontynuuj” w Eksploratorze plików. Poprzedni plik: {0}. Nie otwieraj folderu programu w Eksploratorze.",
+      "en": "The settings file had its permissions changed, so the program set it aside and uses default settings; this usually happens after clicking \"Continue\" in File Explorer. Previous file: {0}. Don't open the program folder in File Explorer."
+    },
+    {
+      "pl": "Historia zmian miała zmienione uprawnienia, więc program odłożył ją na bok i prowadzi nową; najczęściej to skutek kliknięcia „Kontynuuj” w Eksploratorze plików. Poprzednia historia: {0}. Przy zmianach sprzed odłożenia „Cofnij” przywróci wartości domyślne Windows, a nie stan sprzed zmiany. Nie otwieraj folderu programu w Eksploratorze.",
+      "en": "The change history had its permissions changed, so the program set it aside and keeps a new one; this usually happens after clicking \"Continue\" in File Explorer. Previous history: {0}. For changes made before it was set aside, \"Undo\" restores the Windows default values, not the state before the change. Don't open the program folder in File Explorer."
     }
   ]
 }
