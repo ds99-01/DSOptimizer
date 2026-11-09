@@ -7,7 +7,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <Version>4.0.7</Version>
+    <Version>4.0.8</Version>
     <Authors>Dawid Świeboda</Authors>
     <Product>DSOptimizer</Product>
   </PropertyGroup>
