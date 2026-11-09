@@ -58,12 +58,20 @@ public class JsonFileJournalStoreTests
         Assert.Equal(SetAsideText.History(Path.Combine(aside, "journal.json")), result.Warning);
     }
 
+    // Jak po „Kontynuuj” w Eksploratorze: korzeń dostaje ACE konta, właściciel zostaje Administratorzy.
     [Fact]
     public void Load_AfterParentWasSetAsideByAnotherComponent_WarnsWithSetAsidePath()
     {
         using var temp = new TempDirectory();
         SaveOneEntry(Store(temp));
-        ForeignAcl.Apply(temp.Sub("app"));
+        var security = Directory.GetAccessControl(temp.Sub("app"), AccessControlSections.Access);
+        security.AddAccessRule(new FileSystemAccessRule(
+            WindowsIdentity.GetCurrent().User!,
+            FileSystemRights.FullControl,
+            InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+            PropagationFlags.None,
+            AccessControlType.Allow));
+        Directory.SetAccessControl(temp.Sub("app"), security);
         temp.AppRoot.EnsureLeaf(temp.AppRoot.LogsDirectory); // np. FileLog uruchomiony przed journalem odkłada rodzica
 
         var result = Store(temp).Load();
@@ -72,6 +80,37 @@ public class JsonFileJournalStoreTests
         var aside = Assert.Single(Directory.GetDirectories(temp.Root, "app.untrusted-*"));
         Assert.NotNull(result.Warning);
         Assert.Equal(SetAsideText.History(Path.Combine(aside, "journal", "journal.json")), result.Warning);
+    }
+
+    // Review Focus 4: folder <korzeń>.untrusted-x założony przez zwykłe konto (jego właściciel) – plik w nim nie daje ostrzeżenia.
+    [Fact]
+    public void Load_UserOwnedRootAsideWithJournal_NoWarning()
+    {
+        using var temp = new TempDirectory();
+        var planted = temp.Sub("app.untrusted-x");
+        HistoryFiles.WriteJournal(planted, "PC-01");
+        ForeignAcl.Apply(planted);
+
+        var result = Store(temp).Load();
+
+        Assert.Null(result.Warning);
+    }
+
+    // Folder administratora, ale plik historii z obcym właścicielem: to nie jest plik zapisany przez program.
+    [Fact]
+    public void Load_RootAsideWithUserOwnedJournalFile_NoWarning()
+    {
+        using var temp = new TempDirectory();
+        var source = Path.Combine(temp.Sub("app.untrusted-x"), "journal", "journal.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+        File.WriteAllText(source, "{}");
+        var security = File.GetAccessControl(source);
+        security.SetOwner(WindowsIdentity.GetCurrent().User!);
+        File.SetAccessControl(source, security);
+
+        var result = Store(temp).Load();
+
+        Assert.Null(result.Warning);
     }
 
     [Fact]
@@ -119,21 +158,27 @@ public class JsonFileJournalStoreTests
     }
 
     [Fact]
-    public void Save_CreatesDirectoryRestrictedToAdministratorsAndSystem()
+    public void Save_CreatesDirectoryWithUsersReadOnly_JournalFileAdminOnly()
     {
         using var temp = new TempDirectory();
-        Store(temp).Save(new JournalDocument { Machine = "PC-01" });
+        var store = Store(temp);
+        store.Save(new JournalDocument { Machine = "PC-01" });
 
         var security = Directory.GetAccessControl(temp.Sub(@"app\journal"));
-        var sids = security.GetAccessRules(true, true, typeof(SecurityIdentifier))
-            .Cast<FileSystemAccessRule>()
+        var rules = security.GetAccessRules(true, true, typeof(SecurityIdentifier)).Cast<FileSystemAccessRule>().ToArray();
+        var sids = rules
             .Select(rule => ((SecurityIdentifier)rule.IdentityReference).Value)
             .Distinct()
             .OrderBy(sid => sid, StringComparer.Ordinal)
             .ToArray();
 
         Assert.True(security.AreAccessRulesProtected);
-        Assert.Equal(new[] { "S-1-5-18", "S-1-5-32-544" }, sids);
+        Assert.Equal(new[] { "S-1-5-18", "S-1-5-32-544", "S-1-5-32-545" }, sids);
+        var users = Assert.Single(rules, rule => rule.IdentityReference.Equals(AclTrust.UsersSid));
+        Assert.Equal(FileSystemRights.ReadAndExecute | FileSystemRights.Synchronize, users.FileSystemRights);
+        Assert.Equal(AccessControlType.Allow, users.AccessControlType);
+        Assert.True(AclTrust.IsProtectedAdminOnlyFile(
+            new RawSecurityDescriptor(File.GetAccessControl(store.FilePath).GetSecurityDescriptorBinaryForm(), 0)));
     }
 
     [Fact]

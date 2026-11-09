@@ -44,7 +44,7 @@ public class AutostartEngineSandboxTests
         {
         }
 
-        var locations = Locations(sandbox);
+        var locations = SandboxAutostart.Locations(sandbox);
         var key = locations.StartupApprovedKey(AutostartSource.RunUser);
         Assert.Equal(ReadStatus.NotFound, _registry.KeyStatus(key));
 
@@ -70,7 +70,7 @@ public class AutostartEngineSandboxTests
         {
         }
 
-        var locations = Locations(sandbox);
+        var locations = SandboxAutostart.Locations(sandbox);
         var key = locations.StartupApprovedKey(AutostartSource.RunMachine);
         var journal = temp.Sub("journal");
 
@@ -87,7 +87,7 @@ public class AutostartEngineSandboxTests
     {
         using var sandbox = new RegistrySandbox();
         using var temp = new TempDirectory();
-        var locations = Locations(sandbox);
+        var locations = SandboxAutostart.Locations(sandbox);
         var taskKey = locations.StartupTaskKey(Family, TaskId);
         var familyKey = taskKey.Substring(0, taskKey.LastIndexOf('\\'));
         using (var root = sandbox.OpenOrCreate())
@@ -109,9 +109,6 @@ public class AutostartEngineSandboxTests
         Assert.Equal(ReadStatus.NotFound, _registry.KeyStatus(taskKey));
         Assert.Equal(ReadStatus.Found, _registry.KeyStatus(familyKey));
     }
-
-    private static AutostartLocations Locations(RegistrySandbox sandbox)
-        => new(sandbox.HkcuPath + @"\U", sandbox.HkcuPath + @"\M", sandbox.HkcuPath + @"\C", @"C:\unused", @"C:\unused");
 
     private TweakResult Run(string journalFolder, AutostartLocations locations, AutostartState target, AutostartRow row)
     {

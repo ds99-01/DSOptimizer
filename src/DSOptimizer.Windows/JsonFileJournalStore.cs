@@ -167,6 +167,10 @@ public sealed class JsonFileJournalStore : IJournalStore
     /// Brak journal.json może oznaczać, że <see cref="SecureRoot.EnsureLeaf"/> (tu albo w innym komponencie, np. FileLog)
     /// odłożył niezaufany katalog journala lub jego rodzica jako <c>.untrusted-*</c>. Wtedy zwraca ostrzeżenie (<see cref="SetAsideText.History"/>)
     /// ze ścieżkami odłożonych journali, żeby undo z wartości domyślnych nie przeszło bez słowa. Brak odłożonych kopii → null.
+    /// Odłożony rodzic leży obok korzenia (np. w <c>C:\ProgramData</c>), gdzie zwykłe konto zakłada foldery, więc liczy się tylko
+    /// według reguły skanu ratowania: folder <see cref="SecureDirectory.IsAdminOwnedPlainFolder"/> i plik
+    /// <see cref="SecureDirectory.IsTrustedFile"/>; podłożony kandydat nie daje ostrzeżenia. Odłożony katalog journala leży
+    /// w korzeniu (zapis tylko dla administratorów), więc wystarcza sam plik.
     /// </summary>
     private string? DescribeSetAsideJournals()
     {
@@ -178,20 +182,35 @@ public sealed class JsonFileJournalStore : IJournalStore
         }
 
         var leafName = Path.GetFileName(leaf);
-        var candidates = Directory.GetDirectories(parent, leafName + ".untrusted-*")
+        var found = Directory.GetDirectories(parent, leafName + ".untrusted-*")
             .Select(aside => Path.Combine(aside, FileName))
+            .Where(File.Exists)
             .ToList();
         var grandParent = Path.GetDirectoryName(parent);
         if (!string.IsNullOrEmpty(grandParent))
         {
-            candidates.AddRange(Directory.GetDirectories(grandParent, Path.GetFileName(parent) + ".untrusted-*")
-                .Select(aside => Path.Combine(aside, leafName, FileName)));
+            found.AddRange(Directory.GetDirectories(grandParent, Path.GetFileName(parent) + ".untrusted-*")
+                .Where(SecureDirectory.IsAdminOwnedPlainFolder)
+                .Select(aside => Path.Combine(aside, leafName, FileName))
+                .Where(IsTrustedExistingFile));
         }
 
-        var found = candidates.Where(File.Exists).ToList();
         return found.Count == 0
             ? null
             : SetAsideText.History(string.Join(", ", found));
+    }
+
+    private static bool IsTrustedExistingFile(string path)
+    {
+        try
+        {
+            return File.Exists(path) && SecureDirectory.IsTrustedFile(path);
+        }
+        catch (IOException)
+        {
+            // Plik zniknął albo jest niedostępny między sprawdzeniami: nie jest kandydatem.
+            return false;
+        }
     }
 
     private string Stamp() => _clock.UtcNow.ToLocalTime().ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);

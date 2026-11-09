@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.AccessControl;
 using System.Text;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Tests.Windows.Support;
@@ -144,6 +145,32 @@ public class WebDownloaderTests
         Assert.Equal(progress.OrderBy(p => p), progress);
         Assert.Equal(new[] { "/start", "/mid" }, api.Requests.Select(r => r.Path));
         Assert.Equal(new SeenRequest("GET", "/file.msi", "DSOptimizer", "application/octet-stream"), Assert.Single(files.Requests));
+    }
+
+    // Folder pobrań daje Users dziedziczony odczyt, a pobrany plik (program go haszuje i uruchamia) ma być tylko dla adminów.
+    [Fact]
+    public void Download_FileCreatedProtectedAdminOnly_EvenWithInheritableUsersRead()
+    {
+        var payload = RandomBytes(4096);
+        using var server = new LoopbackHttpServer((c, _) => LoopbackHttpServer.Respond(c, 200, payload));
+        using var temp = new TempDirectory();
+        var folder = temp.Sub("downloads");
+        Directory.CreateDirectory(folder);
+        var security = Directory.GetAccessControl(folder);
+        security.AddAccessRule(new FileSystemAccessRule(
+            AclTrust.UsersSid,
+            FileSystemRights.ReadAndExecute | FileSystemRights.Synchronize,
+            InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+            PropagationFlags.None,
+            AccessControlType.Allow));
+        Directory.SetAccessControl(folder, security);
+        var target = Path.Combine(folder, "out.msi");
+
+        var result = new WebDownloader("DSOptimizer").Download(server.Url("/f.msi"), _ => true, 1024 * 1024, target, Generous, null);
+
+        Assert.Equal(WebFailure.None, result.Failure);
+        Assert.Equal(payload, File.ReadAllBytes(target));
+        Assert.True(AclTrust.IsProtectedAdminOnlyFile(RawDescriptors.OfFile(target)));
     }
 
     // Review Focus 4: odrzucony skok = drugi serwer nie dostaje żadnego żądania, plik nie powstaje.

@@ -22,13 +22,17 @@ namespace DSOptimizer.Tests.Windows;
 /// <summary>
 /// „Cofnij” w Historii zmian dla wpisu autostartu: przez okno serii (atrapa, która potwierdza albo anuluje) i sesję autostartu, nigdy
 /// ścieżką katalogu tweaków. Wpis journala leży w katalogu tymczasowym, a jego baseline wskazuje wyłącznie klucz
-/// <c>HKCU\Software\DSOptimizer.Tests\&lt;guid&gt;</c> – prawdziwy autostart hosta nie jest czytany ani zmieniany.
+/// <c>HKCU\Software\DSOptimizer.Tests\&lt;guid&gt;</c> w miejscach <see cref="SandboxAutostart.Locations"/> – prawdziwy autostart hosta
+/// nie jest czytany ani zmieniany.
 /// </summary>
 [Trait("Category", "Windows")]
 public class MainViewModelHistoryUndoTests
 {
     private const string ValueName = "DsoUndoTest";
     private const string ItemId = "run:machine:" + ValueName;
+
+    // Klucz przełącznika pozycji maszyny względem piaskownicy (SandboxAutostart.Locations: gałąź maszyny = „M”).
+    private const string SwitchSubKey = @"M\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
 
     // Stan sprzed zmiany (włączona) i stan po wyłączeniu – format StartupApproved, 12 B.
     private static readonly byte[] Baseline = { 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -43,7 +47,7 @@ public class MainViewModelHistoryUndoTests
             using var sandbox = new RegistrySandbox();
             var entryId = SeedActiveEntry(temp, sandbox);
             var dialogs = new FakeSeriesDialogs(confirm: true);
-            var vm = Create(temp, dialogs, out _);
+            var vm = Create(temp, dialogs, out _, sandbox);
 
             vm.SelectedPage = vm.History;
             MainViewModelTests.PumpUntil(() => !vm.History.IsLoading && vm.History.Entries.Count == 1, "wczytanie historii");
@@ -73,7 +77,7 @@ public class MainViewModelHistoryUndoTests
             using var sandbox = new RegistrySandbox();
             var entryId = SeedActiveEntry(temp, sandbox);
             var dialogs = new FakeSeriesDialogs(confirm: true);
-            var vm = Create(temp, dialogs, out _);
+            var vm = Create(temp, dialogs, out _, sandbox);
             var entry = LoadEntry(vm, entryId);
 
             MainViewModelTests.Wait(vm.UndoFromHistoryAsync(entry));
@@ -131,7 +135,7 @@ public class MainViewModelHistoryUndoTests
             using var sandbox = new RegistrySandbox();
             var entryId = SeedActiveEntry(temp, sandbox);
             var dialogs = new FakeSeriesDialogs(confirm: false);
-            var vm = Create(temp, dialogs, out var reader);
+            var vm = Create(temp, dialogs, out var reader, sandbox);
             var entry = LoadEntry(vm, entryId);
             var readsBefore = reader.Contexts.Count;
 
@@ -160,7 +164,7 @@ public class MainViewModelHistoryUndoTests
             using var sandbox = new RegistrySandbox();
             var entryId = SeedActiveEntry(temp, sandbox);
             var dialogs = new FakeSeriesDialogs(confirm: true);
-            var vm = Create(temp, dialogs, out var reader);
+            var vm = Create(temp, dialogs, out var reader, sandbox);
             vm.SelectedPage = vm.History;
             MainViewModelTests.PumpUntil(() => !vm.History.IsLoading && vm.History.Entries.Count == 1, "wczytanie historii");
             Assert.Equal(1, vm.History.ActiveCount);
@@ -195,7 +199,7 @@ public class MainViewModelHistoryUndoTests
     private static byte[] ReadValue(RegistrySandbox sandbox)
     {
         using var root = sandbox.OpenOrCreate();
-        using var key = root.OpenSubKey(@"StartupApproved\Run")!;
+        using var key = root.OpenSubKey(SwitchSubKey)!;
         return (byte[])key.GetValue(ValueName)!;
     }
 
@@ -203,7 +207,7 @@ public class MainViewModelHistoryUndoTests
     private static Guid SeedActiveEntry(TempDirectory temp, RegistrySandbox sandbox)
     {
         using (var root = sandbox.OpenOrCreate())
-        using (var key = root.CreateSubKey(@"StartupApproved\Run", writable: true)!)
+        using (var key = root.CreateSubKey(SwitchSubKey, writable: true)!)
         {
             key.SetValue(ValueName, Disabled, RegistryValueKind.Binary);
         }
@@ -220,7 +224,8 @@ public class MainViewModelHistoryUndoTests
             Status = JournalEntryStatus.Active,
             AppliedAt = DateTimeOffset.UtcNow.AddMinutes(-5),
         };
-        entry.Baseline.Add(SnapshotRecord.ForRegistry(sandbox.HkcuPath + @"\StartupApproved\Run", ValueName, RegValue.FromBinary(Baseline)));
+        var switchKey = SandboxAutostart.Locations(sandbox).StartupApprovedKey(AutostartSource.RunMachine);
+        entry.Baseline.Add(SnapshotRecord.ForRegistry(switchKey, ValueName, RegValue.FromBinary(Baseline)));
         entry.Events.Add(new JournalEvent { At = entry.AppliedAt, Action = AutostartEngine.DisableAction, Outcome = "Started" });
         entry.Events.Add(new JournalEvent { At = entry.AppliedAt, Action = AutostartEngine.DisableAction, Outcome = nameof(TweakOutcome.Applied) });
         document.Entries.Add(entry);
@@ -228,12 +233,13 @@ public class MainViewModelHistoryUndoTests
         return entry.EntryId;
     }
 
-    private static MainViewModel Create(TempDirectory temp, FakeSeriesDialogs dialogs, out FakeAutostartReader reader)
+    /// <summary>Model okna; z <paramref name="sandbox"/> autostart ma miejsca w piaskownicy (cofanie zapisuje tylko w miejscach pozycji).</summary>
+    private static MainViewModel Create(TempDirectory temp, FakeSeriesDialogs dialogs, out FakeAutostartReader reader, RegistrySandbox? sandbox = null)
     {
         // Kontynuacje await wracają na wątek testu (jak w oknie), a PumpUntil wykonuje je razem z liniami dziennika.
         SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
         reader = new FakeAutostartReader();
-        return MainViewModelTests.Create(temp, reader, dialogs);
+        return MainViewModelTests.Create(temp, reader, dialogs, autostartLocations: sandbox is null ? null : SandboxAutostart.Locations(sandbox));
     }
 
     private static IJournalStore Journal(TempDirectory temp) => AppComposition.Create(temp.AppRoot, null).Services.Journal;

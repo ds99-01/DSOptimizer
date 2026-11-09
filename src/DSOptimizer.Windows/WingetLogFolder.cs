@@ -11,15 +11,13 @@ namespace DSOptimizer.Windows;
 /// <summary>
 /// Pliki logu winget (<c>--log</c>) w <c>&lt;logs&gt;\winget\&lt;wingetId&gt;-&lt;yyyyMMdd-HHmmss&gt;.log</c> (czas UTC). Folder powstaje
 /// leniwie, przy pierwszej ścieżce (nie przy starcie programu), tym samym mechanizmem co kopie napraw: korzeń i <c>logs</c> przez
-/// <see cref="SecureRoot.EnsureLeaf"/>, a <c>winget</c> przez <see cref="SecureDirectory.Ensure"/> (Administratorzy + SYSTEM; niezaufany
+/// <see cref="SecureRoot.EnsureLeaf"/>, a <c>winget</c> przez <see cref="SecureDirectory.Ensure"/> (zapis Administratorzy i SYSTEM, odczyt Users; niezaufany
 /// folder odkładany jako <c>.untrusted-*</c> z ostrzeżeniem w logu, junction/link = <see cref="IOException"/>, nic nie powstaje w celu).
 /// Sam plik tworzy winget. Id spoza <see cref="WingetArguments.IsValidWingetId"/> (np. <c>..\x</c>, obcięte „…”) =
 /// <see cref="ArgumentException"/> bez dotykania dysku.
 /// </summary>
 public sealed class WingetLogFolder : IWingetLogs
 {
-    private const string FolderName = "winget";
-
     private readonly SecureRoot _root;
     private readonly ILog _log;
 
@@ -32,7 +30,7 @@ public sealed class WingetLogFolder : IWingetLogs
     }
 
     /// <summary>Folder logów winget (nie dotyka dysku).</summary>
-    public string FolderPath => Path.Combine(_root.LogsDirectory, FolderName);
+    public string FolderPath => _root.WingetLogsDirectory;
 
     public string NewLogPath(string wingetId, DateTimeOffset at)
     {

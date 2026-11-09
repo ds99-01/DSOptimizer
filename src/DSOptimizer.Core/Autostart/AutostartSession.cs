@@ -38,6 +38,7 @@ public sealed class AutostartSession
     private readonly ILog _log;
     private readonly IClock _clock;
     private readonly TimeSpan _readTimeout;
+    private readonly AutostartLocations? _locations;
 
     public AutostartSession(
         GuiSession session,
@@ -49,7 +50,8 @@ public sealed class AutostartSession
         IRegistry registry,
         ILog log,
         IClock clock,
-        TimeSpan? readTimeout = null)
+        TimeSpan? readTimeout = null,
+        AutostartLocations? locations = null)
     {
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _reader = reader ?? throw new ArgumentNullException(nameof(reader));
@@ -61,6 +63,7 @@ public sealed class AutostartSession
         _log = log ?? throw new ArgumentNullException(nameof(log));
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
         _readTimeout = readTimeout ?? DefaultReadTimeout;
+        _locations = locations;
     }
 
     /// <summary>Limit odczytu strony; po nim strona pokazuje błąd odczytu, a poprzednia lista zostaje.</summary>
@@ -318,7 +321,12 @@ public sealed class AutostartSession
 
     private static string ItemCount(int count) => L.P("{0} pozycja", "{0} pozycje", "{0} pozycji", count);
 
-    private AutostartContext Context() => AutostartContext.Create(_user, _processSid, _registry);
+    /// <summary>Kontekst konta liczony od nowa; podane miejsca (szew testowy, jak <c>CliAutostartServices.Context</c>) zastępują miejsca z SID.</summary>
+    private AutostartContext Context()
+    {
+        var context = AutostartContext.Create(_user, _processSid, _registry);
+        return _locations is null ? context : context with { Locations = _locations };
+    }
 
     /// <summary>Odbiornik zdarzeń nie może przerwać cofania: wyjątek ląduje w logu.</summary>
     private void Report(IProgress<BatchStepEvent>? steps, BatchStepEvent step)

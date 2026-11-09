@@ -21,9 +21,10 @@ namespace DSOptimizer.App.Gui;
 /// widok dopisuje akapit, usuwa pierwszy przy limicie i przebudowuje się przy innej zmianie). Tekst można zaznaczyć myszą i skopiować.
 /// Ścieżka linii (<see cref="GuiLogLine.Path"/>) poza katalogiem programu jest linkiem „Otwórz w Eksploratorze”, ścieżka
 /// niebezwzględna zwykłym tekstem z ikoną „Kopiuj ścieżkę” (<see cref="LogLineText.PathMode"/>). Ścieżki w katalogu programu
-/// dziennik nigdy nie podsuwa do skopiowania (ani przyciskiem, ani w menu): wklejona w Eksploratorze bez uprawnień administratora
-/// kończy się „Kontynuuj”, które dopisuje konto do DACL folderu. Istniejący plik ma tam „Zapisz kopię…” (<see cref="LogCopySaver"/>),
-/// reszta to sam tekst. Każde kopiowanie idzie przez <see cref="ClipboardCopy"/> (schowek pod RustDesk bywa zajęty).
+/// dziennik nigdy nie podsuwa do skopiowania (ani przyciskiem, ani w menu; granica bezpieczeństwa): pliki historii i ustawień
+/// zostają tylko dla administratorów, a podsunięta ścieżka do folderu programu zachęcałaby do zmiany jego uprawnień.
+/// Istniejący plik ma tam „Zapisz kopię…” (<see cref="LogCopySaver"/>), reszta to sam tekst. Każde kopiowanie idzie przez
+/// <see cref="ClipboardCopy"/> (schowek pod RustDesk bywa zajęty).
 /// </summary>
 internal sealed class LogView
 {

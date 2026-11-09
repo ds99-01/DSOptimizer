@@ -35,7 +35,7 @@ public sealed class ReportFileWriter
 
     /// <summary>Powód odmowy zapisu w folderze programu (albo innym miejscu chronionym).</summary>
     internal static string ProtectedLocationReason
-        => L.T("w tym miejscu program nie zapisuje plików (folder programu jest dostępny tylko z uprawnieniami administratora) – wybierz inne miejsce, np. Pulpit");
+        => L.T("w tym miejscu program nie zapisuje plików (to folder danych programu) – wybierz inne miejsce, np. Pulpit");
 
     /// <summary>Powód odmowy zapisu przez link <paramref name="link"/>.</summary>
     internal static string LinkReason(string link)

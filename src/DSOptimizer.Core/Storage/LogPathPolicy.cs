@@ -6,9 +6,9 @@ namespace DSOptimizer.Core.Storage;
 /// <summary>
 /// Reguła „link czy nie” dla ścieżki w dzienniku: lokalizację w Eksploratorze można pokazać tylko dla ścieżki bezwzględnej poza
 /// katalogiem programu (<c>%ProgramData%\DSOptimizer</c> ma chroniony DACL). Ścieżki w katalogu programu (<see cref="IsInside"/>)
-/// dziennik ani nie otwiera, ani nie podsuwa do skopiowania: wklejona w Eksploratorze bez uprawnień administratora kończy się
-/// „Kontynuuj”, które dopisuje konto do DACL folderu. Reguła jest leksykalna: dowiązania symboliczne, junctions i nazwy 8.3 nie są
-/// rozwiązywane; drugą linią obrony jest ShellFileRevealer.
+/// dziennik ani nie otwiera, ani nie podsuwa do skopiowania (granica bezpieczeństwa): pliki historii i ustawień zostają tylko dla
+/// administratorów, a podsunięta ścieżka do folderu programu zachęcałaby do zmiany jego uprawnień. Reguła jest leksykalna:
+/// dowiązania symboliczne, junctions i nazwy 8.3 nie są rozwiązywane; drugą linią obrony jest ShellFileRevealer.
 /// </summary>
 public static class LogPathPolicy
 {

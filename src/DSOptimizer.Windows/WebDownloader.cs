@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Security.AccessControl;
 using System.Text;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Localization;
@@ -180,7 +181,9 @@ public sealed class WebDownloader : IWebDownloader
                 return new WebFile(WebFailure.TooLarge, status, 0, null, TooLargeError(maxBytes));
             }
 
-            using var file = new FileStream(targetPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            // Folder pobrań daje Users dziedziczony odczyt; plik, który program haszuje i uruchamia, powstaje od razu tylko dla adminów.
+            using var file = new FileStream(
+                targetPath, FileMode.CreateNew, FileSystemRights.Write, FileShare.None, 4096, FileOptions.None, SecureDirectory.CreateTrustedFileSecurity());
             var read = ReadBody(response, file, maxBytes, timeout, clock, onBytes);
             file.Flush();
             return new WebFile(read.Kind, status, read.Bytes, null, read.Error);

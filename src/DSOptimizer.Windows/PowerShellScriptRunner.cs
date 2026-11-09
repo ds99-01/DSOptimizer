@@ -15,7 +15,7 @@ using DSOptimizer.Windows.Native;
 namespace DSOptimizer.Windows;
 
 /// <summary>
-/// Uruchamia skrypt w powershell.exe 5.1 (64-bit) z pliku w katalogu z ACL tylko dla adminów.
+/// Uruchamia skrypt w powershell.exe 5.1 (64-bit) z pliku chronionego ACL tylko dla adminów (zapis w katalogu tylko Administratorzy i SYSTEM).
 /// Parametry idą przez zmienne środowiskowe, cały proces z dziećmi siedzi w Job Object (timeout/anulowanie zabija drzewo).
 /// Plik skryptu jest tworzony z ACL tylko Administratorzy/SYSTEM i trzymany otwarty (share Read) przez cały czas
 /// działania procesu, więc nie da się go podmienić ani usunąć.

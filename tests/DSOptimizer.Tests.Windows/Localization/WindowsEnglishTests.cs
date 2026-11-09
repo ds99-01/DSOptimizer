@@ -108,14 +108,14 @@ public class WindowsEnglishTests
         }
 
         var aside = Assert.Single(Directory.GetFiles(temp.Sub(@"app\journal"), "journal.json.untrusted-*"));
-        Assert.Equal($"The change history had its permissions changed, so the program set it aside and keeps a new one; this usually happens after clicking \"Continue\" in File Explorer. Previous history: {aside}. For changes made before it was set aside, \"Undo\" restores the Windows default values, not the state before the change. Don't open the program folder in File Explorer.", result.Warning);
+        Assert.Equal($"The change history had its permissions changed, so the program set it aside and keeps a new one. Previous history: {aside}. For changes made before it was set aside, \"Undo\" restores the Windows default values, not the state before the change.", result.Warning);
     }
 
     [Fact]
-    public void AppComposition_UntrustedRoot_English()
+    public void AppComposition_UntrustedRootForeignJournal_EnglishHistoryLost()
     {
         using var temp = new TempDirectory();
-        Directory.CreateDirectory(temp.Sub("app"));
+        HistoryFiles.WriteJournal(temp.Sub("app"), "PC-01");
         ForeignAcl.Apply(temp.Sub("app"));
 
         AppComposition composition;
@@ -126,7 +126,7 @@ public class WindowsEnglishTests
 
         var aside = Assert.Single(Directory.GetDirectories(temp.Root, "app.untrusted-*"));
         Assert.Equal(
-            new[] { $"The program folder {temp.AppRoot.FullPath} had its permissions changed, so the program set it aside and created a new one. This usually happens after clicking \"Continue\" in File Explorer for this folder. The previous files are in {aside}. The program starts with default settings. Don't open the program folder in File Explorer, and save the report with the \"Save report\" button." },
+            new[] { $"The program's data was changed outside the program, so the change history starts over. Undoing earlier changes restores the Windows default values, not the state before the change. The previous files are in {aside}." },
             composition.StartupWarnings);
     }
 
@@ -167,7 +167,7 @@ public class WindowsEnglishTests
         }
 
         var aside = Assert.Single(Directory.GetFiles(temp.Sub("app"), "settings.json.untrusted-*"));
-        Assert.Equal($"The settings file had its permissions changed, so the program set it aside and uses default settings; this usually happens after clicking \"Continue\" in File Explorer. Previous file: {aside}. Don't open the program folder in File Explorer.", result.Warning);
+        Assert.Equal($"The settings file had its permissions changed, so the program set it aside and uses default settings. Previous file: {aside}.", result.Warning);
     }
 
     [Fact]
@@ -418,7 +418,7 @@ public class WindowsEnglishTests
         using (L.Use(UiLanguage.English))
         {
             Assert.Equal(
-                "the program doesn't save files in this location (the program folder is only available with administrator permissions) – choose another location, such as the Desktop",
+                "the program doesn't save files in this location (it's the program's data folder) – choose another location, such as the Desktop",
                 ReportFileWriter.ProtectedLocationReason);
             Assert.Equal(
                 @"the path leads through a link (junction or symbolic link): C:\x\j – choose another location",

@@ -461,7 +461,8 @@ public sealed class AutostartViewModelTests : IDisposable
             Sid,
             new WindowsRegistry(),
             composition.Log,
-            services.Clock);
+            services.Clock,
+            locations: SandboxAutostart.Locations(_sandbox));
         return new AutostartViewModel(
             session,
             new JanNames(),
@@ -508,11 +509,11 @@ public sealed class AutostartViewModelTests : IDisposable
             Source = source,
             EntryName = name,
             Name = name,
-            Location = _sandbox.HkcuPath + @"\Run",
+            Location = SandboxAutostart.Locations(_sandbox).RunKey(source),
             FileStatus = file,
             Switch = new AutostartSwitch(
                 AutostartSwitchKind.StartupApproved,
-                _sandbox.HkcuPath + @"\StartupApproved\Run",
+                SandboxAutostart.Locations(_sandbox).StartupApprovedKey(source),
                 name,
                 AutostartSwitchFormat.Valid,
                 state,

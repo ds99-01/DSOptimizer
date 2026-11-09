@@ -294,8 +294,12 @@
       "en": "The folder {0} has no trusted owner/permissions after creation - refusing to use it."
     },
     {
-      "pl": "Katalog {0} ma niezaufanego właściciela/uprawnienia i nie udało się go odłożyć: {1}",
-      "en": "The folder {0} has an untrusted owner/permissions and couldn't be set aside: {1}"
+      "pl": "Nie udało się zmienić uprawnień folderu {0}, więc Eksplorator może pytać o dostęp do niego. Program spróbuje ponownie przy następnym starcie. Powód: {1}",
+      "en": "Couldn't change the permissions of the folder {0}, so File Explorer may ask for access to it. The program will try again at the next start. Reason: {1}"
+    },
+    {
+      "pl": "Folder {0} miał zmienione uprawnienia i nie udało się go odłożyć na bok: {1}",
+      "en": "The folder {0} had its permissions changed and couldn't be set aside: {1}"
     },
     {
       "pl": "Tej ścieżki program nie pokazuje w Eksploratorze.",
@@ -594,12 +598,16 @@
       "en": "Windows measurement file {0} is larger than {1} B – skipped."
     },
     {
-      "pl": "w tym miejscu program nie zapisuje plików (folder programu jest dostępny tylko z uprawnieniami administratora) – wybierz inne miejsce, np. Pulpit",
-      "en": "the program doesn't save files in this location (the program folder is only available with administrator permissions) – choose another location, such as the Desktop"
+      "pl": "w tym miejscu program nie zapisuje plików (to folder danych programu) – wybierz inne miejsce, np. Pulpit",
+      "en": "the program doesn't save files in this location (it's the program's data folder) – choose another location, such as the Desktop"
     },
     {
       "pl": "ścieżka prowadzi przez link (junction albo dowiązanie symboliczne): {0} – wybierz inne miejsce",
       "en": "the path leads through a link (junction or symbolic link): {0} – choose another location"
+    },
+    {
+      "pl": "Rozmiar pliku zmienił się w trakcie odczytu.",
+      "en": "The file size changed while it was being read."
     }
   ]
 }

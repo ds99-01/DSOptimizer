@@ -301,8 +301,11 @@ How to read the tables:
 | Szukaj sterownika / Szukaj strony wsparcia / Szukaj w Google | Search for a driver / Search for a support page / Search Google | Preparation links |
 | Urządzenia z problemem / brak sterownika / wyłączone / problem, kod {0} | Devices with a problem / no driver / disabled / problem, code {0} | Device Manager error codes 28 and 22, and any other code |
 | katalog (pozycji) / katalog (na dysku) | catalog / folder | Same Polish word, two meanings: the item catalog (`--catalog`, "external catalog") vs a folder on disk ("working folder", "journal folder") |
-| zmienione uprawnienia / odłożony na bok | permissions changed / set aside | Program folders and files with a foreign owner or ACL are renamed (`.untrusted-*`) and replaced: "… had its permissions changed, so the program set it aside and created a new one." |
+| zmienione uprawnienia / odłożony na bok / przeniesiono | permissions changed / set aside / moved | Program folders and files with a foreign owner or ACL are renamed (`.untrusted-*`) and replaced: "… had its permissions changed, so the program set it aside and created a new one.", "… set it aside ({0}) and created a new one."; "przeniesiono" = "moved": "The change history was moved to the new program folder." |
 | folder programu | program folder | `%ProgramData%\DSOptimizer` in startup and log messages |
+| dowiązanie (pliku) | hard link | "the file has more than one hard link" – reason a change history or settings file wasn't moved |
+| dane programu | program's data | message when the change history is lost: "The program's data was changed outside the program, …" |
+| odzyskać (historię zmian) | recover | "The change history was recovered from {0}." |
 | Nie można … / Brak dostępu do … / Brak uprawnień do … | Can't … / Access denied to … / No permission to … | Windows layer errors; "Błąd zapisu / odczytu / usuwania" = "Error writing / reading / deleting" |
 | klucz / podklucz / drzewo kluczy | key / subkey / key tree | Registry |
 | nazwy wartości | value names | Registry; "Error reading the value names of {0}: {1}" |
@@ -733,7 +736,7 @@ come from the template `docs/en/tweaks/README.md`, in the same order as in Polis
 | klucz odzyskiwania | recovery key | [Find your BitLocker recovery key](https://support.microsoft.com/en-us/windows/security/encryption/find-your-bitlocker-recovery-key) |
 | Szyfrowanie urządzenia | Device encryption | [Device Encryption in Windows](https://support.microsoft.com/en-us/windows/security/encryption/device-encryption-in-windows) |
 | Eksplorator | File Explorer | [File Explorer in Windows](https://support.microsoft.com/en-us/windows/experience/fileexplorer/file-explorer-in-windows) |
-| Kontynuuj (Eksplorator plików, folder bez dostępu) | Continue | Button in File Explorer's prompt for a folder the account can't open; it permanently adds the account to the folder's permissions. unverified – Polish label seen on Windows 11 („Kontynuuj”), English label not checked |
+| Kontynuuj (Eksplorator plików, folder bez dostępu) | Continue | Button in File Explorer's prompt for a folder the account can't open; it permanently adds the account to the folder's permissions. Labels checked on Windows 11 26H2 virtual machines: „Kontynuuj | Anuluj” (Polish), "Continue | Cancel" (English). Since 4.0.8 the program folder gives Users read access, so this prompt no longer appears for it |
 | pasek zadań | taskbar | Lower case. [Microsoft Style Guide – taskbar](https://learn.microsoft.com/en-us/style-guide/a-z-word-list-term-collections/t/taskbar) ("One word."). |
 | Programy i funkcje | Programs and Features | [Uninstall or remove apps and programs in Windows](https://support.microsoft.com/en-us/windows/uninstall-or-remove-apps-and-programs-in-windows-4b55f974-2cc6-2d2b-d092-5905080eaf98) |
 | Zainstalowane aplikacje | Installed apps | Settings › Apps › Installed apps; same source |

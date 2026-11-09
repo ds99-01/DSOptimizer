@@ -310,9 +310,16 @@ public class MainViewModelTests
     /// służy sesji tylko do sprawdzenia gałęzi konta (<see cref="IRegistry.KeyStatus"/>). Bez wierszy silnik nie ma czego zapisać; wiersze
     /// testu mają przełączniki w <see cref="RegistrySandbox"/>, a silnik pisze wyłącznie pod kluczem przełącznika wiersza. Konto autostartu
     /// stałe i pewne (<see cref="AutostartToggleTests.UserSid"/>), żeby seria nie zależała od sesji hosta. <paramref name="seriesDialogs"/> =
-    /// atrapa okna serii (domyślnie prawdziwe, którego testy nie otwierają).
+    /// atrapa okna serii (domyślnie prawdziwe, którego testy nie otwierają). <paramref name="autostartLocations"/> = miejsca autostartu
+    /// w piaskownicy (<see cref="SandboxAutostart.Locations"/>): cofanie zapisuje tylko w miejscach pozycji z kontekstu; null = miejsca
+    /// produkcyjne z SID konta.
     /// </summary>
-    internal static MainViewModel Create(TempDirectory temp, FakeAutostartReader? autostartReader = null, ISeriesDialogs? seriesDialogs = null, Action<UiLogSink>? sinkReceiver = null)
+    internal static MainViewModel Create(
+        TempDirectory temp,
+        FakeAutostartReader? autostartReader = null,
+        ISeriesDialogs? seriesDialogs = null,
+        Action<UiLogSink>? sinkReceiver = null,
+        AutostartLocations? autostartLocations = null)
     {
         var composition = AppComposition.Create(temp.AppRoot, null);
         var services = composition.Services;
@@ -356,7 +363,8 @@ public class MainViewModelTests
             AutostartToggleTests.UserSid,
             services.Registry,
             log,
-            services.Clock);
+            services.Clock,
+            locations: autostartLocations);
         var shell = new ShellActions(
             new ShellFileRevealer(new WindowsExplorerProcessQuery(), temp.AppRoot.FullPath),
             new ShellUrlOpener(new WindowsExplorerProcessQuery()),

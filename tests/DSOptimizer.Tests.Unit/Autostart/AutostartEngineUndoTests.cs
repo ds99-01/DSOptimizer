@@ -136,6 +136,30 @@ public class AutostartEngineUndoTests
     }
 
     [Fact]
+    public void Undo_TamperedBaseline_UndoIncomplete_ForeignValueUntouched()
+    {
+        const string policyKey = @"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System";
+        var entry = Disable(ApprovedRow(AutostartSource.RunMachine));
+        var disabled = _registry.Get(MachineApprovedKey, Name);
+        var foreign = SnapshotRecord.ForRegistry(policyKey, "EnableLUA", RegValue.FromDWord(0));
+        var document = _journal.Load().Document;
+        var saved = document.Entries.Single();
+        saved.Baseline.Clear();
+        saved.Baseline.Add(foreign);
+        _journal.Save(document);
+        var writes = _registry.WriteLog.Count;
+
+        var result = Engine().Undo(entry.EntryId, Context());
+
+        Assert.Equal(TweakOutcome.UndoIncomplete, result.Outcome);
+        Assert.Equal(new[] { foreign.Describe() }, result.NotRestored);
+        Assert.Equal(RegValue.Absent, _registry.Get(policyKey, "EnableLUA"));
+        Assert.Equal(disabled, _registry.Get(MachineApprovedKey, Name));
+        Assert.Equal(writes, _registry.WriteLog.Count);
+        Assert.Equal(JournalEntryStatus.Active, Assert.Single(_journal.Current.Entries).Status);
+    }
+
+    [Fact]
     public void Undo_NotActive_Refused()
     {
         var entry = Disable(ApprovedRow());

@@ -171,7 +171,7 @@ public sealed class AutostartEngine
         var active = AutostartJournal.FindActive(document, row.Id, context.UserSid);
         if (active is not null && AutostartJournal.TargetOf(active) == Opposite(target))
         {
-            return UndoEntry(row.Id, document, active, AutostartText.UndoneByToggle, warnings);
+            return UndoEntry(row.Id, document, active, context.Locations, AutostartText.UndoneByToggle, warnings);
         }
 
         if (active is not null)
@@ -236,7 +236,7 @@ public sealed class AutostartEngine
         }
         else
         {
-            notRestored = AutostartJournal.RestoreBaseline(_registry, entry);
+            notRestored = AutostartJournal.RestoreBaseline(_registry, entry, context.Locations);
             outcome = notRestored.Count == 0 ? TweakOutcome.FailedRolledBack : TweakOutcome.FailedRollbackIncomplete;
             message = notRestored.Count == 0 ? AutostartText.NotConfirmed : AutostartText.RollbackIncomplete;
         }
@@ -309,7 +309,7 @@ public sealed class AutostartEngine
             return Finish(entry.TweakId, TweakOutcome.Refused, refusal, warnings);
         }
 
-        return UndoEntry(entry.TweakId, document, entry, AutostartText.UndoneFromHistory, warnings);
+        return UndoEntry(entry.TweakId, document, entry, context.Locations, AutostartText.UndoneFromHistory, warnings);
     }
 
     /// <summary>Powód odmowy cofnięcia wpisu pozycji konta; null = wolno cofać (także każda pozycja maszyny).</summary>
@@ -369,7 +369,7 @@ public sealed class AutostartEngine
     /// Przywrócenie baseline aktywnego wpisu (przełączenie w drugą stronę albo Historia zmian). Najpierw zapis zdarzenia
     /// <c>undo</c>/<c>Started</c> (błąd = <see cref="TweakOutcome.Failed"/>, rejestr nietknięty), potem przywrócenie i zdarzenie wyniku.
     /// </summary>
-    private TweakResult UndoEntry(string id, JournalDocument document, JournalEntry active, string undoneMessage, List<string> warnings)
+    private TweakResult UndoEntry(string id, JournalDocument document, JournalEntry active, AutostartLocations locations, string undoneMessage, List<string> warnings)
     {
         AddEvent(active, UndoAction, "Started", null);
         try
@@ -381,7 +381,7 @@ public sealed class AutostartEngine
             return JournalFailure(id, ex, warnings);
         }
 
-        var notRestored = AutostartJournal.RestoreBaseline(_registry, active);
+        var notRestored = AutostartJournal.RestoreBaseline(_registry, active, locations);
         var outcome = notRestored.Count == 0 ? TweakOutcome.Undone : TweakOutcome.UndoIncomplete;
         string? message = null;
         if (outcome == TweakOutcome.Undone)

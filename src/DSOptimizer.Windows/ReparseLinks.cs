@@ -50,7 +50,7 @@ internal static class ReparseLinks
             || !NativeMethods.GetFileInformationByHandleEx(
                 handle,
                 NativeMethods.FileAttributeTagInfoClass,
-                out var info,
+                out NativeMethods.FileAttributeTagInfo info,
                 (uint)Marshal.SizeOf<NativeMethods.FileAttributeTagInfo>()))
         {
             return true;

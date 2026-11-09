@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using DSOptimizer.Core.Abstractions;
 using DSOptimizer.Core.Engine;
 using DSOptimizer.Core.Install;
@@ -15,7 +16,9 @@ namespace DSOptimizer.Windows;
 
 /// <summary>
 /// Composition root: składa usługi silnika na prawdziwym systemie. Korzeń jest zabezpieczany jako pierwszy
-/// (zanim powstanie log, runner czy journal), a ścieżki odłożone jako <c>.untrusted-*</c> trafiają do ostrzeżeń startowych.
+/// (zanim powstanie log, runner czy journal). Z korzenia odłożonego jako <c>.untrusted-*</c> program przenosi historię zmian
+/// i ustawienia, a gdy w korzeniu nie ma historii, odzyskuje ją z dawnych odłożonych folderów; do ostrzeżeń startowych (okno)
+/// trafia tylko utrata historii, reszta to linie logu.
 /// </summary>
 public sealed class AppComposition
 {
@@ -74,6 +77,15 @@ public sealed class AppComposition
         var clock = new SystemClock();
         var fileLog = new FileLog(root, logMirrorDirectory, clock);
         ILog log = observer is null ? fileLog : new TeeLog(fileLog, observer);
+
+        // Istniejące podfoldery (np. z wersji 4.0.7) dostają bieżący deskryptor od razu, zanim Eksplorator zapyta o dostęp.
+        // Odłożony albo błędny podfolder psuje tylko swoją funkcję, więc wystarcza linia WARN, bez okna.
+        var leafAsides = root.EnsureExistingLeaves(error => log.Warn("Start", error));
+        foreach (var aside in leafAsides)
+        {
+            log.Warn("Start", SetAsideText.Folder(aside));
+        }
+
         var registry = new WindowsRegistry();
         var serviceManager = new WindowsServiceManager(registry);
         var systemInfo = new WindowsSystemInfo(registry);
@@ -83,18 +95,15 @@ public sealed class AppComposition
         var restorePoints = new RestorePointService(registry, new WmiRestorePointApi(), log, clock);
 
         var warnings = new List<string>();
-        foreach (var aside in setAside)
-        {
-            var hadHistory = File.Exists(Path.Combine(aside, SecureRoot.JournalLeafName, JsonFileJournalStore.FileName));
-            warnings.Add(SetAsideText.Root(root.FullPath, aside, hadHistory));
-        }
+        var deferred = RecoverHistory(root, setAside, journal, systemInfo.MachineName, log, warnings);
 
         try
         {
-            // Gdy przy tym starcie odłożono korzeń, jego tekst już mówi o historii zmian; ostrzeżenie z journala
-            // powtórzyłoby tę samą ścieżkę.
+            // Gdy przy tym starcie odłożono korzeń, o historii zmian rozstrzygnął już RecoverHistory; ostrzeżenie z journala
+            // powtórzyłoby tę samą ścieżkę. Przy odłożonej decyzji (plik chwilowo zajęty) opis odłożonych journali wskazałby ten
+            // sam plik, który kolejny start jeszcze przeniesie.
             var warning = journal.Load().Warning;
-            if (warning is not null && setAside.Count == 0)
+            if (warning is not null && setAside.Count == 0 && !deferred)
             {
                 warnings.Add(warning);
             }
@@ -107,6 +116,13 @@ public sealed class AppComposition
         foreach (var warning in warnings)
         {
             log.Warn("Start", warning);
+        }
+
+        // Folder z wersji 4.0.7, którego deskryptora nie udało się przepisać (korzeń, podfoldery, journal): jedna linia na folder,
+        // żeby trwały błąd był widoczny. Folder działa dalej ze starym, zaufanym deskryptorem.
+        foreach (var failure in root.TakeRewriteFailures())
+        {
+            log.Warn("Start", RewriteFailed(failure.Key, failure.Value));
         }
 
         // Punkt składania handlerów akcji (pole katalogu handler): kolejne partie napraw dopisują tu swoje handlery.
@@ -175,6 +191,127 @@ public sealed class AppComposition
         var wingetLogs = new WingetLogFolder(root, log);
 
         return new AppComposition(services, log, fileLog, warnings, winget, wingetLogs, gitHub);
+    }
+
+    /// <summary>
+    /// Przenosi historię zmian i ustawienia z korzenia odłożonego przy tym starcie, a gdy w korzeniu nie ma historii, odzyskuje ją
+    /// z dawnych folderów <c>&lt;korzeń&gt;.untrusted-*</c>. Każdy plik dostaje w logu swoją linię; do <paramref name="warnings"/>
+    /// (okno) trafia tylko utrata historii. Po próbie bez przeniesienia zapisuje pusty journal, więc skan i okno się nie powtarzają.
+    /// Zwraca <c>true</c>, gdy decyzję o historii odłożono do kolejnego startu (plik historii chwilowo zajęty).
+    /// </summary>
+    private static bool RecoverHistory(
+        SecureRoot root, IReadOnlyList<string> setAside, JsonFileJournalStore journal, string machineName, ILog log, List<string> warnings)
+    {
+        var journalFile = Path.Combine(root.JournalDirectory, JsonFileJournalStore.FileName);
+        var lost = new List<string>();
+        var attempted = false;
+        var deferred = false;
+        foreach (var aside in setAside)
+        {
+            log.Info("Start", SetAsideText.RootMoved(aside));
+            var salvage = SetAsideSalvage.FromAside(aside, root, machineName);
+            WarnSetAside(salvage.SetAside, log);
+            if (salvage.Journal.Outcome == SalvageOutcome.Moved)
+            {
+                log.Info("Start", SetAsideText.HistoryMoved);
+            }
+            else if (salvage.Journal.Outcome == SalvageOutcome.Rejected)
+            {
+                log.Warn("Start", SetAsideText.HistoryNotMoved(salvage.Journal.Source, ReasonOf(salvage.Journal)));
+
+                // Plik chwilowo zajęty w folderze, który skan dawnych folderów weźmie przy kolejnym starcie: decyzja odłożona, bez okna
+                // i bez pustego journala. Folder z obcym właścicielem do skanu nie wejdzie, więc wtedy to utrata.
+                if (salvage.Journal.Transient && SecureDirectory.IsAdminOwnedPlainFolder(aside))
+                {
+                    deferred = true;
+                }
+                else
+                {
+                    lost.Add(aside);
+                    attempted = true;
+                }
+            }
+
+            if (salvage.Settings.Outcome == SalvageOutcome.Moved)
+            {
+                log.Info("Start", SetAsideText.SettingsMoved);
+            }
+            else if (salvage.Settings.Outcome == SalvageOutcome.Rejected)
+            {
+                log.Warn("Start", SetAsideText.SettingsNotMoved(salvage.Settings.Source, ReasonOf(salvage.Settings)));
+            }
+        }
+
+        if (lost.Count == 0 && !File.Exists(journalFile))
+        {
+            var old = SetAsideSalvage.FromOldAsides(root, machineName);
+            WarnSetAside(old.SetAside, log);
+            foreach (var rejected in old.Rejected)
+            {
+                log.Warn("Start", SetAsideText.HistoryNotMoved(rejected.Source, ReasonOf(rejected)));
+            }
+
+            if (old.Moved is not null)
+            {
+                log.Info("Start", SetAsideText.HistoryRestored(old.Moved.Source));
+            }
+            else if (old.Rejected.Any(file => file.Transient))
+            {
+                // Plik chwilowo zajęty przez inny proces (np. antywirus) odkłada decyzję do kolejnego startu: bez okna i bez pustego
+                // journala, który zakończyłby skanowanie i po cichu przekreślił tę historię. Same linie WARN.
+                deferred = true;
+            }
+            else if (old.Rejected.Count > 0)
+            {
+                attempted = true;
+
+                // Okno tylko przy odrzuceniu na treści albo zapisie: odrzucenie na samym pliku (link, właściciel, ACL) mogło
+                // pochodzić od zwykłego konta, które w C:\ProgramData zakłada foldery.
+                foreach (var rejected in old.Rejected.Where(file => file.Rejection is SalvageRejection.Corrupted
+                    or SalvageRejection.OtherComputer or SalvageRejection.TooLarge or SalvageRejection.WriteFailed))
+                {
+                    var folder = Path.GetDirectoryName(Path.GetDirectoryName(rejected.Source));
+                    if (!string.IsNullOrEmpty(folder) && !lost.Contains(folder!, StringComparer.OrdinalIgnoreCase))
+                    {
+                        lost.Add(folder!);
+                    }
+                }
+            }
+        }
+
+        if (lost.Count > 0)
+        {
+            warnings.Add(SetAsideText.HistoryLost(string.Join(", ", lost)));
+        }
+
+        if (attempted && !File.Exists(journalFile))
+        {
+            try
+            {
+                journal.Save(new JournalDocument { Machine = machineName });
+            }
+            catch (JournalStoreException ex)
+            {
+                warnings.Add(ex.Message);
+            }
+        }
+
+        return deferred;
+    }
+
+    /// <summary>Linia WARN: nie udało się przepisać uprawnień istniejącego folderu na bieżące; <paramref name="reason"/> = komunikat błędu.</summary>
+    internal static string RewriteFailed(string folder, string reason)
+        => L.F("Nie udało się zmienić uprawnień folderu {0}, więc Eksplorator może pytać o dostęp do niego. Program spróbuje ponownie przy następnym starcie. Powód: {1}", folder, reason);
+
+    private static string ReasonOf(SalvageFile file) => SetAsideText.Reason(file.Rejection!.Value, file.Detail);
+
+    /// <summary>Folder odłożony przy zapisie kopii historii (np. niezaufany <c>journal</c>): linia WARN, jak przy innych podfolderach.</summary>
+    private static void WarnSetAside(IReadOnlyList<string> asides, ILog log)
+    {
+        foreach (var aside in asides)
+        {
+            log.Warn("Start", SetAsideText.Folder(aside));
+        }
     }
 
     /// <summary>Katalog kopii napraw pod korzeniem, zabezpieczany dopiero przy pierwszej kopii (nie przy starcie programu).</summary>

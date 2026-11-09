@@ -11,7 +11,7 @@ namespace DSOptimizer.Windows;
 
 /// <summary>
 /// Folder pobrań <c>&lt;root&gt;\downloads</c> (<see cref="SecureRoot.DownloadsDirectory"/>): tworzony leniwie przy pierwszej ścieżce
-/// przez <see cref="SecureRoot.EnsureLeaf"/> (Administratorzy + SYSTEM; niezaufany folder odkładany jako <c>.untrusted-*</c> z ostrzeżeniem
+/// przez <see cref="SecureRoot.EnsureLeaf"/> (zapis Administratorzy i SYSTEM, odczyt Users; niezaufany folder odkładany jako <c>.untrusted-*</c> z ostrzeżeniem
 /// w logu, junction/link = <see cref="IOException"/>). Nazwy plików <c>&lt;guid N&gt;.msi</c> (RustDesk) albo <c>&lt;guid N&gt;.ps1</c> (skrypt WinUtil), sam plik tworzy pobieranie
 /// (<c>FileMode.CreateNew</c>). Usuwanie tylko bezpośrednich dzieci folderu pobrań.
 /// </summary>

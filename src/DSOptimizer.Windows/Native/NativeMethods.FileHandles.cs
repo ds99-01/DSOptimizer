@@ -6,6 +6,7 @@ namespace DSOptimizer.Windows.Native;
 /// <summary>
 /// kernel32: usuwanie przez uchwyt (<c>OldFilesCleaner</c>) – otwarcie bez podążania za linkiem w ostatnim członie, odczyt typu
 /// i ostatecznej ścieżki z uchwytu, usunięcie dyspozycją na tym samym uchwycie (bez okna na podmianę ścieżki).
+/// Odczyt przez uchwyt (<c>ProtectedFileReader</c>): typ, rozmiar, liczba dowiązań i czas zapisu z tego samego uchwytu.
 /// </summary>
 internal static partial class NativeMethods
 {
@@ -20,6 +21,10 @@ internal static partial class NativeMethods
     internal const int FileBasicInfoClass = 0;
     internal const int FileDispositionInfoClass = 4;
     internal const int FileAttributeTagInfoClass = 9;
+    internal const uint GenericRead = 0x80000000;
+    internal const uint FileShareRead = 0x1;
+    internal const int FileStandardInfoClass = 1;
+    internal const uint FileTypeDisk = 1;
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "CreateFileW", ExactSpelling = true)]
     internal static extern SafeFileHandle CreateFileHandle(
@@ -34,6 +39,18 @@ internal static partial class NativeMethods
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool GetFileInformationByHandleEx(SafeFileHandle file, int informationClass, out FileAttributeTagInfo information, uint size);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool GetFileInformationByHandleEx(SafeFileHandle file, int informationClass, out FileStandardInfo information, uint size);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool GetFileInformationByHandleEx(SafeFileHandle file, int informationClass, out FileBasicInfo information, uint size);
+
+    /// <summary><c>FILE_TYPE_DISK</c> (1) dla pliku i folderu na dysku; potok, konsola, urządzenie znakowe = inny typ.</summary>
+    [DllImport("kernel32.dll", SetLastError = true)]
+    internal static extern uint GetFileType(SafeFileHandle file);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -67,6 +84,17 @@ internal static partial class NativeMethods
         public long LastWriteTime;
         public long ChangeTime;
         public uint FileAttributes;
+    }
+
+    /// <summary><c>FILE_STANDARD_INFO</c> (<c>BOOLEAN DeletePending</c>, <c>BOOLEAN Directory</c>).</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct FileStandardInfo
+    {
+        public long AllocationSize;
+        public long EndOfFile;
+        public uint NumberOfLinks;
+        public byte DeletePending;
+        public byte Directory;
     }
 
     /// <summary><c>FILE_DISPOSITION_INFO</c> (<c>BOOLEAN DeleteFile</c>).</summary>

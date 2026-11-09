@@ -99,15 +99,15 @@ internal sealed class OldFilesCleaner
                 return OldFilesCleanup.Skipped(RootIsLinkReason);
             }
 
-            var final = FinalPath(handle);
+            var final = HandlePaths.FinalPath(handle);
             if (final is null || final.Length < 2)
             {
                 throw new IOException(L.F("Nie można ustalić ostatecznej ścieżki {0}.", root));
             }
 
             // Link w członie pośrednim (np. junction w <profil>\AppData) przekierowuje cały korzeń do innego folderu.
-            var finalPlain = WithoutDevicePrefix(final).TrimEnd('\\');
-            if (!string.Equals(finalPlain, RequestedPath(root), StringComparison.OrdinalIgnoreCase))
+            var finalPlain = HandlePaths.WithoutDevicePrefix(final).TrimEnd('\\');
+            if (!string.Equals(finalPlain, HandlePaths.RequestedPath(root), StringComparison.OrdinalIgnoreCase))
             {
                 return OldFilesCleanup.Skipped(
                     L.F("ścieżka prowadzi przez link (junction albo dowiązanie symboliczne) do innego folderu ({0}) – program go nie czyści", finalPlain));
@@ -181,62 +181,6 @@ internal sealed class OldFilesCleaner
             NativeMethods.FileAttributeTagInfoClass,
             out info,
             (uint)Marshal.SizeOf<NativeMethods.FileAttributeTagInfo>());
-
-    private static string? FinalPath(SafeFileHandle handle)
-    {
-        var buffer = new char[512];
-        while (true)
-        {
-            var length = NativeMethods.GetFinalPathNameByHandle(handle, buffer, (uint)buffer.Length, 0);
-            if (length == 0)
-            {
-                return null;
-            }
-
-            if (length < buffer.Length)
-            {
-                return new string(buffer, 0, (int)length);
-            }
-
-            buffer = new char[length + 1];
-        }
-    }
-
-    /// <summary><c>\\?\C:\x</c> → <c>C:\x</c>, <c>\\?\UNC\serwer\udział</c> → <c>\\serwer\udział</c> (postać z <c>GetFinalPathNameByHandleW</c>).</summary>
-    private static string WithoutDevicePrefix(string path)
-    {
-        const string Device = @"\\?\";
-        const string DeviceUnc = @"\\?\UNC\";
-        if (path.StartsWith(DeviceUnc, StringComparison.OrdinalIgnoreCase))
-        {
-            return @"\\" + path.Substring(DeviceUnc.Length);
-        }
-
-        return path.StartsWith(Device, StringComparison.Ordinal) ? path.Substring(Device.Length) : path;
-    }
-
-    /// <summary>Żądana ścieżka korzenia: pełna, bez końcowego separatora, z członami 8.3 rozwiniętymi do długich nazw (bez rozwiązywania linków).</summary>
-    private static string RequestedPath(string root)
-    {
-        var full = Path.GetFullPath(root);
-        if (full.IndexOf('~') >= 0)
-        {
-            var buffer = new char[512];
-            var length = NativeMethods.GetLongPathName(full, buffer, (uint)buffer.Length);
-            if (length >= buffer.Length)
-            {
-                buffer = new char[length + 1];
-                length = NativeMethods.GetLongPathName(full, buffer, (uint)buffer.Length);
-            }
-
-            if (length > 0 && length < buffer.Length)
-            {
-                full = new string(buffer, 0, (int)length);
-            }
-        }
-
-        return full.TrimEnd('\\');
-    }
 
     private static bool MarkForDeletion(SafeFileHandle handle)
     {
@@ -431,7 +375,7 @@ internal sealed class OldFilesCleaner
 
     private bool IsInsideRoot(SafeFileHandle handle)
     {
-        var final = FinalPath(handle);
+        var final = HandlePaths.FinalPath(handle);
         return final is not null
             && final.Length > _rootPrefix.Length
             && final.StartsWith(_rootPrefix, StringComparison.OrdinalIgnoreCase);

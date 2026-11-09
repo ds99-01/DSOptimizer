@@ -754,24 +754,76 @@
       "en": "Group '{0}' doesn't exist in category '{1}'."
     },
     {
-      "pl": "Folder programu {0} miał zmienione uprawnienia, więc program odłożył go na bok i utworzył nowy. Najczęściej to skutek kliknięcia „Kontynuuj” w Eksploratorze plików przy tym folderze. Poprzednie pliki, w tym historia zmian, są w {1}. Program zaczyna z ustawieniami domyślnymi i pustą historią zmian; przy zmianach sprzed odłożenia „Cofnij” przywróci wartości domyślne Windows, a nie stan sprzed zmiany. Nie otwieraj folderu programu w Eksploratorze, a raport zapisuj przyciskiem „Zapisz raport”.",
-      "en": "The program folder {0} had its permissions changed, so the program set it aside and created a new one. This usually happens after clicking \"Continue\" in File Explorer for this folder. The previous files, including the change history, are in {1}. The program starts with default settings and an empty change history; for changes made before the folder was set aside, \"Undo\" restores the Windows default values, not the state before the change. Don't open the program folder in File Explorer, and save the report with the \"Save report\" button."
+      "pl": "Folder programu miał zmienione uprawnienia, więc program odłożył go na bok ({0}) i utworzył nowy.",
+      "en": "The program folder had its permissions changed, so the program set it aside ({0}) and created a new one."
     },
     {
-      "pl": "Folder programu {0} miał zmienione uprawnienia, więc program odłożył go na bok i utworzył nowy. Najczęściej to skutek kliknięcia „Kontynuuj” w Eksploratorze plików przy tym folderze. Poprzednie pliki są w {1}. Program zaczyna z ustawieniami domyślnymi. Nie otwieraj folderu programu w Eksploratorze, a raport zapisuj przyciskiem „Zapisz raport”.",
-      "en": "The program folder {0} had its permissions changed, so the program set it aside and created a new one. This usually happens after clicking \"Continue\" in File Explorer for this folder. The previous files are in {1}. The program starts with default settings. Don't open the program folder in File Explorer, and save the report with the \"Save report\" button."
+      "pl": "Historię zmian przeniesiono do nowego folderu programu.",
+      "en": "The change history was moved to the new program folder."
     },
     {
-      "pl": "Podfolder programu miał zmienione uprawnienia, więc program odłożył go na bok i utworzył nowy; najczęściej to skutek kliknięcia „Kontynuuj” w Eksploratorze plików. Poprzednie pliki są w {0}. Nie otwieraj folderu programu w Eksploratorze.",
-      "en": "A program folder had its permissions changed, so the program set it aside and created a new one; this usually happens after clicking \"Continue\" in File Explorer. The previous files are in {0}. Don't open the program folder in File Explorer."
+      "pl": "Ustawienia przeniesiono do nowego folderu programu.",
+      "en": "The settings were moved to the new program folder."
     },
     {
-      "pl": "Plik ustawień miał zmienione uprawnienia, więc program odłożył go na bok i używa ustawień domyślnych; najczęściej to skutek kliknięcia „Kontynuuj” w Eksploratorze plików. Poprzedni plik: {0}. Nie otwieraj folderu programu w Eksploratorze.",
-      "en": "The settings file had its permissions changed, so the program set it aside and uses default settings; this usually happens after clicking \"Continue\" in File Explorer. Previous file: {0}. Don't open the program folder in File Explorer."
+      "pl": "Historię zmian odzyskano z {0}.",
+      "en": "The change history was recovered from {0}."
     },
     {
-      "pl": "Historia zmian miała zmienione uprawnienia, więc program odłożył ją na bok i prowadzi nową; najczęściej to skutek kliknięcia „Kontynuuj” w Eksploratorze plików. Poprzednia historia: {0}. Przy zmianach sprzed odłożenia „Cofnij” przywróci wartości domyślne Windows, a nie stan sprzed zmiany. Nie otwieraj folderu programu w Eksploratorze.",
-      "en": "The change history had its permissions changed, so the program set it aside and keeps a new one; this usually happens after clicking \"Continue\" in File Explorer. Previous history: {0}. For changes made before it was set aside, \"Undo\" restores the Windows default values, not the state before the change. Don't open the program folder in File Explorer."
+      "pl": "Nie przeniesiono historii zmian z {0}: {1}.",
+      "en": "The change history from {0} wasn't moved: {1}."
+    },
+    {
+      "pl": "Nie przeniesiono ustawień z {0}: {1}. Program używa ustawień domyślnych.",
+      "en": "The settings from {0} weren't moved: {1}. The program uses default settings."
+    },
+    {
+      "pl": "Dane programu zostały zmienione poza programem, więc historia zmian zaczyna się od nowa. Cofnięcie wcześniejszych zmian przywróci wartości domyślne Windows, a nie stan sprzed zmiany. Poprzednie pliki są w {0}.",
+      "en": "The program's data was changed outside the program, so the change history starts over. Undoing earlier changes restores the Windows default values, not the state before the change. The previous files are in {0}."
+    },
+    {
+      "pl": "Podfolder programu miał zmienione uprawnienia, więc program odłożył go na bok i utworzył nowy. Poprzednie pliki są w {0}.",
+      "en": "A program subfolder had its permissions changed, so the program set it aside and created a new one. The previous files are in {0}."
+    },
+    {
+      "pl": "Plik ustawień miał zmienione uprawnienia, więc program odłożył go na bok i używa ustawień domyślnych. Poprzedni plik: {0}.",
+      "en": "The settings file had its permissions changed, so the program set it aside and uses default settings. Previous file: {0}."
+    },
+    {
+      "pl": "Historia zmian miała zmienione uprawnienia, więc program odłożył ją na bok i prowadzi nową. Poprzednia historia: {0}. Przy zmianach sprzed odłożenia „Cofnij” przywróci wartości domyślne Windows, a nie stan sprzed zmiany.",
+      "en": "The change history had its permissions changed, so the program set it aside and keeps a new one. Previous history: {0}. For changes made before it was set aside, \"Undo\" restores the Windows default values, not the state before the change."
+    },
+    {
+      "pl": "nie można otworzyć pliku: {0}",
+      "en": "the file can't be opened: {0}"
+    },
+    {
+      "pl": "to nie jest zwykły plik (link, folder albo urządzenie)",
+      "en": "it isn't a regular file (link, folder or device)"
+    },
+    {
+      "pl": "plik ma więcej niż jedno dowiązanie",
+      "en": "the file has more than one hard link"
+    },
+    {
+      "pl": "plik ma obcego właściciela albo uprawnienia",
+      "en": "the file has a foreign owner or permissions"
+    },
+    {
+      "pl": "plik jest za duży ({0} B)",
+      "en": "the file is too large ({0} B)"
+    },
+    {
+      "pl": "plik jest uszkodzony ({0})",
+      "en": "the file is corrupted ({0})"
+    },
+    {
+      "pl": "historia zmian pochodzi z innego komputera ({0})",
+      "en": "the change history comes from another computer ({0})"
+    },
+    {
+      "pl": "nie można zapisać kopii: {0}",
+      "en": "the copy couldn't be saved: {0}"
     }
   ]
 }

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Security.AccessControl;
 using DSOptimizer.Tests.Windows.Support;
 using DSOptimizer.Windows;
 using Xunit;
@@ -129,6 +131,109 @@ public class SecureRootTests
 
         Assert.Equal("zostaje", File.ReadAllText(Path.Combine(leaf, "plik.txt")));
         Assert.Empty(Directory.GetDirectories(temp.Sub("app"), "*.untrusted-*"));
+    }
+
+    [Fact]
+    public void WingetLogsDirectory_IsWingetUnderLogs()
+    {
+        using var temp = new TempDirectory();
+        var root = temp.AppRoot;
+        Assert.Equal(Path.Combine(root.LogsDirectory, SecureRoot.WingetLeafName), root.WingetLogsDirectory);
+        Assert.Equal("winget", SecureRoot.WingetLeafName);
+    }
+
+    [Fact]
+    public void EnsureExistingLeaves_LegacyLeaves_RewrittenMissingNotCreated()
+    {
+        using var temp = new TempDirectory();
+        var root = temp.AppRoot;
+        LegacyAcl.Create(root.FullPath);
+        LegacyAcl.Create(root.LogsDirectory);
+        LegacyAcl.Create(root.BackupsDirectory);
+        LegacyAcl.Create(root.WingetLogsDirectory);
+        var errors = new List<string>();
+
+        Assert.Empty(root.Ensure());
+        var asides = root.EnsureExistingLeaves(errors.Add);
+
+        Assert.Empty(asides);
+        Assert.Empty(errors);
+        foreach (var path in new[] { root.FullPath, root.LogsDirectory, root.BackupsDirectory, root.WingetLogsDirectory })
+        {
+            Assert.True(AclTrust.HasCurrentDirectoryDescriptor(RawDescriptors.OfDirectory(path)), path);
+        }
+
+        Assert.False(Directory.Exists(root.RunDirectory));
+        Assert.False(Directory.Exists(root.DownloadsDirectory));
+        Assert.False(Directory.Exists(root.JournalDirectory));
+    }
+
+    [Fact]
+    public void EnsureExistingLeaves_UntrustedBackups_SetAsideAndReturned()
+    {
+        using var temp = new TempDirectory();
+        var root = temp.AppRoot;
+        root.Ensure();
+        Directory.CreateDirectory(root.BackupsDirectory);
+        ForeignAcl.Apply(root.BackupsDirectory);
+        var errors = new List<string>();
+
+        var aside = Assert.Single(root.EnsureExistingLeaves(errors.Add));
+
+        Assert.StartsWith(root.BackupsDirectory + ".untrusted-", aside, StringComparison.OrdinalIgnoreCase);
+        Assert.True(Directory.Exists(aside));
+        Assert.Empty(errors);
+        Assert.True(AclTrust.HasCurrentDirectoryDescriptor(RawDescriptors.OfDirectory(root.BackupsDirectory)));
+    }
+
+    [Fact]
+    public void EnsureExistingLeaves_LogsIsJunction_WingetUnderTargetUntouched()
+    {
+        using var temp = new TempDirectory();
+        var root = temp.AppRoot;
+        root.Ensure();
+        var target = temp.Sub("target");
+        LegacyAcl.Create(target);
+        LegacyAcl.Create(Path.Combine(target, SecureRoot.WingetLeafName));
+        var targetBefore = RawDescriptors.OfDirectory(target).GetSddlForm(AccessControlSections.All);
+        var wingetBefore = RawDescriptors.OfDirectory(Path.Combine(target, SecureRoot.WingetLeafName)).GetSddlForm(AccessControlSections.All);
+        Junction.Create(root.LogsDirectory, target);
+        var errors = new List<string>();
+
+        var asides = root.EnsureExistingLeaves(errors.Add);
+
+        Assert.Empty(asides);
+        Assert.Single(errors);
+        Assert.Equal(targetBefore, RawDescriptors.OfDirectory(target).GetSddlForm(AccessControlSections.All));
+        Assert.Equal(
+            wingetBefore,
+            RawDescriptors.OfDirectory(Path.Combine(target, SecureRoot.WingetLeafName)).GetSddlForm(AccessControlSections.All));
+    }
+
+    [Fact]
+    public void EnsureExistingLeaves_DownloadsIsJunction_ErrorReportedOthersMigrated()
+    {
+        using var temp = new TempDirectory();
+        var root = temp.AppRoot;
+        root.Ensure();
+        LegacyAcl.Create(root.LogsDirectory);
+        Directory.CreateDirectory(temp.Sub("cel"));
+        Junction.Create(root.DownloadsDirectory, temp.Sub("cel"));
+        try
+        {
+            var errors = new List<string>();
+
+            var asides = root.EnsureExistingLeaves(errors.Add);
+
+            Assert.Empty(asides);
+            Assert.Contains(root.DownloadsDirectory, Assert.Single(errors), StringComparison.OrdinalIgnoreCase);
+            Assert.True(AclTrust.HasCurrentDirectoryDescriptor(RawDescriptors.OfDirectory(root.LogsDirectory)));
+            Assert.Empty(Directory.GetFileSystemEntries(temp.Sub("cel")));
+        }
+        finally
+        {
+            Directory.Delete(root.DownloadsDirectory, recursive: false);
+        }
     }
 
     [Fact]

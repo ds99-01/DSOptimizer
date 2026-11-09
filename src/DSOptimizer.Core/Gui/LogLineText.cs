@@ -117,8 +117,8 @@ public static class LogLineText
     }
 
     /// <summary>
-    /// Czy dziennik podsuwa „Kopiuj ścieżkę” (przycisk albo menu). Nigdy dla katalogu programu: wklejona w Eksploratorze bez
-    /// uprawnień administratora kończy się „Kontynuuj”, a ono dopisuje konto do DACL folderu.
+    /// Czy dziennik podsuwa „Kopiuj ścieżkę” (przycisk albo menu). Nigdy dla katalogu programu (granica bezpieczeństwa): pliki
+    /// historii i ustawień zostają tylko dla administratorów, a podsunięta ścieżka zachęcałaby do zmiany uprawnień folderu.
     /// </summary>
     public static bool OffersCopyPath(LogPathMode mode)
         => mode is LogPathMode.Reveal or LogPathMode.RevealMissing or LogPathMode.CopyOnly;

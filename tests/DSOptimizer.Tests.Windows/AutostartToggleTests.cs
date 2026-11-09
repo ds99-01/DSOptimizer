@@ -18,9 +18,9 @@ namespace DSOptimizer.Tests.Windows;
 
 /// <summary>
 /// „Wyłącz (N)”/„Włącz (M)” strony „Autostart” w modelu głównego okna (<c>MainViewModel.ToggleAutostartAsync</c>) z atrapą okna serii.
-/// Odczyt z atrapy czytnika; przełączniki wierszy leżą w <see cref="RegistrySandbox"/>, a silnik pisze wyłącznie pod kluczem przełącznika
-/// wiersza – prawdziwy autostart hosta nie jest czytany ani zmieniany. Wiersze są pozycjami maszyny: przełącznik pozycji konta silnik
-/// przyjmuje tylko z gałęzi konta (<c>HKU\&lt;SID&gt;</c>), a ta nie leży w piaskownicy. Wątek STA z dispatcherem jako kontekstem synchronizacji (jak okno).
+/// Odczyt z atrapy czytnika; przełączniki wierszy leżą w <see cref="RegistrySandbox"/> pod miejscami <see cref="SandboxAutostart.Locations"/>
+/// (silnik cofa tylko w miejscach pozycji z kontekstu), a silnik pisze wyłącznie pod kluczem przełącznika wiersza – prawdziwy autostart hosta
+/// nie jest czytany ani zmieniany. Wiersze są pozycjami maszyny. Wątek STA z dispatcherem jako kontekstem synchronizacji (jak okno).
 /// </summary>
 [Trait("Category", "Windows")]
 public sealed class AutostartToggleTests
@@ -106,7 +106,7 @@ public sealed class AutostartToggleTests
         public bool IsCertain => true;
     }
 
-    private static string SwitchKey(RegistrySandbox sandbox) => sandbox.HkcuPath + @"\StartupApproved\Run";
+    private static string SwitchKey(RegistrySandbox sandbox) => SandboxAutostart.Locations(sandbox).StartupApprovedKey(AutostartSource.RunMachine);
 
     private static AutostartRowViewModel Row(MainViewModel vm, string name) => vm.Autostart.VisibleRows.Single(row => row.Name == name);
 
@@ -130,7 +130,7 @@ public sealed class AutostartToggleTests
                 null,
                 Array.Empty<string>()));
             var dialogs = new FakeSeriesDialogs(mode);
-            var vm = MainViewModelTests.Create(temp, reader, dialogs);
+            var vm = MainViewModelTests.Create(temp, reader, dialogs, autostartLocations: SandboxAutostart.Locations(sandbox));
             dialogs.Busy = () => vm.IsBusy && vm.Autostart.IsBusy;
             vm.SelectedPage = vm.Autostart;
             PumpUntil(() => reader.Contexts.Count == 1 && !vm.Autostart.IsLoading && vm.Autostart.VisibleRows.Count == 2);
@@ -143,7 +143,7 @@ public sealed class AutostartToggleTests
         Source = AutostartSource.RunMachine,
         EntryName = name,
         Name = name,
-        Location = sandbox.HkcuPath + @"\Run",
+        Location = SandboxAutostart.Locations(sandbox).RunKey(AutostartSource.RunMachine),
         FileStatus = AutostartFileStatus.Exists,
         Switch = new AutostartSwitch(AutostartSwitchKind.StartupApproved, SwitchKey(sandbox), name, AutostartSwitchFormat.Absent, AutostartState.Enabled, null, null),
         Publisher = "Producent",
