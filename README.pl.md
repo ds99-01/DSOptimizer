@@ -2,12 +2,34 @@
 
 [English](README.md) | **Polski**
 
-Strona: [dsoptimizer.com/pl](https://dsoptimizer.com/pl/)
+**Darmowy program z otwartym kodem do debloatu i prywatności w Windows 11.** Strona i opis każdej pozycji: [dsoptimizer.com/pl](https://dsoptimizer.com/pl/)
 
-DSOptimizer to darmowy program do porządkowania i ustawiania Windows 11, najlepiej zaraz po instalacji systemu.
+[![Najnowsze wydanie](https://img.shields.io/github/v/release/ds99-01/DSOptimizer?label=wydanie)](https://github.com/ds99-01/DSOptimizer/releases/latest)
+[![Licencja: MPL 2.0](https://img.shields.io/badge/licencja-MPL%202.0-blue)](LICENSE)
+[![Dokumentacja](https://img.shields.io/badge/dokumentacja-dsoptimizer.com-007CA5)](https://dsoptimizer.com/pl/dokumentacja/)
+
+DSOptimizer to darmowy program z otwartym kodem (MPL 2.0) do porządkowania i ustawiania Windows 11, najlepiej zaraz po instalacji systemu.
 Zbiera w jednym oknie rzeczy, które zwykle robi się ręcznie w wielu miejscach: wyłączanie zbędnych funkcji
-i reklam, usuwanie preinstalowanych aplikacji, instalację popularnych programów, proste naprawy systemu
+i reklam, telemetrii i funkcji AI, usuwanie preinstalowanych aplikacji, instalację popularnych programów, proste naprawy systemu
 i sprawdzenie sterowników. Każda zmiana ustawień trafia do historii. Większość ustawień można cofnąć w programie; wyjątki są opisane niżej.
+
+![Okno DSOptimizera: strona „Prywatność i AI” ze stanem każdej pozycji i panelem „Co zyskasz” i „Co zmienia”](docs/images/dsoptimizer-privacy-pl.png)
+
+## Czego się spodziewać
+
+1. **Przy pierwszym uruchomieniu Windows ostrzeże.** Program nie ma jeszcze podpisu cyfrowego, więc SmartScreen pokaże
+   „System Windows ochronił ten komputer” – sprawdź sumę kontrolną pliku, potem „Więcej informacji” → „Uruchom mimo to”
+   (zobacz [Ostrzeżenie SmartScreen](#ostrzeżenie-smartscreen)).
+2. **Windows zapyta o zgodę administratora (UAC)**, bo program zmienia ustawienia całego systemu.
+3. **Najpierw tylko odczyt.** Przy każdej pozycji widać, czy jest już zastosowana na tym komputerze. Program sam
+   niczego nie zaznacza i na tym etapie niczego nie zmienia.
+4. **Wybierasz sam.** Zaznacz pozycje albo kliknij „Zaznacz sugerowane”, przeczytaj „Co zyskasz” i „Co zmienia”,
+   a potem kliknij „Zastosuj”. Naprawy i narzędzia uruchamia się ich własnymi przyciskami.
+5. **Wszystko trafia do „Historii zmian”.** Większość zmian ustawień cofniesz tam przyciskiem „Cofnij”; usuwania
+   aplikacji i napraw cofnąć się nie da, a program mówi to przy każdej z nich.
+
+Każda pozycja jest też opisana na stronie – co zyskasz, co zmienia, ryzyko, czy potrzebny jest restart i szczegóły
+techniczne, na przykład [Wyłącz Widżety](https://dsoptimizer.com/pl/dokumentacja/privacy.widgets/).
 
 ## Co jest w programie
 

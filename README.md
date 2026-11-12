@@ -2,12 +2,33 @@
 
 **English** | [Polski](README.pl.md)
 
-Website: [dsoptimizer.com](https://dsoptimizer.com/)
+**Free, open-source Windows 11 debloat and privacy tool.** Website and documentation of every item: [dsoptimizer.com](https://dsoptimizer.com/)
 
-DSOptimizer is a free tool for cleaning up and configuring Windows 11, best used right after installing the system.
+[![Latest release](https://img.shields.io/github/v/release/ds99-01/DSOptimizer?label=release)](https://github.com/ds99-01/DSOptimizer/releases/latest)
+[![License: MPL 2.0](https://img.shields.io/badge/license-MPL%202.0-blue)](LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-dsoptimizer.com-007CA5)](https://dsoptimizer.com/docs/)
+
+DSOptimizer is a free, open-source (MPL 2.0) tool for cleaning up and configuring Windows 11, best used right after installing the system.
 It brings together in one window the things you would usually do by hand in many different places: turning off
-unneeded features and ads, removing preinstalled apps, installing popular programs, simple system repairs
+unneeded features and ads, telemetry and AI features, removing preinstalled apps, installing popular programs, simple system repairs
 and checking drivers. Every settings change is recorded in the history. Most settings can be undone in the program; the exceptions are described below.
+
+![DSOptimizer window: the "Privacy and AI" page with the state of each item and the "What you gain" and "What it changes" panel](docs/images/dsoptimizer-privacy-en.png)
+
+## What to expect
+
+1. **Windows warns you the first time.** The program does not have a digital signature yet, so SmartScreen shows
+   "Windows protected your PC" – check the file's checksum, then "More info" → "Run anyway" (see [SmartScreen warning](#smartscreen-warning)).
+2. **Windows asks for administrator consent (UAC)**, because the program changes system-wide settings.
+3. **First it only reads.** Every item shows whether it is already applied on this computer. The program selects
+   nothing by itself and changes nothing at this point.
+4. **You choose.** Select items yourself or click "Select suggested", read "What you gain" and "What it changes",
+   then click "Apply". Repairs and tools run from their own buttons.
+5. **Everything goes to "Change history".** Most settings changes can be undone there with "Undo"; removing apps
+   and repairs cannot be undone, and the program says so next to each of them.
+
+Every item is also described on the website – what you gain, what it changes, the risk, whether a restart is needed
+and the technical details, for example [Turn off Widgets](https://dsoptimizer.com/docs/privacy.widgets/).
 
 ## Language
 
