@@ -1,240 +1,67 @@
-# DSOptimizer
+<p align="center">
+  <img src="docs/images/dsoptimizer-privacy-pl.png" alt="Okno DSOptimizera: strona „Prywatność i AI” ze stanem każdej pozycji i panelem „Co zyskasz”" width="860">
+</p>
 
-[English](README.md) | **Polski**
+<h1 align="center">DSOptimizer</h1>
 
-**Darmowy program z otwartym kodem do debloatu i prywatności w Windows 11.** Strona i opis każdej pozycji: [dsoptimizer.com/pl](https://dsoptimizer.com/pl/)
+<p align="center">
+Darmowy program z otwartym kodem do porządków w świeżym Windows 11.<br>
+Usuwa zbędne aplikacje, wyłącza reklamy, telemetrię i funkcje AI, a stan każdego ustawienia pokazuje przed zmianą.
+</p>
 
-[![Najnowsze wydanie](https://img.shields.io/github/v/release/ds99-01/DSOptimizer?label=wydanie)](https://github.com/ds99-01/DSOptimizer/releases/latest)
-[![Licencja: MPL 2.0](https://img.shields.io/badge/licencja-MPL%202.0-blue)](LICENSE)
-[![Dokumentacja](https://img.shields.io/badge/dokumentacja-dsoptimizer.com-007CA5)](https://dsoptimizer.com/pl/dokumentacja/)
+<p align="center">
+  <a href="https://github.com/ds99-01/DSOptimizer/releases/latest"><b>Pobierz</b></a> &nbsp;·&nbsp;
+  <a href="https://dsoptimizer.com/pl/">Strona</a> &nbsp;·&nbsp;
+  <a href="https://dsoptimizer.com/pl/dokumentacja/">Opis każdej pozycji</a> &nbsp;·&nbsp;
+  <a href="README.md">English</a>
+</p>
 
-DSOptimizer to darmowy program z otwartym kodem (MPL 2.0) do porządkowania i ustawiania Windows 11, najlepiej zaraz po instalacji systemu.
-Zbiera w jednym oknie rzeczy, które zwykle robi się ręcznie w wielu miejscach: wyłączanie zbędnych funkcji
-i reklam, telemetrii i funkcji AI, usuwanie preinstalowanych aplikacji, instalację popularnych programów, proste naprawy systemu
-i sprawdzenie sterowników. Każda zmiana ustawień trafia do historii. Większość ustawień można cofnąć w programie; wyjątki są opisane niżej.
+<p align="center">
+  <a href="https://github.com/ds99-01/DSOptimizer/releases/latest"><img alt="Najnowsze wydanie" src="https://img.shields.io/github/v/release/ds99-01/DSOptimizer?label=wydanie"></a>
+  <a href="LICENSE"><img alt="Licencja: MPL 2.0" src="https://img.shields.io/badge/licencja-MPL%202.0-blue"></a>
+</p>
 
-![Okno DSOptimizera: strona „Prywatność i AI” ze stanem każdej pozycji i panelem „Co zyskasz” i „Co zmienia”](docs/images/dsoptimizer-privacy-pl.png)
+## Jak to działa
 
-## Czego się spodziewać
+1. **Najpierw tylko sprawdza.** Przy każdej pozycji widać „Zastosowane” albo „Niezastosowane”. Nic nie jest zaznaczone i nic się jeszcze nie zmienia.
+2. **Ty wybierasz.** Zaznaczasz pozycje albo klikasz „Zaznacz sugerowane”. Przy każdej pozycji jest napisane, co zyskasz i co się zmieni.
+3. **Zmienia i zapisuje.** Przed zmianą próbuje utworzyć punkt przywracania. Każda zmiana trafia do historii zmian, gdzie ustawienia można cofnąć. Usunięć aplikacji i napraw cofnąć się nie da, a program mówi to przy każdej z nich.
 
-1. **Przy pierwszym uruchomieniu Windows ostrzeże.** Program nie ma jeszcze podpisu cyfrowego, więc SmartScreen pokaże
-   „System Windows ochronił ten komputer” – sprawdź sumę kontrolną pliku, potem „Więcej informacji” → „Uruchom mimo to”
-   (zobacz [Ostrzeżenie SmartScreen](#ostrzeżenie-smartscreen)).
-2. **Windows zapyta o zgodę administratora (UAC)**, bo program zmienia ustawienia całego systemu.
-3. **Najpierw tylko odczyt.** Przy każdej pozycji widać, czy jest już zastosowana na tym komputerze. Program sam
-   niczego nie zaznacza i na tym etapie niczego nie zmienia.
-4. **Wybierasz sam.** Zaznacz pozycje albo kliknij „Zaznacz sugerowane”, przeczytaj „Co zyskasz” i „Co zmienia”,
-   a potem kliknij „Zastosuj”. Naprawy i narzędzia uruchamia się ich własnymi przyciskami.
-5. **Wszystko trafia do „Historii zmian”.** Większość zmian ustawień cofniesz tam przyciskiem „Cofnij”; usuwania
-   aplikacji i napraw cofnąć się nie da, a program mówi to przy każdej z nich.
+Poza ustawieniami prywatności i AI program usuwa preinstalowane aplikacje, instaluje popularne programy przez winget, zarządza autostartem i uruchamia typowe naprawy, takie jak reset Windows Update i naprawa plików systemowych. Pełna lista jest w [szczegółach](docs/szczegoly.md#co-jest-w-programie).
 
-Każda pozycja jest też opisana na stronie – co zyskasz, co zmienia, ryzyko, czy potrzebny jest restart i szczegóły
-techniczne, na przykład [Wyłącz Widżety](https://dsoptimizer.com/pl/dokumentacja/privacy.widgets/).
+## Dowody zamiast obietnic
 
-## Co jest w programie
-
-- **Ustawienia systemu** – strony „Prywatność i AI”, „Wydajność”, „Dysk i system plików”, „Sieć i LAN”,
-  „Bezpieczeństwo i szyfrowanie” oraz „Eksplorator i wygoda”. Przy każdej pozycji program pokazuje, czy jest już
-  ustawiona na tym komputerze, co zmienia i co na tym zyskasz. Zaznaczasz, co chcesz, i klikasz „Zastosuj”.
-  Lista „Pokaż” zawęża widok do pozycji niezastosowanych, zastosowanych albo zaznaczonych ze wszystkich stron.
-- **Specyfikacja** – podsumowanie sprzętu komputera z możliwością zapisania raportu.
-- **Przygotowanie** – kroki po instalacji Windows: aktualizacje, sterowniki chipsetu i grafiki, strona wsparcia
-  producenta laptopa, urządzenia bez sterownika. Program tylko sprawdza stan i podaje oficjalne linki.
-- **Aplikacje** – lista zainstalowanych aplikacji z sugestiami, co można usunąć. Aplikacje ważne dla systemu
-  są chronione i nie da się ich zaznaczyć.
-- **Autostart** – programy, które startują same po zalogowaniu użytkownika (z rejestru, folderów Autostart
-  i aplikacji ze Sklepu), z czasem procesora zużytym przy starcie według pomiaru Windows. Można je wyłączać
-  i włączać: program używa tego samego przełącznika co Menedżer zadań i Ustawienia i niczego nie usuwa. Pozycje
-  ważne dla systemu są chronione; część znanych programów i pozycje, których plik już nie istnieje, są sugerowane
-  do wyłączenia.
-- **Instalacja** – instalacja popularnych programów przez winget (Microsoft) oraz RustDesk z GitHuba jego autorów.
-- **Naprawy i narzędzia** – jedna strona z trzema częściami. Naprawy, m.in.: reset Windows Update, sprawdzenie
-  i naprawa plików systemowych, czyszczenie dysku, usunięcie poprzedniej instalacji Windows, reset ustawień sieci,
-  naprawa winget i Microsoft Store. Narzędzia, np. ponowne uruchomienie paska zadań i Eksploratora oraz uruchomienie
-  WinUtil (Chris Titus). Panele systemowe: szybkie otwieranie paneli Windows, których szuka się zwykle najdłużej.
-- **Historia zmian** – zmiany ustawień, zmiany w autostarcie, usunięcia i instalacje aplikacji w jednym miejscu. Zmiany ustawień i autostartu można tu cofnąć; usunięcia i instalacje aplikacji nie mają „Cofnij”.
-
-## Wymagania
-
-- Windows 11 x64 (na ARM64 nietestowane). Program sprawdzano na Windows 11 26H2 (Home i Pro); na innych wersjach może działać,
-  ale nie był na nich sprawdzany.
-- Konto z uprawnieniami administratora – przy starcie Windows zapyta o zgodę (okno UAC).
-- Wersja przenośna: nic nie trzeba instalować. .NET Framework 4.8.1, którego program potrzebuje, jest już w Windows 11.
-  Wersja przenośna działa także prosto z pendrive'a.
-
-## Język
-
-Program jest dostępny po polsku i po angielsku. Przy pierwszym uruchomieniu okno prosi o wybór języka;
-wstępnie zaznaczony jest polski, gdy Windows jest po polsku, a w przeciwnym razie angielski. Język zmienisz
-później w „Ustawieniach” → „Język”; zmiana zadziała po „Uruchom ponownie teraz” (restart dotyczy samego
-programu, nie komputera). W trybie wiersza poleceń służy do tego `--lang pl` albo `--lang en`.
-Nazwy stron i przycisków w tym dokumencie są takie jak w polskim interfejsie.
-
-Program sprawdzano na Windows 11 26H2 po angielsku i po polsku. Na Windows w innych językach część pozycji może nie wykryć stanu
-poprawnie. Teksty pochodzące z samego Windowsa (nazwy aplikacji i urządzeń, wyjście winget, DISM i SFC)
-są w języku Windowsa.
+| Twierdzenie | Jak to sprawdzić |
+|---|---|
+| Bez telemetrii i bez samodzielnych aktualizacji | [Pomiar sieci, wersja 4.0.6](docs/zrodla/2026-11-08-v4-0-6-pomiar-sieci.md) |
+| Pobrany plik to ten, który został zbudowany | `SHA256SUMS.txt` w każdym wydaniu |
+| Microsoft Defender go nie blokuje | [Raport antywirusowy, wersja 4.0.1](docs/zrodla/2026-10-30-v4-0-1-raport-antywirus.md) |
+| Kod można przeczytać i zbudować | To repozytorium, MPL 2.0: `dotnet build DSOptimizer.sln -c Release` |
+| Nie rusza Defendera, UAC ani SmartScreen | [Strona Bezpieczeństwo](https://dsoptimizer.com/pl/bezpieczenstwo/) |
 
 ## Pobieranie
 
-Każde wydanie ma dwa pliki zbudowane z tych samych plików programu:
-
-- `DSOptimizer-<wersja>.zip` – wersja przenośna: rozpakuj i uruchom, niczego nie instaluje, działa też z pendrive'a.
-- `DSOptimizer-<wersja>-setup.exe` – instalator: instaluje w `C:\Program Files\DSOptimizer` dla wszystkich użytkowników,
-  dodaje skróty w Menu Start i na pulpicie. Odinstalowanie w Ustawieniach → Aplikacje.
-
-Odinstalowanie zostawia historię zmian w `%ProgramData%\DSOptimizer`, więc wcześniej zmienione ustawienia można
-cofnąć także po ponownej instalacji programu albo w wersji przenośnej. Instalator odmawia instalacji, aktualizacji
-i odinstalowania, gdy DSOptimizer działa, także gdy trwa polecenie w trybie wiersza poleceń (również tylko do odczytu);
-najpierw zamknij program i poczekaj na koniec takich poleceń.
-
-Instalator jest zbudowany w Inno Setup autorstwa Jordana Russella i Martijna Laana ([jrsoftware.org](https://jrsoftware.org/)).
-
-1. Wejdź na stronę [wydań](https://github.com/ds99-01/DSOptimizer/releases) i pobierz wybrany plik
-   (`DSOptimizer-<wersja>.zip` albo `DSOptimizer-<wersja>-setup.exe`) oraz `SHA256SUMS.txt`.
-2. Sprawdź, czy plik nie został uszkodzony ani podmieniony. W PowerShellu, w folderze z pobranym plikiem
-   (dla instalatora podaj nazwę pliku `-setup.exe`):
-
-   ```powershell
-   Get-FileHash .\DSOptimizer-<wersja>.zip -Algorithm SHA256
-   ```
-
-   Wynik musi być taki sam jak suma przy nazwie pliku w `SHA256SUMS.txt` (wielkość liter nie ma znaczenia).
-   Jeśli jest inny, nie rozpakowuj ani nie uruchamiaj pliku – pobierz go jeszcze raz.
-3. Wersja przenośna: rozpakuj zip. Powstanie folder `DSOptimizer` – trzymaj go w całości, bo `DSOptimizer.exe`
-   potrzebuje plików, które leżą obok niego. Instalator: uruchom `DSOptimizer-<wersja>-setup.exe` i przejdź kreator.
-4. Uruchom `DSOptimizer.exe` (albo skrót z Menu Start) i potwierdź okno UAC.
-
-### Ostrzeżenie SmartScreen
-
-Program nie ma jeszcze podpisu cyfrowego, więc przy pierwszym uruchomieniu pliku pobranego z internetu Windows
-pokaże niebieskie okno „System Windows ochronił ten komputer”. Kliknij **„Więcej informacji”**, a potem
-**„Uruchom mimo to”**. Okno pojawia się także po rozpakowaniu zipu i przy uruchomieniu instalatora. Jeśli pliki trafiły na pendrive inną drogą
-niż pobranie z internetu, okna zwykle nie ma.
-
-Microsoft Defender z aktualnymi sygnaturami nie blokuje programu ani żadnej jego funkcji – szczegóły sprawdzenia
-są w raportach antywirusowych dla [wersji 4.0](docs/zrodla/2026-10-26-etap5-raport-antywirus.md)
-i [wersji 4.0.1](docs/zrodla/2026-10-30-v4-0-1-raport-antywirus.md).
-
-## Prywatność
-
-Program nie ma telemetrii i nie aktualizuje się sam: niczego sam nie pobiera ani nie instaluje. Przy otwarciu okna
-pyta GitHuba (api.github.com) o numer najnowszej wersji, a GitHub widzi przy tym Twój adres IP. Możesz to wyłączyć
-w Ustawieniach; tryb wiersza poleceń nigdy tego nie sprawdza. Poza tym łączy się z siecią tylko na Twoje żądanie: WinUtil
-i RustDesk pobiera z GitHuba ich autorów, a instalacja i wyszukiwanie aplikacji idą przez winget ze źródła
-Microsoftu. Strona „Przygotowanie” otwiera w przeglądarce strony producentów i Google, ale sama niczego nie wysyła. Pomiar połączeń programu jest w [raporcie sieciowym wersji 4.0.6](docs/zrodla/2026-11-08-v4-0-6-pomiar-sieci.md).
-
-Historia zmian i logi zostają na komputerze, w folderze `%ProgramData%\DSOptimizer`. Każde konto na tym komputerze może
-go przeglądać i czytać logi, ale zapisywać w nim mogą tylko administratorzy i tylko oni otworzą pliki historii zmian i
-ustawień. Gdy uprawnienia folderu zostaną mimo to zmienione, program przy następnym starcie odkłada go na bok i przenosi
-historię zmian, jeśli nikt jej nie ruszał. Plik z tego folderu pokazany w dzienniku (np. log winget) zapiszesz w innym
-miejscu przyciskiem „Zapisz kopię…”. Raport ze specyfikacją zapisuje się tam, gdzie wskażesz w oknie „Zapisz jako”. Gdy
-program uruchomisz z pendrive'a, kopia logu i raportu trafia też obok `DSOptimizer.exe`.
-Raport ze specyfikacją zawiera numery seryjne dysków – pamiętaj o tym, zanim udostępnisz pendrive'a albo raport.
-
-## Co da się cofnąć, a co nie
-
-- **Ustawienia systemu** – większość zmian cofniesz przyciskiem „Cofnij” przy pozycji albo na stronie
-  „Historia zmian”. Program zapamiętuje stan sprzed zmiany i do niego wraca. Nieliczne pozycje, których
-  nie da się cofnąć, mają o tym wyraźne ostrzeżenie (nie ma tam przycisku „Cofnij”). W Ustawieniach programu jest też opcja tworzenia punktu
-  przywracania Windows przed zmianami. Przy otwarciu okna program sprawdza, czy zastosowane wcześniej ustawienia są nadal zastosowane; gdy któreś nie jest, baner pozwala je zaznaczyć i zastosować ponownie – nic nie zmienia się bez Twojego kliknięcia.
-- **Usuwanie aplikacji** – usuniętej aplikacji program nie przywraca. Przed usunięciem programu (nie aplikacji
-  ze Sklepu) tworzy punkt przywracania Windows, a gdy to się nie uda, pyta, czy kontynuować bez niego.
-- **Naprawy i akcje** – działają jednorazowo i nie mają „Cofnij” (np. wyczyszczonych plików nie da się
-  odzyskać). Przed uruchomieniem przeczytaj opis pozycji.
-- **Instalacja** – zainstalowany program odinstalujesz na stronie „Aplikacje”.
-- **Autostart** – wyłączenie i włączenie zmienia tylko przełącznik, którego używa sam Windows (ten sam co
-  w Menedżerze zadań i Ustawieniach); program nigdy nie usuwa wpisu autostartu ani pliku. Zmianę cofniesz na stronie
-  „Historia zmian” albo przełączając pozycję z powrotem. Zmiany działają od następnego logowania, a punkt
-  przywracania nie jest tworzony.
-
-## Budowanie ze źródeł
-
-Potrzebny jest .NET SDK w wersji podanej w `global.json` (np. `winget install Microsoft.DotNet.SDK.10`).
-
-```powershell
-dotnet build DSOptimizer.sln -c Release
-```
-
-Gotowy program: `src\DSOptimizer.App\bin\Release\net481\DSOptimizer.exe`. Testy (nieobowiązkowo; część z nich
-wymaga PowerShella uruchomionego jako administrator):
-
-```powershell
-dotnet test DSOptimizer.sln -c Release
-```
-
-## Tryb wiersza poleceń
-
-`DSOptimizer.exe` uruchomiony z argumentami nie otwiera okna: wykonuje jedno polecenie, zapisuje raport JSON do pliku `--out` i kończy proces z kodem wyjścia. Bez argumentów otwiera okno. `--out` jest wymagany (wynik trafia do pliku, nie na stdout), a polecenie ma być dokładnie jedno.
-
-```text
-DSOptimizer.exe --detect <id> --out <plik.json>
-DSOptimizer.exe --apply <id> [--restore-point required|ifavailable|skip] --out <plik.json>
-DSOptimizer.exe --undo <id> --out <plik.json>
-DSOptimizer.exe --execute <id> [--catalog <plik.json>] --out <plik.json>
-DSOptimizer.exe --list-apps --out <plik.json>
-DSOptimizer.exe --remove-app <id> [--restore-point required|ifavailable|skip] --out <plik.json>
-DSOptimizer.exe --list-install [--apps-catalog <plik.json>] --out <plik.json>
-DSOptimizer.exe --install-apps <id>[,<id>…] [--apps-catalog <plik.json>] --out <plik.json>
-DSOptimizer.exe --search-apps <tekst> --out <plik.json>
-DSOptimizer.exe --list-autostart --out <plik.json>
-DSOptimizer.exe --set-autostart <id> disabled|enabled --out <plik.json>
-DSOptimizer.exe --undo-autostart <id> --out <plik.json>
-```
-
-- `--detect`, `--apply` i `--undo` dotyczą pozycji `kind=tweak`; `--execute` dotyczy `kind=action` i `kind=panel` (`--apply` na akcji lub panelu daje kod 2).
-- `--list-apps` zwraca widoczne wiersze strony „Aplikacje”, a `--remove-app` usuwa jedną aplikację po jej id (`appx:<PackageFamilyName>` albo `win32:<klucz>`); wiersz chroniony lub zablokowany jest odrzucany. `--restore-point` domyślnie ma wartość `required`: bez punktu przywracania nic nie jest usuwane.
-- `--list-install` zwraca listę instalacji ze stanem winget, `--install-apps` instaluje podane pozycje (`install.<nazwa>` z listy albo `winget:<id>`) bez pytania, a `--search-apps` zwraca wyniki `winget search`. `--apps-catalog` podmienia wbudowaną listę instalacji.
-- Instalacja i wyszukiwanie przez winget działają tylko na koncie zalogowanego użytkownika; na innym koncie kończą się odmową (kod 1), a winget nie jest uruchamiany.
-- `--list-autostart` zwraca wiersze strony „Autostart” dla konta zalogowanego użytkownika w polu `autostartRows`: `id`, `source` (`RunUser`, `RunMachine`, `Run32`, `FolderUser`, `FolderCommon`, `StartupTask`), `name`, `publisher`, `scope` (`User`, `Machine`, `Store`), `state` (`Enabled`, `Disabled`, `Unknown`), `missingFile`, `verdict` (`Protected`, `CanDisable` albo `null`, gdy bez oceny), `canToggle`, `cpuMs` (czas procesora z pomiaru Windows w milisekundach) i `diskBytes` (odczyt z dysku w bajtach); obie liczby są `null`, gdy nie zmierzono.
-- `--set-autostart` wyłącza albo włącza jedną pozycję po jej id z listy (stan bez rozróżniania wielkości liter), a `--undo-autostart` przywraca stan sprzed aktywnej zmiany tej pozycji z Historii zmian. Id spoza listy daje kod 1; wiersz z `canToggle=false` (chroniony albo tylko do odczytu) jest odrzucany (kod 1) z powodem w `message` i nic nie jest zapisywane; pozycja już w stanie docelowym daje `AlreadyApplied` (kod 0). Cofnięcie, które nie przywróciło wszystkiego, daje kod 4 i wymienia to w `notRestored`. `--catalog`, `--apps-catalog` i `--restore-point` przy tych poleceniach albo brak lub nieznany stan dają kod 2.
-- Polecenia, które zmieniają system (`--apply`, `--undo`, `--execute`, `--remove-app`, `--install-apps`, `--set-autostart`, `--undo-autostart`), kończą się kodem 1 i niczego nie zmieniają, gdy działa inna kopia DSOptimizera (okno albo takie polecenie). Polecenia tylko do odczytu (`--detect`, `--list-apps`, `--list-install`, `--search-apps`, `--list-autostart`) działają także przy otwartym oknie, ale dopóki trwa jakiekolwiek polecenie, instalator i deinstalator odmawiają pracy.
-
-### Kody wyjścia
-
-| Kod | Znaczenie |
+| Plik | Co to jest |
 |---|---|
-| 0 | Sukces (`--detect` zawsze zwraca 0, niezależnie od stanu) |
-| 1 | Operacja niewykonana, stan bez zmian (`Failed`, `FailedRolledBack`, `Refused`, `NotSupported`, `Skipped`; seria przerwana, np. brak punktu przywracania przy `--restore-point required`, pole `aborted`); działa inna kopia DSOptimizera |
-| 2 | Błędne argumenty albo polecenie niepasujące do rodzaju (`kind`) pozycji |
-| 3 | Błąd katalogu (plik, JSON, walidacja, nieznane id) |
-| 4 | Stan do ręcznej kontroli (`FailedRollbackIncomplete`, `UndoIncomplete`, `NotConfirmed`, `InstalledUnverified`) |
-| 5 | Błąd wewnętrzny (wyjątek, nie da się zabezpieczyć korzenia `%ProgramData%\DSOptimizer`) |
-| 6 | Nie da się zapisać pliku `--out` |
+| `DSOptimizer-<wersja>.zip` | Wersja przenośna: rozpakuj i uruchom, także z pendrive’a |
+| `DSOptimizer-<wersja>-setup.exe` | Instalator do Program Files, ze skrótem w menu Start |
 
-### Raport JSON
+Windows 11 x64 i konto administratora. Sprawdzone na Windows 11 26H2 Home i Pro, po polsku i po angielsku.
+Porównaj plik z `SHA256SUMS.txt` z tego samego wydania: `Get-FileHash .\DSOptimizer-<wersja>.zip`.
 
-Najważniejsze pola: `exitCode` (to samo co kod procesu), `result` (nazwa kodu, np. `UsageError`), `state` (wykryty stan przed operacją), `outcome` (wynik operacji), `finalState` (stan po operacji), `warnings`, `restorePoint` (status punktu przywracania), `user` (SID użytkownika docelowego), `machine` (build, edycja, nazwa maszyny).
+> [!NOTE]
+> Pliki nie mają jeszcze podpisu cyfrowego, więc przy pierwszym uruchomieniu Windows pokaże „System Windows ochronił ten komputer”.
+> Sprawdź sumę kontrolną, potem kliknij „Więcej informacji” i „Uruchom mimo to”.
 
-Plik `--out` to UTF-8 bez BOM. Windows PowerShell 5.1 czyta taki plik poprawnie (polskie znaki) tylko z jawnym kodowaniem: `Get-Content <plik> -Raw -Encoding UTF8`.
+## Więcej
 
-### Katalog zewnętrzny (`--catalog`)
-
-`--catalog <plik.json>` **zastępuje** katalog wbudowany i wykonuje skrypty z tego pliku jako administrator. Używaj wyłącznie zaufanych plików. Użycie katalogu zewnętrznego jest odnotowane w `warnings` raportu, razem z hashem katalogu (z prefiksem `sha256:`). Hash to SHA-256 z nazwy pliku i zdekodowanego tekstu JSON, a nie z bajtów pliku, więc nie zgadza się z wynikiem `Get-FileHash`.
-
-## Dokumentacja
-
-Dokumentacja pozycji jest po polsku w `docs/tweaks`, `docs/apps`, `docs/prep` i `docs/autostart` (oryginał) oraz po angielsku w `docs/en`. Baza znanych pozycji autostartu (chronione i sugerowane, ze źródłami) jest opisana w [docs/autostart/README.md](docs/autostart/README.md). Zapisy źródeł (`docs/zrodla`) są tylko po polsku.
+- [Szczegóły](docs/szczegoly.md): język, wymagania, pobieranie i instalator, prywatność, co da się cofnąć, a co nie
+- [Tryb wiersza poleceń](docs/cli.md): polecenia, kody wyjścia, raport JSON, budowanie ze źródeł
+- [Opis każdej pozycji](https://dsoptimizer.com/pl/dokumentacja/): co zyskasz, co zmienia, ryzyko, szczegóły techniczne
 
 ## Licencja
 
-DSOptimizer jest udostępniony na licencji Mozilla Public License 2.0 – pełny tekst w pliku [LICENSE](LICENSE).
-W skrócie: program możesz używać, zmieniać i rozpowszechniać, ale jeśli rozpowszechniasz zmienioną wersję,
-kod zmienionych plików programu musi być dostępny na tej samej licencji.
+Mozilla Public License 2.0, zobacz [LICENSE](LICENSE). Nazwa DSOptimizer i znak DŚO nie są objęte licencją; zmienione wersje muszą mieć inną nazwę.
+Biblioteki i czcionki innych autorów: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-Nazwa DSOptimizer i znak DŚO nie są objęte licencją MPL 2.0; przerobione wersje muszą nosić inną nazwę.
-
-Program korzysta z bibliotek i czcionek innych autorów, na ich własnych licencjach – lista w
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
-## Autor
-
-Dawid Świeboda – [github.com/ds99-01](https://github.com/ds99-01)
-
-## Kontakt
-
-- Pytania i uwagi: [kontakt@dsoptimizer.pl](mailto:kontakt@dsoptimizer.pl)
-- Sprawy bezpieczeństwa: [security@dsoptimizer.com](mailto:security@dsoptimizer.com)
-
-## Wsparcie projektu
-
-DSOptimizer jest darmowy. Jeśli Ci pomógł, możesz wesprzeć jego utrzymanie i rozwój przez [buycoffee.to](https://buycoffee.to/dsoptimizer) albo [GitHub Sponsors](https://github.com/sponsors/ds99-01). Wsparcie jest dobrowolne i nie odblokowuje żadnych funkcji.
+Autor: Dawid Świeboda ([github.com/ds99-01](https://github.com/ds99-01)). Pytania: [kontakt@dsoptimizer.pl](mailto:kontakt@dsoptimizer.pl) · Bezpieczeństwo: [security@dsoptimizer.com](mailto:security@dsoptimizer.com) · Wsparcie: [buycoffee.to](https://buycoffee.to/dsoptimizer) albo [GitHub Sponsors](https://github.com/sponsors/ds99-01), dobrowolne, niczego nie odblokowuje.
