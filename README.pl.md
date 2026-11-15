@@ -27,7 +27,7 @@ Usuwa zbędne aplikacje, wyłącza reklamy, telemetrię i funkcje AI, a stan ka�
 2. **Ty wybierasz.** Zaznaczasz pozycje albo klikasz „Zaznacz sugerowane”. Przy każdej pozycji jest napisane, co zyskasz i co się zmieni.
 3. **Zmienia i zapisuje.** Przed zmianą próbuje utworzyć punkt przywracania. Każda zmiana trafia do historii zmian, gdzie ustawienia można cofnąć. Usunięć aplikacji i napraw cofnąć się nie da, a program mówi to przy każdej z nich.
 
-Poza ustawieniami prywatności i AI program usuwa preinstalowane aplikacje, instaluje popularne programy przez winget, zarządza autostartem i uruchamia typowe naprawy, takie jak reset Windows Update i naprawa plików systemowych. Pełna lista jest w [szczegółach](docs/szczegoly.md#co-jest-w-programie).
+Poza ustawieniami prywatności i AI program usuwa preinstalowane aplikacje, instaluje popularne programy przez winget, zarządza autostartem i uruchamia typowe naprawy, takie jak reset Windows Update i naprawa plików systemowych. Pełna lista jest w [szczegółach](docs/readme/details.pl.md#co-jest-w-programie).
 
 ## Dowody zamiast obietnic
 
@@ -55,8 +55,8 @@ Porównaj plik z `SHA256SUMS.txt` z tego samego wydania: `Get-FileHash .\DSOptim
 
 ## Więcej
 
-- [Szczegóły](docs/szczegoly.md): język, wymagania, pobieranie i instalator, prywatność, co da się cofnąć, a co nie
-- [Tryb wiersza poleceń](docs/cli.md): polecenia, kody wyjścia, raport JSON, budowanie ze źródeł
+- [Szczegóły](docs/readme/details.pl.md): język, wymagania, pobieranie i instalator, prywatność, co da się cofnąć, a co nie
+- [Tryb wiersza poleceń](docs/readme/cli.pl.md): polecenia, kody wyjścia, raport JSON, budowanie ze źródeł
 - [Opis każdej pozycji](https://dsoptimizer.com/pl/dokumentacja/): co zyskasz, co zmienia, ryzyko, szczegóły techniczne
 
 ## Licencja

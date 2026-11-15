@@ -27,7 +27,7 @@ Remove preinstalled apps, turn off ads, telemetry and AI features, and see the s
 2. **You choose.** Select items or click "Select suggested". Each item says what you gain and what it changes.
 3. **It applies and records.** Before the change it tries to create a restore point. Every change goes to the Change history, where settings can be undone. App removals and repairs cannot be undone, and the program says so next to each of them.
 
-Besides privacy and AI settings, the program removes preinstalled apps, installs popular programs through winget, manages startup apps and runs common repairs, such as Windows Update reset and system file repair. The full list is in [the details](docs/en/details.md#whats-inside).
+Besides privacy and AI settings, the program removes preinstalled apps, installs popular programs through winget, manages startup apps and runs common repairs, such as Windows Update reset and system file repair. The full list is in [the details](docs/readme/details.md#whats-inside).
 
 ## Proof, not promises
 
@@ -55,8 +55,8 @@ Compare the file with `SHA256SUMS.txt` from the same release: `Get-FileHash .\DS
 
 ## More
 
-- [Details](docs/en/details.md): language, requirements, download and installer, privacy, what can and cannot be undone
-- [Command-line mode](docs/en/cli.md): commands, exit codes, JSON report, building from source
+- [Details](docs/readme/details.md): language, requirements, download and installer, privacy, what can and cannot be undone
+- [Command-line mode](docs/readme/cli.md): commands, exit codes, JSON report, building from source
 - [Every item explained](https://dsoptimizer.com/docs/): what you gain, what it changes, risk, technical details
 
 ## License

@@ -1,6 +1,6 @@
 # DSOptimizer: szczegóły
 
-[Wróć do README](../README.pl.md) · [English](en/details.md) | **Polski**
+[Wróć do README](../../README.pl.md) · [English](details.md) | **Polski**
 
 Język, co jest w programie, wymagania, pobieranie, prywatność i co da się cofnąć. Każda pozycja jest też opisana na [dsoptimizer.com/pl/dokumentacja](https://dsoptimizer.com/pl/dokumentacja/).
 
@@ -85,8 +85,8 @@ pokaże niebieskie okno „System Windows ochronił ten komputer”. Kliknij **�
 niż pobranie z internetu, okna zwykle nie ma.
 
 Microsoft Defender z aktualnymi sygnaturami nie blokuje programu ani żadnej jego funkcji – szczegóły sprawdzenia
-są w raportach antywirusowych dla [wersji 4.0](zrodla/2026-10-26-etap5-raport-antywirus.md)
-i [wersji 4.0.1](zrodla/2026-10-30-v4-0-1-raport-antywirus.md).
+są w raportach antywirusowych dla [wersji 4.0](../zrodla/2026-10-26-etap5-raport-antywirus.md)
+i [wersji 4.0.1](../zrodla/2026-10-30-v4-0-1-raport-antywirus.md).
 
 ## Prywatność
 
@@ -94,7 +94,7 @@ Program nie ma telemetrii i nie aktualizuje się sam: niczego sam nie pobiera an
 pyta GitHuba (api.github.com) o numer najnowszej wersji, a GitHub widzi przy tym Twój adres IP. Możesz to wyłączyć
 w Ustawieniach; tryb wiersza poleceń nigdy tego nie sprawdza. Poza tym łączy się z siecią tylko na Twoje żądanie: WinUtil
 i RustDesk pobiera z GitHuba ich autorów, a instalacja i wyszukiwanie aplikacji idą przez winget ze źródła
-Microsoftu. Strona „Przygotowanie” otwiera w przeglądarce strony producentów i Google, ale sama niczego nie wysyła. Pomiar połączeń programu jest w [raporcie sieciowym wersji 4.0.6](zrodla/2026-11-08-v4-0-6-pomiar-sieci.md).
+Microsoftu. Strona „Przygotowanie” otwiera w przeglądarce strony producentów i Google, ale sama niczego nie wysyła. Pomiar połączeń programu jest w [raporcie sieciowym wersji 4.0.6](../zrodla/2026-11-08-v4-0-6-pomiar-sieci.md).
 
 Historia zmian i logi zostają na komputerze, w folderze `%ProgramData%\DSOptimizer`. Każde konto na tym komputerze może
 go przeglądać i czytać logi, ale zapisywać w nim mogą tylko administratorzy i tylko oni otworzą pliki historii zmian i
@@ -123,5 +123,5 @@ Raport ze specyfikacją zawiera numery seryjne dysków – pamiętaj o tym, zani
 
 ## Dokumentacja
 
-Dokumentacja pozycji jest po polsku w `docs/tweaks`, `docs/apps`, `docs/prep` i `docs/autostart` (oryginał) oraz po angielsku w `docs/en`. Baza znanych pozycji autostartu (chronione i sugerowane, ze źródłami) jest opisana w [docs/autostart/README.md](autostart/README.md). Zapisy źródeł (`docs/zrodla`) są tylko po polsku.
+Dokumentacja pozycji jest po polsku w `docs/tweaks`, `docs/apps`, `docs/prep` i `docs/autostart` (oryginał) oraz po angielsku w `docs/en`. Baza znanych pozycji autostartu (chronione i sugerowane, ze źródłami) jest opisana w [docs/autostart/README.md](../autostart/README.md). Zapisy źródeł (`docs/zrodla`) są tylko po polsku.
 

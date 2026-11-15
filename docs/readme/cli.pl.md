@@ -1,6 +1,6 @@
 # DSOptimizer: tryb wiersza poleceń
 
-[Wróć do README](../README.pl.md) · [English](en/cli.md) | **Polski**
+[Wróć do README](../../README.pl.md) · [English](cli.md) | **Polski**
 
 ## Budowanie ze źródeł
 

@@ -1,6 +1,6 @@
 # DSOptimizer: command-line mode
 
-[Back to README](../../README.md) · **English** | [Polski](../cli.md)
+[Back to README](../../README.md) · **English** | [Polski](cli.pl.md)
 
 ## Building from source
 

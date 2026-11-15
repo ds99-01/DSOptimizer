@@ -1,6 +1,6 @@
 # DSOptimizer: details
 
-[Back to README](../../README.md) · **English** | [Polski](../szczegoly.md)
+[Back to README](../../README.md) · **English** | [Polski](details.pl.md)
 
 Language, what is inside, requirements, download, privacy and what can be undone. Each item is also described on [dsoptimizer.com/docs](https://dsoptimizer.com/docs/).
 
