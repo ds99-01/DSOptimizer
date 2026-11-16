@@ -35,12 +35,16 @@
       "en": "When you search for a program or a file, you see only what's on the computer – no Bing suggestions."
     },
     {
-      "pl": "Wyłącza przełącznik „Zezwalaj aplikacjom wyszukiwania na wyświetlanie wyników” (Prywatność > Wyszukaj): IsGlobalWebSearchProviderToggleEnabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings, dla zalogowanego użytkownika. Dotyczy wszystkich dostawców wyników z sieci, nie tylko Bing; pola wyszukiwania w Eksploratorze plików nie zmienia. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie przywraca poprzedni stan przełącznika.",
-      "en": "Turns off the \"Let search apps show results\" toggle (Privacy & security > Search): IsGlobalWebSearchProviderToggleEnabled = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings, for the signed-in user. It affects all providers of web results, not only Bing; it doesn't change the search box in File Explorer. DSOptimizer doesn't restart File Explorer by itself. Undo restores the previous state of the toggle."
+      "pl": "Dwie wartości dla zalogowanego użytkownika. BingSearchEnabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search wyłącza wyniki Bing, także poza Europejskim Obszarem Gospodarczym. IsGlobalWebSearchProviderToggleEnabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings wyłącza przełącznik „Zezwalaj aplikacjom wyszukiwania na wyświetlanie wyników” (Prywatność > Wyszukaj), który Windows pokazuje w tym obszarze. Pola wyszukiwania w Eksploratorze plików pozycja nie zmienia. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie przywraca poprzednie wartości.",
+      "en": "Two values for the signed-in user. BingSearchEnabled = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search turns off Bing results, also outside the European Economic Area. IsGlobalWebSearchProviderToggleEnabled = 0 in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings turns off the \"Let search apps show results\" toggle (Privacy & security > Search), which Windows shows in that area. The item doesn't change the search box in File Explorer. DSOptimizer doesn't restart File Explorer by itself. Undo restores the previous values."
     },
     {
       "pl": "Zmiana zadziała po ponownym zalogowaniu; sam restart Eksploratora może nie wystarczyć.",
       "en": "The change takes effect after you sign in again; restarting File Explorer alone may not be enough."
+    },
+    {
+      "pl": "Z ekranu wyszukiwania znikają też wyróżnienia: obrazek dnia, quiz i popularne wyszukiwania.",
+      "en": "Search highlights also disappear from the search screen: the picture of the day, the quiz and trending searches."
     },
     {
       "pl": "Wyłącz rekomendacje i oferty w Ustawieniach",

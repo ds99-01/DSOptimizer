@@ -66,6 +66,7 @@ public class PrivacyCatalogTests
         new("privacy.widgets", true, TweakScope.Machine, RiskLevel.Safe, false,
             new ExpectedEntry(@"HKLM\SOFTWARE\Policies\Microsoft\Dsh", "AllowNewsAndInterests", RegValue.FromDWord(0), RegValue.Absent)),
         new("privacy.search-web-results", true, TweakScope.User, RiskLevel.Safe, false,
+            new ExpectedEntry(@"HKCU\Software\Microsoft\Windows\CurrentVersion\Search", "BingSearchEnabled", RegValue.FromDWord(0), RegValue.Absent),
             new ExpectedEntry(@"HKCU\Software\Microsoft\Windows\CurrentVersion\SearchSettings", "IsGlobalWebSearchProviderToggleEnabled", RegValue.FromDWord(0), RegValue.Absent)),
         new("privacy.settings-suggestions", true, TweakScope.User, RiskLevel.Safe, false,
             new ExpectedEntry(Cdm, "SubscribedContent-338393Enabled", RegValue.FromDWord(0), RegValue.Absent),
@@ -322,11 +323,20 @@ public class PrivacyCatalogTests
     {
         var doc = Doc("privacy.search-web-results");
         Assert.Contains("DisableSearchBoxSuggestions", doc, StringComparison.Ordinal);
-        Assert.Contains("BingSearchEnabled", doc, StringComparison.Ordinal);
         Assert.Contains("WebSearchProviders", doc, StringComparison.Ordinal);
         var names = CatalogLoader.Load(BuiltInCatalog.Sources).Definitions.SelectMany(d => d.Registry).Select(e => e.Name).ToList();
         Assert.DoesNotContain("DisableSearchBoxSuggestions", names);
-        Assert.DoesNotContain("BingSearchEnabled", names);
+        Assert.DoesNotContain("Microsoft.BingSearch_8wekyb3d8bbwe!App", names);
+    }
+
+    [Fact]
+    public void SearchWebResults_WorksOutsideEea_AndWarnsAboutHighlights()
+    {
+        // VM 2026-11-16: IsGlobalWebSearchProviderToggleEnabled działa tylko w EOG; BingSearchEnabled = 0 także w regionie USA.
+        var def = Get("privacy.search-web-results");
+        Assert.Equal(new[] { "BingSearchEnabled", "IsGlobalWebSearchProviderToggleEnabled" }, def.Registry.Select(e => e.Name));
+        Assert.Contains("poza Europejskim Obszarem Gospodarczym", def.Description, StringComparison.Ordinal);
+        Assert.Contains(def.Warnings, w => w.IndexOf("wyróżnienia", StringComparison.Ordinal) >= 0);
     }
 
     [Fact]

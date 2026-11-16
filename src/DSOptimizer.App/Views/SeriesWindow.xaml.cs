@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Shell;
 using System.Windows.Threading;
 using DSOptimizer.App.ViewModels;
@@ -68,10 +69,17 @@ public partial class SeriesWindow
     /// <summary>
     /// FluentWindow ustawia WindowChrome w OnSourceInitialized (CaptionHeight = 0, bo zwykle podpis robi ui:TitleBar).
     /// Własny pasek tytułu staje się obszarem podpisu (jak pasek marki okna głównego); krzyżyk ma IsHitTestVisibleInChrome.
+    /// Okno rysuje się programowo: na maszynach wirtualnych Hyper-V (karta wideo bez GPU) przy rysowaniu sprzętowym
+    /// co trzecie otwarcie zostawało białe, choć treść i przyciski działały.
     /// </summary>
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
+        if (PresentationSource.FromVisual(this) is HwndSource { CompositionTarget: { } target })
+        {
+            target.RenderMode = RenderMode.SoftwareOnly;
+        }
+
         var chrome = WindowChrome.GetWindowChrome(this);
         if (chrome is null)
         {

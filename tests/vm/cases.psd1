@@ -156,17 +156,29 @@
         }
         @{
             Name = 'privacy-search-web-results'; TweakId = 'privacy.search-web-results'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'
-            Setup = @("Remove-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\SearchSettings' -Name 'IsGlobalWebSearchProviderToggleEnabled' -ErrorAction SilentlyContinue")
-            Snapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\SearchSettings'; Name = 'IsGlobalWebSearchProviderToggleEnabled' }); Services = @() }
+            Setup = @(
+                "Remove-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Search' -Name 'BingSearchEnabled' -ErrorAction SilentlyContinue",
+                "Remove-ItemProperty -LiteralPath 'Registry::HKEY_USERS\{UserSid}\Software\Microsoft\Windows\CurrentVersion\SearchSettings' -Name 'IsGlobalWebSearchProviderToggleEnabled' -ErrorAction SilentlyContinue"
+            )
+            Snapshot = @{ Registry = @(
+                @{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Search'; Name = 'BingSearchEnabled' }
+                @{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\SearchSettings'; Name = 'IsGlobalWebSearchProviderToggleEnabled' }
+            ); Services = @() }
             Expect = @{
                 Before = 'NotApplied'; ApplyExit = 0; ApplyOutcome = 'Applied'; AfterApply = 'Applied'
                 UndoExit = 0; UndoOutcome = 'Undone'; AfterUndo = 'NotApplied'
                 UserSid = '{UserSid}'; UserIsCertain = $true
-                NotWrittenTo = @(@{ Path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\SearchSettings'; Name = 'IsGlobalWebSearchProviderToggleEnabled' })
-                AfterApplySnapshot = @{ Registry = @(@{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\SearchSettings'; Name = 'IsGlobalWebSearchProviderToggleEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }) }
-                KeyPresentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\SearchSettings')
+                NotWrittenTo = @(
+                    @{ Path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search'; Name = 'BingSearchEnabled' }
+                    @{ Path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\SearchSettings'; Name = 'IsGlobalWebSearchProviderToggleEnabled' }
+                )
+                AfterApplySnapshot = @{ Registry = @(
+                    @{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Search'; Name = 'BingSearchEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                    @{ Path = 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\SearchSettings'; Name = 'IsGlobalWebSearchProviderToggleEnabled'; Exists = $true; Kind = 'DWord'; Data = '0' }
+                ) }
+                KeyPresentAfterUndo = @('HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\Search', 'HKU\{UserSid}\Software\Microsoft\Windows\CurrentVersion\SearchSettings')
             }
-            Hypothesis = 'Odczyt VM 26H2 (2026-10-21): klucz SearchSettings istnieje, IsGlobalWebSearchProviderToggleEnabled brak (przełącznik włączony). Undo przywraca brak wartości ze snapshotu, a klucz SearchSettings (istniał przed apply) zostaje. NotWrittenTo = HKCU Administratora bez zmian. Skutek (wyniki Bing po restarcie Eksploratora) obserwowano w eksploracji.'
+            Hypothesis = 'Odczyt VM 26H2 (2026-10-21): klucz SearchSettings istnieje, IsGlobalWebSearchProviderToggleEnabled brak (przełącznik włączony). Od 2026-11-16 pozycja ustawia też BingSearchEnabled w kluczu Search (wartości brak na świeżej instalacji). Undo przywraca brak obu wartości ze snapshotu, a klucze Search i SearchSettings (istniały przed apply) zostają. NotWrittenTo = HKCU Administratora bez zmian. Skutek (wyniki Bing po restarcie Eksploratora) obserwowano w eksploracji.'
         }
         @{
             Name = 'privacy-settings-suggestions'; TweakId = 'privacy.settings-suggestions'; Flow = 'Full'; Catalog = 'BuiltIn'; RestorePoint = 'skip'

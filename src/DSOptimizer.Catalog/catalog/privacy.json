@@ -26,14 +26,16 @@
     "title": "Wyłącz wyniki z internetu w wyszukiwaniu Windows",
     "summary": "Wyszukiwanie w menu Start i na pasku zadań przestaje pokazywać podpowiedzi i wyniki z internetu.",
     "benefit": "Szukasz programu albo pliku i widzisz tylko to, co jest na komputerze – bez podpowiedzi Bing.",
-    "description": "Wyłącza przełącznik „Zezwalaj aplikacjom wyszukiwania na wyświetlanie wyników” (Prywatność > Wyszukaj): IsGlobalWebSearchProviderToggleEnabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings, dla zalogowanego użytkownika. Dotyczy wszystkich dostawców wyników z sieci, nie tylko Bing; pola wyszukiwania w Eksploratorze plików nie zmienia. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie przywraca poprzedni stan przełącznika.",
+    "description": "Dwie wartości dla zalogowanego użytkownika. BingSearchEnabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search wyłącza wyniki Bing, także poza Europejskim Obszarem Gospodarczym. IsGlobalWebSearchProviderToggleEnabled = 0 w HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings wyłącza przełącznik „Zezwalaj aplikacjom wyszukiwania na wyświetlanie wyników” (Prywatność > Wyszukaj), który Windows pokazuje w tym obszarze. Pola wyszukiwania w Eksploratorze plików pozycja nie zmienia. DSOptimizer sam nie restartuje Eksploratora. Cofnięcie przywraca poprzednie wartości.",
     "risk": "safe",
     "scope": "user",
     "suggested": true,
     "warnings": [
-      "Zmiana zadziała po ponownym zalogowaniu; sam restart Eksploratora może nie wystarczyć."
+      "Zmiana zadziała po ponownym zalogowaniu; sam restart Eksploratora może nie wystarczyć.",
+      "Z ekranu wyszukiwania znikają też wyróżnienia: obrazek dnia, quiz i popularne wyszukiwania."
     ],
     "registry": [
+      { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "name": "BingSearchEnabled", "type": "DWord", "value": 0, "original": "<RemoveEntry>" },
       { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings", "name": "IsGlobalWebSearchProviderToggleEnabled", "type": "DWord", "value": 0, "original": "<RemoveEntry>" }
     ]
   },
