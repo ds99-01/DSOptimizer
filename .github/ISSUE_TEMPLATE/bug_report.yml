@@ -1,0 +1,84 @@
+name: Bug report / Błąd
+description: Something in DSOptimizer does not work as described. / Coś w DSOptimizerze nie działa tak, jak opisano.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting. You can write in English or Polish. / Dziękuję za zgłoszenie. Możesz pisać po angielsku albo po polsku.
+
+        **Security problem?** Do not report it here; see [SECURITY.md](https://github.com/ds99-01/DSOptimizer/blob/main/SECURITY.md).
+  - type: input
+    id: version
+    attributes:
+      label: DSOptimizer version / Wersja programu
+      description: For example 4.0.8. Please check the problem in the latest release if you can.
+      placeholder: "4.0.8"
+    validations:
+      required: true
+  - type: dropdown
+    id: variant
+    attributes:
+      label: Zip or installer / Zip czy instalator
+      options:
+        - Portable zip / Wersja przenośna (zip)
+        - Installer / Instalator (setup.exe)
+        - Built from source / Zbudowany ze źródeł
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows 11 edition, version and build / Wydanie, wersja i build Windows 11
+      description: Run `winver`. For example "Windows 11 Pro 26H2, build 26300.xxxx".
+    validations:
+      required: true
+  - type: dropdown
+    id: language
+    attributes:
+      label: Interface language / Język interfejsu
+      options:
+        - English
+        - Polski
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Where it happened / Gdzie wystąpił problem
+      options:
+        - Window / Okno programu
+        - Command-line mode / Tryb wiersza poleceń
+        - Installer or uninstaller / Instalator albo deinstalator
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / Kroki
+      description: Page, item and buttons, in order. / Strona, pozycja i przyciski, po kolei.
+      placeholder: |
+        1. Open "Privacy and AI"
+        2. Select ...
+        3. Click "Apply"
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened and what you expected / Co się stało i czego oczekiwałeś
+      description: Include the exact message the program showed, if any. / Podaj dokładny komunikat programu, jeśli był.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log excerpt or JSON report / Fragment dziennika albo raport JSON
+      description: |
+        Logs are in `%ProgramData%\DSOptimizer\logs`; in command-line mode attach the `--out` file.
+        **Remove personal data first:** user and computer names, SIDs, disk serial numbers, paths containing your name.
+        Dzienniki są w `%ProgramData%\DSOptimizer\logs`; w trybie wiersza poleceń dołącz plik `--out`.
+        **Najpierw usuń dane osobowe:** nazwy kont i komputera, SID, numery seryjne dysków, ścieżki z Twoim nazwiskiem.
+      render: text
+    validations:
+      required: false

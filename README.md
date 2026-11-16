@@ -33,9 +33,9 @@ Besides privacy and AI settings, the program removes preinstalled apps, installs
 
 | Claim | How to check it |
 |---|---|
-| No telemetry, no self-updates | [Network measurement, version 4.0.6](docs/zrodla/2026-11-08-v4-0-6-pomiar-sieci.md) (in Polish) |
+| No telemetry, no self-updates | [Network measurement, version 4.0.6](docs/zrodla/2026-11-08-v4-0-6-pomiar-sieci.md) (in Polish): with the window open, the only connection is the version check on `api.github.com`; with it turned off, none |
 | The file you downloaded is the one that was built | `SHA256SUMS.txt` in every release |
-| Microsoft Defender does not flag it | [Antivirus report, version 4.0.1](docs/zrodla/2026-10-30-v4-0-1-raport-antywirus.md) (in Polish) |
+| Microsoft Defender does not flag it | VirusTotal, version 4.0.8: [`DSOptimizer.exe`](https://www.virustotal.com/gui/file/a20181097578af6e78c597b6982a5d72f9bd271a5c1752839824af5d3c95a1f9) 0/71, [zip](https://www.virustotal.com/gui/file/4fe59cd4ccd654509c5af64cbcdb038cbcd5bc42981ef29966d71c79a21d4821) 0/67, [installer](https://www.virustotal.com/gui/file/23969dd5f4d86ae837202a63cf175fd8a7e3796fd3468c206c21ce170ab68828) 4/71 (Arctic Wolf, DeepInstinct, SecureAge, Skyhigh; not Microsoft Defender). On a VM: [antivirus report, version 4.0.1](docs/zrodla/2026-10-30-v4-0-1-raport-antywirus.md) (in Polish), Defender with current signatures and cloud protection blocked none of 18 checked steps (Windows 11 Pro, zip) |
 | You can read and build the code | This repository, MPL 2.0: `dotnet build DSOptimizer.sln -c Release` |
 | It leaves Defender, UAC and SmartScreen alone | [Security page](https://dsoptimizer.com/security/) |
 
@@ -58,6 +58,7 @@ Compare the file with `SHA256SUMS.txt` from the same release: `Get-FileHash .\DS
 - [Details](docs/readme/details.md): language, requirements, download and installer, privacy, what can and cannot be undone
 - [Command-line mode](docs/readme/cli.md): commands, exit codes, JSON report, building from source
 - [Every item explained](https://dsoptimizer.com/docs/): what you gain, what it changes, risk, technical details
+- [Contributing](CONTRIBUTING.md) and [security policy](SECURITY.md): reporting bugs and vulnerabilities, rules for catalog items
 
 ## License
 

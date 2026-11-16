@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Every item explained / Opis każdej pozycji
+    url: https://dsoptimizer.com/docs/
+    about: What each item changes, what you gain and the risk. / Co zmienia każda pozycja, co zyskasz i jakie jest ryzyko.
+  - name: Questions / Pytania
+    url: https://github.com/ds99-01/DSOptimizer/discussions
+    about: Ask questions and share experience in Discussions. / Pytania i doświadczenia w Discussions.
+  - name: Security problem / Problem z bezpieczeństwem
+    url: https://github.com/ds99-01/DSOptimizer/blob/main/SECURITY.md
+    about: Do not report vulnerabilities publicly; see SECURITY.md. / Podatności nie zgłaszaj publicznie; zobacz SECURITY.md.

@@ -1,0 +1,44 @@
+name: Suggestion / Propozycja
+description: A new item, a change to an existing one, or an idea for the program. / Nowa pozycja, zmiana istniejącej albo pomysł na program.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        You can write in English or Polish. / Możesz pisać po angielsku albo po polsku.
+
+        An item enters the catalog only when a test on Windows 11 shows a real effect, and every setting must have state detection and Undo (or a clear warning that it cannot be undone). Sources help a lot.
+        Pozycja trafia do katalogu tylko wtedy, gdy test na Windows 11 pokazuje realny skutek, a każde ustawienie musi mieć wykrywanie stanu i „Cofnij” (albo wyraźne ostrzeżenie, że cofnąć się nie da). Źródła bardzo pomagają.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Type / Rodzaj
+      options:
+        - New catalog item / Nowa pozycja katalogu
+        - Change to an existing item / Zmiana istniejącej pozycji
+        - App to remove or install / Aplikacja do usunięcia albo instalacji
+        - Program window or command-line mode / Okno programu albo tryb wiersza poleceń
+        - Documentation / Dokumentacja
+        - Other / Inne
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does it solve? / Jaki problem to rozwiązuje?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What should change? / Co powinno się zmienić?
+      description: For a setting, say what it changes in Windows (registry key, service, policy) if you know. / Przy ustawieniu napisz, co zmienia w Windows (klucz rejestru, usługa, zasada), jeśli wiesz.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources / Źródła
+      description: Microsoft documentation, your own test, other tools. / Dokumentacja Microsoftu, własny test, inne narzędzia.
+    validations:
+      required: false

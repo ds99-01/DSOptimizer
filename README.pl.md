@@ -33,9 +33,9 @@ Poza ustawieniami prywatności i AI program usuwa preinstalowane aplikacje, inst
 
 | Twierdzenie | Jak to sprawdzić |
 |---|---|
-| Bez telemetrii i bez samodzielnych aktualizacji | [Pomiar sieci, wersja 4.0.6](docs/zrodla/2026-11-08-v4-0-6-pomiar-sieci.md) |
+| Bez telemetrii i bez samodzielnych aktualizacji | [Pomiar sieci, wersja 4.0.6](docs/zrodla/2026-11-08-v4-0-6-pomiar-sieci.md): przy otwartym oknie jedynym połączeniem jest sprawdzenie wersji na `api.github.com`, a po jego wyłączeniu żadnego |
 | Pobrany plik to ten, który został zbudowany | `SHA256SUMS.txt` w każdym wydaniu |
-| Microsoft Defender go nie blokuje | [Raport antywirusowy, wersja 4.0.1](docs/zrodla/2026-10-30-v4-0-1-raport-antywirus.md) |
+| Microsoft Defender go nie blokuje | VirusTotal, wersja 4.0.8: [`DSOptimizer.exe`](https://www.virustotal.com/gui/file/a20181097578af6e78c597b6982a5d72f9bd271a5c1752839824af5d3c95a1f9) 0/71, [zip](https://www.virustotal.com/gui/file/4fe59cd4ccd654509c5af64cbcdb038cbcd5bc42981ef29966d71c79a21d4821) 0/67, [instalator](https://www.virustotal.com/gui/file/23969dd5f4d86ae837202a63cf175fd8a7e3796fd3468c206c21ce170ab68828) 4/71 (Arctic Wolf, DeepInstinct, SecureAge, Skyhigh; bez Microsoft Defendera). Na VM: [raport antywirusowy, wersja 4.0.1](docs/zrodla/2026-10-30-v4-0-1-raport-antywirus.md), Defender z aktualnymi sygnaturami i ochroną w chmurze nie zablokował żadnego z 18 sprawdzanych kroków (Windows 11 Pro, zip) |
 | Kod można przeczytać i zbudować | To repozytorium, MPL 2.0: `dotnet build DSOptimizer.sln -c Release` |
 | Nie rusza Defendera, UAC ani SmartScreen | [Strona Bezpieczeństwo](https://dsoptimizer.com/pl/bezpieczenstwo/) |
 
@@ -58,6 +58,7 @@ Porównaj plik z `SHA256SUMS.txt` z tego samego wydania: `Get-FileHash .\DSOptim
 - [Szczegóły](docs/readme/details.pl.md): język, wymagania, pobieranie i instalator, prywatność, co da się cofnąć, a co nie
 - [Tryb wiersza poleceń](docs/readme/cli.pl.md): polecenia, kody wyjścia, raport JSON, budowanie ze źródeł
 - [Opis każdej pozycji](https://dsoptimizer.com/pl/dokumentacja/): co zyskasz, co zmienia, ryzyko, szczegóły techniczne
+- [Współpraca](CONTRIBUTING.md) i [zasady bezpieczeństwa](SECURITY.md) (po angielsku, z częścią po polsku): zgłaszanie błędów i podatności, zasady pozycji katalogu
 
 ## Licencja
 
